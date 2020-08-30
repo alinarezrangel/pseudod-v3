@@ -1,0 +1,136 @@
+utilizar bepd/builtins
+
+clase TipoEOF
+    metodo comoTexto
+finclase
+
+metodo TipoEOF#comoTexto
+    devolver {EOF}
+finmetodo
+
+variable EOF
+fijar EOF a TipoEOF#crear
+
+clase LecturaParcial
+    atributos leído, finPorEOF
+
+    metodo comoTexto
+finclase
+
+metodo LecturaParcial#comoTexto
+    devolver {(LecturaParcial con leído: [~t], finPorEOF: ~t)}#formatear: yo#leído, (yo#finPorEOF#escojer: {VERDADERO}, {FALSO})
+finmetodo
+
+clase Puerto
+finclase
+
+clase PuertoDeLectura hereda Puerto
+    metodo estatico desdeTexto: texto
+
+    metodo leerCarácter
+    metodo desleerCarácter
+finclase
+
+atributo PuertoDeLectura#texto, PuertoDeLectura#cursor
+
+metodo estatico PuertoDeLectura#desdeTexto: texto
+    devolver yo#crear: texto
+finmetodo
+
+metodo PuertoDeLectura#inicializar: texto
+    fijar yo#texto a texto
+    fijar yo#cursor a 0
+finmetodo
+
+metodo PuertoDeLectura#leerCarácter
+    si yo#cursor >= yo#texto#longitud
+        devolver EOF
+    sino
+        variable car
+        fijar car a yo#texto#en: yo#cursor
+        fijar yo#cursor a yo#cursor + 1
+        devolver car
+    finsi
+finmetodo
+
+metodo PuertoDeLectura#desleerCarácter
+    variable car
+    si yo#cursor >= yo#texto#longitud
+        fijar car a EOF
+    sino
+        fijar car a yo#texto#en: yo#cursor
+    finsi
+    si yo#cursor > 0
+        fijar yo#cursor a yo#cursor - 1
+    finsi
+    devolver car
+finmetodo
+
+funcion TerminaCon: texto, final
+    variables tamTexto, tamFinal
+    fijar tamTexto a texto#longitud
+    fijar tamFinal a final#longitud
+    si tamFinal > tamTexto
+        devolver FALSO
+    finsi
+    variable parteFinal
+    fijar parteFinal a texto#subTexto: (tamTexto - tamFinal), tamFinal
+    devolver parteFinal = final
+finfuncion
+
+procedimiento LeerMientras: puerto, predicado
+    variable buff
+    fijar buff a {}
+    mientras %predicado: buff
+        variable car
+        fijar car a puerto#leerCarácter
+        si car = EOF
+            variable lec
+            fijar lec a LecturaParcial#crear
+            fijar lec#leído a buff
+            fijar lec#finPorEOF a VERDADERO
+            devolver lec
+        finsi
+        variable nb
+        fijar nb a buff#concatenar: car
+        si no %predicado: nb
+            puerto#desleerCarácter
+            devolver buff
+        sino
+            fijar buff a nb
+        finsi
+    finmientras
+    devolver buff
+finprocedimiento
+
+funcion TerminaConEspacios: texto
+    devolver (TerminaCon: texto, {~%}#formatear) || (TerminaCon: texto, { })
+finfuncion
+
+procedimiento SaltarEspacios: puerto
+    devolver LeerMientras: puerto, funcion: buffer
+        devolver (buffer#longitud = 0) || TerminaConEspacios: buffer
+    finfuncion
+finprocedimiento
+
+procedimiento LeerPalabra: puerto
+    SaltarEspacios: puerto
+    devolver LeerMientras: puerto, funcion: buffer
+        devolver no TerminaConEspacios: buffer
+    finfuncion
+finprocedimiento
+
+procedimiento LeerHasta: puerto, hasta
+    variable res
+    fijar res a {}
+    mientras no TerminaCon: res, hasta
+        variable car
+        fijar car a puerto#leerCarácter
+        fijar res a res#concatenar: car
+    finmientras
+    devolver res#subTexto: 0, (res#longitud - hasta#longitud)
+finprocedimiento
+
+funcion TextoComoPuerto: texto
+    devolver PuertoDeLectura#desdeTexto: texto
+finfuncion

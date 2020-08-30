@@ -1,0 +1,68 @@
+utilizar bepd/builtinsImpl
+
+clase Pila
+    metodo estatico vacía
+    metodo estatico desdeArreglo: arr
+
+    metodo comoTexto
+
+    metodo longitud
+    metodo estáVacía
+
+    metodo apilar: valor
+    metodo desapilar
+    metodo últimoValorApilado
+
+    metodo vaciar
+finclase
+
+atributo Pila#_elementos
+
+metodo estatico Pila#vacía
+    variable inst
+    fijar inst a yo#_crear
+    fijar inst#_elementos a Arreglo#vacio
+    devolver inst
+finmetodo
+
+metodo estatico Pila#desdeArreglo: arr
+    variable inst
+    fijar inst a yo#vacía
+    ParaCadaElemento: arr, procedimiento: el
+        inst#apilar: el
+    finprocedimiento
+    devolver inst
+finmetodo
+
+metodo Pila#comoTexto
+    devolver {(Pila#desdeArreglo: ~t)}#formatear: yo#_elementos
+finmetodo
+
+metodo Pila#longitud
+    devolver yo#_elementos#longitud
+finmetodo
+
+metodo Pila#estáVacía
+    devolver yo#longitud = 0
+finmetodo
+
+metodo Pila#apilar: valor
+    yo#_elementos#agregarAlFinal: valor
+finmetodo
+
+metodo Pila#desapilar
+    necesitas no yo#estáVacía
+    variable res
+    fijar res a yo#últimoValorApilado
+    yo#_elementos#redimensionar: (yo#_elementos#longitud - 1)
+    devolver res
+finmetodo
+
+metodo Pila#últimoValorApilado
+    necesitas no yo#estáVacía
+    devolver yo#_elementos#en: (yo#_elementos#longitud - 1)
+finmetodo
+
+metodo Pila#vaciar
+    yo#_elementos#redimensionar: 0
+finmetodo

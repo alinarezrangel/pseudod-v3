@@ -1,0 +1,193 @@
+utilizar bepd/builtinsImpl
+
+clase Diccionario
+    metodo estatico vacío
+    metodo estatico desdeArreglo: arr
+    metodo estatico desdePares: ...valores
+
+    metodo en: llave
+    metodo fijarEn: llave, valor
+    metodo transformarPar: llave, proc
+    metodo eliminar: llave
+    metodo contiene: llave
+    metodo vaciar
+
+    metodo longitud
+
+    metodo comoTexto
+    metodo comoArreglo
+
+    metodo paraCadaPar: proc
+    metodo paraCadaLlave: proc
+    metodo paraCadaValor: proc
+
+    metodo reducir: ini, proc
+    metodo transformar: proc
+    metodo mapear: proc
+finclase
+
+atributos Diccionario#_pares
+
+metodo estatico Diccionario#vacío
+    variable inst
+    fijar inst a yo#_crear
+    fijar inst#_pares a Arreglo#vacio
+    devolver inst
+finmetodo
+
+metodo estatico Diccionario#desdeArreglo: arr
+    variable inst
+    fijar inst a yo#_crear
+    fijar inst#_pares a arr
+    devolver inst
+finmetodo
+
+metodo estatico Diccionario#desdePares: ...valores
+    necesitas EsPar: valores#longitud
+
+    variables inst, i
+    fijar inst a yo#_crear
+    fijar inst#_pares a Arreglo#vacio
+    fijar i a 0
+
+    mientras i < valores#longitud
+        inst#_pares#agregarAlFinal: (Arreglo#crearCon: (valores#en: i), (valores#en: (i + 1)))
+        fijar i a i + 2
+    finmientras
+
+    devolver inst
+finmetodo
+
+metodo Diccionario#en: llave
+    devolver yo#transformarPar: llave, &Identidad
+finmetodo
+
+metodo Diccionario#fijarEn: llave, nuevoValor
+    yo#_transformarParImpl: llave, funcion: viejoValor
+        devolver nuevoValor
+    finfuncion, VERDADERO
+finmetodo
+
+metodo Diccionario#transformarPar: llave, proc
+    devolver yo#_transformarParImpl: llave, proc, FALSO
+finmetodo
+
+metodo Diccionario#_transformarParImpl: llave, proc, crearSiNoExíste
+    variable i
+    fijar i a 0
+    mientras i < yo#_pares#longitud
+        variable par
+        fijar par a yo#_pares#en: i
+        si (par#en: 0) = llave
+            variable nuevoValor
+            fijar nuevoValor a %proc: (par#en: 1)
+            yo#_pares#fijarEn: i, (Arreglo#crearCon: (par#en: 0), nuevoValor)
+            devolver nuevoValor
+        finsi
+        fijar i a i + 1
+    finmientras
+    si no crearSiNoExíste
+        __FallarConMensaje: ({El diccionario no contiene la llave ~t}#formatear: llave)
+    sino
+        yo#_pares#agregarAlFinal: (Arreglo#crearCon: llave, (%proc: NULO))
+    finsi
+finmetodo
+
+metodo Diccionario#eliminar: llave
+    variables i, encontrado
+    fijar i a 0
+    fijar encontrado a FALSO
+    mientras i < yo#_pares#longitud
+        si encontrado
+            yo#_pares#fijarEn: (i - 1), (yo#_pares#en: i)
+        sino
+            variable par
+            fijar par a yo#_pares#en: i
+            si (par#en: 0) = llave
+                fijar encontrado a VERDADERO
+            finsi
+        finsi
+        fijar i a i + 1
+    finmientras
+    si encontrado
+        yo#_pares#redimensionar: (yo#_pares#longitud - 1)
+    finsi
+finmetodo
+
+metodo Diccionario#contiene: llave
+    variable i
+    fijar i a 0
+    mientras i < yo#_pares#longitud
+        variable par
+        fijar par a yo#_pares#en: i
+        si (par#en: 0) = llave
+            devolver VERDADERO
+        finsi
+        fijar i a i + 1
+    finmientras
+    devolver FALSO
+finmetodo
+
+metodo Diccionario#vaciar
+    fijar yo#_pares a Arreglo#vacio
+finmetodo
+
+metodo Diccionario#longitud
+    devolver yo#_pares#longitud
+finmetodo
+
+metodo Diccionario#comoTexto
+    variables txt, primero
+    fijar txt a {(Diccionario#desdePares: }
+    fijar primero a VERDADERO
+    ParaCadaElemento: yo#_pares, procedimiento: par
+        si no primero
+            fijar txt a txt#concatenar: {, }
+        sino
+            fijar primero a FALSO
+        finsi
+        fijar txt a txt#concatenar: {~t, ~t}#formatear: (par#en: 0), (par#en: 1)
+    finprocedimiento
+    devolver txt
+finmetodo
+
+metodo Diccionario#comoArreglo
+    devolver yo#_pares#\clonar\
+finmetodo
+
+metodo Diccionario#paraCadaPar: proc
+    ParaCadaElemento: yo#_pares, procedimiento: el
+        %proc: (el#en: 0), (el#en: 1)
+    finprocedimiento
+finmetodo
+
+metodo Diccionario#paraCadaLlave: proc
+    ParaCadaElemento: yo#_pares, procedimiento: el
+        %proc: (el#en: 0)
+    finprocedimiento
+finmetodo
+
+metodo Diccionario#paraCadaValor: proc
+    ParaCadaElemento: yo#_pares, procedimiento: el
+        %proc: (el#en: 1)
+    finprocedimiento
+finmetodo
+
+metodo Diccionario#reducir: ini, proc
+    variable acc
+    fijar acc a ini
+    yo#paraCadaPar: procedimiento: par
+        fijar acc a %proc: acc, (par#en: 0), (par#en: 1)
+    finprocedimiento
+    devolver acc
+finmetodo
+
+metodo Diccionario#transformar: proc
+    ParaCadaElementoConÍndice: yo#_pares, procedimiento: el, idx
+        yo#_pares#fijarEn: idx, (%proc: (el#en: 0), (el#en: 1))
+    finprocedimiento
+finmetodo
+
+metodo Diccionario#mapear: proc
+    devolver yo#\clonar\#transformar: proc
+finmetodo

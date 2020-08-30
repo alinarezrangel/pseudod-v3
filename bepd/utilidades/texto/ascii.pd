@@ -1,0 +1,34 @@
+utilizar bepd/builtinsImpl
+
+variables ALFABETO_ASCII_MAYÚSCULAS, ALFABETO_ASCII_MINÚSCULAS, ALFABETO_ASCII
+fijar ALFABETO_ASCII_MINÚSCULAS a {abcdefghijklmnopqrstuvwxyz}
+fijar ALFABETO_ASCII_MAYÚSCULAS a {ABCDEFGHIJKLMNOPQRSTUVWXYZ}
+fijar ALFABETO_ASCII a ALFABETO_ASCII_MINÚSCULAS#concatenar: ALFABETO_ASCII_MAYÚSCULAS
+
+funcion EsDígitoDecimal: car
+    devolver Contiene: {0123456789}, car
+finfuncion
+
+funcion EsAlfabético: car
+    devolver Contiene: ALFABETO_ASCII, car
+finfuncion
+
+funcion Minúscula: car
+    variable i
+    fijar i a ALFABETO_ASCII_MAYÚSCULAS#buscar: 0, car
+    si EsNulo: i
+        devolver car
+    sino
+        devolver ALFABETO_ASCII_MINÚSCULAS#en: i
+    finsi
+finfuncion
+
+funcion Mayúscula: car
+    variable i
+    fijar i a ALFABETO_ASCII_MINÚSCULAS#buscar: 0, car
+    si EsNulo: i
+        devolver car
+    sino
+        devolver ALFABETO_ASCII_MAYÚSCULAS#en: i
+    finsi
+finfuncion

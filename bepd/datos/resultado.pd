@@ -1,0 +1,97 @@
+utilizar bepd/builtinsImpl
+
+clase Resultado
+    metodo estatico ok: valor
+    metodo estatico error: err
+
+    metodo valor
+    metodo error
+    metodo fijar_valor: v
+    metodo fijar_error: v
+
+    metodo esOk
+    metodo esError
+
+    metodo comoTexto
+
+    metodo transformar: proc
+    metodo mapear: proc
+finclase
+
+atributos Resultado#_valor, Resultado#_error, Resultado#_tipo
+
+metodo estatico Resultado#ok: valor
+    variable inst
+    fijar inst a yo#_crear
+    inst#inicializar: {ok}, valor
+    devolver inst
+finmetodo
+
+metodo estatico Resultado#error: valor
+    variable inst
+    fijar inst a yo#_crear
+    inst#inicializar: {error}, valor
+    devolver inst
+finmetodo
+
+metodo Resultado#inicializar: tipo, v
+    si tipo = {error}
+        fijar yo#error a v
+    sino
+        fijar yo#valor a v
+    finsi
+finmetodo
+
+metodo Resultado#valor
+    si yo#esOk
+        devolver yo#_valor
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo Resultado#error
+    si yo#esError
+        devolver yo#_error
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo Resultado#fijar_valor: v
+    fijar yo#_tipo a {ok}
+    fijar yo#_valor a v
+    fijar yo#_error a NULO
+finmetodo
+
+metodo Resultado#fijar_error: v
+    fijar yo#_tipo a {error}
+    fijar yo#_valor a NULO
+    fijar yo#_error a v
+finmetodo
+
+metodo Resultado#esOk
+    devolver yo#_tipo = {ok}
+finmetodo
+
+metodo Resultado#esError
+    devolver yo#_tipo = {error}
+finmetodo
+
+metodo Resultado#comoTexto
+    si yo#esError
+        devolver {(Resultado#error: ~t)}#formatear: yo#error
+    sino
+        devolver {(Resultado#ok: ~t)}#formatear: yo#valor
+    finsi
+finmetodo
+
+metodo Resultado#transformar: proc
+    si yo#esOk
+        fijar yo#valor a %proc: yo#valor
+    finsi
+finmetodo
+
+metodo Resultado#mapear: proc
+    devolver yo#\clonar\#transformar: proc
+finmetodo

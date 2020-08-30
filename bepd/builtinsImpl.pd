@@ -1,0 +1,763 @@
+[DOCUMENTA
+@brief{Determina si @param{sub} es una subclase de @param{base}.}
+
+En particular:
+
+@itemlist(
+@item{Una clase es considerada subclase de si misma (es decir,
+@pd{EsSubclase: A, A} es siempre @pd{VERDADERO} para toda clase @pd{A})}
+@item{Las clases @bold{no} son consideradas subclases de las interfáces que
+implementan. Por ejemplo: @pd{EsSubclase: Arreglo, Mapeable} es @pd{FALSO}
+aunque @pd{Arreglo} implementa la interfáz @pd{Mapeable}.}
+)
+
+En otras palabras, esta función solo determina si @param{sub} es una subclase
+de @param{base}, @bold{no} si es un subtipo.
+
+@devuelve{@pd{VERDADERO} o @pd{FALSO}.}
+DOCUMENTA]
+funcion EsSubclase: sub, base
+    variable cls
+    fijar cls a sub
+    mientras no cls = base
+        si cls = Numero devolver base = Objeto finsi
+        si cls = Texto devolver base = Objeto finsi
+        si cls = Boole devolver base = Objeto finsi
+        si cls = TipoNulo devolver base = Objeto finsi
+        si cls = EspacioDeNombres devolver base = Objeto finsi
+        si cls = Arreglo devolver base = Objeto finsi
+        si cls = Procedimiento devolver base = Objeto finsi
+        si cls = Referencia devolver base = Objeto finsi
+        si cls = Objeto devolver base = Objeto finsi
+        fijar cls a cls#claseBase
+    finmientras
+    devolver VERDADERO
+finfuncion
+
+[DOCUMENTA
+@brief{Determina si @param{obj} es una instancia de @param{_clase}.}
+
+Es equivalente a @pd{EsSubclase: (TipoDe: obj), _clase}. Es decir: devolverá
+verdadero si el tipo de @param{obj} es un subtipo de @param{_clase}.
+
+@devuelve{@pd{VERDADERO} o @pd{FALSO}.}
+DOCUMENTA]
+funcion EsInstancia: obj, _clase
+    devolver EsSubclase: (TipoDe: obj), _clase
+finfuncion
+
+[DOCUMENTA
+@brief{Convierte @param{valor} a texto y lo escribe.}
+
+A diferencia de @pd{escribir} esta función siempre escribe un fin de línea.
+DOCUMENTA]
+procedimiento Escribir: valor
+    escribir valor#comoTexto
+    nl
+finprocedimiento
+
+[DOCUMENTA
+@brief{Determina si el arreglo @param{arr} contiene un valor igual a @param{valor}.}
+
+Realiza una búsqueda lineal sobre @param{arr} buscando un valor igual a
+@param{valor}. Los valores son comparados con @pd{=}.
+
+@devuelve{@pd{VERDADERO} o @pd{FALSO}.}
+DOCUMENTA]
+funcion Contiene: arr, valor
+    variable idx
+    fijar idx a 0
+    mientras idx < arr#longitud
+        si (arr#en: idx) = valor
+            devolver VERDADERO
+        finsi
+        fijar idx a idx + 1
+    finmientras
+    devolver FALSO
+finfuncion
+
+[DOCUMENTA
+@brief{Aplica un procedimiento a cada elemento de un arreglo.}
+
+Llama a @param{proc} con cada elemento de @param{arr}, comenzando por el elemento
+número 0 y de manera secuencial.
+
+@params(
+@defparam(arr){Arreglo sobre el cual se iterará.}
+@defparam(proc){Procedimiento o función que se llamará sobre cada elemento de @param{arr}}.
+)
+
+@ejemplo|{
+variable continentes
+fijar continentes a Arreglo#crearCon: {Europa}, {América}, {Asia}, {África}
+ParaCadaElemento: continentes, procedimiento: continente
+    Escribir: {~t es un continente.}#formatear: continente
+finprocedimiento
+}|
+
+@devuelve{Nada, el valor devuelto por @param{proc} es ignorado.}
+DOCUMENTA]
+procedimiento ParaCadaElemento: arr, proc
+    variable i
+    fijar i a 0
+    mientras i < arr#longitud
+        proc#\llamar\: (arr#en: i)
+        fijar i a i + 1
+    finmientras
+finprocedimiento
+
+[DOCUMENTA
+@brief{Aplica un procedimiento a cada elemento de un arreglo.}
+
+Llama a @param{proc} con cada elemento de @param{arr} y el índice de dicho en el
+arreglo, comenzando por el elemento número 0 y de manera secuencial.
+
+@params(
+@defparam(arr){Arreglo sobre el cual se iterará.}
+@defparam(proc){Procedimiento o función que se llamará sobre cada elemento de
+@param{arr} y sus índices.}.
+)
+
+@ejemplo|{
+variable letras
+fijar letras a ExpandirACarácteres: {abcdefghijkl}
+ParaCadaElementoConÍndice: letras, procedimiento: letra, ind
+    Escribir: {La letra ~t es la número ~t}#formatear: letra, (ind + 1)
+finprocedimiento
+}|
+
+@devuelve{Nada, el valor devuelto por @param{proc} es ignorado.}
+DOCUMENTA]
+procedimiento ParaCadaElementoConÍndice: arr, proc
+    variable i
+    fijar i a 0
+    mientras i < arr#longitud
+        proc#\llamar\: (arr#en: i), i
+        fijar i a i + 1
+    finmientras
+finprocedimiento
+
+[DOCUMENTA
+@brief{Devuelve su único paraḿetro sin cambios.}
+
+@params(@defparam(x){Parámetro a devolver.})
+
+@devuelve{@param{x}}
+DOCUMENTA]
+funcion Identidad: x
+    devolver x
+finfuncion
+
+[DOCUMENTA
+@brief{Reduce un arreglo.}
+
+Dada una función o procedimiento @param{func}, un elemento base @param{base} y
+un arreglo @param{arr}, devuelve el resultado de evaluar:
+
+@pdblock|{
+variables acc1, acc2, acc3, ..., accN
+fijar acc1 a func: base, (arr#en: 0)
+fijar acc2 a func: acc1, (arr#en: 1)
+fijar acc3 a func: acc2, (arr#en: 2)
+...
+fijar accN a func: accNm1, (arr#en: (arr#longitud - 1))
+devolver accN
+}|
+
+Por ejemplo:
+
+@ejemplo|{
+funcion Suma: ...arr
+    devolver Reducir: 0, funcion: acumulador, elemento
+        devolver acumulador + elemento
+    finfuncion, arr
+finfuncion
+
+necesitas (Suma: 4, 6, 5, 10) = 25
+
+funcion ConcatenarTextos: ...textos
+    devolver Reducir: {}, funcion: acumulador, elemento
+        devolver acumulador#concatenar: elemento
+    finfuncion, textos
+finfuncion
+
+necesitas (ConcatenarTextos: {hola}, { }, {mundo}, {!}) = {hola mundo!}
+}|
+
+@params(
+@defparam(base){El elemento inicial para la iteración.}
+@defparam(func){Función que será llamada con el valor acumulado y el elemento
+a procesar.}
+@defparam(arr){Arreglo a reducir.}
+)
+
+@devuelve{Resultado de la reducción, o @param{base} si el arreglo está vacío.}
+DOCUMENTA]
+funcion Reducir: base, func, arr
+    variable acc
+    fijar acc a base
+    ParaCadaElemento: arr, procedimiento: el
+        fijar acc a (func#\llamar\: acc, el)
+    finprocedimiento
+    devolver acc
+finfuncion
+
+[DOCUMENTA
+@brief{Transforma los elementos de un arreglo.}
+
+Aplica la función @param{func} a cada elemento del arreglo creando un nuevo
+arreglo con los resultados de esta.
+
+@ejemplo|{
+variables PARES, OBJETOS
+fijar PARES a Arreglo#crearCon: 0, 2, 4, 6
+fijar OBJETOS a Arreglo#crearCon: {Mesa}, {Casa}, {Silla}, {Caja}
+
+necesitas (Mapear: PARES, funcion: el
+    devolver el + 1
+finfuncion) = (Arreglo#crearCon: 1, 3, 5, 7)
+
+necesitas (Mapear: OBJETOS, funcion: el
+    devolver {Nada}
+finfuncion) = (Arreglo#crearCon: {Nada}, {Nada}, {Nada}, {Nada})
+}|
+
+@params(
+@defparam(arr){Arreglo a transformar.}
+@defparam(func){Función que se utilizará para transformar el arreglo.}
+)
+
+@devolver{Un nuevo arreglo con los resultados de aplicar @param{func} a
+cada elemento de @param{arr}.}
+DOCUMENTA]
+funcion Mapear: arr, func
+    variables nuevoArreglo, i
+    fijar nuevoArreglo a Arreglo#vacio
+    fijar i a 0
+    mientras i < arr#longitud
+        nuevoArreglo#agregarAlFinal: (func#\llamar\: (arr#en: i))
+        fijar i a i + 1
+    finmientras
+    devolver nuevoArreglo
+finfuncion
+
+[DOCUMENTA
+@brief{Determina si todos los elementos de @param{arr} son verdaderos.}
+
+@devuelve{@pd{VERDADERO} si todos los elementos de @param{arr} son
+@pd{VERDADERO}, @pd{FALSO} de otra forma.}
+DOCUMENTA]
+funcion Todos: arr
+    devolver Reducir: VERDADERO, (funcion: acc, el
+        devolver acc && el
+    finfuncion), arr
+finfuncion
+
+[DOCUMENTA
+@brief{Determina si algúnos de los elementos de @param{arr} son verdaderos.}
+
+@devuelve{@pd{VERDADERO} si al menos uno de los elementos de @param{arr} es
+@pd{VERDADERO}, @pd{FALSO} de otra forma.}
+DOCUMENTA]
+funcion Algún: arr
+    devolver Reducir: FALSO, (funcion: acc, el
+        devolver acc || el
+    finfuncion), arr
+finfuncion
+
+funcion DígitoAEntero: dígito
+    variables DÍGITOS, dig
+    fijar DÍGITOS a {0123456789}
+    ParaCadaElementoConÍndice: DÍGITOS, procedimiento: d, i
+        si d = dígito
+            fijar dig a i
+        finsi
+    finprocedimiento
+    devolver dig
+finfuncion
+
+[DOCUMENTA
+@brief{Eleva @param{base} a la @param{exponente} potencia.}
+
+@param{exponente} puede ser negativo, en cuyo caso devuelve
+@pd{1 / (Elevar: base, (0 - exponente))}.
+DOCUMENTA]
+funcion Elevar: base, exponente
+    funcion ElevarPositivo: base, exponente
+        variable acc
+        fijar acc a 1
+        mientras exponente > 0
+            fijar acc a acc * base
+            fijar exponente a exponente - 1
+        finmientras
+        devolver acc
+    finfuncion
+
+    si exponente < 0
+        devolver 1 / (ElevarPositivo: base, (0 - exponente))
+    sino
+        devolver ElevarPositivo: base, exponente
+    finsi
+finfuncion
+
+[DOCUMENTA
+@brief{Convierte un texto a un número entero.}
+
+La sintáxis de @param{texto} debe ser la misma de un entero de PseudoD.
+
+Únicamente funciona con números enteros.
+DOCUMENTA]
+funcion ConvertirAEntero: texto
+    variables n, resto, signo
+    fijar n a 0
+    fijar resto a texto
+    fijar signo a 1
+    si texto#longitud > 0
+        si (texto#en: 0) = {-}
+            fijar resto a texto#subTexto: 1, (texto#longitud - 1)
+            fijar signo a -1
+        finsi
+    finsi
+    ParaCadaElementoConÍndice: resto, procedimiento: el, i
+        variable exponente
+        fijar exponente a (texto#longitud - i) - 1
+        variable p
+        fijar p a Elevar: 10, exponente
+        fijar n a n + (p * DígitoAEntero: el)
+    finprocedimiento
+    devolver n * signo
+finfuncion
+
+[DOCUMENTA
+@brief{Determina si un texto puede ser convertido a un entero.}
+
+Si devuelve @pd{VERDADERO}, @param{texto} puede ser pasado a
+@pd{ConvertirAEntero}.
+DOCUMENTA]
+funcion EsNúmeroEntero: texto
+    variables esNum, rs
+    fijar esNum a VERDADERO
+    fijar rs a texto
+    si texto#longitud > 1
+        si (texto#en: 0) = {-}
+            fijar rs a texto#subTexto: 1, (texto#longitud - 1)
+        finsi
+    finsi
+    ParaCadaElemento: rs, procedimiento: el
+        si (DígitoAEntero: el) = NULO
+            fijar esNum a FALSO
+        finsi
+    finprocedimiento
+    devolver esNum
+finfuncion
+
+[DOCUMENTA
+@brief{Concatena todos los arreglos pasados.}
+
+@params(
+@defvarparam(arrs){Arreglos a concatenar.}
+)
+
+Por ejemplo:
+
+@ejemplo|{
+necesitas
+    (Concatenar:
+        (Arreglo#crearCon: 1, 2),
+        Arreglo#vacio,
+        (Arreglo#crearCon: 3, 4, 5))
+    = (Arreglo#crearCon: 1, 2, 3, 4, 5)
+
+necesitas Concatenar = Arreglo#vacio
+}|
+DOCUMENTA]
+funcion Concatenar: ...arrs
+    variable final
+    fijar final a Arreglo#vacio
+    ParaCadaElemento: arrs, procedimiento: arr
+        ParaCadaElemento: arr, procedimiento: el
+            final#agregarAlFinal: el
+        finprocedimiento
+    finprocedimiento
+    devolver final
+finfuncion
+
+[DOCUMENTA
+@brief{Construye un arreglo y lo concatena con otro.}
+
+La sintáxis de esta función es
+@pd{ArregloConFinal: valor0, valor1, ..., otroArreglo}. Devuelve un nuevo
+arreglo que contiene los valores especificados (@pd{valor0}, @pd{valor1},
+etc) al principio y todos los elementos de @pd{otroArreglo} al final.
+
+Por ejemplo:
+
+@ejemplo|{
+variables A, B
+fijar A a Arreglo#crearCon: 9, 8
+fijar B a Arreglo#vacio
+
+necesitas (ArregloConFinal: 1, 2, 3, A) = (Arreglo#crearCon: 1, 2, 3, 9, 8)
+necesitas (ArregloConFinal: A) = A
+necesitas (ArregloConFinal: 5, 7, B) = (Arreglo#crearCon: 5, 7)
+}|
+
+Nota como @pd{ArregloConFinal: valores..., Arreglo#vacio} es lo mismo que
+@pd{Arreglo#crearCon: valores...}.
+DOCUMENTA]
+funcion ArregloConFinal: ...valores
+    variable res
+    fijar res a Arreglo#vacio
+    ParaCadaElementoConÍndice: valores, procedimiento: el, i
+        si i = (valores#longitud - 1)
+            fijar res a Concatenar: res, el
+        sino
+            res#agregarAlFinal: el
+        finsi
+    finprocedimiento
+    devolver res
+finfuncion
+
+[DOCUMENTA
+@brief{Aplica una función a un grupo de valores.}
+
+@pd{Aplicar} es una función muy útil, pero a veces incómoda de usar:
+en diversas ocaciones podrías necesitas llamar a una función tanto con
+argumentos fijos como variables y utilizar @pd{Aplicar} en estas situaciones
+es muy ruidoso:
+
+@ejemplo|{
+variable otrosValores
+fijar otrosValores a Arreglo#crearCon: 1, 2, 3
+
+Aplicar: funciónOProcedimiento, (ArregloConFinal: {a}, {b}, {c}, otrosValores)
+}|
+
+En cambio, realizar la misma operación con @pd{Aplicar'} es mucho más sencillo:
+
+@ejemplo|{
+Aplicar': funciónOProcedimiento, {a}, {b}, {c}, otrosValores
+}|
+
+@params(
+@defparam(proc){Procedimiento o función a llamar.}
+@defparam(argsYFinal){Argumentos a pasar a @param{proc}. El último debe ser un
+arreglo cuyos elementos serán utilizados también como argumentos.}
+)
+
+@devuelve{Lo que @param{proc} devuelva al ser llamado.}
+DOCUMENTA]
+procedimiento Aplicar': proc, ...argsYFinal
+    devolver Aplicar: proc, (Aplicar: ArregloConFinal, argsYFinal)
+finprocedimiento
+
+[DOCUMENTA
+@brief{Como @pd{Aplicar'} pero "@italic{a la izquierda}".}
+
+Mientras que @pd{Aplicar'i: proc, a, b, c..., args} es equivalente a
+@pd{Aplicar: proc, (ArregloConFinal: a, b, c..., args)},
+@pd{Aplicar'i: proc, a, b, c..., args} es equivalente a
+@pd{Aplicar: proc, (Concatenar: args, (Arreglo#crearCon: a, b, c...))}.
+Nota como @pd{args} ahora aparece en el otro lado de los demás argumentos.
+DOCUMENTA]
+procedimiento Aplicar'i: proc, ...argsYFinal
+    variable argumentos
+    fijar argumentos a Arreglo#vacio
+    ParaCadaElementoConÍndice: argsYFinal, procedimiento: el, i
+        si i = (argsYFinal#longitud - 1)
+            fijar argumentos a Concatenar: el, argumentos
+        sino
+            argumentos#agregarAlFinal: el
+        finsi
+    finprocedimiento
+    devolver Aplicar: proc, argumentos
+finprocedimiento
+
+[DOCUMENTA
+@brief{Devuelve el resto de dividir @param{n} por @param{m}.}
+
+@params(
+@defparam(n){Numerador.}
+@defparam(m){Denominador.}
+)
+
+@devuelve{El resto de la división entera de @param{n} por @param{m}.}
+DOCUMENTA]
+funcion Resto: n, m
+    devolver n - (m * (n / m)#truncar)
+finfuncion
+
+[DOCUMENTA
+@brief{El valor absoluto de un número.}
+DOCUMENTA]
+funcion Abs: x
+    si x < 0
+        devolver 0 - x
+    sino
+        devolver x
+    finsi
+finfuncion
+
+[DOCUMENTA
+@brief{El módulo de @param{n} en @param{m}.}
+
+Equivalente a @pd{Abs: (Resto: n, m)}.
+DOCUMENTA]
+funcion Mod: n, m
+    devolver Abs: (Resto: n, m)
+finfuncion
+
+[DOCUMENTA
+@brief{Determina si @param{x} es par.}
+DOCUMENTA]
+funcion EsPar: x
+    devolver (Mod: x, 2) = 0
+finfuncion
+
+[DOCUMENTA
+@brief{Determina si @param{x} es impar.}
+DOCUMENTA]
+funcion EsImpar: x
+    devolver (Mod: x, 2) = 1
+finfuncion
+
+[DOCUMENTA
+@brief{Aplana los arreglos dentro de un arreglo, por un solo nivel.}
+
+Devuelve un nuevo arreglo con los mismos elementos que @param{arr}, solo que
+los elementos de @param{arr} que son también arreglos son tratados como sus
+elementos.
+
+Por ejemplo:
+
+@ejemplo|{
+variable ejemplo
+fijar ejemplo a
+    Arreglo#crearCon:
+        1, 2, (Arreglo#crearCon: 3, 4), 5,
+        (Arreglo#crearCon: 6, (Arreglo#crearCon: 7, 8), 9)
+necesitas
+    (Aplanar: ejemplo)
+    =
+    (Arreglo#crearCon: 1, 2, 3, 4, 5, 6, (Arreglo#crearCon: 7, 8), 9)
+}|
+DOCUMENTA]
+funcion Aplanar: arr
+    variable final
+    fijar final a Arreglo#vacio
+    ParaCadaElemento: arr, procedimiento: el
+        si EsInstancia: el, Arreglo
+            fijar final a Concatenar: final, el
+        sino
+            final#agregarAlFinal: el
+        finsi
+    finprocedimiento
+    devolver final
+finfuncion
+
+[DOCUMENTA
+@brief{Aplana todo un arreglo.}
+
+Similar a @pd{Aplanar} pero no se detiene al primer arreglo de profundidad.
+Esto efectivamente elimina todos los arreglos contenidos en @param{arr}.
+
+Siguiendo con el ejemplo anterior:
+
+@ejemplo|{
+variable ejemplo
+fijar ejemplo a
+    Arreglo#crearCon:
+        1, 2, (Arreglo#crearCon: 3, 4), 5,
+        (Arreglo#crearCon: 6, (Arreglo#crearCon: 7, 8), 9)
+necesitas
+    (AplanarTodo: ejemplo)
+    =
+    (Arreglo#crearCon: 1, 2, 3, 4, 5, 6, 7, 8, 9)
+}|
+DOCUMENTA]
+funcion AplanarTodo: arr
+    variable final
+    fijar final a Arreglo#vacio
+    ParaCadaElemento: arr, procedimiento: el
+        si EsInstancia: el, Arreglo
+            fijar final a Concatenar: final, (AplanarTodo: el)
+        sino
+            final#agregarAlFinal: el
+        finsi
+    finprocedimiento
+    devolver final
+finfuncion
+
+[DOCUMENTA
+@brief{Obtiene parte de un arreglo.}
+
+Obtiene todos los elementos de @param{arr} cuyos índices se encuentren entre
+@param{inicio} (inclusivo) y @param{final} (exclusivo).
+
+Tanto @param{inicio} como @param{final} deben ser enteros, sin embargo,
+ciertos valores normalmente prohibidos (es decir, que no son índices válidos)
+son permitidos:
+
+@itemlist(
+@item{Valores negativos son contados desde @pd{arr#longitud + 1}. Por
+ejemplo, @pd{-1} es @pd{arr#longitud} y @pd{-3} es @pd{arr#longitud - 2}.}
+@item{Valores positivos pero mayores que @pd{arr#longitud} son contados desde
+@pd{0}. Por ejemplo: @pd{5} en un arreglo de 3 elementos es convertido a
+@pd{2}.}
+)
+DOCUMENTA]
+funcion PedazoDeArreglo: arr, inicio, final
+    funcion AdaptarÍndice: idx
+        mientras idx < 0
+            fijar idx a arr#longitud + idx + 1
+        finmientras
+        mientras idx > arr#longitud
+            fijar idx a idx - arr#longitud
+        finmientras
+        devolver idx
+    finfuncion
+
+    variables res, idxInicio, idxFinal, i
+    fijar res a Arreglo#vacio
+    fijar idxInicio a AdaptarÍndice: inicio
+    fijar idxFinal a AdaptarÍndice: final
+
+    necesitas arr#longitud >= idxFinal
+
+    fijar i a idxInicio
+    mientras i < idxFinal
+        res#agregarAlFinal: arr#en: i
+        fijar i a i + 1
+    finmientras
+
+    devolver res
+finfuncion
+
+[DOCUMENTA
+@brief{Devuelve el último elemento de un arreglo.}
+
+El arreglo @param{arr} no debe estar vacío.
+DOCUMENTA]
+funcion ÚltimoElemento: arr
+    necesitas arr#longitud > 0
+    devolver arr#en: (arr#longitud - 1)
+finfuncion
+
+[DOCUMENTA
+@brief{Determina si @param{val} es @pd{NULO}.}
+DOCUMENTA]
+funcion EsNulo: val
+    devolver ((TipoDe: val) = TipoNulo) && (val = NULO)
+finfuncion
+
+[DOCUMENTA
+@brief{Devuelve el mayor número.}
+
+En el caso de un único argumento, @pd{Max} devuelve dicho valor:
+
+@ejemplo|{
+necesitas (Max: 2) = 2
+}|
+
+En el caso de dos o más argumentos devuelve el mayor de todos:
+
+@ejemplo|{
+necesitas (Max: 2, 5, 3, 56, 2, 102, 5, -6) = 102
+}|
+DOCUMENTA]
+funcion Max: x, ...vals
+    necesitas vals#longitud > 0
+    variable max
+    fijar max a x
+    ParaCadaElemento: vals, procedimiento: v
+        si v > max
+            fijar max a v
+        finsi
+    finprocedimiento
+    devolver max
+finfuncion
+
+[DOCUMENTA
+@brief{Devuelve el menor número.}
+
+En el caso de un único argumento, @pd{Min} devuelve dicho valor:
+
+@ejemplo|{
+necesitas (Min: 2) = 2
+}|
+
+En el caso de dos o más argumentos devuelve el menor de todos:
+
+@ejemplo|{
+necesitas (Min: 2, 5, 3, 56, 2, 102, 5, -6) = -6
+}|
+DOCUMENTA]
+funcion Min: x, ...vals
+    necesitas vals#longitud > 0
+    variable min
+    fijar min a x
+    ParaCadaElemento: vals, procedimiento: v
+        si v < min
+            fijar min a v
+        finsi
+    finprocedimiento
+    devolver min
+finfuncion
+
+[DOCUMENTA
+@brief{Falla indicando que un método no fue implementado.}
+
+Este procedimiento lanza un error que indica que un método, función o
+procedimiento no fueron implementados. Este procedimiento solo debería
+ser utilizado durante el desarrollo.
+
+Para indicar que un método de una clase abstracta debe ser implementado
+por sus subclases utiliza @pd{MétodoAbstracto}.
+
+Un ejemplo: supongamos que estámos implementando actualmente nuestra
+propia subclase de @pd{PuertoDeLectura} llamada @code{PuertoSimple}.
+@pd{PuertoDeLectura} posee dós métodos: @code{leerCarácter} y
+@code{desleerCarácter}. Estámos escribiendo y probando @code{leerCarácter}
+y queremos terminar @code{desleerCarácter} después, sin embargo, dejar el
+método vacío podría ser problemático si luego por accidente terminamos
+llamandolo: únicamente obtendríamos @pd{NULO} y romperíamos el contráto
+del método. Para prevenir que lo llamemos por accidente, implementamos
+temporalmente @code{desleerCarácter} de la siguiente manera:
+
+@codeblock|{
+metodo PuertoSimple#desleerCarácter
+    NoImplementado
+finmetodo
+}|
+
+Ahora, si lo llamamos por accidente un error será lanzado.
+
+Luego, cuando terminemos de escribir @code{leerCarácter} podemos volver
+a @code{desleerCarácter}, eliminar el @pd{NoImplementado} y escribir una
+implementación real.
+DOCUMENTA]
+procedimiento NoImplementado
+    __FallarConMensaje: {No implementado}
+finprocedimiento
+
+[DOCUMENTA
+@brief{Declara un método como abstracto.}
+
+En una clase abstracta, todos los métodos deben poseer igual una
+implementación. Sin embargo, parte del propósito de las clases abstractas
+es justamente indicar que algunos métodos deben ser implementados por las
+subclases. Estos "métodos abstractos" son implementados de la siguiente
+manera:
+
+@codeblock|{
+metodo MiClaseAbstracta#miMétodoAbstracto: A, B, C
+    MétodoAbstracto
+finmetodo
+}|
+
+El procedimiento @pd{MétodoAbstracto} lanza un error que indica que el método
+que se intentó llamar es abstracto.
+DOCUMENTA]
+procedimiento MétodoAbstracto
+    __FallarConMensaje: {Método abstracto}
+finprocedimiento

@@ -1,0 +1,73 @@
+utilizar bepd/builtinsImpl
+
+funcion TextoContiene: texto, parte
+    devolver no ((texto#buscar: 0, parte) = NULO)
+finfuncion
+
+funcion Partir': texto, separador, opciones
+    variables siguienteÍndice, partes, índice, comoPerl, sinVacíos, parte, parteAnterior
+
+    fijar partes a Arreglo#vacio
+    fijar índice a 0
+    fijar siguienteÍndice a texto#buscar: 0, separador
+    fijar comoPerl a TextoContiene: opciones, {p}
+    fijar sinVacíos a TextoContiene: opciones, {-}
+
+    necesitas no (comoPerl && sinVacío)
+
+    procedimiento agregarParte: parte
+        si comoPerl && no ((parte = {}) && (parteAnterior = parte))
+            partes#agregarAlFinal: parte
+        finsi
+        si sinVacíos && no (parte = {})
+            partes#agregarAlFinal: parte
+        finsi
+        si (no sinVacíos) && (no comoPerl)
+            partes#agregarAlFinal: parte
+        finsi
+    finprocedimiento
+
+    mientras no (siguienteÍndice = NULO)
+        fijar parte a texto#parteDelTexto: índice, siguienteÍndice
+        agregarParte: parte
+        fijar parteAnterior a parte
+        fijar índice a siguienteÍndice + separador#longitud
+        fijar siguienteÍndice a texto#buscar: índice, separador
+    finmientras
+
+    agregarParte: (texto#subTexto: índice, texto#longitud)
+
+    devolver partes
+finfuncion
+
+funcion Partir: texto, separador
+    devolver Partir': texto, separador, {}
+finfuncion
+
+funcion PartirComoPerl: texto, separador
+    devolver Partir': texto, separador, {p}
+finfuncion
+
+funcion PartirSinVacíos: texto, separador
+    devolver Partir': texto, separador, {-}
+finfuncion
+
+funcion Unir: textos, separador
+    variable res
+    fijar res a Reducir: NULO, funcion: acc, el
+        variable sep
+        si acc = NULO
+            fijar sep a {}
+            fijar acc a {}
+        sino
+            fijar sep a separador
+        finsi
+        devolver {~t~t~t}#formatear: acc, sep, el
+    finfuncion, textos
+
+    si EsNulo: res
+        devolver {}
+    sino
+        devolver res
+    finsi
+finfuncion

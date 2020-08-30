@@ -1,0 +1,596 @@
+utilizar bepd/builtins
+utilizar bepd/utilidades/texto
+
+utilizar tokenizador como Tok
+utilizar parser como Parser
+
+clase CaminaNodos
+    metodo visitar: nodo
+    metodo visitarVariable: nodo
+    metodo visitarFijar: nodo
+    metodo visitarEscribir: nodo
+    metodo visitarNl: nodo
+    metodo visitarClase: nodo
+    metodo visitarDeclaraciónDeAtributosEnClase: nodo
+    metodo visitarDeclaraciónDeMétodoEnClase: nodo
+    metodo visitarImplementa: nodo
+    metodo visitarDefineAtributosEnClase: nodo
+    metodo visitarDefineMétodoEnClase: nodo
+    metodo visitarFunción: nodo
+    metodo visitarIdentificador: nodo
+    metodo visitarNúmeroLiteral: nodo
+    metodo visitarTextoLiteral: nodo
+    metodo visitarLlamarProcedimiento: nodo
+    metodo visitarEnviarMensaje: nodo
+    metodo visitarOperador: nodo
+    metodo visitarNoLlamar: nodo
+    metodo visitarAutoejecutar: nodo
+    metodo visitarFunciónAnónima: nodo
+finclase
+
+metodo CaminaNodos#visitar: nodo
+    si EsInstancia: nodo, Parser#NodoVariable
+        devolver yo#visitarVariable: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoFijar
+        devolver yo#visitarFijar: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoEscribir
+        devolver yo#visitarEscribir: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoNl
+        devolver yo#visitarNl: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoClase
+        devolver yo#visitarClase: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoDeclaraciónDeAtributosEnClase
+        devolver yo#visitarDeclaraciónDeAtributosEnClase: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoDeclaraciónDeMétodoEnClase
+        devolver yo#visitarDeclaraciónDeMétodoEnClase: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoImplementa
+        devolver yo#visitarImplementa: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoDefineAtributosEnClase
+        devolver yo#visitarDefineAtributosEnClase: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoDefineMétodoEnClase
+        devolver yo#visitarDefineMétodoEnClase: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoFunción
+        devolver yo#visitarFunción: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoIdentificador
+        devolver yo#visitarIdentificador: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoNumeroLiteral
+        devolver yo#visitarNúmeroLiteral: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoTextoLiteral
+        devolver yo#visitarTextoLiteral: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoLlamarProcedimiento
+        devolver yo#visitarLlamarProcedimiento: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoEnviarMensaje
+        devolver yo#visitarEnviarMensaje: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoOperador
+        devolver yo#visitarOperador: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoNoLlamar
+        devolver yo#visitarNoLlamar: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoAutoejecutar
+        devolver yo#visitarAutoejecutar: nodo
+    finsi
+    si EsInstancia: nodo, Parser#NodoFunciónAnónima
+        devolver yo#visitarFunciónAnónima: nodo
+    finsi
+    [ Nunca se llega hasta aquí. ]
+    Escribir: ({#visitar no implementado para ~t}#formatear: (TipoDe: nodo))
+    necesitas FALSO
+finmetodo
+
+metodo CaminaNodos#visitarVariable: nodo finmetodo
+metodo CaminaNodos#visitarFijar: nodo finmetodo
+metodo CaminaNodos#visitarEscribir: nodo finmetodo
+metodo CaminaNodos#visitarNl: nodo finmetodo
+metodo CaminaNodos#visitarClase: nodo finmetodo
+metodo CaminaNodos#visitarDeclaraciónDeAtributosEnClase: nodo finmetodo
+metodo CaminaNodos#visitarDeclaraciónDeMétodoEnClase: nodo finmetodo
+metodo CaminaNodos#visitarImplementa: nodo finmetodo
+metodo CaminaNodos#visitarDefineAtributosEnClase: nodo finmetodo
+metodo CaminaNodos#visitarDefineMétodoEnClase: nodo finmetodo
+metodo CaminaNodos#visitarFunción: nodo finmetodo
+metodo CaminaNodos#visitarIdentificador: nodo finmetodo
+metodo CaminaNodos#visitarNúmeroLiteral: nodo finmetodo
+metodo CaminaNodos#visitarTextoLiteral: nodo finmetodo
+metodo CaminaNodos#visitarLlamarProcedimiento: nodo finmetodo
+metodo CaminaNodos#visitarEnviarMensaje: nodo finmetodo
+metodo CaminaNodos#visitarOperador: nodo finmetodo
+metodo CaminaNodos#visitarNoLlamar: nodo finmetodo
+metodo CaminaNodos#visitarAutoejecutar: nodo finmetodo
+metodo CaminaNodos#visitarFunciónAnónima: nodo finmetodo
+
+clase Ámbito
+    metodo estatico vacío
+    metodo estatico desdeArreglo: lst
+    metodo estatico conValores: ...vals
+
+    atributo ámbitoPadre
+
+    metodo inicializar
+
+    metodo agregar: nombre, valor
+    metodo fijarValor: nombre, valor
+    metodo eliminar: nombre
+    metodo obtener: nombre
+
+    metodo crearSubámbito
+finclase
+
+atributos Ámbito#_mapeo
+
+metodo estatico Ámbito#vacío
+    devolver yo#crear
+finmetodo
+
+metodo estatico Ámbito#desdeArreglo: lst
+    variable inst
+    fijar inst a yo#crear
+    fijar inst#_mapeo a Diccionario#desdeArreglo: lst
+    devolver inst
+finmetodo
+
+metodo estatico Ámbito#conValores: ...vals
+    variable inst
+    fijar inst a yo#crear
+    fijar inst#_mapeo a __EnviarMensaje: Diccionario, {desdeArreglo}, vals
+    devolver inst
+finmetodo
+
+metodo Ámbito#inicializar
+    fijar yo#_mapeo a Diccionario#vacío
+    fijar yo#ámbitoPadre a NULO
+finmetodo
+
+metodo Ámbito#agregar: nombre, valor
+    yo#_mapeo#fijarEn: nombre, valor
+finmetodo
+
+metodo Ámbito#fijarValor: nombre, valor
+    yo#_mapeo#fijarEn: nombre, valor
+finmetodo
+
+metodo Ámbito#eliminar: nombre
+    yo#_mapeo#eliminar: nombre
+finmetodo
+
+metodo Ámbito#obtener: nombre
+    si yo#_mapeo#contiene: nombre
+        devolver yo#_mapeo#en: nombre
+    sino
+        si EsNulo: yo#ámbitoPadre
+            __FallarConMensaje: ({El ámbito no contiene el nombre ~T}#formatear: nombre)
+        sino
+            devolver yo#ámbitoPadre#obtener: nombre
+        finsi
+    finsi
+finmetodo
+
+metodo Ámbito#crearSubámbito
+    variable sub
+    fijar sub a Ámbito#vacío
+    fijar sub#ámbitoPadre a yo
+    devolver sub
+finmetodo
+
+clase LlaveResoluciónDeNombres
+    metodo comoTexto
+finclase
+
+metodo LlaveResoluciónDeNombres#comoTexto
+    devolver {<LLAVE_RESOLUCIÓN_DE_NOMBRES>}
+finmetodo
+
+variable LLAVE_RESOLUCIÓN_DE_NOMBRES
+fijar LLAVE_RESOLUCIÓN_DE_NOMBRES a LlaveResoluciónDeNombres#crear
+
+variable GID_NUM
+fijar GID_NUM a 0
+
+procedimiento GenerarIdDeNombre
+    fijar GID_NUM a GID_NUM + 1
+    devolver GID_NUM
+finprocedimiento
+
+procedimiento FijarNombreResuelto: nodo, id
+    nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResuelto}, id
+finprocedimiento
+
+clase ResoluciónDeNombresCNImpl hereda CaminaNodos
+    metodo inicializar
+finclase
+
+atributo ResoluciónDeNombresCNImpl#_nombres
+
+metodo ResoluciónDeNombresCNImpl#inicializar
+    fijar yo#_nombres a Ámbito#vacío
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#crearSubámbito
+    variable sub
+    fijar sub a ResoluciónDeNombresCNImpl#crear
+    fijar sub#_nombres#ámbitoPadre a yo#_nombres
+    devolver sub
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarVariable: nodo
+    ParaCadaElemento: nodo#nombres, procedimiento: var
+        variable id
+        fijar id a GenerarIdDeNombre
+        yo#_nombres#agregar: var#nombre, id
+        FijarNombreResuelto: var, id
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarFijar: nodo
+    yo#visitar: nodo#objetivo
+    yo#visitar: nodo#valor
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarEscribir: nodo
+    yo#visitar: nodo#valor
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarNl: nodo
+    [ Nada que hacer. ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarClase: nodo
+    procedimiento ResolverTodoEnLista: ls
+        ParaCadaElemento: ls, procedimiento: nodo
+            FijarNombreResuelto: nodo, (yo#_nombres#obtener: nodo#nombre)
+        finprocedimiento
+    finprocedimiento
+
+    variable nomclsid
+    fijar nomclsid a GenerarIdDeNombre
+    yo#_nombres#agregar: nodo#nombre#nombre, nomclsid
+    FijarNombreResuelto: nodo#nombre, nomclsid
+
+    ResolverTodoEnLista: (Arreglo#crearCon: nodo#claseBase)
+    ResolverTodoEnLista: nodo#extiendeClases
+    ResolverTodoEnLista: nodo#implementaClases
+
+    ParaCadaElemento: nodo#declaraciones, procedimiento: declr
+        yo#visitar: declr
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarDeclaraciónDeAtributosEnClase: nodo
+    [ Nada que hacer. ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarDeclaraciónDeMétodoEnClase: nodo
+    [ En teoría podríamos marcar los parámetros de la declaración, pero ya que
+    nunca habrán usos de estos no lo veo mucho sentido. Por esto, no le voy a
+    agregar el atributo nombreResuelto a los parámetros. ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarImplementa: nodo
+    FijarNombreResuelto: nodo#nombre, (yo#_nombres#obtener: yo#nombre#nombre)
+
+    ParaCadaElemento: nodo#definiciones, procedimiento: declr
+        yo#visitar: declr
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarDefineAtributosEnClase: nodo
+    [ De nuevo, nada que hacer. ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarDefineMétodoEnClase: nodo
+    variable rdn
+    fijar rdn a yo#crearSubámbito
+
+    ParaCadaElemento: nodo#parámetros, procedimiento: param
+        variable id
+        fijar id a GenerarIdDeNombre
+        rdn#_nombres#agregar: param#nombre, id
+        FijarNombreResuelto: param, id
+    finprocedimiento
+
+    ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
+        rdn#visitar: stmt
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarFunción: nodo
+    variable rdn
+    fijar rdn a yo#crearSubámbito
+
+    variable idfunc
+    fijar idfunc a GenerarIdDeNombre
+    FijarNombreResuelto: nodo#nombre, idfunc
+    yo#_nombres#agregar: nodo#nombre#nombre, idfunc
+    rdn#_nombres#agregar: nodo#nombre#nombre, idfunc
+
+    ParaCadaElemento: nodo#parámetros, procedimiento: param
+        variable id
+        fijar id a GenerarIdDeNombre
+        rdn#_nombres#agregar: param#nombre, id
+        FijarNombreResuelto: param, id
+    finprocedimiento
+
+    ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
+        rdn#visitar: stmt
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarIdentificador: nodo
+    FijarNombreResuelto: nodo, (yo#_nombres#obtener: nodo#nombre)
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarNúmeroLiteral: nodo
+    [ Nada que hacer... ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarTextoLiteral: nodo
+    [ Nada que hacer... ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarLlamarProcedimiento: nodo
+    yo#visitar: nodo#proc
+    ParaCadaElemento: nodo#argumentos, procedimiento: arg
+        yo#visitar: arg
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarEnviarMensaje: nodo
+    yo#visitar: nodo#objeto
+    ParaCadaElemento: nodo#argumentos, procedimiento: arg
+        yo#visitar: arg
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarOperador: nodo
+    yo#visitar: nodo#lhs
+    yo#visitar: nodo#rhs
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarNoLlamar: nodo
+    yo#visitar: nodo#base
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarAutoejecutar: nodo
+    yo#visitar: nodo#expr
+    ParaCadaElemento: nodo#argumentos, procedimiento: arg
+        yo#visitar: arg
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarFunciónAnónima: nodo
+    variable rdn
+    fijar rdn a yo#crearSubámbito
+
+    ParaCadaElemento: nodo#parámetros, procedimiento: param
+        variable id
+        fijar id a GenerarIdDeNombre
+        rdn#_nombres#agregar: param#nombre, id
+        FijarNombreResuelto: param, id
+    finprocedimiento
+
+    si nodo#esMétodo
+        variable id
+        fijar id a GenerarIdDeNombre
+        rdn#_nombres#agregar: {yo}, id
+        FijarNombreResuelto: nodo, id
+    finsi
+
+    ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
+        rdn#visitar: stmt
+    finprocedimiento
+finmetodo
+
+procedimiento ResolverNombres: ast
+    variable cn
+    fijar cn a ResoluciónDeNombresCNImpl#crear
+    ParaCadaElemento: ast, procedimiento: nodo
+        cn#visitar: nodo
+    finprocedimiento
+finprocedimiento
+
+funcion EscaparParaLua: texto
+    variable res
+    fijar res a {"} [ " ]
+    ParaCadaElemento: texto, procedimiento: car
+        si car = {"} [ " ]
+            fijar res a res#concatenar: {\"} [ " ]
+        sino
+            si car = {~%}#formatear
+                fijar res a res#concatenar: {~%}#formatear
+            sino
+                fijar res a res#concatenar: car
+            finsi
+        finsi
+    finprocedimiento
+    devolver res#concatenar: {"} [ " ]
+finfuncion
+
+clase CompiladorSimpleALua hereda CaminaNodos
+    metodo inicializar
+finclase
+
+atributo CompiladorSimpleALua#_ámbito
+
+metodo CompiladorSimpleALua#inicializar
+    fijar yo#_ámbito a Ámbito#vacío
+finmetodo
+
+funcion NombreResueltoDe: id
+    devolver id#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResuelto}
+finfuncion
+
+funcion IdentificadorDe: id
+    devolver {_}#concatenar: (NombreResueltoDe: id)#comoTexto
+finfuncion
+
+metodo CompiladorSimpleALua#visitarVariable: nodo
+    devolver {local ~t}#formatear: (Unir: (Mapear: nodo#nombres, &IdentificadorDe), {, })
+finmetodo
+
+metodo CompiladorSimpleALua#visitarFijar: nodo
+    necesitas EsInstancia: nodo#objetivo, Parser#NodoIdentificador
+    variable obj, expr
+    fijar obj a IdentificadorDe: nodo#objetivo
+    fijar expr a yo#visitar: nodo#valor
+    devolver {~t = ~t}#formatear: obj, expr
+finmetodo
+
+metodo CompiladorSimpleALua#visitarEscribir: nodo
+    devolver {rt.escribir(~t)}#formatear: (yo#visitar: nodo#valor)
+finmetodo
+
+metodo CompiladorSimpleALua#visitarNl: nodo
+    devolver {rt.nl()}
+finmetodo
+
+metodo CompiladorSimpleALua#visitarClase: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarDeclaraciónDeAtributosEnClase: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarDeclaraciónDeMétodoEnClase: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarImplementa: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarDefineAtributosEnClase: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarDefineMétodoEnClase: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueldoDeYo, parámetros, cuerpo
+    variables cods, params, met
+    fijar cods a Arreglo#vacio
+
+    fijar params a Unir: (Mapear: parámetros, &IdentificadorDe), {, }
+
+    si no EsNulo: nombreResueldoDeYo
+        fijar met a {_~t}#formatear: nombreResueldoDeYo
+        si parámetros#longitud > 0
+            fijar params a {, }#concatenar: params
+        finsi
+    sino
+        fijar met a {}
+    finsi
+    cods#agregarAlFinal: ({function(~t~t)}#formatear: met, params)
+
+    ParaCadaElemento: cuerpo, procedimiento: stmt
+        cods#agregarAlFinal: (yo#visitar: stmt)
+    finprocedimiento
+
+    cods#agregarAlFinal: {end}
+
+    devolver Unir: cods, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#visitarFunción: nodo
+    variables cods, id
+    fijar id a IdentificadorDe: nodo#nombre
+    fijar cods a Arreglo#vacio
+    cods#agregarAlFinal: ({local ~t}#formatear: id)
+    cods#agregarAlFinal: ({~t = ~t}#formatear:
+        id,
+        (yo#expresiónDeFunción: NULO, nodo#parámetros, nodo#cuerpo)
+    )
+    devolver Unir: cods, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#visitarIdentificador: nodo
+    devolver IdentificadorDe: nodo
+finmetodo
+
+metodo CompiladorSimpleALua#visitarNúmeroLiteral: nodo
+    devolver nodo#valor
+finmetodo
+
+metodo CompiladorSimpleALua#visitarTextoLiteral: nodo
+    devolver EscaparParaLua: nodo#valor
+finmetodo
+
+metodo CompiladorSimpleALua#enviarMensaje: objeto, mensaje, argumentos
+    variables args, argsComoTexto
+    fijar args a Mapear: argumentos, funcion: arg
+        devolver yo#visitar: arg
+    finfuncion
+    si args#longitud = 0
+        fijar argsComoTexto a {}
+    sino
+        fijar argsComoTexto a {, }#concatenar: (Unir: args, {, })
+    finsi
+    devolver {rt.enviarMensaje(~t, ~t~t)}#formatear: objeto, (EscaparParaLua: mensaje), argsComoTexto
+finmetodo
+
+metodo CompiladorSimpleALua#visitarLlamarProcedimiento: nodo
+    devolver yo#enviarMensaje: (IdentificadorDe: nodo#proc), {llamar}, nodo#argumentos
+finmetodo
+
+metodo CompiladorSimpleALua#visitarEnviarMensaje: nodo
+    devolver yo#enviarMensaje: (yo#visitar: nodo#objeto), nodo#mensaje, nodo#argumentos
+finmetodo
+
+metodo CompiladorSimpleALua#visitarOperador: nodo
+    devolver {rt.enviarMensaje(~t, ~t, ~t)}#formatear:
+        (yo#visitar: nodo#lhs),
+        (EscaparParaLua: ({operador_~t}#formatear: nodo#op#op)),
+        (yo#visitar: nodo#rhs)
+finmetodo
+
+metodo CompiladorSimpleALua#visitarNoLlamar: nodo
+    variables cod
+    si nodo#mensajes#longitud > 0
+        fijar cod a Reducir: (yo#visitar: nodo#base), funcion: acc, mensaje
+            devolver {rt.enviarMensaje(~t, ~t)}#formatear: acc, (EscaparParaLua: mensaje)
+        finfuncion, (PedazoDeArreglo: nodo#mensajes, 0, -1)
+        fijar cod a {rt.enviarMensaje(~t, ~t, ...)}#formatear: cod, (ÚltimoElemento: nodo#mensajes)
+    sino
+        fijar cod a {rt.enviarMensaje(~t, "llamar", ...)}#formatear: (yo#visitar: nodo#base)
+    finsi
+    devolver {function(...) return ~t end}#formatear: cod
+finmetodo
+
+metodo CompiladorSimpleALua#visitarAutoejecutar: nodo
+    devolver yo#enviarMensaje: (yo#visitar: nodo#expr), {llamar}, nodo#argumentos
+finmetodo
+
+metodo CompiladorSimpleALua#visitarFunciónAnónima: nodo
+    variable nrdyo
+    si nodo#esMétodo
+        fijar nrdyo a nodo#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
+    sino
+        fijar nrdyo a NULO
+    finsi
+    devolver yo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
+finmetodo
+
+funcion CompilarALua: ast
+    variable comp
+    fijar comp a CompiladorSimpleALua#crear
+    devolver Unir: (Mapear: ast, funcion: nodo
+        devolver comp#visitar: nodo
+    finfuncion), {~%}#formatear
+finfuncion

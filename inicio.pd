@@ -1,0 +1,18 @@
+utilizar bepd/builtins
+utilizar tokenizador como Tokenizador
+utilizar parser como Parser
+utilizar compilador como Compilador
+
+variable ast
+fijar ast a (Parser#CrearAST: «
+escribir "hola mundo"#subTexto: 1, 2
+nl
+», Parser#grInstrucción)
+
+Escribir: ast
+Escribir: {fin1}
+Compilador#ResolverNombres: ast
+Escribir: {fin2}
+ParaCadaElemento: ast, &Escribir
+Escribir: {es}
+Escribir: (Compilador#CompilarALua: ast)

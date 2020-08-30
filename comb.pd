@@ -1,0 +1,392 @@
+utilizar bepd/builtins
+utilizar tokenizador como Tokenizador
+utilizar puerto como Puerto
+
+clase Tokens
+    metodo estatico desdeTokenizador: tokenizador
+
+    metodo leerToken
+    metodo avanzar
+    metodo retroceder
+    metodo puntoActual
+    metodo irAPunto: punto
+finclase
+
+atributos Tokens#tokenizador, Tokens#tokens, Tokens#punto
+
+metodo estatico Tokens#desdeTokenizador: tokenizador
+    devolver clonar yo#_crear con
+        tokenizador: tokenizador
+        tokens: Arreglo#vacio
+        punto: 0
+    finclonar
+finmetodo
+
+metodo Tokens#estoyAlFinal
+    devolver yo#punto >= yo#tokens#longitud
+finmetodo
+
+metodo Tokens#leerToken
+    variable encontreEOF
+    fijar encontreEOF a FALSO
+    mientras (no encontreEOF) && yo#estoyAlFinal
+        variable nuevoTk
+        fijar nuevoTk a yo#tokenizador#tokenizarSiguiente
+        si nuevoTk = Puerto#EOF
+            fijar encontreEOF a VERDADERO
+        sino
+            yo#tokens#agregarAlFinal: nuevoTk
+        finsi
+    finmientras
+    si encontreEOF
+        fijar yo#punto a yo#tokens#longitud
+        devolver Puerto#EOF
+    sino
+        variable tk
+        fijar tk a yo#tokens#en: yo#punto
+        fijar yo#punto a yo#punto + 1
+        devolver tk
+    finsi
+finmetodo
+
+metodo Tokens#avanzar
+    yo#leerToken
+finmetodo
+
+metodo Tokens#retroceder
+    fijar yo#punto a yo#punto - 1
+    si yo#punto < 0
+        fijar yo#punto a 0
+    finsi
+finmetodo
+
+metodo Tokens#puntoActual
+    devolver yo#punto
+finmetodo
+
+metodo Tokens#irAPunto: punto
+    fijar yo#punto a punto
+finmetodo
+
+clase Combinador
+    metodo parsear: tokens
+finclase
+
+clase CombToken hereda Combinador
+    atributos predicado, generarMensajeDeError
+    metodo parsear: tokens
+finclase
+
+metodo CombToken#parsear: tokens
+    variables posAct, tk
+    fijar posAct a tokens#puntoActual
+    fijar tk a tokens#leerToken
+    si no yo#predicado#\llamar\: tk
+        devolver Resultado#error: (yo#generarMensajeDeError#\llamar\: tk)
+    finsi
+    devolver Resultado#ok: tk
+finmetodo
+
+funcion Token: predicado, generarMensajeDeError
+    variable comb
+    fijar comb a CombToken#_crear
+    fijar comb#predicado a predicado
+    fijar comb#generarMensajeDeError a generarMensajeDeError
+    devolver comb
+finfuncion
+
+funcion PalabraClave: pal
+    funcion pred: tk
+        si no EsInstancia: tk, Tokenizador#TokenPalabraClave
+            devolver FALSO
+        sino
+            devolver tk#palabraClave = pal
+        finsi
+    finfuncion
+    funcion genMensjError: tk
+        devolver {Se esperaba la palabra clave [~t] pero se obtuvo ~t}#formatear: pal, tk
+    finfuncion
+    devolver Token: &pred, &genMensjError
+finfuncion
+
+funcion Identificador
+    funcion pred: tk
+        devolver EsInstancia: tk, Tokenizador#TokenIdentificador
+    finfuncion
+    funcion genMensjError: tk
+        devolver {Se esperaba un identificador pero se obtuvo ~t}#formatear: tk
+    finfuncion
+    devolver Token: &pred, &genMensjError
+finfuncion
+
+funcion NumeroLiteral
+    funcion pred: tk
+        devolver EsInstancia: tk, Tokenizador#TokenNumero
+    finfuncion
+    funcion genMensjError: tk
+        devolver {Se esperaba un número pero se obtuvo ~t}#formatear: tk
+    finfuncion
+    devolver Token: &pred, &genMensjError
+finfuncion
+
+funcion Operador
+    funcion pred: tk
+        devolver EsInstancia: tk, Tokenizador#TokenOperador
+    finfuncion
+    funcion genMensjError: tk
+        devolver {Se esperaba un operador pero se obtuvo ~t}#formatear: tk
+    finfuncion
+    devolver Token: &pred, &genMensjError
+finfuncion
+
+funcion TextoLiteral
+    funcion pred: tk
+        devolver EsInstancia: tk, Tokenizador#TokenTexto
+    finfuncion
+    funcion genMensjError: tk
+        devolver {Se esperaba un texto literal pero se obtuvo ~t}#formatear: tk
+    finfuncion
+    devolver Token: &pred, &genMensjError
+finfuncion
+
+clase CombComponer hereda Combinador
+    atributo combinadores
+    metodo parsear: tokens
+finclase
+
+metodo CombComponer#parsear: tokens
+    variables posAct, tk, res
+    fijar posAct a tokens#puntoActual
+    fijar res a Resultado#ok: Arreglo#vacio
+    ParaCadaElemento: yo#combinadores, procedimiento: comb
+        si res#esError devolver NULO finsi
+        variable r
+        fijar r a comb#parsear: tokens
+        si r#esError
+            fijar res#error a r#error
+        sino
+            res#valor#agregarAlFinal: r#valor
+        finsi
+    finprocedimiento
+    devolver res
+finmetodo
+
+funcion Componer: combs
+    variable comb
+    fijar comb a CombComponer#_crear
+    fijar comb#combinadores a combs
+    devolver comb
+finfuncion
+
+clase CombElegir hereda Combinador
+    atributo combinadores
+    metodo parsear: tokens
+finclase
+
+metodo CombElegir#parsear: tokens
+    variables posIni, tk, res, encajoCombinador
+    fijar posIni a tokens#puntoActual
+    fijar res a Resultado#error: {Ninguno de los combinadores tuvo éxito}
+    fijar encajoCombinador a FALSO
+    ParaCadaElemento: yo#combinadores, procedimiento: comb
+        si encajoCombinador devolver NULO finsi
+        variables r, posFinal
+        fijar r a comb#parsear: tokens
+        fijar posFinal a tokens#puntoActual
+        si r#esError && (posIni = posFinal)
+            [ Backtracking solo es utilizado si el combinador no consumio tokens ]
+            tokens#irAPunto: posIni
+        sino
+            fijar res a r
+            fijar encajoCombinador a VERDADERO
+        finsi
+    finprocedimiento
+    devolver res
+finmetodo
+
+funcion Elegir: combs
+    variable comb
+    fijar comb a CombElegir#_crear
+    fijar comb#combinadores a combs
+    devolver comb
+finfuncion
+
+clase CombEfecto hereda Combinador
+    atributo efecto, combinador
+    metodo parsear: tokens
+finclase
+
+metodo CombEfecto#parsear: tokens
+    variable res
+    fijar res a yo#combinador#parsear: tokens
+    si res#esOk
+        devolver Resultado#ok: (yo#efecto#\llamar\: res#valor)
+    sino
+        devolver res
+    finsi
+finmetodo
+
+funcion Efecto: efecto, combinador
+    variable comb
+    fijar comb a CombEfecto#_crear
+    fijar comb#efecto a efecto
+    fijar comb#combinador a combinador
+    devolver comb
+finfuncion
+
+clase CombIntentar hereda Combinador
+    atributo combinador
+    metodo parsear: tokens
+finclase
+
+metodo CombIntentar#parsear: tokens
+    variables posIni, res
+    fijar posIni a tokens#puntoActual
+    fijar res a yo#combinador#parsear: tokens
+    si res#esError
+        tokens#irAPunto: posIni
+    finsi
+    devolver res
+finmetodo
+
+funcion Intentar: comb
+    variable inst
+    fijar inst a CombIntentar#_crear
+    fijar inst#combinador a comb
+    devolver inst
+finfuncion
+
+clase CombMensajeDeError hereda Combinador
+    atributos mensaje, combinador
+    metodo parsear: tokens
+finclase
+
+metodo CombMensajeDeError#parsear: tokens
+    variable res
+    fijar res a yo#combinador#parsear: tokens
+    si res#esError
+        devolver Resultado#error: ({~t : ~t}#formatear: yo#mensaje, res#error)
+    sino
+        devolver res
+    finsi
+finmetodo
+
+funcion MensajeDeError: mensaje, combinador
+    variable comb
+    fijar comb a CombMensajeDeError#_crear
+    fijar comb#mensaje a mensaje
+    fijar comb#combinador a combinador
+    devolver comb
+finfuncion
+
+clase CombRecursivo hereda Combinador
+    atributo obtenerCombinador
+    metodo parsear: tokens
+finclase
+
+metodo CombRecursivo#parsear: tokens
+    devolver yo#obtenerCombinador#\llamar\#parsear: tokens
+finmetodo
+
+funcion Recursivo: obtenerCombinador
+    variable comb
+    fijar comb a CombRecursivo#_crear
+    fijar comb#obtenerCombinador a obtenerCombinador
+    devolver comb
+finfuncion
+
+clase CombRepetir hereda Combinador
+    atributo combinador
+    metodo parsear: tokens
+finclase
+
+metodo CombRepetir#parsear: tokens
+    variables resultados, rescomb, posIni, posFinal
+    fijar resultados a Arreglo#vacio
+    fijar posIni a tokens#puntoActual
+    fijar rescomb a yo#combinador#parsear: tokens
+    fijar posFinal a tokens#puntoActual
+    mientras rescomb#esOk && (no posIni = posFinal)
+        resultados#agregarAlFinal: rescomb#valor
+        fijar posIni a tokens#puntoActual
+        fijar rescomb a yo#combinador#parsear: tokens
+        fijar posFinal a tokens#puntoActual
+    finmientras
+    si rescomb#esOk && (posIni = posFinal)
+        resultados#agregarAlFinal: rescomb#valor
+    finsi
+    devolver Resultado#ok: resultados
+finmetodo
+
+funcion Repetir: combinador
+    variable comb
+    fijar comb a CombRepetir#_crear
+    fijar comb#combinador a combinador
+    devolver comb
+finfuncion
+
+clase CombNoSigue hereda Combinador
+    atributo combinador
+    metodo parsear: tokens
+finclase
+
+metodo CombNoSigue#parsear: tokens
+    variables posIni, res
+    fijar posIni a tokens#puntoActual
+    tokens#irAPunto: posIni
+    fijar res a yo#combinador#parsear: tokens
+    si res#esError
+        devolver Resultado#ok: NULO
+    sino
+        variable tk
+        fijar tk a tokens#leerToken
+        tokens#irAPunto: posIni
+        devolver Resultado#error: ({El combinador de NoSigue la logrado parsear en ~t}#formatear: tk#areaDelToken)
+    finsi
+finmetodo
+
+funcion NoSigue: combinador
+    variable comb
+    fijar comb a CombNoSigue#_crear
+    fijar comb#combinador a combinador
+    devolver comb
+finfuncion
+
+clase CombHasta hereda Combinador
+    atributos final, principal
+    metodo parsear: tokens
+finclase
+
+metodo CombHasta#parsear: tokens
+    variables resultados, terminó
+    fijar resultados a Arreglo#vacio
+    fijar terminó a FALSO
+    mientras no terminó
+        variables pos, resFinal, resPrincipal
+        fijar pos a tokens#puntoActual
+        fijar resFinal a yo#final#parsear: tokens
+        si resFinal#esOk
+            fijar terminó a VERDADERO
+        sino
+            tokens#irAPunto: pos
+            fijar resPrincipal a yo#principal#parsear: tokens
+            si resPrincipal#esOk
+                resultados#agregarAlFinal: resPrincipal#valor
+            sino
+                devolver Resultado#error: (
+                    {CombHasta: El combinador principal falló: ~t}#formatear:
+                    resPrincipal#error
+                )
+            finsi
+        finsi
+    finmientras
+    devolver Resultado#ok: resultados
+finmetodo
+
+funcion Hasta: terminar, comb
+    variable inst
+    fijar inst a CombHasta#_crear
+    fijar inst#final a terminar
+    fijar inst#principal a comb
+    devolver inst
+finfuncion

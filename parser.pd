@@ -1,0 +1,927 @@
+utilizar bepd/builtins
+utilizar tokenizador como Tokenizador
+utilizar puerto como Puerto
+utilizar comb como Comb
+utilizar bepd/algoritmos como Algoritmos
+
+clase Nodo
+    atributos areaTextual, metadatos
+
+    metodo inicializar
+
+    metodo metadatosComoTexto
+
+    metodo fijarMetadato: klase, llave, valor
+    metodo obtenerMetadato: klase, llave
+    metodo contieneMetadato: klase, llave
+finclase
+
+metodo Nodo#inicializar
+    fijar yo#metadatos a Diccionario#vacío
+finmetodo
+
+metodo Nodo#metadatosComoTexto
+    devolver {(metadatos = ~t)}#formatear: yo#metadatos
+finmetodo
+
+metodo Nodo#fijarMetadato: klase, llave, valor
+    si yo#metadatos#contiene: klase
+        (yo#metadatos#en: klase)#fijarEn: llave, valor
+    sino
+        yo#metadatos#fijarEn: klase, (Diccionario#desdePares: llave, valor)
+    finsi
+finmetodo
+
+metodo Nodo#obtenerMetadato: klase, llave
+    devolver (yo#metadatos#en: klase)#en: llave
+finmetodo
+
+metodo Nodo#contieneMetadato: klase, llave
+    si yo#metadatos#contiene: klase
+        devolver (yo#metadatos#en: klase)#contiene: llave
+    sino
+        devolver FALSO
+    finsi
+finmetodo
+
+clase NodoInstrucción hereda Nodo
+finclase
+
+clase NodoVariable hereda NodoInstrucción
+    atributo nombres
+    metodo comoTexto
+finclase
+
+metodo NodoVariable#comoTexto
+    devolver {(NodoVariable: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoFijar hereda NodoInstrucción
+    atributos objetivo, valor
+    metodo comoTexto
+finclase
+
+metodo NodoFijar#comoTexto
+    devolver {(NodoFijar: ~t a ~t en ~t con ~t)}#formatear: yo#objetivo, yo#valor, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoEscribir hereda NodoInstrucción
+    atributo valor
+    metodo comoTexto
+finclase
+
+metodo NodoEscribir#comoTexto
+    devolver {(NodoEscribir: ~t en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoNl hereda NodoInstrucción
+    metodo comoTexto
+finclase
+
+metodo NodoNl#comoTexto
+    devolver {(NodoNl en ~t con ~t)}#formatear: yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoDeclaraciónDeAtributosEnClase hereda NodoInstrucción
+    atributos nombres
+
+    metodo comoTexto
+finclase
+
+metodo NodoDeclaraciónDeAtributosEnClase#comoTexto
+    devolver {(NodoDeclaraciónDeAtributosEnClase: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoDeclaraciónDeMétodoEnClase hereda NodoInstrucción
+    atributos esEstático, nombre, parámetros
+
+    metodo comoTexto
+finclase
+
+metodo NodoDeclaraciónDeMétodoEnClase#comoTexto
+    devolver {(NodoDeclaraciónDeMétodoEnClase: esEstático = ~t, nombre = ~t, params = ~t en ~t con ~t)}#formatear: yo#esEstático, yo#nombre, yo#parámetros, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoClase hereda NodoInstrucción
+    atributos nombre, claseBase, extiendeClases, implementaClases, declaraciones
+
+    metodo comoTexto
+finclase
+
+metodo NodoClase#comoTexto
+    devolver {(NodoClase: nombre = ~t, claseBase = ~t, extiendeClases = ~t, implementaClases = ~t, declaraciones = ~t en ~t con ~t)}#formatear:
+        yo#nombre, yo#claseBase, yo#extiendeClases, yo#implementaClases, yo#declaraciones, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoImplementa hereda NodoInstrucción
+    atributos nombre, definiciones
+
+    metodo comoTexto
+finclase
+
+metodo NodoImplementa#comoTexto
+    devolver {(NodoImplementa: ~t con ~t en ~t con ~t)}#formatear: yo#nombre, yo#definiciones, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoDefineAtributosEnClase hereda NodoInstrucción
+    atributo nombres
+
+    metodo comoTexto
+finclase
+
+metodo NodoDefineAtributosEnClase#comoTexto
+    devolver {(NodoDefineAtributosEnClase: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoDefineMétodoEnClase hereda NodoInstrucción
+    atributos nombre, esEstático, parámetros, cuerpo
+
+    metodo comoTexto
+finclase
+
+metodo NodoDefineMétodoEnClase#comoTexto
+    devolver {(NodoDefineMétodoEnClase: nombre = ~t, esEstático = ~t, params = ~t, cuerpo = ~t en ~t con ~t)}#formatear: yo#nombre, yo#esEstático, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoFunción hereda NodoInstrucción
+    atributos nombre, parámetros, cuerpo
+
+    metodo comoTexto
+finclase
+
+metodo NodoFunción#comoTexto
+    devolver {(NodoFunción: nombre = ~t, params = ~t, cuerpo = ~t en ~t con ~t)}#formatear: yo#nombre, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoExpresion hereda Nodo
+finclase
+
+clase NodoIdentificador hereda NodoExpresion
+    atributo nombre
+    metodo comoTexto
+finclase
+
+metodo NodoIdentificador#comoTexto
+    devolver {(NodoIdentificador: [~t] en ~t con ~t)}#formatear: yo#nombre, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoNumeroLiteral hereda NodoExpresion
+    atributo valor
+    metodo comoTexto
+finclase
+
+metodo NodoNumeroLiteral#comoTexto
+    devolver {(NodoNumeroLiteral: ~t en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoTextoLiteral hereda NodoExpresion
+    atributo valor
+    metodo comoTexto
+finclase
+
+metodo NodoTextoLiteral#comoTexto
+    devolver {(NodoTextoLiteral: ~t en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoLlamarProcedimiento hereda NodoExpresion
+    atributos proc, argumentos
+    metodo comoTexto
+finclase
+
+metodo NodoLlamarProcedimiento#comoTexto
+    devolver {(NodoLlamarProcedimiento: ~t con ~t en ~t con ~t)}#formatear: yo#proc, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoEnviarMensaje hereda NodoExpresion
+    atributos objeto, mensaje, argumentos
+    metodo comoTexto
+finclase
+
+metodo NodoEnviarMensaje#comoTexto
+    devolver {(NodoEnviarMensaje: enviar ~t a ~t con ~t en ~t con ~t)}#formatear: yo#mensaje, yo#objeto, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoOperador hereda NodoExpresion
+    atributos lhs, op, rhs
+    metodo comoTexto
+finclase
+
+metodo NodoOperador#comoTexto
+    devolver {(NodoOperador: ~t ~t ~t en ~t con ~t)}#formatear: yo#lhs, yo#op, yo#rhs, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoNoLlamar hereda NodoExpresion
+    atributos base, mensajes
+    metodo comoTexto
+finclase
+
+metodo NodoNoLlamar#comoTexto
+    devolver {(NodoNoLlamar: ~t con ~t en ~t con ~t)}#formatear: yo#base, yo#mensajes, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoAutoejecutar hereda NodoExpresion
+    atributos expr, argumentos
+    metodo comoTexto
+finclase
+
+metodo NodoAutoejecutar#comoTexto
+    devolver {(NodoAutoejecutar: ~t con ~t en ~t con ~t)}#formatear: yo#expr, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoFunciónAnónima hereda NodoExpresion
+    atributos esMétodo, parámetros, cuerpo
+
+    metodo comoTexto
+finclase
+
+metodo NodoFunciónAnónima#comoTexto
+    devolver {(NodoFunciónAnónima: (esMétodo: ~t): ~t es ~t en ~t con ~t)}#formatear: yo#esMétodo, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+funcion kw: K  [ => TokenPalabraClave ]
+    devolver Comb#PalabraClave: K
+finfuncion
+
+funcion id  [ => TokenIdentificador ]
+    devolver Comb#Identificador
+finfuncion
+
+funcion op  [ => TokenOperador ]
+    devolver Comb#Operador
+finfuncion
+
+funcion num  [ => TokenNumero ]
+    devolver Comb#NumeroLiteral
+finfuncion
+
+funcion txtlit  [ => TokenTexto ]
+    devolver Comb#TextoLiteral
+finfuncion
+
+funcion seq: ...K  [ => Arreglo con (K#en:0), (K#en:1), ... ]
+    devolver Comb#Componer: K
+finfuncion
+
+funcion alt: ...K  [ => (K#en:0) o (K#en:1) o ... ]
+    devolver Comb#Elegir: K
+finfuncion
+
+funcion msjerror: msj, K  [ => K ]
+    devolver Comb#MensajeDeError: msj, K
+finfuncion
+
+funcion try: ...K  [ => Arreglo con ...K ]
+    devolver Comb#Intentar: (Aplicar: &seq, K)
+finfuncion
+
+funcion try': K  [ => K ]
+    devolver Comb#Intentar: K
+finfuncion
+
+funcion delay: mk  [ => mk#\llamar\ ]
+    devolver Comb#Recursivo: mk
+finfuncion
+
+funcion rep0': K  [ => Arreglo de K ]
+    devolver Comb#Repetir: K
+finfuncion
+
+funcion rep0: ...K  [ => Arreglo de (Arreglo con (K#en:0), (K#en:1), ...) ]
+    devolver Comb#Repetir: (Aplicar: &seq, K)
+finfuncion
+
+funcion rep1': K  [ => Arreglo de K, con al menos un K ]
+    devolver Comb#Efecto:
+        funcion: res
+            devolver (ArregloConFinal: (res#en: 0), (res#en: 1))
+        finfuncion,
+        (seq: K, (rep0': K))
+finfuncion
+
+funcion rep1: ...K  [ => Arreglo de (Arreglo con (K#en:0), (K#en:1), ...) ]
+    [ Tal como rep1', el arreglo devuelto siempre contiene al menos un elemento ]
+    devolver rep1': (Aplicar: &seq, K)
+finfuncion
+
+funcion nada  [ => Arreglo vacío ]
+    devolver seq
+finfuncion
+
+funcion opt: K  [ => K o Arreglo vacío ]
+    devolver alt: K, nada
+finfuncion
+
+funcion opt': ...K  [ => (Arreglo con Ks...) o Arreglo vacío ]
+    devolver opt: (Aplicar: &seq, K)
+finfuncion
+
+funcion delim1: comb, sep  [ => Arreglo de comb, con al menos un elemento ]
+    devolver Comb#Efecto:
+        funcion: res
+            variables valores, reps, i
+            fijar valores a Arreglo#crearCon: (res#en: 0)
+            fijar reps a res#en: 1
+            ParaCadaElemento: reps, procedimiento: el
+                valores#agregarAlFinal: (el#en: 1)
+            finprocedimiento
+            devolver valores
+        finfuncion,
+        (seq: comb, (rep0: sep, comb))
+finfuncion
+
+funcion delim0: comb, sep  [ => Arreglo de comb ]
+    devolver opt: (delim1: comb, sep)
+finfuncion
+
+funcion not: comb
+    devolver Comb#NoSigue: comb
+finfuncion
+
+funcion not': ...K
+    devolver not: (Aplicar: &seq, K)
+finfuncion
+
+funcion until: term, rep
+    devolver Comb#Hasta: term, rep
+finfuncion
+
+funcion AreaTotal: inicio, final
+    variables areaInicio, areaFinal
+    si EsInstancia: inicio, Tokenizador#Token
+        fijar areaInicio a inicio#areaDelToken
+    sino [ es un Nodo ]
+        fijar areaInicio a inicio#areaTextual
+    finsi
+    si EsInstancia: final, Tokenizador#Token
+        fijar areaFinal a final#areaDelToken
+    sino
+        fijar areaFinal a final#areaTextual
+    finsi
+    devolver Tokenizador#AreaTextual#crear: areaInicio#posiciónInicial, areaFinal#posiciónFinal
+finfuncion
+
+variable TABLA_DE_PRECEDENCIA
+fijar TABLA_DE_PRECEDENCIA a
+    (Arreglo#crearCon:
+        (Arreglo#crearCon: {*}, {/}),
+        (Arreglo#crearCon: {+}, {-}),
+        (Arreglo#crearCon: {<}, {>}, {=<}, {>=}, {=}, {==}, {===}),
+        (Arreglo#crearCon: {&&}, {||})
+        )
+
+variable OPERADORES
+fijar OPERADORES a Aplanar: TABLA_DE_PRECEDENCIA
+
+funcion EsOperador: obj
+    devolver EsInstancia: obj, Tokenizador#TokenOperador
+finfuncion
+
+funcion PrecedenciaDe: tokenOperador
+    variable precedenciaInversa
+    fijar precedenciaInversa a 0
+    ParaCadaElementoConÍndice: TABLA_DE_PRECEDENCIA, procedimiento: ops, idx
+        si Contiene: ops, tokenOperador#texto
+            fijar precedenciaInversa a idx
+        finsi
+    finprocedimiento
+    devolver (TABLA_DE_PRECEDENCIA#longitud - 1) - precedenciaInversa
+finfuncion
+
+funcion ShuntingYard: seq
+    devolver Algoritmos#ShuntingYard: seq, funcion: A, op, B
+        devolver clonar NodoOperador#crear con
+            areaTextual: (AreaTotal: A, B)
+            lhs: A
+            op: op
+            rhs: B
+        finclonar
+    finfuncion, &PrecedenciaDe, &EsOperador
+finfuncion
+
+variable grId
+fijar grId a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar NodoIdentificador#crear con
+                areaTextual: res#areaDelToken
+                nombre: res#texto
+            finclonar
+        finfuncion,
+        id
+
+variable grNum
+fijar grNum a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar NodoNumeroLiteral#crear con
+                areaTextual: res#areaDelToken
+                valor: res#texto
+            finclonar
+        finfuncion,
+        num
+
+variable grTexto
+fijar grTexto a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar NodoTextoLiteral#crear con
+                areaTextual: res#areaDelToken
+                valor: res#texto
+            finclonar
+        finfuncion,
+        txtlit
+
+variable grParens
+fijar grParens a
+    Comb#Efecto:
+        funcion: res
+            devolver res#en: 1
+        finfuncion,
+        (seq:
+            (try': (kw: {(})),
+            (delay: funcion devolver grExpr finfuncion),
+            (kw: {)}))
+
+variable grLlamarProc
+fijar grLlamarProc a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar NodoLlamarProcedimiento#crear con
+                areaTextual: (AreaTotal: ((res#en: 0)#en: 0), ((res#en: 0)#en: 1))
+                proc: (res#en: 0)#en: 0
+                argumentos: res#en: 1
+            finclonar
+        finfuncion,
+        (seq:
+            (try: grId, (kw: {:})),
+            (delim1:
+                (delay: funcion devolver grExprSinOperador finfuncion),
+                (try': (kw: {,}))))
+
+variable idORefMensaje
+fijar idORefMensaje a
+    Comb#Efecto:
+        funcion: res
+            si EsInstancia: res, NodoIdentificador
+                devolver Arreglo#crearCon: res
+            sino
+                variables base, msgs
+                fijar base a res#en: 1
+                fijar msgs a Mapear: (res#en: 2), funcion: el
+                    devolver el#en: 1
+                finfuncion
+                devolver ArregloConFinal: base, msgs
+            finsi
+        finfuncion,
+        (alt:
+            (try': grId),
+            (seq:
+                (kw: {(}),
+                grId,
+                (rep0: (kw: {#}), id),
+                (kw: {)})))
+
+variable grNoLlamar
+fijar grNoLlamar a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar NodoNoLlamar#crear con
+                areaTextual: AreaTotal: (res#en: 0), (ÚltimoElemento: (res#en: 1))
+                base: (res#en: 1)#en: 0
+                mensajes: PedazoDeArreglo: (res#en: 1), 1, -1
+            finclonar
+        finfuncion,
+        (seq: (try': (kw: {&})), idORefMensaje)
+
+variable grAutoejecutar
+fijar grAutoejecutar a
+    Comb#Efecto:
+        funcion: res
+            variables base, argumentos, nodoFinal
+            fijar base a res#en: 1
+            fijar argumentos a Arreglo#vacio
+            fijar nodoFinal a base
+            si (res#en: 2)#longitud = 2
+                fijar argumentos a (res#en: 2)#en: 1
+                fijar nodoFinal a ÚltimoElemento: argumentos
+            finsi
+            devolver clonar NodoAutoejecutar#crear con
+                areaTextual: AreaTotal: base, nodoFinal
+                expr: base
+                argumentos: argumentos
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {%})),
+            (alt: grParens, grId),
+            (opt':
+                (try': (kw: {:})),
+                (delim1:
+                    (delay: funcion devolver grExprSinOperador finfuncion),
+                    (try': (kw: {,})))))
+
+variable grParámetrosDeFunción
+fijar grParámetrosDeFunción a
+    Comb#Efecto:
+        funcion: res
+            variable params
+            fijar params a Arreglo#vacio
+            si res#longitud > 0
+                fijar params a res#en: 1
+            finsi
+            devolver params
+        finfuncion,
+        (opt':
+            (try': (kw: {:})),
+            (delim1:
+                grId,
+                (try': (kw: {,}))))
+
+variable grFunciónAnónima
+fijar grFunciónAnónima a
+    Comb#Efecto:
+        funcion: res
+            variables esMet, params, cuerpo
+            fijar esMet a (res#en: 0)#palabraClave = {metodo}
+            fijar params a res#en: 1
+            fijar cuerpo a res#en: 2
+            devolver clonar NodoFunciónAnónima#crear con
+                areaTextual: (res#en: 0)#areaDelToken
+                esMétodo: esMet
+                parámetros: params
+                cuerpo: cuerpo
+            finclonar
+        finfuncion,
+        (seq:
+            (alt: (try': (kw: {funcion})), (try': (kw: {metodo}))),
+            grParámetrosDeFunción,
+            (until:
+                (alt: (try': (kw: {finfuncion})), (try': (kw: {finmetodo}))),
+                (delay: funcion devolver grInstrucción finfuncion)))
+
+variable grEnviarMensaje
+fijar grEnviarMensaje a
+    Comb#Efecto:
+        funcion: res
+            variable args
+            si (res#en: 2)#longitud = 0
+                fijar args a Arreglo#vacio
+            sino
+                fijar args a (res#en: 2)#en: 1
+            finsi
+            devolver clonar NodoEnviarMensaje#crear con
+                areaTextual: (res#en: 0)#areaDelToken
+                objeto: NULO
+                mensaje: (res#en: 1)#texto
+                argumentos: args
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {#})),
+            id,
+            (opt':
+                (try: (kw: {:})),
+                (delim1:
+                    (delay: funcion devolver grExprSinOperador finfuncion),
+                    (try': (kw: {,})))))
+
+variable grExprSinOperador
+fijar grExprSinOperador a
+    Comb#Efecto:
+        funcion: res
+            variables obj, mensajes
+            fijar obj a res#en: 0
+            fijar mensajes a res#en: 1
+            ParaCadaElemento: mensajes, procedimiento: mensaje
+                fijar obj a clonar mensaje con
+                    objeto: obj
+                finclonar
+            finprocedimiento
+            devolver obj
+        finfuncion,
+        (seq:
+            (alt:
+                grParens,
+                grLlamarProc,
+                grNoLlamar,
+                grAutoejecutar,
+                grFunciónAnónima,
+                (try': grId),
+                (try': grNum),
+                (try': grTexto)),
+            (rep0': grEnviarMensaje))
+
+variable grOperador
+fijar grOperador a (seq: (try': op), grExprSinOperador)
+
+variable grExpr
+fijar grExpr a
+    Comb#Efecto:
+        funcion: res
+            variables r, exprBase, ops, seq
+            fijar exprBase a res#en: 0
+            fijar ops a res#en: 1
+            fijar seq a Concatenar: (Arreglo#crearCon: exprBase), (Aplanar: ops)
+            devolver ShuntingYard: seq
+        finfuncion,
+        (seq: grExprSinOperador, (rep0': grOperador))
+
+variable grObjetivoSimple
+fijar grObjetivoSimple a grId
+
+variable grObjetivoComplejoInicio
+fijar grObjetivoComplejoInicio a (alt: grParens, grId)
+
+variable grObjetivoMétodo
+fijar grObjetivoMétodo a
+    Comb#Efecto:
+        funcion: res
+            variables mensajesUnarios, mensajeFinal, obj
+            fijar obj a res#en: 0
+
+            fijar mensajeFinal a res#en: 1
+            fijar obj a clonar mensajeFinal con
+                objeto: obj
+            finclonar
+
+            devolver obj
+        finfuncion,
+        (seq:
+            grObjetivoComplejoInicio,
+            grEnviarMensaje)
+
+variable grObjetivo
+fijar grObjetivo a
+    (alt: (try': grObjetivoMétodo), grObjetivoSimple)
+
+variable grVariable
+fijar grVariable a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar NodoVariable#crear con
+                areaTextual: (AreaTotal: (res#en: 0), (res#en: 1))
+                nombres: (Arreglo#crearCon: (res#en: 1))
+            finclonar
+        finfuncion,
+        (seq: (try': (kw: {variable})), grId)
+
+variable grFijar
+fijar grFijar a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar NodoFijar#crear con
+                areaTextual: (AreaTotal: (res#en: 0), (res#en: 3))
+                objetivo: (res#en: 1)
+                valor: (res#en: 3)
+            finclonar
+        finfuncion,
+        (seq: (try': (kw: {fijar})), grObjetivo, (kw: {a}), grExpr)
+
+variable grEscribir
+fijar grEscribir a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar NodoEscribir#crear con
+                areaTextual: (AreaTotal: (res#en: 0), (res#en: 1))
+                valor: (res#en: 1)
+            finclonar
+        finfuncion,
+        (seq: (try': (kw: {escribir})), grExpr)
+
+variable grNl
+fijar grNl a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar NodoNl#crear con
+                areaTextual: res#areaDelToken
+            finclonar
+        finfuncion,
+        (try': (kw: {nl}))
+
+variable grAtributoClaseSinEfecto
+fijar grAtributoClaseSinEfecto a
+    (seq:
+        (alt: (try': (kw: {atributo})), (try': (kw: {atributos}))),
+        (delim1: grId, (try': (kw: {,}))))
+
+variable grAtributoClase
+fijar grAtributoClase a
+    Comb#Efecto:
+        funcion: res
+            variables nombres
+            fijar nombres a res#en: 1
+            devolver clonar NodoDeclaraciónDeAtributosEnClase#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 0)
+                nombres: nombres
+            finclonar
+        finfuncion,
+        grAtributoClaseSinEfecto
+
+variable grMétodoClase
+fijar grMétodoClase a
+    Comb#Efecto:
+        funcion: res
+            variables esEstático, nombre, params
+
+            fijar esEstático a no EsInstancia: (res#en: 1), Arreglo
+            fijar nombre a res#en: 2
+            fijar params a res#en: 3
+            devolver clonar NodoDeclaraciónDeMétodoEnClase#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 0)
+                esEstático: esEstático
+                nombre: nombre
+                parámetros: params
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {metodo})),
+            (opt: (try': (kw: {estatico}))),
+            grId,
+            grParámetrosDeFunción)
+
+variable grCuerpoDeClase
+fijar grCuerpoDeClase a
+    (alt: grAtributoClase, grMétodoClase)
+
+variable grClase
+fijar grClase a
+    Comb#Efecto:
+        funcion: res
+            variables nombre, claseBase, implementaClases, extiendeClases, cuerpo
+
+            fijar nombre a res#en: 1
+
+            si (res#en: 2)#longitud = 0
+                fijar claseBase a NULO
+            sino
+                fijar claseBase a (res#en: 2)#en: 1
+            finsi
+
+            fijar implementaClases a Arreglo#vacio
+            ParaCadaElementoConÍndice: (res#en: 3), procedimiento: el, i
+                implementaClases#agregarAlFinal: (el#en: 1)
+            finprocedimiento
+
+            fijar extiendeClases a Arreglo#vacio
+            ParaCadaElementoConÍndice: (res#en: 4), procedimiento: el, i
+                extiendeClases#agregarAlFinal: (el#en: 1)
+            finprocedimiento
+
+            fijar cuerpo a res#en: 5
+
+            devolver clonar NodoClase#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 0)
+                nombre: nombre
+                claseBase: claseBase
+                implementaClases: implementaClases
+                extiendeClases: extiendeClases
+                declaraciones: cuerpo
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {clase})),
+            grId,
+            (opt': (try': (kw: {hereda})), grId),
+            (rep0: (try': (kw: {implementa})), grId),
+            (rep0: (try': (kw: {extiende})), grId),
+            (until:
+                (try': (kw: {finclase})),
+                grCuerpoDeClase))
+
+variable grDefineMétodoEnClase
+fijar grDefineMétodoEnClase a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar NodoDefineMétodoEnClase#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 5)
+                nombre: (res#en: 2)
+                esEstático: (res#en: 1)#longitud > 0
+                parámetros: (res#en: 3)
+                cuerpo: (res#en: 4)
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {metodo})),
+            (opt: (try': (kw: {estatico}))),
+            grId,
+            grParámetrosDeFunción,
+            (rep0: (delay: funcion devolver grInstrucción finfuncion)),
+            (kw: {finmetodo}))
+
+variable grDefineAtributoClase
+fijar grDefineAtributoClase a
+    Comb#Efecto:
+        funcion: res
+            variables nombres
+            fijar nombres a res#en: 1
+            devolver clonar NodoDefineAtributosEnClase#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 0)
+                nombres: nombres
+            finclonar
+        finfuncion,
+        grAtributoClaseSinEfecto
+
+variable grImplementa
+fijar grImplementa a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar NodoImplementa#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 3)
+                nombre: (res#en: 1)
+                definiciones: (res#en: 2)
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {implementa})),
+            grId,
+            (rep0': (alt: grDefineAtributoClase, grDefineMétodoEnClase)),
+            (kw: {finimplementa}))
+
+variable grFunción
+fijar grFunción a
+    Comb#Efecto:
+        funcion: res
+            variables nombre, params, cuerpo
+            fijar nombre a res#en: 1
+            fijar params a res#en: 2
+            fijar cuerpo a res#en: 3
+            devolver clonar NodoFunción#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 4)
+                nombre: nombre
+                parámetros: params
+                cuerpo: cuerpo
+            finclonar
+        finfuncion,
+        (seq:
+            (alt:
+                (try': (kw: {funcion})),
+                (try': (kw: {procedimiento}))),
+            grId,
+            grParámetrosDeFunción,
+            (rep0': (delay: funcion devolver grInstrucción finfuncion)),
+            (alt:
+                (try': (kw: {finfuncion})),
+                (try': (kw: {finprocedimiento})),
+                (try': (kw: {finfun}))))
+
+variable grInstrucción
+fijar grInstrucción a
+    (alt: grVariable, grFijar, grEscribir, grNl, grClase, grImplementa, grFunción, grExpr)
+
+procedimiento MostrarTokenizado: tks
+    variable T
+    fijar T a tks#leerToken
+    mientras no T = Puerto#EOF
+        Escribir: T
+        fijar T a tks#leerToken
+    finmientras
+finprocedimiento
+
+procedimiento MostrarTokenizadoDeTexto: txt
+    variable tks, tknz
+    fijar tknz a
+        Tokenizador#Tokenizador#crear:
+            (Tokenizador#PuertoConPosiciónTextual#crear:
+                (Puerto#TextoComoPuerto: txt))
+    fijar tks a Comb#Tokens#desdeTokenizador: tknz
+    MostrarTokenizado: tks
+finprocedimiento
+
+procedimiento MostrarParseado: tks, gr
+    variable X
+    fijar X a gr#parsear: tks
+    mientras X#esOk
+        Escribir: X
+        nl
+        fijar X a gr#parsear: tks
+    finmientras
+    Escribir: X
+finprocedimiento
+
+procedimiento MostrarParseadoDeTexto: txt, gr
+    variable tks, tknz
+    fijar tknz a
+        Tokenizador#Tokenizador#crear:
+            (Tokenizador#PuertoConPosiciónTextual#crear:
+                (Puerto#TextoComoPuerto: txt))
+    fijar tks a Comb#Tokens#desdeTokenizador: tknz
+    MostrarParseado: tks, gr
+finprocedimiento
+
+procedimiento CrearAST: txt, gr
+    variable tks, tknz
+    fijar tknz a
+        Tokenizador#Tokenizador#crear:
+            (Tokenizador#PuertoConPosiciónTextual#crear:
+                (Puerto#TextoComoPuerto: txt))
+    fijar tks a Comb#Tokens#desdeTokenizador: tknz
+
+    variables nodo, ast
+    fijar nodo a gr#parsear: tks
+    fijar ast a Arreglo#vacio
+    mientras nodo#esOk
+        ast#agregarAlFinal: nodo#valor
+        fijar nodo a gr#parsear: tks
+    finmientras
+    devolver ast
+finprocedimiento

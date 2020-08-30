@@ -1,0 +1,38 @@
+utilizar bepd/builtins
+
+funcion ShuntingYard: secuencia, comb, precedenciaDe, esOperador
+    variables valores, operadores
+    fijar valores a Pila#desdeArreglo: Arreglo#vacio
+    fijar operadores a Pila#desdeArreglo: Arreglo#vacio
+
+    funcion CombinarHasta: pred
+        mientras no operadores#estáVacía
+            si (%precedenciaDe: operadores#últimoValorApilado) =< pred
+                devolver NULO
+            finsi
+            variables lhs, rhs, op
+            fijar rhs a valores#desapilar
+            fijar lhs a valores#desapilar
+            fijar op a operadores#desapilar
+            valores#apilar: (%comb: lhs, op, rhs)
+        finmientras
+    finfuncion
+
+    ParaCadaElemento: secuencia, procedimiento: el
+        si %esOperador: el
+            si no operadores#estáVacía
+                si (%precedenciaDe: el) < (%precedenciaDe: operadores#últimoValorApilado)
+                    CombinarHasta: (%precedenciaDe: el)
+                finsi
+            finsi
+            operadores#apilar: el
+        sino
+            valores#apilar: el
+        finsi
+    finprocedimiento
+
+    [ Combina todo, irrelevantemente de su precedencia: ]
+    CombinarHasta: -1
+
+    devolver valores#últimoValorApilado
+finfuncion
