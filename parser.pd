@@ -180,7 +180,7 @@ clase NodoTextoLiteral hereda NodoExpresion
 finclase
 
 metodo NodoTextoLiteral#comoTexto
-    devolver {(NodoTextoLiteral: ~t en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
+    devolver {(NodoTextoLiteral: [~t] en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
 clase NodoLlamarProcedimiento hereda NodoExpresion

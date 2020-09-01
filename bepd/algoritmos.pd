@@ -1,9 +1,32 @@
 utilizar bepd/builtins
 
+[DOCUMENTA
+@brief{Agrupa operadores infijos en base a precedencia.}
+
+Utiliza el algoritmo Shunting Yard de Edsger Dijkstra para tomar una lista de
+valores y operadores infijos (como @code{1 + 2 - 3 / 4}) y los agrupa en base
+a su precedencia (@code{(1 + 2) - (3 / 4)}).
+
+@params(
+@defparam(secuencia){@pd{Arreglo} de valores que se alterna entre operadores
+y operandos.}
+@defparam(comb){Función de combinación. Esta función debe tomar 3
+argumentos: @code{lhs}, @code{op} y @code{rhs} donde @code{lhs} es el valor del
+lado izquierdo del operador, @code{op} es el operador y @code{rhs} es el valor
+del lado derecho del operador.}
+@defparam(precedenciaDe){Función de precedencia. Esta función debe tomar un
+operador y devolver un número que es la precedencia de dicho operador.}
+@defparam(esOperador){Predicado de operador. Esta función debe tomar un valor
+de @pd{secuencia} y devolver un @pd{Boole} indicando si es un operador o un
+operando.}
+)
+
+@devuelve{Los valores combinados con @param{comb}.}
+DOCUMENTA]
 funcion ShuntingYard: secuencia, comb, precedenciaDe, esOperador
     variables valores, operadores
-    fijar valores a Pila#desdeArreglo: Arreglo#vacio
-    fijar operadores a Pila#desdeArreglo: Arreglo#vacio
+    fijar valores a Pila#vacía
+    fijar operadores a Pila#vacía
 
     funcion CombinarHasta: pred
         mientras no operadores#estáVacía

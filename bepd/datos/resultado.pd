@@ -1,20 +1,102 @@
 utilizar bepd/builtinsImpl
 
+[DOCUMENTA
+@brief{El resultado de una operación.}
+
+Cada @pd{Resultado} puede estar en uno de dos valores distíntos: ok o error.
+
+Un resultado "ok" contiene un valor: el resultado de la operación, mientras
+que un resultado "error" contiene el error que sucedio al tratar de realizar
+la operación.
+DOCUMENTA]
 clase Resultado
+    [DOCUMENTA
+    @brief{Crea un resultado "ok" con el valor @param{valor}.}
+    DOCUMENTA]
     metodo estatico ok: valor
+
+    [DOCUMENTA
+    @brief{Crea un resultado "error" con el error @param{err}.}
+    DOCUMENTA]
     metodo estatico error: err
 
+    [DOCUMENTA
+    @brief{Devuelve el valor exitoso de este resultado.}
+
+    Si este resultado es un "error", lanza un error.
+    DOCUMENTA]
     metodo valor
+
+    [DOCUMENTA
+    @brief{Devuelve el error de este resultado.}
+
+    Si este resultado es "ok", lanza un error.
+    DOCUMENTA]
     metodo error
+
+    [DOCUMENTA
+    @brief{Fija el valor "ok" de este resultado.}
+
+    Cambia este resultado para ser "ok", eliminando el error contenido si era
+    "error". Luego fijar el valor exitoso a @param{v}.
+    DOCUMENTA]
     metodo fijar_valor: v
+
+    [DOCUMENTA
+    @brief{Fija el error de este resultado.}
+
+    Cambia este resultado para ser "error", eliminando el error contenido si
+    era "ok". Luego fijar el error a @param{v}.
+    DOCUMENTA]
     metodo fijar_error: v
 
+    [DOCUMENTA
+    @brief{Determina si este resultado es "ok".}
+    DOCUMENTA]
     metodo esOk
+
+    [DOCUMENTA
+    @brief{Determina si este resultado es "error".}
+    DOCUMENTA]
     metodo esError
 
+    [DOCUMENTA
+    @brief{Convierte este resultado a un @pd{Texto}.}
+
+    El valor o error contenido debe soportar el método @pd{#comoTexto} también.
+    DOCUMENTA]
     metodo comoTexto
 
+    [DOCUMENTA
+    @brief{Transforma este resultado.}
+
+    Si es "ok", entonces llama a @param{proc} con el valor contenido. El valor
+    devuelto por @param{proc} será el nuevo valor de este resultado.
+
+    Si es "error" entonces no hace nada.
+
+    Nota que este método es @italic{destructivo}. No devuelve un nuevo
+    resultado si no que modifica el valor del actual.
+    DOCUMENTA]
     metodo transformar: proc
+
+    [DOCUMENTA
+    @brief{Mapea este resultado.}
+
+    Si este resultado es "ok", devuelve un nuevo resultado "ok" conteniendo
+    como valor lo devuelto al llamar a @param{proc} con el valor de este
+    resultado. Si es "error" en cambio, devuelve un clon de este mismo
+    resultado.
+
+    Por ejemplo, si @pd{res} es un resultado, el siguiente ejemplo le resta
+    5 al valor si es "ok" o preserva el error si es "error":
+
+    @ejemplo|{
+    fijar nuevoRes a res#mapear: funcion: valor
+        devolver valor - 5
+    finfuncion
+    }|
+    DOCUMENTA]
     metodo mapear: proc
 finclase
 
@@ -93,5 +175,9 @@ metodo Resultado#transformar: proc
 finmetodo
 
 metodo Resultado#mapear: proc
-    devolver yo#\clonar\#transformar: proc
+    si yo#esOk
+        devolver Resultado#ok: (%proc: yo#valor)
+    sino
+        devolver Resultado#error: yo#error
+    finsi
 finmetodo

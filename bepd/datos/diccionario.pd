@@ -1,28 +1,227 @@
 utilizar bepd/builtinsImpl
 
+[DOCUMENTA
+@brief{Mapea llaves a valores.}
+
+Un diccionario mapea elementos únicos (las llaves) a valores.
+
+@warn{
+@warntitle{Advertencia de iteración}
+
+Diversos métodos de la clase @pd{Diccionario} iteran sobre una instancia de
+dicho. La iteración sobre un diccionario tiene algunas restricciones que
+son muy importantes a la hora de escribir código correcto:
+
+@itemlist(
+@item{@bold{El order no está garantizado}. Ni siquiera atravez de llamadas en
+la misma instancia. Es completamente posible que la primera iteración vea
+primero la llave @pd{1} y luego @pd{2} y que la segunda iteración vea el
+orden contrario.}
+@item{@bold{No se puede modificar el diccionario}. Tratar de modificar el
+diccionario ya sea eliminando, agregando o transformando cualquier llave
+tendrá resultados impredecibles. La única operación destructiva válida es
+@pd{Diccionario#fijarEn}.}
+)
+}
+DOCUMENTA]
 clase Diccionario
+    [DOCUMENTA
+    @brief{Crea y devuelve un diccionario vacío.}
+    DOCUMENTA]
     metodo estatico vacío
+
+    [DOCUMENTA
+    @brief{Crea y devuelve un diccionario desde un arreglo.}
+
+    El arreglo @param{arr} debe contener arreglos de dos elementos, donde el
+    primero de estos será utilizado como la llave y el segundo como el valor.
+
+    Por ejemplo, para crear un diccionario que mapea @pd|{{hola}}| a @pd{12}
+    y @pd{5} a @pd{NULO}:
+
+    @ejemplo|{
+    Diccionario#desdeArreglo:
+        (Arreglo#crearCon:
+            (Arreglo#crearCon: {hola}, 12),
+            (Arreglo#crearCon: 5, NULO))
+    }|
+    DOCUMENTA]
     metodo estatico desdeArreglo: arr
+
+    [DOCUMENTA
+    @brief{Crea un diccionario con los pares especificados.}
+
+    Similar a @pd{Diccionario#desdeArreglo} pero los valores son
+    especificados directamente en la llamada. Por ejemplo, para crear el mismo
+    diccionario del ejemplo anterior:
+
+    @ejemplo|{
+    Diccionario#desdePares:
+        {hola}, 12,
+        5, NULO
+    }|
+
+    Este método es más cómodo para crear diccionarios "a mano".
+
+    @params(
+    @defparam(valores){Debe ser un número par de argumentos. El primero de
+    cada par será una llave y el segundo un valor.}
+    )
+    DOCUMENTA]
     metodo estatico desdePares: ...valores
 
+    [DOCUMENTA
+    @brief{Obtiene el valor de una llave.}
+
+    Si la llave no existe en este diccionario un error es lanzado.
+    DOCUMENTA]
     metodo en: llave
+
+    [DOCUMENTA
+    @brief{Cambia el valor asociado a una llave.}
+
+    El nuevo valor de @param{llave} será @param{valor} y el anterior valor
+    será eliminado del diccionario.
+    DOCUMENTA]
     metodo fijarEn: llave, valor
+
+    [DOCUMENTA
+    @brief{Transforma el par indicado por @param{llave}.}
+
+    Aplica @param{proc} al valor anteriormente asociado con la llave
+    @param{llave} y el valor devuelto por @param{proc} es asociado como el
+    nuevo valor de la llave.
+
+    Por ejemplo, si @pd{dic} es un diccionario, el siguiente ejemplo le suma
+    1 al valor asociado con la llave @pd|{{nombre}}|:
+
+    @ejemplo|{
+    dic#transformarPar: {nombre}, funcion: valorViejo
+        devolver valorViejo + 1
+    finfuncion
+    }|
+
+    Si la llave no existe en este diccionario un error es lanzado.
+    DOCUMENTA]
     metodo transformarPar: llave, proc
+
+    [DOCUMENTA
+    @brief{Elimina la llave y su valor de este diccionario.}
+    DOCUMENTA]
     metodo eliminar: llave
+
+    [DOCUMENTA
+    @brief{Determina si este diccionario contiene una llave.}
+
+    @devuelve{@pd{VERDADERO} si este diccionario contiene @param{llave},
+    @pd{FALSO} de otra forma.}
+    DOCUMENTA]
     metodo contiene: llave
+
+    [DOCUMENTA
+    @brief{Elimina todas las llaves y valores de este diccionario.}
+    DOCUMENTA]
     metodo vaciar
 
+    [DOCUMENTA
+    @brief{Devuelve la cantidad de pares de este diccionario.}
+
+    Cada mapeo de una llave a un valor es un "par" o "mapeo". Este método
+    devuelve la cantidad de estos mapeos.
+    DOCUMENTA]
     metodo longitud
 
+    [DOCUMENTA
+    @brief{Convierte este diccionario a un @pd{Texto}.}
+    DOCUMENTA]
     metodo comoTexto
+
+    [DOCUMENTA
+    @brief{Convierte este diccionario a un @pd{Arreglo}.}
+
+    El arreglo devuelto está en el mismo formato que el aceptado por
+    @pd{Diccionario#desdeArreglo}.
+    DOCUMENTA]
     metodo comoArreglo
 
+    [DOCUMENTA
+    @brief{Itera sobre cada par de este diccionario.}
+
+    Llama a @param{proc} con dos argumentos: el primero es la llave de un mapeo
+    y el segundo es el valor de dicho.
+
+    Véase la nota en la documentación de la clase @pd{Diccionario} para una
+    advertencia sobre iterar sobre diccionarios.
+    DOCUMENTA]
     metodo paraCadaPar: proc
+
+    [DOCUMENTA
+    @brief{Itera sobre cada llave de este diccionario.}
+
+    Llama a @param{proc} por cada par con la llave de dicho par como único
+    argumento.
+
+    Véase la nota en la documentación de la clase @pd{Diccionario} para una
+    advertencia sobre iterar sobre diccionarios.
+    DOCUMENTA]
     metodo paraCadaLlave: proc
+
+    [DOCUMENTA
+    @brief{Itera sobre cada valor de este diccionario.}
+
+    Llama a @param{proc} por cada par con el valor de dicho par como único
+    argumento.
+
+    Véase la nota en la documentación de la clase @pd{Diccionario} para una
+    advertencia sobre iterar sobre diccionarios.
+    DOCUMENTA]
     metodo paraCadaValor: proc
 
+    [DOCUMENTA
+    @brief{Reduce este diccionario a un nuevo valor.}
+
+    Para cada par, @param{proc} es llamado con 3 argumentos:
+
+    @itemlist(
+    @item{El @italics{acumulador}. La primera iteración este es @param{ini}.}
+    @item{La llave del par.}
+    @item{El valor del par}
+    )
+
+    El valor devuelto por @param{proc} será utilizado como acumulador para la
+    siguiente iteración.
+
+    @devuelve{@param{ini} si el diccionario está vació, o el acumulador luevo
+    de aplicar el procedimiento anteriormente descrito.}
+    DOCUMENTA]
     metodo reducir: ini, proc
+
+    [DOCUMENTA
+    @brief{Transforma imperativamente cada par del diccionario.}
+
+    Itera y llama a @param{proc} de la misma manera que
+    @pd{Diccionario#paraCadaPar}, pero el valor devuelto por @param{proc} debe
+    ser un @pd{Arreglo} de dos elementos donde el primero será la nueva llave
+    del par sobre el que se está iterando y el segundo será el nuevo valor
+    de dicho.
+
+    Algunas restricciones sobre @param{proc}:
+
+    @itemlist(
+    @item{@param{proc} no debe duplicar llaves. Durante la llamada a este
+    método @param{proc} nunca debe devolver dos veces la misma llave.}
+    @item{Las llaves devueltas por @param{proc} deben seguir las mismas
+    restricciones que las demás llaves de un diccionario.}
+    )
+    DOCUMENTA]
     metodo transformar: proc
+
+    [DOCUMENTA
+    @brief{Mapea un diccionario.}
+
+    Similar a @pd{Diccionario#transformar} pero no modifica este diccionario.
+    En cambio, crea una copia, la transforma y luego la devuelve.
+    DOCUMENTA]
     metodo mapear: proc
 finclase
 
@@ -189,5 +388,7 @@ metodo Diccionario#transformar: proc
 finmetodo
 
 metodo Diccionario#mapear: proc
-    devolver yo#\clonar\#transformar: proc
+    devolver Diccionario#desdeArreglo: (Mapear: yo#_pares, funcion: par
+        devolver %proc: (el#en: 0), (el#en: 1)
+    finfuncion)
 finmetodo

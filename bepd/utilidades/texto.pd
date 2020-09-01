@@ -1,5 +1,11 @@
 utilizar bepd/builtinsImpl
 
+[DOCUMENTA
+@brief{Determina si @param{texto} contiene al subtexto @param{parte}.}
+
+Si @param{texto} contiene en alguna parte al subtexto @param{parte} devuelve
+@pd{VERDADERO}, de otra forma devuelve @pd{FALSO}.
+DOCUMENTA]
 funcion TextoContiene: texto, parte
     devolver no ((texto#buscar: 0, parte) = NULO)
 finfuncion
@@ -40,6 +46,30 @@ funcion Partir': texto, separador, opciones
     devolver partes
 finfuncion
 
+[DOCUMENTA
+@brief{Parte un texto en partes separadas.}
+
+Parte @param{texto} cada vez que encuentra a @param{separador} como subtexto.
+
+Por ejemplo:
+
+@ejemplo|{
+necesitas
+    (Partir: {hola:mundo:separado por:dos puntos}, {:})
+    =
+    (Arreglo#crearCon: {hola}, {mundo}, {separador por}, {dos puntos})
+
+necesitas
+    (Partir: {::hola:mundo}, {:})
+    =
+    (Arreglo#crearCon: {}, {}, {hola}, {mundo})
+
+necesitas
+    (Partir: {solo:dos::dos puntos::seguidos pueden:separar}, {::})
+    =
+    (Arreglo#crearCon: {solo:dos}, {dos puntos}, {seguidos pueden:separar})
+}|
+DOCUMENTA]
 funcion Partir: texto, separador
     devolver Partir': texto, separador, {}
 finfuncion
@@ -48,10 +78,37 @@ funcion PartirComoPerl: texto, separador
     devolver Partir': texto, separador, {p}
 finfuncion
 
+[DOCUMENTA
+@brief{Parte un texto sin dejar pedazos vacíos.}
+
+Similar a @pd{Partir} pero nunca devuelve un elemento vacío (@pd{«»}).
+DOCUMENTA]
 funcion PartirSinVacíos: texto, separador
     devolver Partir': texto, separador, {-}
 finfuncion
 
+[DOCUMENTA
+@brief{Une una lista de textos con un separador.}
+
+El inverso de @pd{Partir}.
+
+@ejemplo|{
+necesitas
+    (Unir: (Arreglo#crearCon: {hola}, {mundo}, {separador por}, {dos puntos}), {:})
+    =
+    {hola:mundo:separado por:dos puntos}
+
+necesitas
+    (Unir: (Arreglo#crearCon: {}, {}, {hola}, {mundo}), {:})
+    =
+    {::hola:mundo}
+
+necesitas
+    (Unir: (Arreglo#crearCon: {solo:dos}, {dos puntos}, {seguidos pueden:separar}), {::})
+    =
+    {solo:dos::dos puntos::seguidos pueden:separar}
+}|
+DOCUMENTA]
 funcion Unir: textos, separador
     variable res
     fijar res a Reducir: NULO, funcion: acc, el

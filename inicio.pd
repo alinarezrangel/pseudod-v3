@@ -9,7 +9,7 @@ escribir "hola mundo"#subTexto: 1, 2
 nl
 », Parser#grInstrucción)
 
-Escribir: ast
+ParaCadaElemento: ast, &Escribir
 Escribir: {fin1}
 Compilador#ResolverNombres: ast
 Escribir: {fin2}
