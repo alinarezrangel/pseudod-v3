@@ -125,6 +125,12 @@ procedimiento LeerLexema: puerto
         fijar posFin a puerto#posiciónActual
         devolver Tokens#TokenComentario#crear: (Tokens#AreaTextual#crear: posIni, posFin), texto
     finsi
+    si car = {\}
+        variables texto, posFin
+        fijar texto a Puerto#LeerHasta: puerto, {\}
+        fijar posFin a puerto#posiciónActual
+        devolver Tokens#TokenIdentificador#crear: (Tokens#AreaTextual#crear: posIni, posFin), texto
+    finsi
     devolver LeerIdentificador: posIni, car, puerto
 finprocedimiento
 

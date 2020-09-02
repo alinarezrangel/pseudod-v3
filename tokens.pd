@@ -1,5 +1,5 @@
 utilizar bepd/builtins
-utilizar bepd/x/puerto/conPosición
+utilizar bepd/x/puerto/conPosición como PuertoConPos
 
 clase AreaTextual
     atributos posiciónInicial, posiciónFinal
