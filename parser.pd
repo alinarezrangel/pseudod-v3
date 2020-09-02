@@ -1,242 +1,12 @@
 utilizar bepd/builtins
-utilizar tokenizador como Tokenizador
-utilizar puerto como Puerto
-utilizar comb como Comb
+utilizar bepd/x/puerto como Puerto
+utilizar bepd/x/puerto/conPosición como PuertoConPos
 utilizar bepd/algoritmos como Algoritmos
 
-clase Nodo
-    atributos areaTextual, metadatos
-
-    metodo inicializar
-
-    metodo metadatosComoTexto
-
-    metodo fijarMetadato: klase, llave, valor
-    metodo obtenerMetadato: klase, llave
-    metodo contieneMetadato: klase, llave
-finclase
-
-metodo Nodo#inicializar
-    fijar yo#metadatos a Diccionario#vacío
-finmetodo
-
-metodo Nodo#metadatosComoTexto
-    devolver {(metadatos = ~t)}#formatear: yo#metadatos
-finmetodo
-
-metodo Nodo#fijarMetadato: klase, llave, valor
-    si yo#metadatos#contiene: klase
-        (yo#metadatos#en: klase)#fijarEn: llave, valor
-    sino
-        yo#metadatos#fijarEn: klase, (Diccionario#desdePares: llave, valor)
-    finsi
-finmetodo
-
-metodo Nodo#obtenerMetadato: klase, llave
-    devolver (yo#metadatos#en: klase)#en: llave
-finmetodo
-
-metodo Nodo#contieneMetadato: klase, llave
-    si yo#metadatos#contiene: klase
-        devolver (yo#metadatos#en: klase)#contiene: llave
-    sino
-        devolver FALSO
-    finsi
-finmetodo
-
-clase NodoInstrucción hereda Nodo
-finclase
-
-clase NodoVariable hereda NodoInstrucción
-    atributo nombres
-    metodo comoTexto
-finclase
-
-metodo NodoVariable#comoTexto
-    devolver {(NodoVariable: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoFijar hereda NodoInstrucción
-    atributos objetivo, valor
-    metodo comoTexto
-finclase
-
-metodo NodoFijar#comoTexto
-    devolver {(NodoFijar: ~t a ~t en ~t con ~t)}#formatear: yo#objetivo, yo#valor, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoEscribir hereda NodoInstrucción
-    atributo valor
-    metodo comoTexto
-finclase
-
-metodo NodoEscribir#comoTexto
-    devolver {(NodoEscribir: ~t en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoNl hereda NodoInstrucción
-    metodo comoTexto
-finclase
-
-metodo NodoNl#comoTexto
-    devolver {(NodoNl en ~t con ~t)}#formatear: yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoDeclaraciónDeAtributosEnClase hereda NodoInstrucción
-    atributos nombres
-
-    metodo comoTexto
-finclase
-
-metodo NodoDeclaraciónDeAtributosEnClase#comoTexto
-    devolver {(NodoDeclaraciónDeAtributosEnClase: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoDeclaraciónDeMétodoEnClase hereda NodoInstrucción
-    atributos esEstático, nombre, parámetros
-
-    metodo comoTexto
-finclase
-
-metodo NodoDeclaraciónDeMétodoEnClase#comoTexto
-    devolver {(NodoDeclaraciónDeMétodoEnClase: esEstático = ~t, nombre = ~t, params = ~t en ~t con ~t)}#formatear: yo#esEstático, yo#nombre, yo#parámetros, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoClase hereda NodoInstrucción
-    atributos nombre, claseBase, extiendeClases, implementaClases, declaraciones
-
-    metodo comoTexto
-finclase
-
-metodo NodoClase#comoTexto
-    devolver {(NodoClase: nombre = ~t, claseBase = ~t, extiendeClases = ~t, implementaClases = ~t, declaraciones = ~t en ~t con ~t)}#formatear:
-        yo#nombre, yo#claseBase, yo#extiendeClases, yo#implementaClases, yo#declaraciones, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoImplementa hereda NodoInstrucción
-    atributos nombre, definiciones
-
-    metodo comoTexto
-finclase
-
-metodo NodoImplementa#comoTexto
-    devolver {(NodoImplementa: ~t con ~t en ~t con ~t)}#formatear: yo#nombre, yo#definiciones, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoDefineAtributosEnClase hereda NodoInstrucción
-    atributo nombres
-
-    metodo comoTexto
-finclase
-
-metodo NodoDefineAtributosEnClase#comoTexto
-    devolver {(NodoDefineAtributosEnClase: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoDefineMétodoEnClase hereda NodoInstrucción
-    atributos nombre, esEstático, parámetros, cuerpo
-
-    metodo comoTexto
-finclase
-
-metodo NodoDefineMétodoEnClase#comoTexto
-    devolver {(NodoDefineMétodoEnClase: nombre = ~t, esEstático = ~t, params = ~t, cuerpo = ~t en ~t con ~t)}#formatear: yo#nombre, yo#esEstático, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoFunción hereda NodoInstrucción
-    atributos nombre, parámetros, cuerpo
-
-    metodo comoTexto
-finclase
-
-metodo NodoFunción#comoTexto
-    devolver {(NodoFunción: nombre = ~t, params = ~t, cuerpo = ~t en ~t con ~t)}#formatear: yo#nombre, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoExpresion hereda Nodo
-finclase
-
-clase NodoIdentificador hereda NodoExpresion
-    atributo nombre
-    metodo comoTexto
-finclase
-
-metodo NodoIdentificador#comoTexto
-    devolver {(NodoIdentificador: [~t] en ~t con ~t)}#formatear: yo#nombre, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoNumeroLiteral hereda NodoExpresion
-    atributo valor
-    metodo comoTexto
-finclase
-
-metodo NodoNumeroLiteral#comoTexto
-    devolver {(NodoNumeroLiteral: ~t en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoTextoLiteral hereda NodoExpresion
-    atributo valor
-    metodo comoTexto
-finclase
-
-metodo NodoTextoLiteral#comoTexto
-    devolver {(NodoTextoLiteral: [~t] en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoLlamarProcedimiento hereda NodoExpresion
-    atributos proc, argumentos
-    metodo comoTexto
-finclase
-
-metodo NodoLlamarProcedimiento#comoTexto
-    devolver {(NodoLlamarProcedimiento: ~t con ~t en ~t con ~t)}#formatear: yo#proc, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoEnviarMensaje hereda NodoExpresion
-    atributos objeto, mensaje, argumentos
-    metodo comoTexto
-finclase
-
-metodo NodoEnviarMensaje#comoTexto
-    devolver {(NodoEnviarMensaje: enviar ~t a ~t con ~t en ~t con ~t)}#formatear: yo#mensaje, yo#objeto, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoOperador hereda NodoExpresion
-    atributos lhs, op, rhs
-    metodo comoTexto
-finclase
-
-metodo NodoOperador#comoTexto
-    devolver {(NodoOperador: ~t ~t ~t en ~t con ~t)}#formatear: yo#lhs, yo#op, yo#rhs, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoNoLlamar hereda NodoExpresion
-    atributos base, mensajes
-    metodo comoTexto
-finclase
-
-metodo NodoNoLlamar#comoTexto
-    devolver {(NodoNoLlamar: ~t con ~t en ~t con ~t)}#formatear: yo#base, yo#mensajes, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoAutoejecutar hereda NodoExpresion
-    atributos expr, argumentos
-    metodo comoTexto
-finclase
-
-metodo NodoAutoejecutar#comoTexto
-    devolver {(NodoAutoejecutar: ~t con ~t en ~t con ~t)}#formatear: yo#expr, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
-
-clase NodoFunciónAnónima hereda NodoExpresion
-    atributos esMétodo, parámetros, cuerpo
-
-    metodo comoTexto
-finclase
-
-metodo NodoFunciónAnónima#comoTexto
-    devolver {(NodoFunciónAnónima: (esMétodo: ~t): ~t es ~t en ~t con ~t)}#formatear: yo#esMétodo, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
-finmetodo
+utilizar tokens como Tokens
+utilizar tokenizador como Tokenizador
+utilizar combinadores como Comb
+utilizar ast como AST
 
 funcion kw: K  [ => TokenPalabraClave ]
     devolver Comb#PalabraClave: K
@@ -347,17 +117,17 @@ finfuncion
 
 funcion AreaTotal: inicio, final
     variables areaInicio, areaFinal
-    si EsInstancia: inicio, Tokenizador#Token
+    si EsInstancia: inicio, Tokens#Token
         fijar areaInicio a inicio#areaDelToken
     sino [ es un Nodo ]
         fijar areaInicio a inicio#areaTextual
     finsi
-    si EsInstancia: final, Tokenizador#Token
+    si EsInstancia: final, Tokens#Token
         fijar areaFinal a final#areaDelToken
     sino
         fijar areaFinal a final#areaTextual
     finsi
-    devolver Tokenizador#AreaTextual#crear: areaInicio#posiciónInicial, areaFinal#posiciónFinal
+    devolver Tokens#AreaTextual#crear: areaInicio#posiciónInicial, areaFinal#posiciónFinal
 finfuncion
 
 variable TABLA_DE_PRECEDENCIA
@@ -373,7 +143,7 @@ variable OPERADORES
 fijar OPERADORES a Aplanar: TABLA_DE_PRECEDENCIA
 
 funcion EsOperador: obj
-    devolver EsInstancia: obj, Tokenizador#TokenOperador
+    devolver EsInstancia: obj, Tokens#TokenOperador
 finfuncion
 
 funcion PrecedenciaDe: tokenOperador
@@ -389,7 +159,7 @@ finfuncion
 
 funcion ShuntingYard: seq
     devolver Algoritmos#ShuntingYard: seq, funcion: A, op, B
-        devolver clonar NodoOperador#crear con
+        devolver clonar AST#NodoOperador#crear con
             areaTextual: (AreaTotal: A, B)
             lhs: A
             op: op
@@ -402,7 +172,7 @@ variable grId
 fijar grId a
     Comb#Efecto:
         funcion: res
-            devolver clonar NodoIdentificador#crear con
+            devolver clonar AST#NodoIdentificador#crear con
                 areaTextual: res#areaDelToken
                 nombre: res#texto
             finclonar
@@ -413,7 +183,7 @@ variable grNum
 fijar grNum a
     Comb#Efecto:
         funcion: res
-            devolver clonar NodoNumeroLiteral#crear con
+            devolver clonar AST#NodoNumeroLiteral#crear con
                 areaTextual: res#areaDelToken
                 valor: res#texto
             finclonar
@@ -424,7 +194,7 @@ variable grTexto
 fijar grTexto a
     Comb#Efecto:
         funcion: res
-            devolver clonar NodoTextoLiteral#crear con
+            devolver clonar AST#NodoTextoLiteral#crear con
                 areaTextual: res#areaDelToken
                 valor: res#texto
             finclonar
@@ -446,7 +216,7 @@ variable grLlamarProc
 fijar grLlamarProc a
     Comb#Efecto:
         funcion: res
-            devolver clonar NodoLlamarProcedimiento#crear con
+            devolver clonar AST#NodoLlamarProcedimiento#crear con
                 areaTextual: (AreaTotal: ((res#en: 0)#en: 0), ((res#en: 0)#en: 1))
                 proc: (res#en: 0)#en: 0
                 argumentos: res#en: 1
@@ -462,7 +232,7 @@ variable idORefMensaje
 fijar idORefMensaje a
     Comb#Efecto:
         funcion: res
-            si EsInstancia: res, NodoIdentificador
+            si EsInstancia: res, AST#NodoIdentificador
                 devolver Arreglo#crearCon: res
             sino
                 variables base, msgs
@@ -485,7 +255,7 @@ variable grNoLlamar
 fijar grNoLlamar a
     Comb#Efecto:
         funcion: res
-            devolver clonar NodoNoLlamar#crear con
+            devolver clonar AST#NodoNoLlamar#crear con
                 areaTextual: AreaTotal: (res#en: 0), (ÚltimoElemento: (res#en: 1))
                 base: (res#en: 1)#en: 0
                 mensajes: PedazoDeArreglo: (res#en: 1), 1, -1
@@ -505,7 +275,7 @@ fijar grAutoejecutar a
                 fijar argumentos a (res#en: 2)#en: 1
                 fijar nodoFinal a ÚltimoElemento: argumentos
             finsi
-            devolver clonar NodoAutoejecutar#crear con
+            devolver clonar AST#NodoAutoejecutar#crear con
                 areaTextual: AreaTotal: base, nodoFinal
                 expr: base
                 argumentos: argumentos
@@ -545,7 +315,7 @@ fijar grFunciónAnónima a
             fijar esMet a (res#en: 0)#palabraClave = {metodo}
             fijar params a res#en: 1
             fijar cuerpo a res#en: 2
-            devolver clonar NodoFunciónAnónima#crear con
+            devolver clonar AST#NodoFunciónAnónima#crear con
                 areaTextual: (res#en: 0)#areaDelToken
                 esMétodo: esMet
                 parámetros: params
@@ -569,7 +339,7 @@ fijar grEnviarMensaje a
             sino
                 fijar args a (res#en: 2)#en: 1
             finsi
-            devolver clonar NodoEnviarMensaje#crear con
+            devolver clonar AST#NodoEnviarMensaje#crear con
                 areaTextual: (res#en: 0)#areaDelToken
                 objeto: NULO
                 mensaje: (res#en: 1)#texto
@@ -658,7 +428,7 @@ variable grVariable
 fijar grVariable a
     Comb#Efecto:
         funcion: res
-            devolver clonar NodoVariable#crear con
+            devolver clonar AST#NodoVariable#crear con
                 areaTextual: (AreaTotal: (res#en: 0), (res#en: 1))
                 nombres: (Arreglo#crearCon: (res#en: 1))
             finclonar
@@ -669,7 +439,7 @@ variable grFijar
 fijar grFijar a
     Comb#Efecto:
         funcion: res
-            devolver clonar NodoFijar#crear con
+            devolver clonar AST#NodoFijar#crear con
                 areaTextual: (AreaTotal: (res#en: 0), (res#en: 3))
                 objetivo: (res#en: 1)
                 valor: (res#en: 3)
@@ -681,7 +451,7 @@ variable grEscribir
 fijar grEscribir a
     Comb#Efecto:
         funcion: res
-            devolver clonar NodoEscribir#crear con
+            devolver clonar AST#NodoEscribir#crear con
                 areaTextual: (AreaTotal: (res#en: 0), (res#en: 1))
                 valor: (res#en: 1)
             finclonar
@@ -692,7 +462,7 @@ variable grNl
 fijar grNl a
     Comb#Efecto:
         funcion: res
-            devolver clonar NodoNl#crear con
+            devolver clonar AST#NodoNl#crear con
                 areaTextual: res#areaDelToken
             finclonar
         finfuncion,
@@ -710,7 +480,7 @@ fijar grAtributoClase a
         funcion: res
             variables nombres
             fijar nombres a res#en: 1
-            devolver clonar NodoDeclaraciónDeAtributosEnClase#crear con
+            devolver clonar AST#NodoDeclaraciónDeAtributosEnClase#crear con
                 areaTextual: AreaTotal: (res#en: 0), (res#en: 0)
                 nombres: nombres
             finclonar
@@ -726,7 +496,7 @@ fijar grMétodoClase a
             fijar esEstático a no EsInstancia: (res#en: 1), Arreglo
             fijar nombre a res#en: 2
             fijar params a res#en: 3
-            devolver clonar NodoDeclaraciónDeMétodoEnClase#crear con
+            devolver clonar AST#NodoDeclaraciónDeMétodoEnClase#crear con
                 areaTextual: AreaTotal: (res#en: 0), (res#en: 0)
                 esEstático: esEstático
                 nombre: nombre
@@ -769,7 +539,7 @@ fijar grClase a
 
             fijar cuerpo a res#en: 5
 
-            devolver clonar NodoClase#crear con
+            devolver clonar AST#NodoClase#crear con
                 areaTextual: AreaTotal: (res#en: 0), (res#en: 0)
                 nombre: nombre
                 claseBase: claseBase
@@ -792,7 +562,7 @@ variable grDefineMétodoEnClase
 fijar grDefineMétodoEnClase a
     Comb#Efecto:
         funcion: res
-            devolver clonar NodoDefineMétodoEnClase#crear con
+            devolver clonar AST#NodoDefineMétodoEnClase#crear con
                 areaTextual: AreaTotal: (res#en: 0), (res#en: 5)
                 nombre: (res#en: 2)
                 esEstático: (res#en: 1)#longitud > 0
@@ -814,7 +584,7 @@ fijar grDefineAtributoClase a
         funcion: res
             variables nombres
             fijar nombres a res#en: 1
-            devolver clonar NodoDefineAtributosEnClase#crear con
+            devolver clonar AST#NodoDefineAtributosEnClase#crear con
                 areaTextual: AreaTotal: (res#en: 0), (res#en: 0)
                 nombres: nombres
             finclonar
@@ -825,7 +595,7 @@ variable grImplementa
 fijar grImplementa a
     Comb#Efecto:
         funcion: res
-            devolver clonar NodoImplementa#crear con
+            devolver clonar AST#NodoImplementa#crear con
                 areaTextual: AreaTotal: (res#en: 0), (res#en: 3)
                 nombre: (res#en: 1)
                 definiciones: (res#en: 2)
@@ -845,7 +615,7 @@ fijar grFunción a
             fijar nombre a res#en: 1
             fijar params a res#en: 2
             fijar cuerpo a res#en: 3
-            devolver clonar NodoFunción#crear con
+            devolver clonar AST#NodoFunción#crear con
                 areaTextual: AreaTotal: (res#en: 0), (res#en: 4)
                 nombre: nombre
                 parámetros: params
@@ -881,7 +651,7 @@ procedimiento MostrarTokenizadoDeTexto: txt
     variable tks, tknz
     fijar tknz a
         Tokenizador#Tokenizador#crear:
-            (Tokenizador#PuertoConPosiciónTextual#crear:
+            (PuertoConPos#PuertoConPosiciónTextual#crear:
                 (Puerto#TextoComoPuerto: txt))
     fijar tks a Comb#Tokens#desdeTokenizador: tknz
     MostrarTokenizado: tks
@@ -902,7 +672,7 @@ procedimiento MostrarParseadoDeTexto: txt, gr
     variable tks, tknz
     fijar tknz a
         Tokenizador#Tokenizador#crear:
-            (Tokenizador#PuertoConPosiciónTextual#crear:
+            (PuertoConPos#PuertoConPosiciónTextual#crear:
                 (Puerto#TextoComoPuerto: txt))
     fijar tks a Comb#Tokens#desdeTokenizador: tknz
     MostrarParseado: tks, gr
@@ -912,7 +682,7 @@ procedimiento CrearAST: txt, gr
     variable tks, tknz
     fijar tknz a
         Tokenizador#Tokenizador#crear:
-            (Tokenizador#PuertoConPosiciónTextual#crear:
+            (PuertoConPos#PuertoConPosiciónTextual#crear:
                 (Puerto#TextoComoPuerto: txt))
     fijar tks a Comb#Tokens#desdeTokenizador: tknz
 

@@ -1,0 +1,60 @@
+utilizar bepd/builtins
+utilizar bepd/x/puerto como Puerto
+
+clase PosiciónTextual
+    atributos nombreDelArchivo, línea, columna
+
+    metodo inicializar: nombreDelArchivo, línea, columna
+
+    metodo comoTexto
+finclase
+
+metodo PosiciónTextual#inicializar: nombreDelArchivo, línea, columna
+    fijar yo#nombreDelArchivo a nombreDelArchivo
+    fijar yo#línea a línea
+    fijar yo#columna a columna
+finmetodo
+
+metodo PosiciónTextual#comoTexto
+    devolver {«~t:~t:~t»}#formatear: yo#nombreDelArchivo, yo#línea, yo#columna
+finmetodo
+
+clase PuertoConPosiciónTextual hereda Puerto#Puerto
+    metodo inicializar: puerto
+
+    metodo leerCarácter
+    metodo desleerCarácter
+finclase
+
+atributos
+    PuertoConPosiciónTextual#posiciónActual,
+    PuertoConPosiciónTextual#puerto,
+    PuertoConPosiciónTextual#posiciónAnterior
+
+metodo PuertoConPosiciónTextual#inicializar: puerto
+    fijar yo#puerto a puerto
+    fijar yo#posiciónActual a PosiciónTextual#crear: {}, 1, 0
+    fijar yo#posiciónAnterior a clonar yo#posiciónActual con finclonar
+finmetodo
+
+metodo PuertoConPosiciónTextual#leerCarácter
+    variables c, np
+    fijar c a yo#puerto#leerCarácter
+    fijar yo#posiciónAnterior a clonar yo#posiciónActual con finclonar
+    fijar np a clonar yo#posiciónActual con finclonar
+    si c = {~%}#formatear
+        fijar np#línea a yo#posiciónActual#línea + 1
+        fijar np#columna a 0
+    sino
+        fijar np#columna a yo#posiciónActual#columna + 1
+    finsi
+    fijar yo#posiciónActual a np
+    devolver c
+finmetodo
+
+metodo PuertoConPosiciónTextual#desleerCarácter
+    variable c
+    fijar c a yo#puerto#desleerCarácter
+    fijar yo#posiciónActual a clonar yo#posiciónAnterior con finclonar
+    devolver c
+finmetodo

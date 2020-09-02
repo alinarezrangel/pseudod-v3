@@ -2,118 +2,9 @@ utilizar bepd/builtins
 utilizar bepd/utilidades/texto
 
 utilizar tokenizador como Tok
+utilizar ast como AST
 utilizar parser como Parser
-
-clase CaminaNodos
-    metodo visitar: nodo
-    metodo visitarVariable: nodo
-    metodo visitarFijar: nodo
-    metodo visitarEscribir: nodo
-    metodo visitarNl: nodo
-    metodo visitarClase: nodo
-    metodo visitarDeclaraciónDeAtributosEnClase: nodo
-    metodo visitarDeclaraciónDeMétodoEnClase: nodo
-    metodo visitarImplementa: nodo
-    metodo visitarDefineAtributosEnClase: nodo
-    metodo visitarDefineMétodoEnClase: nodo
-    metodo visitarFunción: nodo
-    metodo visitarIdentificador: nodo
-    metodo visitarNúmeroLiteral: nodo
-    metodo visitarTextoLiteral: nodo
-    metodo visitarLlamarProcedimiento: nodo
-    metodo visitarEnviarMensaje: nodo
-    metodo visitarOperador: nodo
-    metodo visitarNoLlamar: nodo
-    metodo visitarAutoejecutar: nodo
-    metodo visitarFunciónAnónima: nodo
-finclase
-
-metodo CaminaNodos#visitar: nodo
-    si EsInstancia: nodo, Parser#NodoVariable
-        devolver yo#visitarVariable: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoFijar
-        devolver yo#visitarFijar: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoEscribir
-        devolver yo#visitarEscribir: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoNl
-        devolver yo#visitarNl: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoClase
-        devolver yo#visitarClase: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoDeclaraciónDeAtributosEnClase
-        devolver yo#visitarDeclaraciónDeAtributosEnClase: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoDeclaraciónDeMétodoEnClase
-        devolver yo#visitarDeclaraciónDeMétodoEnClase: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoImplementa
-        devolver yo#visitarImplementa: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoDefineAtributosEnClase
-        devolver yo#visitarDefineAtributosEnClase: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoDefineMétodoEnClase
-        devolver yo#visitarDefineMétodoEnClase: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoFunción
-        devolver yo#visitarFunción: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoIdentificador
-        devolver yo#visitarIdentificador: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoNumeroLiteral
-        devolver yo#visitarNúmeroLiteral: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoTextoLiteral
-        devolver yo#visitarTextoLiteral: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoLlamarProcedimiento
-        devolver yo#visitarLlamarProcedimiento: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoEnviarMensaje
-        devolver yo#visitarEnviarMensaje: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoOperador
-        devolver yo#visitarOperador: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoNoLlamar
-        devolver yo#visitarNoLlamar: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoAutoejecutar
-        devolver yo#visitarAutoejecutar: nodo
-    finsi
-    si EsInstancia: nodo, Parser#NodoFunciónAnónima
-        devolver yo#visitarFunciónAnónima: nodo
-    finsi
-    [ Nunca se llega hasta aquí. ]
-    Escribir: ({#visitar no implementado para ~t}#formatear: (TipoDe: nodo))
-    necesitas FALSO
-finmetodo
-
-metodo CaminaNodos#visitarVariable: nodo finmetodo
-metodo CaminaNodos#visitarFijar: nodo finmetodo
-metodo CaminaNodos#visitarEscribir: nodo finmetodo
-metodo CaminaNodos#visitarNl: nodo finmetodo
-metodo CaminaNodos#visitarClase: nodo finmetodo
-metodo CaminaNodos#visitarDeclaraciónDeAtributosEnClase: nodo finmetodo
-metodo CaminaNodos#visitarDeclaraciónDeMétodoEnClase: nodo finmetodo
-metodo CaminaNodos#visitarImplementa: nodo finmetodo
-metodo CaminaNodos#visitarDefineAtributosEnClase: nodo finmetodo
-metodo CaminaNodos#visitarDefineMétodoEnClase: nodo finmetodo
-metodo CaminaNodos#visitarFunción: nodo finmetodo
-metodo CaminaNodos#visitarIdentificador: nodo finmetodo
-metodo CaminaNodos#visitarNúmeroLiteral: nodo finmetodo
-metodo CaminaNodos#visitarTextoLiteral: nodo finmetodo
-metodo CaminaNodos#visitarLlamarProcedimiento: nodo finmetodo
-metodo CaminaNodos#visitarEnviarMensaje: nodo finmetodo
-metodo CaminaNodos#visitarOperador: nodo finmetodo
-metodo CaminaNodos#visitarNoLlamar: nodo finmetodo
-metodo CaminaNodos#visitarAutoejecutar: nodo finmetodo
-metodo CaminaNodos#visitarFunciónAnónima: nodo finmetodo
+utilizar caminaNodos como CN
 
 clase Ámbito
     metodo estatico vacío
@@ -211,7 +102,7 @@ procedimiento FijarNombreResuelto: nodo, id
     nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResuelto}, id
 finprocedimiento
 
-clase ResoluciónDeNombresCNImpl hereda CaminaNodos
+clase ResoluciónDeNombresCNImpl hereda CN#CaminaNodos
     metodo inicializar
 finclase
 
@@ -421,7 +312,7 @@ funcion EscaparParaLua: texto
     devolver res#concatenar: {"} [ " ]
 finfuncion
 
-clase CompiladorSimpleALua hereda CaminaNodos
+clase CompiladorSimpleALua hereda CN#CaminaNodos
     metodo inicializar
 finclase
 
@@ -444,7 +335,7 @@ metodo CompiladorSimpleALua#visitarVariable: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarFijar: nodo
-    necesitas EsInstancia: nodo#objetivo, Parser#NodoIdentificador
+    necesitas EsInstancia: nodo#objetivo, AST#NodoIdentificador
     variable obj, expr
     fijar obj a IdentificadorDe: nodo#objetivo
     fijar expr a yo#visitar: nodo#valor

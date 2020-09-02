@@ -1,0 +1,235 @@
+utilizar bepd/builtins
+
+clase Nodo
+    atributos areaTextual, metadatos
+
+    metodo inicializar
+
+    metodo metadatosComoTexto
+
+    metodo fijarMetadato: klase, llave, valor
+    metodo obtenerMetadato: klase, llave
+    metodo contieneMetadato: klase, llave
+finclase
+
+metodo Nodo#inicializar
+    fijar yo#metadatos a Diccionario#vacío
+finmetodo
+
+metodo Nodo#metadatosComoTexto
+    devolver {(metadatos = ~t)}#formatear: yo#metadatos
+finmetodo
+
+metodo Nodo#fijarMetadato: klase, llave, valor
+    si yo#metadatos#contiene: klase
+        (yo#metadatos#en: klase)#fijarEn: llave, valor
+    sino
+        yo#metadatos#fijarEn: klase, (Diccionario#desdePares: llave, valor)
+    finsi
+finmetodo
+
+metodo Nodo#obtenerMetadato: klase, llave
+    devolver (yo#metadatos#en: klase)#en: llave
+finmetodo
+
+metodo Nodo#contieneMetadato: klase, llave
+    si yo#metadatos#contiene: klase
+        devolver (yo#metadatos#en: klase)#contiene: llave
+    sino
+        devolver FALSO
+    finsi
+finmetodo
+
+clase NodoInstrucción hereda Nodo
+finclase
+
+clase NodoVariable hereda NodoInstrucción
+    atributo nombres
+    metodo comoTexto
+finclase
+
+metodo NodoVariable#comoTexto
+    devolver {(NodoVariable: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoFijar hereda NodoInstrucción
+    atributos objetivo, valor
+    metodo comoTexto
+finclase
+
+metodo NodoFijar#comoTexto
+    devolver {(NodoFijar: ~t a ~t en ~t con ~t)}#formatear: yo#objetivo, yo#valor, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoEscribir hereda NodoInstrucción
+    atributo valor
+    metodo comoTexto
+finclase
+
+metodo NodoEscribir#comoTexto
+    devolver {(NodoEscribir: ~t en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoNl hereda NodoInstrucción
+    metodo comoTexto
+finclase
+
+metodo NodoNl#comoTexto
+    devolver {(NodoNl en ~t con ~t)}#formatear: yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoDeclaraciónDeAtributosEnClase hereda NodoInstrucción
+    atributos nombres
+
+    metodo comoTexto
+finclase
+
+metodo NodoDeclaraciónDeAtributosEnClase#comoTexto
+    devolver {(NodoDeclaraciónDeAtributosEnClase: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoDeclaraciónDeMétodoEnClase hereda NodoInstrucción
+    atributos esEstático, nombre, parámetros
+
+    metodo comoTexto
+finclase
+
+metodo NodoDeclaraciónDeMétodoEnClase#comoTexto
+    devolver {(NodoDeclaraciónDeMétodoEnClase: esEstático = ~t, nombre = ~t, params = ~t en ~t con ~t)}#formatear: yo#esEstático, yo#nombre, yo#parámetros, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoClase hereda NodoInstrucción
+    atributos nombre, claseBase, extiendeClases, implementaClases, declaraciones
+
+    metodo comoTexto
+finclase
+
+metodo NodoClase#comoTexto
+    devolver {(NodoClase: nombre = ~t, claseBase = ~t, extiendeClases = ~t, implementaClases = ~t, declaraciones = ~t en ~t con ~t)}#formatear:
+        yo#nombre, yo#claseBase, yo#extiendeClases, yo#implementaClases, yo#declaraciones, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoImplementa hereda NodoInstrucción
+    atributos nombre, definiciones
+
+    metodo comoTexto
+finclase
+
+metodo NodoImplementa#comoTexto
+    devolver {(NodoImplementa: ~t con ~t en ~t con ~t)}#formatear: yo#nombre, yo#definiciones, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoDefineAtributosEnClase hereda NodoInstrucción
+    atributo nombres
+
+    metodo comoTexto
+finclase
+
+metodo NodoDefineAtributosEnClase#comoTexto
+    devolver {(NodoDefineAtributosEnClase: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoDefineMétodoEnClase hereda NodoInstrucción
+    atributos nombre, esEstático, parámetros, cuerpo
+
+    metodo comoTexto
+finclase
+
+metodo NodoDefineMétodoEnClase#comoTexto
+    devolver {(NodoDefineMétodoEnClase: nombre = ~t, esEstático = ~t, params = ~t, cuerpo = ~t en ~t con ~t)}#formatear: yo#nombre, yo#esEstático, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoFunción hereda NodoInstrucción
+    atributos nombre, parámetros, cuerpo
+
+    metodo comoTexto
+finclase
+
+metodo NodoFunción#comoTexto
+    devolver {(NodoFunción: nombre = ~t, params = ~t, cuerpo = ~t en ~t con ~t)}#formatear: yo#nombre, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoExpresion hereda Nodo
+finclase
+
+clase NodoIdentificador hereda NodoExpresion
+    atributo nombre
+    metodo comoTexto
+finclase
+
+metodo NodoIdentificador#comoTexto
+    devolver {(NodoIdentificador: [~t] en ~t con ~t)}#formatear: yo#nombre, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoNumeroLiteral hereda NodoExpresion
+    atributo valor
+    metodo comoTexto
+finclase
+
+metodo NodoNumeroLiteral#comoTexto
+    devolver {(NodoNumeroLiteral: ~t en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoTextoLiteral hereda NodoExpresion
+    atributo valor
+    metodo comoTexto
+finclase
+
+metodo NodoTextoLiteral#comoTexto
+    devolver {(NodoTextoLiteral: [~t] en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoLlamarProcedimiento hereda NodoExpresion
+    atributos proc, argumentos
+    metodo comoTexto
+finclase
+
+metodo NodoLlamarProcedimiento#comoTexto
+    devolver {(NodoLlamarProcedimiento: ~t con ~t en ~t con ~t)}#formatear: yo#proc, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoEnviarMensaje hereda NodoExpresion
+    atributos objeto, mensaje, argumentos
+    metodo comoTexto
+finclase
+
+metodo NodoEnviarMensaje#comoTexto
+    devolver {(NodoEnviarMensaje: enviar ~t a ~t con ~t en ~t con ~t)}#formatear: yo#mensaje, yo#objeto, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoOperador hereda NodoExpresion
+    atributos lhs, op, rhs
+    metodo comoTexto
+finclase
+
+metodo NodoOperador#comoTexto
+    devolver {(NodoOperador: ~t ~t ~t en ~t con ~t)}#formatear: yo#lhs, yo#op, yo#rhs, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoNoLlamar hereda NodoExpresion
+    atributos base, mensajes
+    metodo comoTexto
+finclase
+
+metodo NodoNoLlamar#comoTexto
+    devolver {(NodoNoLlamar: ~t con ~t en ~t con ~t)}#formatear: yo#base, yo#mensajes, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoAutoejecutar hereda NodoExpresion
+    atributos expr, argumentos
+    metodo comoTexto
+finclase
+
+metodo NodoAutoejecutar#comoTexto
+    devolver {(NodoAutoejecutar: ~t con ~t en ~t con ~t)}#formatear: yo#expr, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoFunciónAnónima hereda NodoExpresion
+    atributos esMétodo, parámetros, cuerpo
+
+    metodo comoTexto
+finclase
+
+metodo NodoFunciónAnónima#comoTexto
+    devolver {(NodoFunciónAnónima: (esMétodo: ~t): ~t es ~t en ~t con ~t)}#formatear: yo#esMétodo, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
+finmetodo

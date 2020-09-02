@@ -1,0 +1,93 @@
+utilizar bepd/builtins
+utilizar bepd/x/puerto/conPosición
+
+clase AreaTextual
+    atributos posiciónInicial, posiciónFinal
+
+    metodo inicializar: posInicial, posFinal
+
+    metodo comoTexto
+finclase
+
+metodo AreaTextual#inicializar: posiciónInicial, posiciónFinal
+    fijar yo#posiciónInicial a posiciónInicial
+    fijar yo#posiciónFinal a posiciónFinal
+finmetodo
+
+metodo AreaTextual#comoTexto
+    devolver {(desde ~t hasta ~t)}#formatear: yo#posiciónInicial, yo#posiciónFinal
+finmetodo
+
+clase Token
+    atributos areaDelToken, texto
+
+    metodo inicializar: area, texto
+
+    metodo comoTexto
+finclase
+
+metodo Token#inicializar: area, texto
+    fijar yo#areaDelToken a area
+    fijar yo#texto a texto
+finmetodo
+
+metodo Token#comoTexto
+    devolver {(Token (~t) en ~t contiene [~t])}#formatear: (TipoDe: yo), yo#areaDelToken, yo#texto
+finmetodo
+
+clase TokenIdentificador hereda Token
+finclase
+
+clase TokenPalabraClave hereda Token
+    atributo palabraClave
+
+    metodo inicializar: area, texto, palabra
+finclase
+
+metodo TokenPalabraClave#inicializar: area, texto, palabra
+    (Token#_crearConYo: yo)#inicializar: area, texto
+    fijar yo#palabraClave a palabra
+finmetodo
+
+variable PALABRAS_CLAVE
+fijar PALABRAS_CLAVE a
+    (Arreglo#crearCon:
+        {#}, {(}, {)}, {,}, {.}, {:}, {%}, {\}, {"}, {«}, {»}, «{», «}»,
+        {[}, {]}, {&},
+        {variable}, {variables}, {adquirir}, {instancia}, {fijar}, {a},
+        {escribir}, {nl}, {leer}, {si}, {finsi}, {sino}, {mientras},
+        {finmientras}, {funcion}, {finfuncion}, {procedimiento},
+        {finprocedimiento}, {metodo}, {finmetodo}, {devolver}, {llamar},
+        {finargs}, {con}, {de}, {y}, {e}, {clase}, {hereda}, {extiende},
+        {implementa}, {finclase}, {atributo}, {atributos}, {estatico},
+        {clonar}, {finclonar}, {son}, {sean}, {iguales}, {diferentes}, {y},
+        {tanto}, {como}, {algun}, {o}, {necesitas}, {utilizar}, {no},
+        {finimplementa}
+    )
+
+[ " ]
+
+clase TokenNumero hereda Token
+    atributo valor
+
+    metodo inicializar: area, texto, valor
+finclase
+
+metodo TokenNumero#inicializar: area, texto, valor
+    (Token#_crearConYo: yo)#inicializar: area, texto
+    fijar yo#valor a valor
+finmetodo
+
+clase TokenOperador hereda Token
+    metodo op
+finclase
+
+metodo TokenOperador#op
+    devolver yo#texto
+finmetodo
+
+clase TokenTexto hereda Token
+finclase
+
+clase TokenComentario hereda Token
+finclase

@@ -1,6 +1,7 @@
 utilizar bepd/builtins
-utilizar tokenizador como Tokenizador
-utilizar puerto como Puerto
+utilizar bepd/x/puerto como Puerto
+
+utilizar tokens como TokensNS
 
 clase Tokens
     metodo estatico desdeTokenizador: tokenizador
@@ -97,7 +98,7 @@ finfuncion
 
 funcion PalabraClave: pal
     funcion pred: tk
-        si no EsInstancia: tk, Tokenizador#TokenPalabraClave
+        si no EsInstancia: tk, TokensNS#TokenPalabraClave
             devolver FALSO
         sino
             devolver tk#palabraClave = pal
@@ -111,7 +112,7 @@ finfuncion
 
 funcion Identificador
     funcion pred: tk
-        devolver EsInstancia: tk, Tokenizador#TokenIdentificador
+        devolver EsInstancia: tk, TokensNS#TokenIdentificador
     finfuncion
     funcion genMensjError: tk
         devolver {Se esperaba un identificador pero se obtuvo ~t}#formatear: tk
@@ -121,7 +122,7 @@ finfuncion
 
 funcion NumeroLiteral
     funcion pred: tk
-        devolver EsInstancia: tk, Tokenizador#TokenNumero
+        devolver EsInstancia: tk, TokensNS#TokenNumero
     finfuncion
     funcion genMensjError: tk
         devolver {Se esperaba un número pero se obtuvo ~t}#formatear: tk
@@ -131,7 +132,7 @@ finfuncion
 
 funcion Operador
     funcion pred: tk
-        devolver EsInstancia: tk, Tokenizador#TokenOperador
+        devolver EsInstancia: tk, TokensNS#TokenOperador
     finfuncion
     funcion genMensjError: tk
         devolver {Se esperaba un operador pero se obtuvo ~t}#formatear: tk
@@ -141,7 +142,7 @@ finfuncion
 
 funcion TextoLiteral
     funcion pred: tk
-        devolver EsInstancia: tk, Tokenizador#TokenTexto
+        devolver EsInstancia: tk, TokensNS#TokenTexto
     finfuncion
     funcion genMensjError: tk
         devolver {Se esperaba un texto literal pero se obtuvo ~t}#formatear: tk
