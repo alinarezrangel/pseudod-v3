@@ -3,16 +3,22 @@ utilizar tokenizador como Tokenizador
 utilizar parser como Parser
 utilizar compilador como Compilador
 
-variable ast
+variables ast, ámbito
 fijar ast a (Parser#CrearAST: «
-escribir "hola mundo"#subTexto: 1, 2
-nl
+variable HOLA
+
+funcion Hola
+    escribir HOLA
+    escribir MUNDO
+finfuncion
+
+variable MUNDO
 », Parser#grInstrucción)
 
 ParaCadaElemento: ast, &Escribir
 Escribir: {fin1}
-Compilador#ResolverNombres: ast
+fijar ámbito a Compilador#ResolverNombres: ast
 Escribir: {fin2}
 ParaCadaElemento: ast, &Escribir
 Escribir: {es}
-Escribir: (Compilador#CompilarALua: ast)
+Escribir: (Compilador#CompilarALua: ast, ámbito)

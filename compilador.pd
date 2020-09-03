@@ -21,6 +21,8 @@ clase Ámbito
     metodo obtener: nombre
 
     metodo crearSubámbito
+
+    metodo comoTexto
 finclase
 
 atributos Ámbito#_mapeo
@@ -79,6 +81,10 @@ metodo Ámbito#crearSubámbito
     devolver sub
 finmetodo
 
+metodo Ámbito#comoTexto
+    devolver {(Ámbito: valores = ~t, padre = ~t)}#formatear: yo#_mapeo, yo#ámbitoPadre
+finmetodo
+
 clase LlaveResoluciónDeNombres
     metodo comoTexto
 finclase
@@ -104,12 +110,16 @@ finprocedimiento
 
 clase ResoluciónDeNombresCNImpl hereda CN#CaminaNodos
     metodo inicializar
+
+    metodo finalizar: nodo
 finclase
 
-atributo ResoluciónDeNombresCNImpl#_nombres
+atributo ResoluciónDeNombresCNImpl#_nombres,
+         ResoluciónDeNombresCNImpl#_porResolver
 
 metodo ResoluciónDeNombresCNImpl#inicializar
     fijar yo#_nombres a Ámbito#vacío
+    fijar yo#_porResolver a Arreglo#vacio
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#crearSubámbito
@@ -195,8 +205,12 @@ metodo ResoluciónDeNombresCNImpl#visitarDefineMétodoEnClase: nodo
         FijarNombreResuelto: param, id
     finprocedimiento
 
-    ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
-        rdn#visitar: stmt
+    yo#_porResolver#agregarAlFinal: procedimiento
+        ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
+            rdn#visitar: stmt
+        finprocedimiento
+
+        rdn#finalizar: nodo
     finprocedimiento
 finmetodo
 
@@ -208,7 +222,6 @@ metodo ResoluciónDeNombresCNImpl#visitarFunción: nodo
     fijar idfunc a GenerarIdDeNombre
     FijarNombreResuelto: nodo#nombre, idfunc
     yo#_nombres#agregar: nodo#nombre#nombre, idfunc
-    rdn#_nombres#agregar: nodo#nombre#nombre, idfunc
 
     ParaCadaElemento: nodo#parámetros, procedimiento: param
         variable id
@@ -217,8 +230,12 @@ metodo ResoluciónDeNombresCNImpl#visitarFunción: nodo
         FijarNombreResuelto: param, id
     finprocedimiento
 
-    ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
-        rdn#visitar: stmt
+    yo#_porResolver#agregarAlFinal: procedimiento
+        ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
+            rdn#visitar: stmt
+        finprocedimiento
+
+        rdn#finalizar: nodo
     finprocedimiento
 finmetodo
 
@@ -282,9 +299,23 @@ metodo ResoluciónDeNombresCNImpl#visitarFunciónAnónima: nodo
         FijarNombreResuelto: nodo, id
     finsi
 
-    ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
-        rdn#visitar: stmt
+    yo#_porResolver#agregarAlFinal: procedimiento
+        ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
+            rdn#visitar: stmt
+        finprocedimiento
+
+        rdn#finalizar: nodo
     finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#finalizar: nodo
+    ParaCadaElemento: yo#_porResolver, procedimiento: callback
+        %callback
+    finprocedimiento
+
+    si no EsNulo: nodo
+        nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídos}, yo#_nombres
+    finsi
 finmetodo
 
 procedimiento ResolverNombres: ast
@@ -293,7 +324,13 @@ procedimiento ResolverNombres: ast
     ParaCadaElemento: ast, procedimiento: nodo
         cn#visitar: nodo
     finprocedimiento
+    cn#finalizar: NULO
+    devolver cn#_nombres
 finprocedimiento
+
+funcion ObtenerNombresDefinídos: nodo
+    devolver nodo#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídos}
+finfuncion
 
 funcion EscaparParaLua: texto
     variable res
@@ -312,16 +349,6 @@ funcion EscaparParaLua: texto
     devolver res#concatenar: {"} [ " ]
 finfuncion
 
-clase CompiladorSimpleALua hereda CN#CaminaNodos
-    metodo inicializar
-finclase
-
-atributo CompiladorSimpleALua#_ámbito
-
-metodo CompiladorSimpleALua#inicializar
-    fijar yo#_ámbito a Ámbito#vacío
-finmetodo
-
 funcion NombreResueltoDe: id
     devolver id#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResuelto}
 finfuncion
@@ -330,8 +357,35 @@ funcion IdentificadorDe: id
     devolver {_}#concatenar: (NombreResueltoDe: id)#comoTexto
 finfuncion
 
+clase CompiladorSimpleALua hereda CN#CaminaNodos
+    metodo estatico crearSubámbitoDesdeNodo: nodo
+
+    metodo inicializar: ámbito
+
+    metodo iniciar
+finclase
+
+atributo CompiladorSimpleALua#_ámbito
+
+metodo estatico CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
+    devolver CompiladorSimpleALua#crear: (nodo#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídos})
+finmetodo
+
+metodo CompiladorSimpleALua#inicializar: ámbito
+    fijar yo#_ámbito a ámbito
+finmetodo
+
+metodo CompiladorSimpleALua#iniciar
+    variable res
+    fijar res a Arreglo#vacio
+    yo#_ámbito#_mapeo#paraCadaPar: procedimiento: nombreEnPseudoD, id
+        res#agregarAlFinal: ({local _~t}#formatear: id)
+    finprocedimiento
+    devolver Unir: res, {~%}#formatear
+finmetodo
+
 metodo CompiladorSimpleALua#visitarVariable: nodo
-    devolver {local ~t}#formatear: (Unir: (Mapear: nodo#nombres, &IdentificadorDe), {, })
+    devolver {}
 finmetodo
 
 metodo CompiladorSimpleALua#visitarFijar: nodo
@@ -389,6 +443,7 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueldoDeYo, parámetro
         fijar met a {}
     finsi
     cods#agregarAlFinal: ({function(~t~t)}#formatear: met, params)
+    cods#agregarAlFinal: yo#iniciar
 
     ParaCadaElemento: cuerpo, procedimiento: stmt
         cods#agregarAlFinal: (yo#visitar: stmt)
@@ -400,13 +455,13 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueldoDeYo, parámetro
 finmetodo
 
 metodo CompiladorSimpleALua#visitarFunción: nodo
-    variables cods, id
+    variables cods, id, subyo
+    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
     fijar id a IdentificadorDe: nodo#nombre
     fijar cods a Arreglo#vacio
-    cods#agregarAlFinal: ({local ~t}#formatear: id)
     cods#agregarAlFinal: ({~t = ~t}#formatear:
         id,
-        (yo#expresiónDeFunción: NULO, nodo#parámetros, nodo#cuerpo)
+        (subyo#expresiónDeFunción: NULO, nodo#parámetros, nodo#cuerpo)
     )
     devolver Unir: cods, {~%}#formatear
 finmetodo
@@ -469,19 +524,22 @@ metodo CompiladorSimpleALua#visitarAutoejecutar: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarFunciónAnónima: nodo
-    variable nrdyo
+    variable nrdyo, subyo
+    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
     si nodo#esMétodo
         fijar nrdyo a nodo#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
     sino
         fijar nrdyo a NULO
     finsi
-    devolver yo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
+    devolver subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
 finmetodo
 
-funcion CompilarALua: ast
-    variable comp
-    fijar comp a CompiladorSimpleALua#crear
-    devolver Unir: (Mapear: ast, funcion: nodo
+funcion CompilarALua: ast, ámbito
+    variables comp, partes, ini
+    fijar comp a CompiladorSimpleALua#crear: ámbito
+    fijar ini a comp#iniciar
+    fijar partes a Mapear: ast, funcion: nodo
         devolver comp#visitar: nodo
-    finfuncion), {~%}#formatear
+    finfuncion
+    devolver {~t~%~t}#formatear: ini, (Unir: partes, {~%}#formatear)
 finfuncion
