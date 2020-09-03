@@ -93,7 +93,22 @@ procedimiento LeerLexema: puerto
     si car = Puerto#EOF
         devolver Puerto#EOF
     finsi
-    si (car = {-}) || (ASCII#EsDígitoDecimal: car)
+    si car = {-}
+        variables car2, posFin
+        fijar posFin a puerto#posiciónActual
+        fijar car2 a puerto#leerCarácter
+        si EsEspacioEnBlanco: car2
+            devolver Tokens#TokenOperador#crear: (Tokens#AreaTextual#crear: posIni, posFin), car
+        sino
+            fijar car a car#concatenar: car2
+            si ASCII#EsDígitoDecimal: car2
+                devolver LeerLiteralNumérica: posIni, car, puerto
+            sino
+                devolver LeerIdentificador: posIni, car, puerto
+            finsi
+        finsi
+    finsi
+    si ASCII#EsDígitoDecimal: car
         devolver LeerLiteralNumérica: posIni, car, puerto
     finsi
     si EsSímbolo: car
