@@ -151,14 +151,12 @@ function M.objeto()
 
    function obj:recvMensaje(mensaje, ...)
       if obj.methods[mensaje] == nil then
-         if mensaje == "igualA" then
+         if obj.methods["metodoNoEncontrado"] ~= nil then
+            return M.enviarMensaje(obj.methods["metodoNoEncontrado"], "llamar", mensaje, M.arreglo(...))
+         elseif mensaje == "igualA" or mensaje == "operador_=" then
             return self:equalTo(...)
-         elseif mensaje == "operador_=" then
-            return M.enviarMensaje(self, "igualA", ...)
          elseif mensaje == "clonar" then
             return self:clone()
-         elseif obj.methods["metodoNoEncontrado"] ~= nil then
-            return M.enviarMensaje(obj.methods["metodoNoEncontrado"], "llamar", mensaje, M.arreglo(...))
          else
             error(("Método %q no encontrado"):format(mensaje))
          end
