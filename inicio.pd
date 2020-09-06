@@ -3,22 +3,28 @@ utilizar tokenizador como Tokenizador
 utilizar parser como Parser
 utilizar compilador como Compilador
 
-variables ast, ámbito
-fijar ast a (Parser#CrearAST: «
-variable HOLA
+Escribir: {Inicio}
+variables ast, ámbito, programa
+fijar programa a «
+variable X
+variable Y
+si son diferentes X#HOLA y Y
+ escribir 1
+sino
+ escribir 2
+finsi
+escribir 3
+»
 
-funcion Hola
-    escribir HOLA
-    escribir MUNDO
-finfuncion
-
-variable MUNDO
-», Parser#grInstrucción)
-
+Escribir: {Mostrando tokenizado:}
+Tokenizador#MostrarTokenizadoDeTexto: programa
+Escribir: {Creando el AST...}
+fijar ast a Parser#CrearAST: programa, Parser#grInstrucción
+Escribir: {Mostrando el AST}
 ParaCadaElemento: ast, &Escribir
-Escribir: {fin1}
+Escribir: {Resolviendo nombres...}
 fijar ámbito a Compilador#ResolverNombres: ast
-Escribir: {fin2}
+Escribir: {Mostrando AST con información léxica:}
 ParaCadaElemento: ast, &Escribir
-Escribir: {es}
+Escribir: {Compilando a LUA...}
 Escribir: (Compilador#CompilarALua: ast, ámbito)

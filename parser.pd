@@ -355,6 +355,62 @@ fijar grEnviarMensaje a
                     (delay: funcion devolver grExprSinOperador finfuncion),
                     (try': (kw: {,})))))
 
+variable grSonIguales
+fijar grSonIguales a
+    Comb#Efecto:
+        funcion: res
+            variables tipoIgualdad, lhs, rhs
+            si (res#en: 1)#texto = {iguales}
+                fijar tipoIgualdad a AST#TipoIgualdad#IGUALES
+            sino
+                fijar tipoIgualdad a AST#TipoIgualdad#DIFERENTES
+            finsi
+            fijar lhs a res#en: 2
+            fijar rhs a res#en: 4
+            devolver clonar AST#NodoSonIguales#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 4)
+                lhs: lhs
+                tipoIgualdad: tipoIgualdad
+                rhs: rhs
+            finclonar
+        finfuncion,
+        (seq:
+            (alt:
+                (try': (kw: {son})),
+                (try': (kw: {sean}))),
+            (alt:
+                (try': (kw: {iguales})),
+                (try': (kw: {diferentes}))),
+            (delay: funcion devolver grExpr finfuncion),
+            (kw: {y}),
+            (delay: funcion devolver grExpr finfuncion))
+
+variable grReferenciar
+fijar grReferenciar a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar AST#NodoReferenciar#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 1)
+                nombre: res#en: 1
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {ref})),
+            grId)
+
+variable grNo
+fijar grNo a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar AST#NodoNo#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 1)
+                nombre: res#en: 1
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {no})),
+            (delay: funcion devolver grExpr finfuncion))
+
 variable grExprSinOperador
 fijar grExprSinOperador a
     Comb#Efecto:
@@ -376,6 +432,9 @@ fijar grExprSinOperador a
                 grNoLlamar,
                 grAutoejecutar,
                 grFunciónAnónima,
+                grSonIguales,
+                grReferenciar,
+                grNo,
                 (try': grId),
                 (try': grNum),
                 (try': grTexto)),
@@ -634,9 +693,137 @@ fijar grFunción a
                 (try': (kw: {finprocedimiento})),
                 (try': (kw: {finfun}))))
 
+variable grNecesitas
+fijar grNecesitas a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar AST#NodoNecesitas#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 1)
+                expresión: res#en: 1
+            finclonar
+        finfuncion,
+        (seq: (try': (kw: {necesitas})), grExpr)
+
+variable grDevolver
+fijar grDevolver a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar AST#NodoDevolver#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 1)
+                expresión: res#en: 1
+            finclonar
+        finfuncion,
+        (seq: (try': (kw: {devolver})), grExpr)
+
+variable grSi
+fijar grSi a
+    Comb#Efecto:
+        funcion: res
+            variables cond, verdadero, falso
+            fijar cond a res#en: 1
+            fijar verdadero a res#en: 2
+            si (res#en: 3)#longitud > 0
+                fijar falso a (res#en: 3)#en: 1
+            sino
+                fijar falso a Arreglo#vacio
+            finsi
+            devolver clonar AST#NodoSi#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 4)
+                condicional: cond
+                siVerdadero: verdadero
+                siFalso: falso
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {si})),
+            grExpr,
+            (rep0': (delay: funcion devolver grInstrucción finfuncion)),
+            (opt':
+                (try': (kw: {sino})),
+                (rep0': (delay: funcion devolver grInstrucción finfuncion))),
+            (kw: {finsi}))
+
+variable grMientras
+fijar grMientras a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar AST#NodoMientras#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 3)
+                condicional: res#en: 1
+                cuerpo: res#en: 2
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {mientras})),
+            grExpr,
+            (rep0': (delay: funcion devolver grInstrucción finfuncion)),
+            (kw: {finmientras}))
+
+variable grMétodo
+fijar grMétodo a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar AST#NodoMétodo#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 6)
+                deClase: res#en: 1
+                nombre: res#en: 3
+                parámetros: res#en: 4
+                cuerpo: res#en: 5
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {metodo})),
+            grId,
+            (kw: {#}),
+            grId,
+            grParámetrosDeFunción,
+            (rep0': (delay: funcion devolver grInstrucción finfuncion)),
+            (kw: {finmetodo}))
+
+variable grAtributos
+fijar grAtributos a
+    Comb#Efecto:
+        funcion: res
+            Escribir: res
+            variables partes, deClase, nombres
+            fijar partes a res#en: 1
+            fijar deClase a (partes#en: 0)#en: 0
+            fijar nombres a Mapear: partes, funcion: parte
+                necesitas (parte#en: 0)#nombre = deClase#nombre
+                devolver parte#en: 2
+            finfuncion
+            devolver clonar AST#NodoAtributos#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 0)
+                deClase: deClase
+                nombres: nombres
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {atributo})),
+            (delim1:
+                (seq:
+                    grId,
+                    (kw: {#}),
+                    grId),
+                (try': (kw: {,}))))
+
 variable grInstrucción
 fijar grInstrucción a
-    (alt: grVariable, grFijar, grEscribir, grNl, grClase, grImplementa, grFunción, grExpr)
+    (alt:
+        grVariable,
+        grFijar,
+        grEscribir,
+        grNl,
+        grClase,
+        grImplementa,
+        grFunción,
+        grNecesitas,
+        grDevolver,
+        grSi,
+        grMientras,
+        grMétodo,
+        grAtributos,
+        grExpr)
 
 procedimiento MostrarTokenizado: tks
     variable T

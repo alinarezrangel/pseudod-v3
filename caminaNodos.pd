@@ -3,6 +3,7 @@ utilizar ast como AST
 
 clase CaminaNodos
     metodo visitar: nodo
+
     metodo visitarVariable: nodo
     metodo visitarFijar: nodo
     metodo visitarEscribir: nodo
@@ -14,6 +15,14 @@ clase CaminaNodos
     metodo visitarDefineAtributosEnClase: nodo
     metodo visitarDefineMétodoEnClase: nodo
     metodo visitarFunción: nodo
+    metodo visitarNecesitas: nodo
+    metodo visitarDevolver: nodo
+    metodo visitarSi: nodo
+    metodo visitarMientras: nodo
+    metodo visitarMétodo: nodo
+    metodo visitarAtributos: nodo
+    metodo visitarNo: nodo
+
     metodo visitarIdentificador: nodo
     metodo visitarNúmeroLiteral: nodo
     metodo visitarTextoLiteral: nodo
@@ -23,6 +32,8 @@ clase CaminaNodos
     metodo visitarNoLlamar: nodo
     metodo visitarAutoejecutar: nodo
     metodo visitarFunciónAnónima: nodo
+    metodo visitarSonIguales: nodo
+    metodo visitarReferenciar: nodo
 finclase
 
 metodo CaminaNodos#visitar: nodo
@@ -59,6 +70,28 @@ metodo CaminaNodos#visitar: nodo
     si EsInstancia: nodo, AST#NodoFunción
         devolver yo#visitarFunción: nodo
     finsi
+    si EsInstancia: nodo, AST#NodoNecesitas
+        devolver yo#visitarNecesitas: nodo
+    finsi
+    si EsInstancia: nodo, AST#NodoDevolver
+        devolver yo#visitarDevolver: nodo
+    finsi
+    si EsInstancia: nodo, AST#NodoSi
+        devolver yo#visitarSi: nodo
+    finsi
+    si EsInstancia: nodo, AST#NodoMientras
+        devolver yo#visitarMientras: nodo
+    finsi
+    si EsInstancia: nodo, AST#NodoMétodo
+        devolver yo#visitarMétodo: nodo
+    finsi
+    si EsInstancia: nodo, AST#NodoAtributos
+        devolver yo#visitarAtributos: nodo
+    finsi
+    si EsInstancia: nodo, AST#NodoNo
+        devolver yo#visitarNo: nodo
+    finsi
+
     si EsInstancia: nodo, AST#NodoIdentificador
         devolver yo#visitarIdentificador: nodo
     finsi
@@ -86,6 +119,13 @@ metodo CaminaNodos#visitar: nodo
     si EsInstancia: nodo, AST#NodoFunciónAnónima
         devolver yo#visitarFunciónAnónima: nodo
     finsi
+    si EsInstancia: nodo, AST#NodoSonIguales
+        devolver yo#visitarSonIguales: nodo
+    finsi
+    si EsInstancia: nodo, AST#NodoReferenciar
+        devolver yo#visitarReferenciar: nodo
+    finsi
+
     [ Nunca se llega hasta aquí. ]
     Escribir: ({#visitar no implementado para ~t}#formatear: (TipoDe: nodo))
     necesitas FALSO
@@ -102,6 +142,14 @@ metodo CaminaNodos#visitarImplementa: nodo finmetodo
 metodo CaminaNodos#visitarDefineAtributosEnClase: nodo finmetodo
 metodo CaminaNodos#visitarDefineMétodoEnClase: nodo finmetodo
 metodo CaminaNodos#visitarFunción: nodo finmetodo
+metodo CaminaNodos#visitarNecesitas: nodo finmetodo
+metodo CaminaNodos#visitarDevolver: nodo finmetodo
+metodo CaminaNodos#visitarSi: nodo finmetodo
+metodo CaminaNodos#visitarMientras: nodo finmetodo
+metodo CaminaNodos#visitarMétodo: nodo finmetodo
+metodo CaminaNodos#visitarAtributos: nodo finmetodo
+metodo CaminaNodos#visitarNo: nodo finmetodo
+
 metodo CaminaNodos#visitarIdentificador: nodo finmetodo
 metodo CaminaNodos#visitarNúmeroLiteral: nodo finmetodo
 metodo CaminaNodos#visitarTextoLiteral: nodo finmetodo
@@ -111,3 +159,5 @@ metodo CaminaNodos#visitarOperador: nodo finmetodo
 metodo CaminaNodos#visitarNoLlamar: nodo finmetodo
 metodo CaminaNodos#visitarAutoejecutar: nodo finmetodo
 metodo CaminaNodos#visitarFunciónAnónima: nodo finmetodo
+metodo CaminaNodos#visitarSonIguales: nodo finmetodo
+metodo CaminaNodos#visitarReferenciar: nodo finmetodo

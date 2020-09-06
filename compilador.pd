@@ -111,7 +111,7 @@ finprocedimiento
 clase ResoluciónDeNombresCNImpl hereda CN#CaminaNodos
     metodo inicializar
 
-    metodo finalizar: nodo
+    metodo finalizar: nodo, llave
 finclase
 
 atributo ResoluciónDeNombresCNImpl#_nombres,
@@ -210,7 +210,7 @@ metodo ResoluciónDeNombresCNImpl#visitarDefineMétodoEnClase: nodo
             rdn#visitar: stmt
         finprocedimiento
 
-        rdn#finalizar: nodo
+        rdn#finalizar: nodo, NULO
     finprocedimiento
 finmetodo
 
@@ -235,8 +235,53 @@ metodo ResoluciónDeNombresCNImpl#visitarFunción: nodo
             rdn#visitar: stmt
         finprocedimiento
 
-        rdn#finalizar: nodo
+        rdn#finalizar: nodo, NULO
     finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarNecesitas: nodo
+    yo#visitar: nodo#expresión
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarDevolver: nodo
+    yo#visitar: nodo#expresión
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarSi: nodo
+    variables siVerdadero, siFalso
+    yo#visitar: nodo#condicional
+
+    fijar siVerdadero a yo#crearSubámbito
+    ParaCadaElemento: nodo#siVerdadero, procedimiento: nodo
+        siVerdadero#visitar: nodo
+    finprocedimiento
+    siVerdadero#finalizar: nodo, {nombresDefinídosSiVerdadero}
+
+    fijar siFalso a yo#crearSubámbito
+    ParaCadaElemento: nodo#siFalso, procedimiento: nodo
+        siFalso#visitar: nodo
+    finprocedimiento
+    siFalso#finalizar: nodo, {nombresDefinídosSiFalso}
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarMientras: nodo
+    variables cuerpo
+    yo#visitar: nodo#condicional
+
+    fijar cuerpo a yo#crearSubámbito
+    ParaCadaElemento: nodo#cuerpo, procedimiento: nodo
+        cuerpo#visitar: nodo
+    finprocedimiento
+    cuerpo#finalizar: nodo, NULO
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarMétodo: nodo
+    yo#visitar: nodo#deClase
+    yo#visitarFunción: nodo
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarAtributos: nodo
+    yo#visitar: nodo#deClase
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarIdentificador: nodo
@@ -304,17 +349,33 @@ metodo ResoluciónDeNombresCNImpl#visitarFunciónAnónima: nodo
             rdn#visitar: stmt
         finprocedimiento
 
-        rdn#finalizar: nodo
+        rdn#finalizar: nodo, NULO
     finprocedimiento
 finmetodo
 
-metodo ResoluciónDeNombresCNImpl#finalizar: nodo
+metodo ResoluciónDeNombresCNImpl#visitarSonIguales: nodo
+    yo#visitar: nodo#lhs
+    yo#visitar: nodo#rhs
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarReferenciar: nodo
+    yo#visitar: nodo#nombre
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarNo: nodo
+    yo#visitar: nodo#nombre
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#finalizar: nodo, llave
     ParaCadaElemento: yo#_porResolver, procedimiento: callback
         %callback
     finprocedimiento
 
     si no EsNulo: nodo
-        nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídos}, yo#_nombres
+        si EsNulo: llave
+            fijar llave a {nombresDefinídos}
+        finsi
+        nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, llave, yo#_nombres
     finsi
 finmetodo
 
@@ -324,7 +385,7 @@ procedimiento ResolverNombres: ast
     ParaCadaElemento: ast, procedimiento: nodo
         cn#visitar: nodo
     finprocedimiento
-    cn#finalizar: NULO
+    cn#finalizar: NULO, NULO
     devolver cn#_nombres
 finprocedimiento
 
@@ -466,6 +527,70 @@ metodo CompiladorSimpleALua#visitarFunción: nodo
     devolver Unir: cods, {~%}#formatear
 finmetodo
 
+metodo CompiladorSimpleALua#visitarNecesitas: nodo
+    devolver {assert(~t)}#formatear: (yo#visitar: nodo#expresión)
+finmetodo
+
+metodo CompiladorSimpleALua#visitarDevolver: nodo
+    devolver {return ~t}#formatear: (yo#visitar: nodo#expresión)
+finmetodo
+
+metodo CompiladorSimpleALua#visitarSi: nodo
+    variables cods, subSiVerdadero, subSiFalso
+
+    fijar subSiVerdadero a
+        CompiladorSimpleALua#crear:
+            (nodo#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiVerdadero})
+    fijar subSiFalso a
+        CompiladorSimpleALua#crear:
+            (nodo#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiFalso})
+
+    fijar cods a Arreglo#vacio
+    cods#agregarAlFinal: ({if ~t then}#formatear: (yo#visitar: nodo#condicional))
+
+    cods#agregarAlFinal: subSiVerdadero#iniciar
+    ParaCadaElemento: nodo#siVerdadero, procedimiento: stmt
+        cods#agregarAlFinal: (subSiVerdadero#visitar: stmt)
+    finprocedimiento
+
+    cods#agregarAlFinal: {else}
+
+    cods#agregarAlFinal: subSiFalso#iniciar
+    ParaCadaElemento: nodo#siFalso, procedimiento: stmt
+        cods#agregarAlFinal: (subSiFalso#visitar: stmt)
+    finprocedimiento
+
+    cods#agregarAlFinal: {end}
+
+    devolver Unir: cods, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#visitarMientras: nodo
+    variables cods, subyo
+
+    fijar subSiVerdadero a CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
+
+    fijar cods a Arreglo#vacio
+    cods#agregarAlFinal: ({while ~t do}#formatear: (yo#visitar: nodo#condicional))
+
+    cods#agregarAlFinal: subyo#iniciar
+    ParaCadaElemento: nodo#siVerdadero, procedimiento: stmt
+        cods#agregarAlFinal: (subyo#visitar: stmt)
+    finprocedimiento
+
+    cods#agregarAlFinal: {end}
+
+    devolver Unir: cods, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#visitarMétodo: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarAtributos: nodo
+    NoImplementado
+finmetodo
+
 metodo CompiladorSimpleALua#visitarIdentificador: nodo
     devolver IdentificadorDe: nodo
 finmetodo
@@ -532,6 +657,24 @@ metodo CompiladorSimpleALua#visitarFunciónAnónima: nodo
         fijar nrdyo a NULO
     finsi
     devolver subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
+finmetodo
+
+metodo CompiladorSimpleALua#visitarSonIguales: nodo
+    variable igual
+    fijar igual a yo#enviarMensaje: (yo#visitar: nodo#lhs), {igualA}, (Arreglo#crearCon: nodo#rhs)
+    si nodo#tipoIgualdad = AST#TipoIgualdad#IGUALES
+        devolver igual
+    sino
+        devolver {not ~t}#formatear: igual
+    finsi
+finmetodo
+
+metodo CompiladorSimpleALua#visitarReferenciar: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarNo: nodo
+    devolver {not ~t}#formatear: (yo#visitar: nodo#expresión)
 finmetodo
 
 funcion CompilarALua: ast, ámbito

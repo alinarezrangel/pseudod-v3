@@ -1,0 +1,43 @@
+utilizar bepd/builtins
+
+funcion Enum: nombre, ...campos
+    clase Enumeración
+        metodo inicializar: valor
+        metodo comoTexto
+
+        metodo estatico comoTexto
+        metodo estatico metodoNoEncontrado: mensaje, argumentos
+    finclase
+
+    atributo Enumeración#_valor
+
+    metodo Enumeración#inicializar: valor
+        fijar yo#_valor a valor
+    finmetodo
+
+    metodo Enumeración#comoTexto
+        devolver {(~t: ~t)}#formatear: (TipoDe: yo), yo#_valor
+    finmetodo
+
+    metodo estatico Enumeración#comoTexto
+        devolver {Clase ~t}#formatear: nombre
+    finmetodo
+
+    metodo estatico Enumeración#metodoNoEncontrado: mensaje, argumentos
+        si Contiene: campos, mensaje
+            necesitas argumentos#longitud = 0
+            devolver yo#crear: mensaje
+        finsi
+        si (mensaje = {igualA}) || (mensaje = {operador_=})
+            necesitas argumentos#longitud = 1
+            devolver __CompararObjeto: yo, (argumentos#en: 0)
+        finsi
+        si mensaje = {clonar}
+            necesitas argumentos#longitud = 0
+            devolver __ClonarObjeto: yo
+        finsi
+        __FallarConMensaje: ({Método ~t no encontrado en la instancia de ~t}#formatear: mensaje, yo)
+    finmetodo
+
+    devolver Enumeración
+finfuncion

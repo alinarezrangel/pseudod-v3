@@ -1,4 +1,5 @@
 utilizar bepd/builtins
+utilizar bepd/x/enum
 
 clase Nodo
     atributos areaTextual, metadatos
@@ -149,6 +150,66 @@ metodo NodoFunción#comoTexto
     devolver {(NodoFunción: nombre = ~t, params = ~t, cuerpo = ~t en ~t con ~t)}#formatear: yo#nombre, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+clase NodoNecesitas hereda NodoInstrucción
+    atributo expresión
+
+    metodo comoTexto
+finclase
+
+metodo NodoNecesitas#comoTexto
+    devolver {(NodoNecesitas: ~t en ~t con ~t)}#formatear: yo#expresión, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoDevolver hereda NodoInstrucción
+    atributo expresión
+
+    metodo comoTexto
+finclase
+
+metodo NodoDevolver#comoTexto
+    devolver {(NodoDevolver: ~t en ~t con ~t)}#formatear: yo#expresión, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoSi hereda NodoInstrucción
+    atributos condicional, siVerdadero, siFalso
+
+    metodo comoTexto
+finclase
+
+metodo NodoSi#comoTexto
+    devolver {(NodoSi: ~t entonces ~t si no ~t en ~t con ~t)}#formatear: yo#condicional, yo#siVerdadero, yo#siFalso, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoMientras hereda NodoInstrucción
+    atributos condicional, cuerpo
+
+    metodo comoTexto
+finclase
+
+metodo NodoMientras#comoTexto
+    devolver {(NodoMientras: ~t hacer ~t en ~t con ~t)}#formatear: yo#condicional, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoMétodo hereda NodoInstrucción
+    atributos deClase, nombre, parámetros, cuerpo
+
+    metodo comoTexto
+finclase
+
+metodo NodoMétodo#comoTexto
+    devolver {(NodoMétodo: de ~t nombre = ~t pide ~t es ~t en ~t con ~t)}#formatear: yo#deClase, yo#nombre, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoAtributos hereda NodoInstrucción
+    atributos deClase, nombres
+
+    metodo comoTexto
+finclase
+
+metodo NodoAtributos#comoTexto
+    devolver {(NodoAtributos: de ~t nombres = ~t en ~t con ~t)}#formatear: yo#deClase, yo#nombres, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
 clase NodoExpresion hereda Nodo
 finclase
 
@@ -232,4 +293,37 @@ finclase
 
 metodo NodoFunciónAnónima#comoTexto
     devolver {(NodoFunciónAnónima: (esMétodo: ~t): ~t es ~t en ~t con ~t)}#formatear: yo#esMétodo, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+variable TipoIgualdad
+fijar TipoIgualdad a Enum: {TipoIgualdad}, {IGUALES}, {DIFERENTES}
+
+clase NodoSonIguales hereda NodoExpresion
+    atributos lhs, rhs, tipoIgualdad
+
+    metodo comoTexto
+finclase
+
+metodo NodoSonIguales#comoTexto
+    devolver {(NodoSonIguales: ~t es ~t a ~t en ~t con ~t)}#formatear: yo#lhs, yo#tipoIgualdad, yo#rhs, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoReferenciar hereda NodoExpresion
+    atributo nombre
+
+    metodo comoTexto
+finclase
+
+metodo NodoReferenciar#comoTexto
+    devolver {(NodoReferenciar: ~t en ~t con ~t)}#formatear: yo#nombre, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
+clase NodoNo hereda NodoExpresion
+    atributo expresión
+
+    metodo comoTexto
+finclase
+
+metodo NodoNo#comoTexto
+    devolver {(NodoNo: ~t en ~t con ~t)}#formatear: yo#expresión, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
