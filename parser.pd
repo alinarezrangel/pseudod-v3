@@ -488,11 +488,16 @@ fijar grVariable a
     Comb#Efecto:
         funcion: res
             devolver clonar AST#NodoVariable#crear con
-                areaTextual: (AreaTotal: (res#en: 0), (res#en: 1))
-                nombres: (Arreglo#crearCon: (res#en: 1))
+                areaTextual: (AreaTotal: (res#en: 0), (res#en: 0))
+                nombres: res#en: 1
             finclonar
         finfuncion,
-        (seq: (try': (kw: {variable})), grId)
+        (seq:
+            (alt:
+                (try': (kw: {variable})),
+                (try': (kw: {variables})),
+                (try': (kw: {adquirir}))),
+            (delim1: grId, (try': (kw: {,}))))
 
 variable grFijar
 fijar grFijar a
@@ -784,7 +789,6 @@ variable grAtributos
 fijar grAtributos a
     Comb#Efecto:
         funcion: res
-            Escribir: res
             variables partes, deClase, nombres
             fijar partes a res#en: 1
             fijar deClase a (partes#en: 0)#en: 0
@@ -807,6 +811,56 @@ fijar grAtributos a
                     grId),
                 (try': (kw: {,}))))
 
+variable grUtilizar
+fijar grUtilizar a
+    Comb#Efecto:
+        funcion: res
+            variables módulo, espacioDeNombres, nombresEspecíficos
+
+            fijar módulo a res#en: 1
+            si (res#en: 2)#longitud = 0
+                fijar espacioDeNombres a NULO
+            sino
+                fijar espacioDeNombres a (res#en: 2)#en: 1
+            finsi
+
+            si (res#en: 3)#longitud = 0
+                fijar nombresEspecíficos a NULO
+            sino
+                fijar nombresEspecíficos a Arreglo#vacio
+                ParaCadaElemento: ((res#en: 3)#en: 1), procedimiento: el
+                    si (el#en: 1)#longitud = 0
+                        nombresEspecíficos#agregarAlFinal: (el#en: 0)
+                    sino
+                        nombresEspecíficos#agregarAlFinal: (Arreglo#crearCon: (el#en: 0), ((el#en: 1)#en: 1))
+                    finsi
+                finprocedimiento
+            finsi
+
+            devolver clonar AST#NodoUtilizar#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 0)
+                módulo: módulo
+                espacioDeNombres: espacioDeNombres
+                nombresEspecíficos: nombresEspecíficos
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {utilizar})),
+            (alt: (try': grId), (try': grTexto)),
+            (opt':
+                (try': (kw: {como})),
+                grId),
+            (opt':
+                (try': (kw: {(})),
+                (delim0:
+                    (seq:
+                        grId,
+                        (opt':
+                            (try': (kw: {como})),
+                            grId)),
+                    (try': (kw: {,}))),
+                (kw: {)})))
+
 variable grInstrucción
 fijar grInstrucción a
     (alt:
@@ -823,6 +877,7 @@ fijar grInstrucción a
         grMientras,
         grMétodo,
         grAtributos,
+        grUtilizar,
         grExpr)
 
 procedimiento MostrarTokenizado: tks

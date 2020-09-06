@@ -21,7 +21,7 @@ clase CaminaNodos
     metodo visitarMientras: nodo
     metodo visitarMétodo: nodo
     metodo visitarAtributos: nodo
-    metodo visitarNo: nodo
+    metodo visitarUtilizar: nodo
 
     metodo visitarIdentificador: nodo
     metodo visitarNúmeroLiteral: nodo
@@ -34,6 +34,7 @@ clase CaminaNodos
     metodo visitarFunciónAnónima: nodo
     metodo visitarSonIguales: nodo
     metodo visitarReferenciar: nodo
+    metodo visitarNo: nodo
 finclase
 
 metodo CaminaNodos#visitar: nodo
@@ -88,8 +89,8 @@ metodo CaminaNodos#visitar: nodo
     si EsInstancia: nodo, AST#NodoAtributos
         devolver yo#visitarAtributos: nodo
     finsi
-    si EsInstancia: nodo, AST#NodoNo
-        devolver yo#visitarNo: nodo
+    si EsInstancia: nodo, AST#NodoUtilizar
+        devolver yo#visitarUtilizar: nodo
     finsi
 
     si EsInstancia: nodo, AST#NodoIdentificador
@@ -125,6 +126,9 @@ metodo CaminaNodos#visitar: nodo
     si EsInstancia: nodo, AST#NodoReferenciar
         devolver yo#visitarReferenciar: nodo
     finsi
+    si EsInstancia: nodo, AST#NodoNo
+        devolver yo#visitarNo: nodo
+    finsi
 
     [ Nunca se llega hasta aquí. ]
     Escribir: ({#visitar no implementado para ~t}#formatear: (TipoDe: nodo))
@@ -148,7 +152,7 @@ metodo CaminaNodos#visitarSi: nodo finmetodo
 metodo CaminaNodos#visitarMientras: nodo finmetodo
 metodo CaminaNodos#visitarMétodo: nodo finmetodo
 metodo CaminaNodos#visitarAtributos: nodo finmetodo
-metodo CaminaNodos#visitarNo: nodo finmetodo
+metodo CaminaNodos#visitarUtilizar: nodo finmetodo
 
 metodo CaminaNodos#visitarIdentificador: nodo finmetodo
 metodo CaminaNodos#visitarNúmeroLiteral: nodo finmetodo
@@ -161,3 +165,4 @@ metodo CaminaNodos#visitarAutoejecutar: nodo finmetodo
 metodo CaminaNodos#visitarFunciónAnónima: nodo finmetodo
 metodo CaminaNodos#visitarSonIguales: nodo finmetodo
 metodo CaminaNodos#visitarReferenciar: nodo finmetodo
+metodo CaminaNodos#visitarNo: nodo finmetodo

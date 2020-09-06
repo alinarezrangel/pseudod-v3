@@ -6,14 +6,11 @@ utilizar compilador como Compilador
 Escribir: {Inicio}
 variables ast, ámbito, programa
 fijar programa a «
-variable X
-variable Y
-si son diferentes X#HOLA y Y
- escribir 1
-sino
- escribir 2
-finsi
-escribir 3
+
+utilizar hola como adios
+
+escribir 1
+
 »
 
 Escribir: {Mostrando tokenizado:}

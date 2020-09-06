@@ -19,6 +19,7 @@ clase Ámbito
     metodo fijarValor: nombre, valor
     metodo eliminar: nombre
     metodo obtener: nombre
+    metodo contiene: nombre
 
     metodo crearSubámbito
 
@@ -72,6 +73,10 @@ metodo Ámbito#obtener: nombre
             devolver yo#ámbitoPadre#obtener: nombre
         finsi
     finsi
+finmetodo
+
+metodo Ámbito#contiene: nombre
+    devolver yo#_mapeo#contiene: nombre
 finmetodo
 
 metodo Ámbito#crearSubámbito
@@ -282,6 +287,35 @@ finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarAtributos: nodo
     yo#visitar: nodo#deClase
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
+    si no EsNulo: nodo#espacioDeNombres
+        si yo#_nombres#contiene: nodo#espacioDeNombres#nombre
+            FijarNombreResuelto:
+                nodo#espacioDeNombres,
+                (yo#_nombres#obtener: nodo#espacioDeNombres#nombre)
+        sino
+            variable id
+            fijar id a GenerarIdDeNombre
+            yo#_nombres#agregar: nodo#espacioDeNombres#nombre, id
+            FijarNombreResuelto: nodo#espacioDeNombres, id
+        finsi
+    finsi
+    si no EsNulo: nodo#nombresEspecíficos
+        ParaCadaElemento: nodo#nombresEspecíficos, procedimiento: importado
+            variable nombreImportado
+            si EsInstancia: importado, AST#NodoIdentificador
+                fijar nombreImportado a importado
+            sino
+                fijar nombreImportado a (importado#en: 1)
+            finsi
+            variable id
+            fijar id a GenerarIdDeNombre
+            yo#_nombres#agregar: nombreImportado#nombre, id
+            FijarNombreResuelto: nombreImportado, id
+        finprocedimiento
+    finsi
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarIdentificador: nodo
@@ -588,6 +622,10 @@ metodo CompiladorSimpleALua#visitarMétodo: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarAtributos: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarUtilizar: nodo
     NoImplementado
 finmetodo
 

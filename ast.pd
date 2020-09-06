@@ -210,6 +210,16 @@ metodo NodoAtributos#comoTexto
     devolver {(NodoAtributos: de ~t nombres = ~t en ~t con ~t)}#formatear: yo#deClase, yo#nombres, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+clase NodoUtilizar hereda NodoInstrucción
+    atributos módulo, espacioDeNombres, nombresEspecíficos
+
+    metodo comoTexto
+finclase
+
+metodo NodoUtilizar#comoTexto
+    devolver {(NodoUtilizar: ~t como ~t solo ~t en ~t con ~t)}#formatear: yo#módulo, yo#espacioDeNombres, yo#nombresEspecíficos, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
 clase NodoExpresion hereda Nodo
 finclase
 
