@@ -316,6 +316,9 @@ metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
             FijarNombreResuelto: nombreImportado, id
         finprocedimiento
     finsi
+    si (EsNulo: nodo#espacioDeNombres) && (EsNulo: nodo#nombresEspecíficos)
+        NoImplementado
+    finsi
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarIdentificador: nodo

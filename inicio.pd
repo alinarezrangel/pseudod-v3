@@ -7,7 +7,7 @@ Escribir: {Inicio}
 variables ast, ámbito, programa
 fijar programa a «
 
-utilizar hola como adios
+utilizar hola como H
 
 escribir 1
 
