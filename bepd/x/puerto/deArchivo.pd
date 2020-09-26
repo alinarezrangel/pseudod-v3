@@ -1,0 +1,66 @@
+utilizar bepd/builtins
+utilizar bepd/x/puerto como Puerto
+
+clase PuertoDeArchivoDeLectura hereda Puerto#Puerto [ implementa Puerto#PuertoDeLectura ]
+    atributo archivo
+
+    metodo estatico desdeArchivo: archivo
+    metodo estatico abrir: nombre
+
+    metodo leerCarácter
+    metodo desleerCarácter
+
+    metodo cerrar
+finclase
+
+atributo PuertoDeArchivoDeLectura#buffer, PuertoDeArchivoDeLectura#últimoLeído
+
+metodo estatico PuertoDeArchivoDeLectura#desdeArchivo: archivo
+    devolver yo#crear: archivo
+finmetodo
+
+metodo estatico PuertoDeArchivoDeLectura#abrir: nombre
+    devolver yo#crear: (__AbrirArchivo: nombre, 10)
+finmetodo
+
+metodo PuertoDeArchivoDeLectura#inicializar: archivo
+    fijar yo#archivo a archivo
+    fijar yo#buffer a NULO
+    fijar yo#últimoLeído a NULO
+finmetodo
+
+metodo PuertoDeArchivoDeLectura#_leerCarácter
+    necesitas yo#archivo#estaAbierto
+    necesitas no yo#archivo#error
+    variable byte, res
+    fijar byte a yo#archivo#leerByte
+    si byte = __ByteEof
+        fijar res a Puerto#EOF
+    sino
+        fijar res a __ByteATexto: byte
+    finsi
+    fijar yo#últimoLeído a res
+    devolver res
+finmetodo
+
+metodo PuertoDeArchivoDeLectura#leerCarácter
+    si EsNulo: yo#buffer
+        devolver yo#_leerCarácter
+    sino
+        variable res
+        fijar res a yo#buffer
+        fijar yo#buffer a NULO
+        devolver res
+    finsi
+finmetodo
+
+metodo PuertoDeArchivoDeLectura#desleerCarácter
+    necesitas EsNulo: yo#buffer
+    necesitas no EsNulo: yo#últimoLeído
+    fijar yo#buffer a yo#últimoLeído
+    devolver yo#últimoLeído
+finmetodo
+
+metodo PuertoDeArchivoDeLectura#cerrar
+    yo#archivo#cerrar
+finmetodo
