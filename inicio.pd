@@ -1,27 +1,32 @@
 utilizar bepd/builtins
+utilizar bepd/x/puerto/deArchivo como PDA
 utilizar tokenizador como Tokenizador
 utilizar parser como Parser
 utilizar compilador como Compilador
+
 
 Escribir: {Inicio}
 variables ast, ámbito, programa
 fijar programa a «
 
-utilizar hola como H
-
-escribir 1
+variable X
+variable Y
+escribir X
+nl
+escribir Y
+nl
 
 »
 
 Escribir: {Mostrando tokenizado:}
 Tokenizador#MostrarTokenizadoDeTexto: programa
 Escribir: {Creando el AST...}
-fijar ast a Parser#CrearAST: programa, Parser#grInstrucción
+fijar ast a Parser#CrearAST: programa
 Escribir: {Mostrando el AST}
-ParaCadaElemento: ast, &Escribir
+Escribir: ast
 Escribir: {Resolviendo nombres...}
 fijar ámbito a Compilador#ResolverNombres: ast
 Escribir: {Mostrando AST con información léxica:}
-ParaCadaElemento: ast, &Escribir
+Escribir: ast
 Escribir: {Compilando a LUA...}
 Escribir: (Compilador#CompilarALua: ast, ámbito)

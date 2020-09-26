@@ -44,6 +44,15 @@ finmetodo
 clase NodoInstrucción hereda Nodo
 finclase
 
+clase NodoPrograma hereda NodoInstrucción
+    atributo instrucciones
+    metodo comoTexto
+finclase
+
+metodo NodoPrograma#comoTexto
+    devolver {(NodoPrograma: ~t en ~t con ~t)}#formatear: yo#instrucciones, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
 clase NodoVariable hereda NodoInstrucción
     atributo nombres
     metodo comoTexto

@@ -134,6 +134,12 @@ metodo ResoluciónDeNombresCNImpl#crearSubámbito
     devolver sub
 finmetodo
 
+metodo ResoluciónDeNombresCNImpl#visitarPrograma: nodo
+    ParaCadaElemento: nodo#instrucciones, procedimiento: instr
+        yo#visitar: instr
+    finprocedimiento
+finmetodo
+
 metodo ResoluciónDeNombresCNImpl#visitarVariable: nodo
     ParaCadaElemento: nodo#nombres, procedimiento: var
         variable id
@@ -419,9 +425,7 @@ finmetodo
 procedimiento ResolverNombres: ast
     variable cn
     fijar cn a ResoluciónDeNombresCNImpl#crear
-    ParaCadaElemento: ast, procedimiento: nodo
-        cn#visitar: nodo
-    finprocedimiento
+    cn#visitar: ast
     cn#finalizar: NULO, NULO
     devolver cn#_nombres
 finprocedimiento
@@ -480,6 +484,15 @@ metodo CompiladorSimpleALua#iniciar
         res#agregarAlFinal: ({local _~t}#formatear: id)
     finprocedimiento
     devolver Unir: res, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#visitarPrograma: nodo
+    variable instrs
+    fijar instrs a Arreglo#vacio
+    ParaCadaElemento: nodo#instrucciones, procedimiento: instr
+        instrs#agregarAlFinal: (yo#visitar: instr)
+    finprocedimiento
+    devolver Unir: instrs, {~%}#formatear
 finmetodo
 
 metodo CompiladorSimpleALua#visitarVariable: nodo
@@ -719,11 +732,8 @@ metodo CompiladorSimpleALua#visitarNo: nodo
 finmetodo
 
 funcion CompilarALua: ast, ámbito
-    variables comp, partes, ini
+    variables comp, ini
     fijar comp a CompiladorSimpleALua#crear: ámbito
     fijar ini a comp#iniciar
-    fijar partes a Mapear: ast, funcion: nodo
-        devolver comp#visitar: nodo
-    finfuncion
-    devolver {~t~%~t}#formatear: ini, (Unir: partes, {~%}#formatear)
+    devolver {~t~%~t}#formatear: ini, comp#visitar: ast
 finfuncion

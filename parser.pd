@@ -880,6 +880,26 @@ fijar grInstrucción a
         grUtilizar,
         grExpr)
 
+variable grPrograma
+fijar grPrograma a
+    Comb#Efecto:
+        funcion: res
+            variable area
+            si res#longitud = 0
+                variable pos
+                fijar pos a (PuertoConPos#PosiciónTextual#crear: {}, 1, 0)
+                fijar area a Tokens#AreaTextual#crear: pos, pos
+            sino
+                fijar area a AreaTotal: (res#en: 0), (ÚltimoElemento: res)
+            finsi
+            Escribir: {PROGRAMA}
+            devolver clonar AST#NodoPrograma#crear con
+                areaTextual: area
+                instrucciones: res
+            finclonar
+        finfuncion,
+        (rep0': grInstrucción)
+
 procedimiento MostrarTokenizado: tks
     variable T
     fijar T a tks#leerToken
@@ -920,7 +940,7 @@ procedimiento MostrarParseadoDeTexto: txt, gr
     MostrarParseado: tks, gr
 finprocedimiento
 
-procedimiento CrearAST: txt, gr
+procedimiento CrearAST: txt
     variable tks, tknz
     fijar tknz a
         Tokenizador#Tokenizador#crear:
@@ -928,12 +948,8 @@ procedimiento CrearAST: txt, gr
                 (Puerto#TextoComoPuerto: txt))
     fijar tks a Comb#Tokens#desdeTokenizador: tknz
 
-    variables nodo, ast
-    fijar nodo a gr#parsear: tks
-    fijar ast a Arreglo#vacio
-    mientras nodo#esOk
-        ast#agregarAlFinal: nodo#valor
-        fijar nodo a gr#parsear: tks
-    finmientras
-    devolver ast
+    variables nodo
+    fijar nodo a grPrograma#parsear: tks
+    necesitas nodo#esOk
+    devolver nodo#valor
 finprocedimiento

@@ -4,6 +4,7 @@ utilizar ast como AST
 clase CaminaNodos
     metodo visitar: nodo
 
+    metodo visitarPrograma: nodo
     metodo visitarVariable: nodo
     metodo visitarFijar: nodo
     metodo visitarEscribir: nodo
@@ -38,6 +39,9 @@ clase CaminaNodos
 finclase
 
 metodo CaminaNodos#visitar: nodo
+    si EsInstancia: nodo, AST#NodoPrograma
+        devolver yo#visitarPrograma: nodo
+    finsi
     si EsInstancia: nodo, AST#NodoVariable
         devolver yo#visitarVariable: nodo
     finsi
@@ -135,6 +139,7 @@ metodo CaminaNodos#visitar: nodo
     necesitas FALSO
 finmetodo
 
+metodo CaminaNodos#visitarPrograma: nodo finmetodo
 metodo CaminaNodos#visitarVariable: nodo finmetodo
 metodo CaminaNodos#visitarFijar: nodo finmetodo
 metodo CaminaNodos#visitarEscribir: nodo finmetodo
