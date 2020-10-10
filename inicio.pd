@@ -9,8 +9,7 @@ Escribir: {Inicio}
 variables ast, ámbito, programa
 fijar programa a «
 
-variable X
-variable Y
+adquirir X, Y
 escribir X
 nl
 escribir Y

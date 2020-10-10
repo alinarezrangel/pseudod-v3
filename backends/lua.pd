@@ -1,0 +1,307 @@
+utilizar bepd/builtins
+utilizar bepd/utilidades/texto
+
+utilizar ast como AST
+utilizar caminaNodos como CN
+
+utilizar resoluciónDeNombres como RN
+
+funcion EscaparParaLua: texto
+    variable res
+    fijar res a {"} [ " ]
+    ParaCadaElemento: texto, procedimiento: car
+        si car = {"} [ " ]
+            fijar res a res#concatenar: {\"} [ " ]
+        sino
+            si car = {~%}#formatear
+                fijar res a res#concatenar: {~%}#formatear
+            sino
+                fijar res a res#concatenar: car
+            finsi
+        finsi
+    finprocedimiento
+    devolver res#concatenar: {"} [ " ]
+finfuncion
+
+funcion IdentificadorDe: id
+    devolver {_}#concatenar: (RN#NombreResueltoDe: id)#comoTexto
+finfuncion
+
+clase CompiladorSimpleALua hereda CN#CaminaNodos
+    metodo estatico crearSubámbitoDesdeNodo: nodo
+
+    metodo inicializar: ámbito
+
+    metodo iniciar
+finclase
+
+atributo CompiladorSimpleALua#_ámbito
+
+metodo estatico CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
+    devolver CompiladorSimpleALua#crear: (nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídos})
+finmetodo
+
+metodo CompiladorSimpleALua#inicializar: ámbito
+    fijar yo#_ámbito a ámbito
+finmetodo
+
+metodo CompiladorSimpleALua#iniciar
+    variable res
+    fijar res a Arreglo#vacio
+    yo#_ámbito#_mapeo#paraCadaPar: procedimiento: nombreEnPseudoD, id
+        res#agregarAlFinal: ({local _~t}#formatear: id)
+    finprocedimiento
+    devolver Unir: res, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#visitarPrograma: nodo
+    variable instrs
+    fijar instrs a Arreglo#vacio
+    ParaCadaElemento: nodo#instrucciones, procedimiento: instr
+        instrs#agregarAlFinal: (yo#visitar: instr)
+    finprocedimiento
+    devolver Unir: instrs, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#visitarVariable: nodo
+    devolver {}
+finmetodo
+
+metodo CompiladorSimpleALua#visitarFijar: nodo
+    necesitas EsInstancia: nodo#objetivo, AST#NodoIdentificador
+    variable obj, expr
+    fijar obj a IdentificadorDe: nodo#objetivo
+    fijar expr a yo#visitar: nodo#valor
+    devolver {~t = ~t}#formatear: obj, expr
+finmetodo
+
+metodo CompiladorSimpleALua#visitarEscribir: nodo
+    devolver {rt.escribir(~t)}#formatear: (yo#visitar: nodo#valor)
+finmetodo
+
+metodo CompiladorSimpleALua#visitarNl: nodo
+    devolver {rt.nl()}
+finmetodo
+
+metodo CompiladorSimpleALua#visitarClase: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarDeclaraciónDeAtributosEnClase: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarDeclaraciónDeMétodoEnClase: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarImplementa: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarDefineAtributosEnClase: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarDefineMétodoEnClase: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueldoDeYo, parámetros, cuerpo
+    variables cods, params, met
+    fijar cods a Arreglo#vacio
+
+    fijar params a Unir: (Mapear: parámetros, &IdentificadorDe), {, }
+
+    si no EsNulo: nombreResueldoDeYo
+        fijar met a {_~t}#formatear: nombreResueldoDeYo
+        si parámetros#longitud > 0
+            fijar params a {, }#concatenar: params
+        finsi
+    sino
+        fijar met a {}
+    finsi
+    cods#agregarAlFinal: ({function(~t~t)}#formatear: met, params)
+    cods#agregarAlFinal: yo#iniciar
+
+    ParaCadaElemento: cuerpo, procedimiento: stmt
+        cods#agregarAlFinal: (yo#visitar: stmt)
+    finprocedimiento
+
+    cods#agregarAlFinal: {end}
+
+    devolver Unir: cods, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#visitarFunción: nodo
+    variables cods, id, subyo
+    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
+    fijar id a IdentificadorDe: nodo#nombre
+    fijar cods a Arreglo#vacio
+    cods#agregarAlFinal: ({~t = ~t}#formatear:
+        id,
+        (subyo#expresiónDeFunción: NULO, nodo#parámetros, nodo#cuerpo)
+    )
+    devolver Unir: cods, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#visitarNecesitas: nodo
+    devolver {assert(~t)}#formatear: (yo#visitar: nodo#expresión)
+finmetodo
+
+metodo CompiladorSimpleALua#visitarDevolver: nodo
+    devolver {return ~t}#formatear: (yo#visitar: nodo#expresión)
+finmetodo
+
+metodo CompiladorSimpleALua#visitarSi: nodo
+    variables cods, subSiVerdadero, subSiFalso
+
+    fijar subSiVerdadero a
+        CompiladorSimpleALua#crear:
+            (nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiVerdadero})
+    fijar subSiFalso a
+        CompiladorSimpleALua#crear:
+            (nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiFalso})
+
+    fijar cods a Arreglo#vacio
+    cods#agregarAlFinal: ({if ~t then}#formatear: (yo#visitar: nodo#condicional))
+
+    cods#agregarAlFinal: subSiVerdadero#iniciar
+    ParaCadaElemento: nodo#siVerdadero, procedimiento: stmt
+        cods#agregarAlFinal: (subSiVerdadero#visitar: stmt)
+    finprocedimiento
+
+    cods#agregarAlFinal: {else}
+
+    cods#agregarAlFinal: subSiFalso#iniciar
+    ParaCadaElemento: nodo#siFalso, procedimiento: stmt
+        cods#agregarAlFinal: (subSiFalso#visitar: stmt)
+    finprocedimiento
+
+    cods#agregarAlFinal: {end}
+
+    devolver Unir: cods, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#visitarMientras: nodo
+    variables cods, subyo
+
+    fijar subSiVerdadero a CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
+
+    fijar cods a Arreglo#vacio
+    cods#agregarAlFinal: ({while ~t do}#formatear: (yo#visitar: nodo#condicional))
+
+    cods#agregarAlFinal: subyo#iniciar
+    ParaCadaElemento: nodo#siVerdadero, procedimiento: stmt
+        cods#agregarAlFinal: (subyo#visitar: stmt)
+    finprocedimiento
+
+    cods#agregarAlFinal: {end}
+
+    devolver Unir: cods, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#visitarMétodo: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarAtributos: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarUtilizar: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarIdentificador: nodo
+    devolver IdentificadorDe: nodo
+finmetodo
+
+metodo CompiladorSimpleALua#visitarNúmeroLiteral: nodo
+    devolver nodo#valor
+finmetodo
+
+metodo CompiladorSimpleALua#visitarTextoLiteral: nodo
+    devolver EscaparParaLua: nodo#valor
+finmetodo
+
+metodo CompiladorSimpleALua#enviarMensaje: objeto, mensaje, argumentos
+    variables args, argsComoTexto
+    fijar args a Mapear: argumentos, funcion: arg
+        devolver yo#visitar: arg
+    finfuncion
+    si args#longitud = 0
+        fijar argsComoTexto a {}
+    sino
+        fijar argsComoTexto a {, }#concatenar: (Unir: args, {, })
+    finsi
+    devolver {rt.enviarMensaje(~t, ~t~t)}#formatear: objeto, (EscaparParaLua: mensaje), argsComoTexto
+finmetodo
+
+metodo CompiladorSimpleALua#visitarLlamarProcedimiento: nodo
+    devolver yo#enviarMensaje: (IdentificadorDe: nodo#proc), {llamar}, nodo#argumentos
+finmetodo
+
+metodo CompiladorSimpleALua#visitarEnviarMensaje: nodo
+    devolver yo#enviarMensaje: (yo#visitar: nodo#objeto), nodo#mensaje, nodo#argumentos
+finmetodo
+
+metodo CompiladorSimpleALua#visitarOperador: nodo
+    devolver {rt.enviarMensaje(~t, ~t, ~t)}#formatear:
+        (yo#visitar: nodo#lhs),
+        (EscaparParaLua: ({operador_~t}#formatear: nodo#op#op)),
+        (yo#visitar: nodo#rhs)
+finmetodo
+
+metodo CompiladorSimpleALua#visitarNoLlamar: nodo
+    variables cod
+    si nodo#mensajes#longitud > 0
+        fijar cod a Reducir: (yo#visitar: nodo#base), funcion: acc, mensaje
+            devolver {rt.enviarMensaje(~t, ~t)}#formatear: acc, (EscaparParaLua: mensaje)
+        finfuncion, (PedazoDeArreglo: nodo#mensajes, 0, -1)
+        fijar cod a {rt.enviarMensaje(~t, ~t, ...)}#formatear: cod, (ÚltimoElemento: nodo#mensajes)
+    sino
+        fijar cod a {rt.enviarMensaje(~t, "llamar", ...)}#formatear: (yo#visitar: nodo#base)
+    finsi
+    devolver {function(...) return ~t end}#formatear: cod
+finmetodo
+
+metodo CompiladorSimpleALua#visitarAutoejecutar: nodo
+    devolver yo#enviarMensaje: (yo#visitar: nodo#expr), {llamar}, nodo#argumentos
+finmetodo
+
+metodo CompiladorSimpleALua#visitarFunciónAnónima: nodo
+    variable nrdyo, subyo
+    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
+    si nodo#esMétodo
+        fijar nrdyo a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
+    sino
+        fijar nrdyo a NULO
+    finsi
+    devolver subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
+finmetodo
+
+metodo CompiladorSimpleALua#visitarSonIguales: nodo
+    variable igual
+    fijar igual a yo#enviarMensaje: (yo#visitar: nodo#lhs), {igualA}, (Arreglo#crearCon: nodo#rhs)
+    si nodo#tipoIgualdad = AST#TipoIgualdad#IGUALES
+        devolver igual
+    sino
+        devolver {not ~t}#formatear: igual
+    finsi
+finmetodo
+
+metodo CompiladorSimpleALua#visitarReferenciar: nodo
+    NoImplementado
+finmetodo
+
+metodo CompiladorSimpleALua#visitarNo: nodo
+    devolver {not ~t}#formatear: (yo#visitar: nodo#expresión)
+finmetodo
+
+funcion CompilarALua: ast, ámbito
+    variables comp, ini
+    fijar comp a CompiladorSimpleALua#crear: ámbito
+    fijar ini a comp#iniciar
+    devolver {~t~%~t}#formatear: ini, comp#visitar: ast
+finfuncion

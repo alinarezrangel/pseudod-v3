@@ -1,0 +1,85 @@
+utilizar bepd/builtins
+
+clase Ámbito
+    metodo estatico vacío
+    metodo estatico desdeArreglo: lst
+    metodo estatico conValores: ...vals
+
+    atributo ámbitoPadre
+
+    metodo inicializar
+
+    metodo agregar: nombre, valor
+    metodo fijarValor: nombre, valor
+    metodo eliminar: nombre
+    metodo obtener: nombre
+    metodo contiene: nombre
+
+    metodo crearSubámbito
+
+    metodo comoTexto
+finclase
+
+atributos Ámbito#_mapeo
+
+metodo estatico Ámbito#vacío
+    devolver yo#crear
+finmetodo
+
+metodo estatico Ámbito#desdeArreglo: lst
+    variable inst
+    fijar inst a yo#crear
+    fijar inst#_mapeo a Diccionario#desdeArreglo: lst
+    devolver inst
+finmetodo
+
+metodo estatico Ámbito#conValores: ...vals
+    variable inst
+    fijar inst a yo#crear
+    fijar inst#_mapeo a __EnviarMensaje: Diccionario, {desdeArreglo}, vals
+    devolver inst
+finmetodo
+
+metodo Ámbito#inicializar
+    fijar yo#_mapeo a Diccionario#vacío
+    fijar yo#ámbitoPadre a NULO
+finmetodo
+
+metodo Ámbito#agregar: nombre, valor
+    yo#_mapeo#fijarEn: nombre, valor
+finmetodo
+
+metodo Ámbito#fijarValor: nombre, valor
+    yo#_mapeo#fijarEn: nombre, valor
+finmetodo
+
+metodo Ámbito#eliminar: nombre
+    yo#_mapeo#eliminar: nombre
+finmetodo
+
+metodo Ámbito#obtener: nombre
+    si yo#_mapeo#contiene: nombre
+        devolver yo#_mapeo#en: nombre
+    sino
+        si EsNulo: yo#ámbitoPadre
+            __FallarConMensaje: ({El ámbito no contiene el nombre ~T}#formatear: nombre)
+        sino
+            devolver yo#ámbitoPadre#obtener: nombre
+        finsi
+    finsi
+finmetodo
+
+metodo Ámbito#contiene: nombre
+    devolver yo#_mapeo#contiene: nombre
+finmetodo
+
+metodo Ámbito#crearSubámbito
+    variable sub
+    fijar sub a Ámbito#vacío
+    fijar sub#ámbitoPadre a yo
+    devolver sub
+finmetodo
+
+metodo Ámbito#comoTexto
+    devolver {(Ámbito: valores = ~t, padre = ~t)}#formatear: yo#_mapeo, yo#ámbitoPadre
+finmetodo

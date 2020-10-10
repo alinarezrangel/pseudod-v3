@@ -1,0 +1,353 @@
+utilizar bepd/builtins
+
+utilizar ámbito como Ámbito
+utilizar ast como AST
+utilizar caminaNodos como CN
+
+clase LlaveResoluciónDeNombres
+    metodo comoTexto
+finclase
+
+metodo LlaveResoluciónDeNombres#comoTexto
+    devolver {<LLAVE_RESOLUCIÓN_DE_NOMBRES>}
+finmetodo
+
+variable LLAVE_RESOLUCIÓN_DE_NOMBRES
+fijar LLAVE_RESOLUCIÓN_DE_NOMBRES a LlaveResoluciónDeNombres#crear
+
+variable GID_NUM
+fijar GID_NUM a 0
+
+procedimiento GenerarIdDeNombre
+    fijar GID_NUM a GID_NUM + 1
+    devolver GID_NUM
+finprocedimiento
+
+procedimiento FijarNombreResuelto: nodo, id
+    nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResuelto}, id
+finprocedimiento
+
+funcion NombreResueltoDe: id
+    devolver id#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResuelto}
+finfuncion
+
+clase ResoluciónDeNombresCNImpl hereda CN#CaminaNodos
+    metodo inicializar
+
+    metodo finalizar: nodo, llave
+finclase
+
+atributo ResoluciónDeNombresCNImpl#_nombres,
+         ResoluciónDeNombresCNImpl#_porResolver
+
+metodo ResoluciónDeNombresCNImpl#inicializar
+    fijar yo#_nombres a Ámbito#Ámbito#vacío
+    fijar yo#_porResolver a Arreglo#vacio
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#crearSubámbito
+    variable sub
+    fijar sub a ResoluciónDeNombresCNImpl#crear
+    fijar sub#_nombres#ámbitoPadre a yo#_nombres
+    devolver sub
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarPrograma: nodo
+    ParaCadaElemento: nodo#instrucciones, procedimiento: instr
+        yo#visitar: instr
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarVariable: nodo
+    ParaCadaElemento: nodo#nombres, procedimiento: var
+        variable id
+        fijar id a GenerarIdDeNombre
+        yo#_nombres#agregar: var#nombre, id
+        FijarNombreResuelto: var, id
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarFijar: nodo
+    yo#visitar: nodo#objetivo
+    yo#visitar: nodo#valor
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarEscribir: nodo
+    yo#visitar: nodo#valor
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarNl: nodo
+    [ Nada que hacer. ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarClase: nodo
+    procedimiento ResolverTodoEnLista: ls
+        ParaCadaElemento: ls, procedimiento: nodo
+            FijarNombreResuelto: nodo, (yo#_nombres#obtener: nodo#nombre)
+        finprocedimiento
+    finprocedimiento
+
+    variable nomclsid
+    fijar nomclsid a GenerarIdDeNombre
+    yo#_nombres#agregar: nodo#nombre#nombre, nomclsid
+    FijarNombreResuelto: nodo#nombre, nomclsid
+
+    ResolverTodoEnLista: (Arreglo#crearCon: nodo#claseBase)
+    ResolverTodoEnLista: nodo#extiendeClases
+    ResolverTodoEnLista: nodo#implementaClases
+
+    ParaCadaElemento: nodo#declaraciones, procedimiento: declr
+        yo#visitar: declr
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarDeclaraciónDeAtributosEnClase: nodo
+    [ Nada que hacer. ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarDeclaraciónDeMétodoEnClase: nodo
+    [ En teoría podríamos marcar los parámetros de la declaración, pero ya que
+    nunca habrán usos de estos no lo veo mucho sentido. Por esto, no le voy a
+    agregar el atributo nombreResuelto a los parámetros. ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarImplementa: nodo
+    FijarNombreResuelto: nodo#nombre, (yo#_nombres#obtener: yo#nombre#nombre)
+
+    ParaCadaElemento: nodo#definiciones, procedimiento: declr
+        yo#visitar: declr
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarDefineAtributosEnClase: nodo
+    [ De nuevo, nada que hacer. ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarDefineMétodoEnClase: nodo
+    variable rdn
+    fijar rdn a yo#crearSubámbito
+
+    ParaCadaElemento: nodo#parámetros, procedimiento: param
+        variable id
+        fijar id a GenerarIdDeNombre
+        rdn#_nombres#agregar: param#nombre, id
+        FijarNombreResuelto: param, id
+    finprocedimiento
+
+    yo#_porResolver#agregarAlFinal: procedimiento
+        ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
+            rdn#visitar: stmt
+        finprocedimiento
+
+        rdn#finalizar: nodo, NULO
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarFunción: nodo
+    variable rdn
+    fijar rdn a yo#crearSubámbito
+
+    variable idfunc
+    fijar idfunc a GenerarIdDeNombre
+    FijarNombreResuelto: nodo#nombre, idfunc
+    yo#_nombres#agregar: nodo#nombre#nombre, idfunc
+
+    ParaCadaElemento: nodo#parámetros, procedimiento: param
+        variable id
+        fijar id a GenerarIdDeNombre
+        rdn#_nombres#agregar: param#nombre, id
+        FijarNombreResuelto: param, id
+    finprocedimiento
+
+    yo#_porResolver#agregarAlFinal: procedimiento
+        ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
+            rdn#visitar: stmt
+        finprocedimiento
+
+        rdn#finalizar: nodo, NULO
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarNecesitas: nodo
+    yo#visitar: nodo#expresión
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarDevolver: nodo
+    yo#visitar: nodo#expresión
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarSi: nodo
+    variables siVerdadero, siFalso
+    yo#visitar: nodo#condicional
+
+    fijar siVerdadero a yo#crearSubámbito
+    ParaCadaElemento: nodo#siVerdadero, procedimiento: nodo
+        siVerdadero#visitar: nodo
+    finprocedimiento
+    siVerdadero#finalizar: nodo, {nombresDefinídosSiVerdadero}
+
+    fijar siFalso a yo#crearSubámbito
+    ParaCadaElemento: nodo#siFalso, procedimiento: nodo
+        siFalso#visitar: nodo
+    finprocedimiento
+    siFalso#finalizar: nodo, {nombresDefinídosSiFalso}
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarMientras: nodo
+    variables cuerpo
+    yo#visitar: nodo#condicional
+
+    fijar cuerpo a yo#crearSubámbito
+    ParaCadaElemento: nodo#cuerpo, procedimiento: nodo
+        cuerpo#visitar: nodo
+    finprocedimiento
+    cuerpo#finalizar: nodo, NULO
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarMétodo: nodo
+    yo#visitar: nodo#deClase
+    yo#visitarFunción: nodo
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarAtributos: nodo
+    yo#visitar: nodo#deClase
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
+    si no EsNulo: nodo#espacioDeNombres
+        si yo#_nombres#contiene: nodo#espacioDeNombres#nombre
+            FijarNombreResuelto:
+                nodo#espacioDeNombres,
+                (yo#_nombres#obtener: nodo#espacioDeNombres#nombre)
+        sino
+            variable id
+            fijar id a GenerarIdDeNombre
+            yo#_nombres#agregar: nodo#espacioDeNombres#nombre, id
+            FijarNombreResuelto: nodo#espacioDeNombres, id
+        finsi
+    finsi
+    si no EsNulo: nodo#nombresEspecíficos
+        ParaCadaElemento: nodo#nombresEspecíficos, procedimiento: importado
+            variable nombreImportado
+            si EsInstancia: importado, AST#NodoIdentificador
+                fijar nombreImportado a importado
+            sino
+                fijar nombreImportado a (importado#en: 1)
+            finsi
+            variable id
+            fijar id a GenerarIdDeNombre
+            yo#_nombres#agregar: nombreImportado#nombre, id
+            FijarNombreResuelto: nombreImportado, id
+        finprocedimiento
+    finsi
+    si (EsNulo: nodo#espacioDeNombres) && (EsNulo: nodo#nombresEspecíficos)
+        NoImplementado
+    finsi
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarIdentificador: nodo
+    FijarNombreResuelto: nodo, (yo#_nombres#obtener: nodo#nombre)
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarNúmeroLiteral: nodo
+    [ Nada que hacer... ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarTextoLiteral: nodo
+    [ Nada que hacer... ]
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarLlamarProcedimiento: nodo
+    yo#visitar: nodo#proc
+    ParaCadaElemento: nodo#argumentos, procedimiento: arg
+        yo#visitar: arg
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarEnviarMensaje: nodo
+    yo#visitar: nodo#objeto
+    ParaCadaElemento: nodo#argumentos, procedimiento: arg
+        yo#visitar: arg
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarOperador: nodo
+    yo#visitar: nodo#lhs
+    yo#visitar: nodo#rhs
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarNoLlamar: nodo
+    yo#visitar: nodo#base
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarAutoejecutar: nodo
+    yo#visitar: nodo#expr
+    ParaCadaElemento: nodo#argumentos, procedimiento: arg
+        yo#visitar: arg
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarFunciónAnónima: nodo
+    variable rdn
+    fijar rdn a yo#crearSubámbito
+
+    ParaCadaElemento: nodo#parámetros, procedimiento: param
+        variable id
+        fijar id a GenerarIdDeNombre
+        rdn#_nombres#agregar: param#nombre, id
+        FijarNombreResuelto: param, id
+    finprocedimiento
+
+    si nodo#esMétodo
+        variable id
+        fijar id a GenerarIdDeNombre
+        rdn#_nombres#agregar: {yo}, id
+        FijarNombreResuelto: nodo, id
+    finsi
+
+    yo#_porResolver#agregarAlFinal: procedimiento
+        ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
+            rdn#visitar: stmt
+        finprocedimiento
+
+        rdn#finalizar: nodo, NULO
+    finprocedimiento
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarSonIguales: nodo
+    yo#visitar: nodo#lhs
+    yo#visitar: nodo#rhs
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarReferenciar: nodo
+    yo#visitar: nodo#nombre
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#visitarNo: nodo
+    yo#visitar: nodo#nombre
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#finalizar: nodo, llave
+    ParaCadaElemento: yo#_porResolver, procedimiento: callback
+        %callback
+    finprocedimiento
+
+    si no EsNulo: nodo
+        si EsNulo: llave
+            fijar llave a {nombresDefinídos}
+        finsi
+        nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, llave, yo#_nombres
+    finsi
+finmetodo
+
+procedimiento ResolverNombres: ast
+    variable cn
+    fijar cn a ResoluciónDeNombresCNImpl#crear
+    cn#visitar: ast
+    cn#finalizar: NULO, NULO
+    devolver cn#_nombres
+finprocedimiento
+
+funcion ObtenerNombresDefinídos: nodo
+    devolver nodo#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídos}
+finfuncion
