@@ -28,7 +28,7 @@ procedimiento FijarNombreResuelto: nodo, id
 finprocedimiento
 
 funcion NombreResueltoDe: id
-    devolver id#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResuelto}
+    devolver id#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResuelto}
 finfuncion
 
 clase ResoluciónDeNombresCNImpl hereda CN#CaminaNodos
