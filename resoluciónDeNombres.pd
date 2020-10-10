@@ -92,7 +92,9 @@ metodo ResoluciónDeNombresCNImpl#visitarClase: nodo
     yo#_nombres#agregar: nodo#nombre#nombre, nomclsid
     FijarNombreResuelto: nodo#nombre, nomclsid
 
-    ResolverTodoEnLista: (Arreglo#crearCon: nodo#claseBase)
+    si no EsNulo: nodo#claseBase
+        ResolverTodoEnLista: (Arreglo#crearCon: nodo#claseBase)
+    finsi
     ResolverTodoEnLista: nodo#extiendeClases
     ResolverTodoEnLista: nodo#implementaClases
 
