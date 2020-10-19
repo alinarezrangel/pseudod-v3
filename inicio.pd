@@ -1,28 +1,240 @@
 utilizar bepd/builtins
+utilizar bepd/x/enum
+utilizar bepd/x/puerto como Puerto
 utilizar bepd/x/puerto/deArchivo como PDA
 utilizar tokenizador como Tokenizador
 utilizar parser como Parser
 utilizar compilador como Compilador
 
 
-Escribir: {Inicio}
-variables ast, ámbito, programa
-fijar programa a «
+variables MENSAJE_DE_AYUDA, VERSIÓN, NOMBRE_IMPLEMENTACIÓN, RUTA_BEPD_PREDETERMINADA
+fijar VERSIÓN a {3.0.0-alpha.1}
+fijar NOMBRE_IMPLEMENTACIÓN a {PseudoD (bootstrap)}
+fijar RUTA_BEPD_PREDETERMINADA a {/opt/pseudod/bepd/bepd/}
 
-clase Hola
+fijar MENSAJE_DE_AYUDA a {PseudoD versión ~t
+Uso:  pseudod OPCIONES... (<archivo> | -c <programa>) [-b <ruta>]
+      pseudod OPCIONES... [-i]
+      pseudod (-v | --version)
+      pseudod (-h | --help | -a | --ayuda | -?)
+
+Opciones:
+
+ <archivo>                        : Ejecuta el archivo <archivo>.
+ -c <programa>                    : Ejecuta <programa> en vez de <archivo>.
+ -b <ruta>                        : Fija <ruta> a la ruta a la BEPD.
+ -B <ruta>                        : Igual a `-b <ruta>`. Obsoleto, existe
+                                    por compatibilidad.
+ -X <experimento>                 : Activa el experimento <experimento>.
+ --tokenizar-v3 <archivo>         : Tokeniza el archivo <archivo>.
+ --Mtokenizar-v3 <opt>            : Pasa <opt> como una opción para el
+                                    tokenizador.
+ -v | --version                   : Muestra el nombre del intérprete y
+                                    la versión.
+ --solo-version                   : Solamente muestra la versión del
+                                    intérprete.
+ -h | --help | -a | --ayuda | -?  : Muestra este mensaje de ayuda y termina.
+ -i                               : Inicia el REPL. Equivalente a llamar
+                                    `pseudod` sin <archivo> ni `-c`.
+ -L <ruta>                        : Busca bibliotecas en la ruta <ruta>.
+ -l <ruta>                        : No hace nada. Existe por compatibilidad.
+ -I <param>                       : Inspecciona el parámetro <param>.
+
+Si la opción `-b` no es especificada, la ruta a la BEPD se extráe de:
+
+  1. La variable de entorno `$RUTA_PSEUDOD`, o si no exíste:
+  2. La variable de entorno `$RUTA_PSEUDOD_BEPD`, o si no exíste:
+  3. El directorio `~t`.
+
+El sistema de experimentos te permite probar características experimentales o
+en etapa de prueba. Actualmente están implementados los siguientes
+experimentos:
+
+ -X v3x  : No hace nada.
+ -X v3   : Alias de `-X v3x`.
+
+Los siguientes parámetros pueden ser inspeccionados:
+
+ -I ruta-bepd  : Escribe la ruta a la BEPD utilizada.
+ -I rutas-bib  : Escribe las rutas a las bibliotecas. Una por línea.
+}#formatear: VERSIÓN, RUTA_BEPD_PREDETERMINADA
+
+variable MostrarVersión
+fijar MostrarVersión a Enum: {MostrarVersión}, {VERSIÓN_Y_NOMBRE}, {SOLO_VERSIÓN}, {NO}
+
+clase ContextoDeCLI
+    atributos archivoAEjecutar, programaAEjecutar, mostrarAyuda, mostrarVersión, rutaDeLaBEPD, interactivo
+
+    metodo comoTexto
 finclase
 
-»
+metodo ContextoDeCLI#inicializar
+    fijar yo#archivoAEjecutar a NULO
+    fijar yo#programaAEjecutar a NULO
+    fijar yo#mostrarAyuda a FALSO
+    fijar yo#mostrarVersión a MostrarVersión#NO
+    fijar yo#rutaDeLaBEPD a NULO
+    fijar yo#interactivo a FALSO
+finmetodo
 
-Escribir: {Mostrando tokenizado:}
-Tokenizador#MostrarTokenizadoDeTexto: programa
-Escribir: {Creando el AST...}
-fijar ast a Parser#CrearAST: programa
-Escribir: {Mostrando el AST}
-Escribir: ast
-Escribir: {Resolviendo nombres...}
-fijar ámbito a Compilador#ResolverNombres: ast
-Escribir: {Mostrando AST con información léxica:}
-Escribir: ast
-Escribir: {Compilando a LUA...}
-Escribir: (Compilador#CompilarALua: ast, ámbito)
+metodo ContextoDeCLI#comoTexto
+    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo
+finmetodo
+
+funcion ObtenerArchivoDesdeCLI: argumentoDelCLI
+    si argumentoDelCLI = {-}
+        devolver {/dev/stdin}
+    sino
+        devolver argumentoDelCLI
+    finsi
+finfuncion
+
+procedimiento ParsearOpción: ctx, arg, resto
+    si Contiene: (Arreglo#crearCon: {-h}, {--help}, {-a}, {--ayuda}, {-?}), arg
+        fijar ctx#mostrarAyuda a VERDADERO
+        devolver 0
+    finsi
+    si Contiene: (Arreglo#crearCon: {-v}, {--version}), arg
+        fijar ctx#mostrarVersión a MostrarVersión#VERSIÓN_Y_NOMBRE
+        devolver 0
+    finsi
+    si arg = {--solo-version}
+        fijar ctx#mostrarVersión a MostrarVersión#SOLO_VERSIÓN
+        devolver 0
+    finsi
+    si arg = {-l}
+        [ Especifica la ruta al NEA. El NEA ya no es utilizado en PseudoD v3 ]
+        devolver 1
+    finsi
+    si (arg = {-b}) || (arg = {-B})
+        necesitas resto#longitud > 0
+        fijar ctx#rutaDeLaBEPD a ObtenerArchivoDesdeCLI: (resto#en: 0)
+        devolver 1
+    finsi
+    si arg = {-i}
+        fijar ctx#interactivo a VERDADERO
+        devolver 0
+    finsi
+    si arg = {-c}
+        necesitas EsNulo: ctx#programaAEjecutar
+        necesitas resto#longitud > 0
+        fijar ctx#programaAEjecutar a resto#en: 0
+        devolver 1
+    finsi
+    devolver NULO
+finprocedimiento
+
+procedimiento ParsearPosicionales: ctx, posicionales
+    necesitas posicionales#longitud =< 1
+    si posicionales#longitud = 1
+        fijar ctx#archivoAEjecutar a ObtenerArchivoDesdeCLI: (posicionales#en: 0)
+    finsi
+finprocedimiento
+
+procedimiento ParsearCLI: cli
+    variables ctx, i, posicionales
+    fijar ctx a ContextoDeCLI#crear
+    fijar i a 0
+    fijar posicionales a Arreglo#vacio
+    mientras i < cli#longitud
+        variables arg, consumidos
+        fijar arg a cli#en: i
+        si arg = {--}
+            [ `--` termina las opciones: Luego de `--` todos los parámetros
+              del cli son posicionales, incluso los que comienzan con `-`. ]
+            fijar posicionales a Concatenar: posicionales, (PedazoDeArreglo: cli, (i + 1), -1)
+            fijar i a cli#longitud  [ <== Termina el bucle ]
+        sino
+            fijar consumidos a ParsearOpción: ctx, arg, (PedazoDeArreglo: cli, (i + 1), -1)
+            si EsNulo: consumidos
+                necesitas no ((arg#en: 0) = {-})
+                posicionales#agregarAlFinal: arg
+                fijar i a i + 1
+            sino
+                fijar i a i + 1 + consumidos
+            finsi
+        finsi
+    finmientras
+    ParsearPosicionales: ctx, posicionales
+    devolver ctx
+finprocedimiento
+
+procedimiento Base: programa
+    Escribir: {Inicio}
+    variables ast, ámbito
+    Escribir: {Mostrando tokenizado:}
+    Tokenizador#MostrarTokenizadoDeTexto: programa
+    Escribir: {Creando el AST...}
+    fijar ast a Parser#CrearAST: programa
+    Escribir: {Mostrando el AST}
+    Escribir: ast
+    Escribir: {Resolviendo nombres...}
+    fijar ámbito a Compilador#ResolverNombres: ast
+    Escribir: {Mostrando AST con información léxica:}
+    Escribir: ast
+    Escribir: {Compilando a LUA...}
+    Escribir: (Compilador#CompilarALua: ast, ámbito)
+finprocedimiento
+
+procedimiento LeerArchivo: nombre
+    variables pt, txt, car
+    fijar pt a PDA#PuertoDeArchivoDeLectura#abrir: nombre
+    fijar txt a {}
+    fijar car a pt#leerCarácter
+    mientras no (car = Puerto#EOF)
+        fijar txt a txt#concatenar: car
+        fijar car a pt#leerCarácter
+    finmientras
+    pt#cerrar
+    devolver txt
+finprocedimiento
+
+procedimiento Compilar: ctx, programa
+    Base: programa
+finprocedimiento
+
+procedimiento CompilarArchivo: ctx, nombreDelArchivo
+    Compilar: ctx, (LeerArchivo: nombreDelArchivo)
+finprocedimiento
+
+procedimiento IniciarREPL: ctx
+    Escribir: {REPL del compilador}
+    Escribir: {TODO}
+finprocedimiento
+
+procedimiento Inicio: ctxcli
+    si (EsNulo: ctxcli#archivoAEjecutar) && (EsNulo: ctxcli#programaAEjecutar)
+        fijar ctxcli#interactivo a VERDADERO
+    finsi
+
+    si no EsNulo: ctxcli#archivoAEjecutar
+        CompilarArchivo: ctxcli, ctxcli#archivoAEjecutar
+        devolver NULO
+    finsi
+    si no EsNulo: ctxcli#programaAEjecutar
+        Compilar: ctxcli, ctxcli#programaAEjecutar
+        devolver NULO
+    finsi
+    si ctxcli#interactivo
+        IniciarREPL: ctxcli
+        devolver NULO
+    finsi
+
+    Escribir: ctxcli
+finprocedimiento
+
+variable ctxcli
+fijar ctxcli a ParsearCLI: __Argv
+si ctxcli#mostrarAyuda
+    escribir MENSAJE_DE_AYUDA
+sino
+    si ctxcli#mostrarVersión = MostrarVersión#VERSIÓN_Y_NOMBRE
+        Escribir: ({~t ~t}#formatear: NOMBRE_IMPLEMENTACIÓN, VERSIÓN)
+    sino
+        si ctxcli#mostrarVersión = MostrarVersión#SOLO_VERSIÓN
+            Escribir: VERSIÓN
+        sino
+            Inicio: ctxcli
+        finsi
+    finsi
+finsi
