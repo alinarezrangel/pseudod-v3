@@ -146,28 +146,12 @@ metodo ResoluciónDeNombresCNImpl#visitarDefineMétodoEnClase: nodo
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarFunción: nodo
-    variable rdn
-    fijar rdn a yo#crearSubámbito
-
     variable idfunc
     fijar idfunc a GenerarIdDeNombre
     FijarNombreResuelto: nodo#nombre, idfunc
     yo#_nombres#agregar: nodo#nombre#nombre, idfunc
 
-    ParaCadaElemento: nodo#parámetros, procedimiento: param
-        variable id
-        fijar id a GenerarIdDeNombre
-        rdn#_nombres#agregar: param#nombre, id
-        FijarNombreResuelto: param, id
-    finprocedimiento
-
-    yo#_porResolver#agregarAlFinal: procedimiento
-        ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
-            rdn#visitar: stmt
-        finprocedimiento
-
-        rdn#finalizar: nodo, NULO
-    finprocedimiento
+    yo#resolverFunciónOMétodoAnónimo: nodo, FALSO
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarNecesitas: nodo
@@ -208,7 +192,7 @@ finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarMétodo: nodo
     yo#visitar: nodo#deClase
-    yo#visitarFunción: nodo
+    yo#resolverFunciónOMétodoAnónimo: nodo, VERDADERO
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarAtributos: nodo
@@ -290,30 +274,7 @@ metodo ResoluciónDeNombresCNImpl#visitarAutoejecutar: nodo
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarFunciónAnónima: nodo
-    variable rdn
-    fijar rdn a yo#crearSubámbito
-
-    ParaCadaElemento: nodo#parámetros, procedimiento: param
-        variable id
-        fijar id a GenerarIdDeNombre
-        rdn#_nombres#agregar: param#nombre, id
-        FijarNombreResuelto: param, id
-    finprocedimiento
-
-    si nodo#esMétodo
-        variable id
-        fijar id a GenerarIdDeNombre
-        rdn#_nombres#agregar: {yo}, id
-        FijarNombreResuelto: nodo, id
-    finsi
-
-    yo#_porResolver#agregarAlFinal: procedimiento
-        ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
-            rdn#visitar: stmt
-        finprocedimiento
-
-        rdn#finalizar: nodo, NULO
-    finprocedimiento
+    yo#resolverFunciónOMétodoAnónimo: nodo, nodo#esMétodo
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarSonIguales: nodo
@@ -340,6 +301,43 @@ metodo ResoluciónDeNombresCNImpl#finalizar: nodo, llave
         finsi
         nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, llave, yo#_nombres
     finsi
+finmetodo
+
+metodo ResoluciónDeNombresCNImpl#resolverFunciónOMétodoAnónimo: nodo, esMétodo
+    variable rdn
+    fijar rdn a yo#crearSubámbito
+
+    ParaCadaElemento: nodo#parámetros, procedimiento: param
+        variable id
+        fijar id a GenerarIdDeNombre
+        rdn#_nombres#agregar: param#nombre, id
+        FijarNombreResuelto: param, id
+    finprocedimiento
+
+    si esMétodo
+        variable id
+        fijar id a GenerarIdDeNombre
+        rdn#_nombres#agregar: {yo}, id
+        FijarNombreResuelto: nodo, id
+        nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}, id
+    finsi
+
+    yo#_porResolver#agregarAlFinal: procedimiento
+        ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
+            rdn#visitar: stmt
+        finprocedimiento
+
+        rdn#finalizar: nodo, {nombresDefinídos}
+        variable cl
+        fijar cl a clonar rdn con finclonar
+        ParaCadaElemento: nodo#parámetros, procedimiento: param
+            cl#_nombres#eliminar: param#nombre
+        finprocedimiento
+        si esMétodo
+            cl#_nombres#eliminar: {yo}
+        finsi
+        cl#finalizar: nodo, {nombresDefinídosSinParámetros}
+    finprocedimiento
 finmetodo
 
 procedimiento ResolverNombres: ast

@@ -29,6 +29,7 @@ finfuncion
 
 clase CompiladorSimpleALua hereda CN#CaminaNodos
     metodo estatico crearSubámbitoDesdeNodo: nodo
+    metodo estatico crearSubámbitoDesdeNombreEnNodo: nodo, llave
 
     metodo inicializar: ámbito
 
@@ -38,7 +39,11 @@ finclase
 atributo CompiladorSimpleALua#_ámbito
 
 metodo estatico CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
-    devolver CompiladorSimpleALua#crear: (nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídos})
+    devolver yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídos}
+finmetodo
+
+metodo estatico CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, llave
+    devolver CompiladorSimpleALua#crear: (nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, llave)
 finmetodo
 
 metodo CompiladorSimpleALua#inicializar: ámbito
@@ -49,7 +54,7 @@ metodo CompiladorSimpleALua#iniciar
     variable res
     fijar res a Arreglo#vacio
     yo#_ámbito#_mapeo#paraCadaPar: procedimiento: nombreEnPseudoD, id
-        res#agregarAlFinal: ({local _~t}#formatear: id)
+        res#agregarAlFinal: ({local _~t  --  ~t}#formatear: id, nombreEnPseudoD)
     finprocedimiento
     devolver Unir: res, {~%}#formatear
 finmetodo
@@ -84,15 +89,31 @@ metodo CompiladorSimpleALua#visitarNl: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarClase: nodo
-    NoImplementado
+    variables cods, clssym
+    fijar clssym a IdentificadorDe: nodo#nombre
+    fijar cods a Arreglo#vacio
+    cods#agregarAlFinal: ({~t = ~t}#formatear: clssym, (yo#enviarMensaje: {rt.clases.Objeto}, {subclase}, Arreglo#vacio))
+    cods#agregarAlFinal: ({M.enviarMensaje(~t, "fijar_nombre", ~t)}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre))
+    ParaCadaElemento: nodo#declaraciones, procedimiento: declr
+        si EsInstancia: declr, AST#NodoDeclaraciónDeAtributosEnClase
+            cods#agregarAlFinal: (yo#visitar: (clonar AST#NodoAtributos#crear con
+                areaTextual: declr#areaTextual
+                deClase: nodo#nombre
+                nombres: declr#nombres
+            finclonar))
+        sino
+            [ Nada que hacer para los NodoDeclaraciónDeMétodoEnClase ]
+        finsi
+    finprocedimiento
+    devolver Unir: cods, {~%}#formatear
 finmetodo
 
 metodo CompiladorSimpleALua#visitarDeclaraciónDeAtributosEnClase: nodo
-    NoImplementado
+    Inalcanzable
 finmetodo
 
 metodo CompiladorSimpleALua#visitarDeclaraciónDeMétodoEnClase: nodo
-    NoImplementado
+    Inalcanzable
 finmetodo
 
 metodo CompiladorSimpleALua#visitarImplementa: nodo
@@ -135,7 +156,7 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarFunción: nodo
     variables cods, id, subyo
-    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
+    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
     fijar id a IdentificadorDe: nodo#nombre
     fijar cods a Arreglo#vacio
     cods#agregarAlFinal: ({~t = ~t}#formatear:
@@ -157,11 +178,9 @@ metodo CompiladorSimpleALua#visitarSi: nodo
     variables cods, subSiVerdadero, subSiFalso
 
     fijar subSiVerdadero a
-        CompiladorSimpleALua#crear:
-            (nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiVerdadero})
+        CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSiVerdadero}
     fijar subSiFalso a
-        CompiladorSimpleALua#crear:
-            (nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiFalso})
+        CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSiFalso}
 
     fijar cods a Arreglo#vacio
     cods#agregarAlFinal: ({if ~t then}#formatear: (yo#visitar: nodo#condicional))
@@ -202,11 +221,22 @@ metodo CompiladorSimpleALua#visitarMientras: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarMétodo: nodo
-    NoImplementado
+    variables clssym, nrdyo, subyo, cuerpoMet
+    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
+    fijar clssym a IdentificadorDe: nodo#deClase
+    fijar nrdyo a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
+    fijar cuerpoMet a subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
+    devolver {;(~t).methods[~t] = ~t}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre), cuerpoMet
 finmetodo
 
 metodo CompiladorSimpleALua#visitarAtributos: nodo
-    NoImplementado
+    variables clssym, cods
+    fijar clssym a IdentificadorDe: nodo#deClase
+    fijar cods a Arreglo#vacio
+    ParaCadaElemento: nodo#nombres, procedimiento: nodoId
+        cods#agregarAlFinal: ({;(~t):addAttribute(~t)}#formatear: clssym, (EscaparParaLua: nodoId#nombre))
+    finprocedimiento
+    devolver Unir: cods, {~%}#formatear
 finmetodo
 
 metodo CompiladorSimpleALua#visitarUtilizar: nodo
@@ -272,7 +302,7 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarFunciónAnónima: nodo
     variable nrdyo, subyo
-    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
+    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
     si nodo#esMétodo
         fijar nrdyo a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
     sino

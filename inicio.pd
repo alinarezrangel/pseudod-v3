@@ -200,6 +200,29 @@ finprocedimiento
 procedimiento IniciarREPL: ctx
     Escribir: {REPL del compilador}
     Escribir: {TODO}
+    Base: {
+
+variable A
+
+clase Foo
+    atributos X, Y, Z
+    metodo hello
+    metodo world: A, B
+finclase
+
+metodo Foo#hello
+    variable W
+    fijar W a funcion
+        devolver yo + 1
+    finfuncion
+    devolver yo
+finmetodo
+
+metodo Foo#world: A, B
+    devolver A + B
+finmetodo
+
+}
 finprocedimiento
 
 procedimiento Inicio: ctxcli

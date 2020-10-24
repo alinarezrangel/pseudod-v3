@@ -685,7 +685,9 @@ M.clases.Objeto = Objeto
 
 local Arreglo = M.enviarMensaje(Objeto, "subclase")
 
-function Arreglo.methods:crear()
+M.enviarMensaje(Arreglo, "fijar_nombre", "Arreglo")
+
+Arreglo.methods["crear"] = function(self)
    return M.arreglo()
 end
 

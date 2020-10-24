@@ -761,3 +761,31 @@ DOCUMENTA]
 procedimiento MétodoAbstracto
     __FallarConMensaje: {Método abstracto}
 finprocedimiento
+
+[DOCUMENTA
+@brief{Marca una ruta de código como inalcanzable.}
+
+Este procedimiento le indica al compilador/intérprete de PseudoD, y a futuros
+lectores del programa, que es imposible llegar a ciertas rutas en el código.
+
+Por ejemplo, podríamos implementar nuestra propia versión de @code{necesitas}
+de la siguiente manera:
+
+@codeblock|{
+procedimiento Necesitas: condición
+    si condición
+        devolver NULO
+    sino
+        Inalcanzable
+    finsi
+finprocedimiento
+}|
+
+Indicandole así al compilador que condición siempre debe ser verdadero, ya
+que de ser falso se alcanzaría una ruta marcada con inalcanzable.
+
+Está implementado como un procedimiento que lanza una excepción al ser llamado.
+DOCUMENTA]
+procedimiento Inalcanzable
+    __FallarConMensaje: {Inalcanzable}
+finprocedimiento
