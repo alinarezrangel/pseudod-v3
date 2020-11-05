@@ -93,7 +93,7 @@ metodo CompiladorSimpleALua#visitarClase: nodo
     fijar clssym a IdentificadorDe: nodo#nombre
     fijar cods a Arreglo#vacio
     cods#agregarAlFinal: ({~t = ~t}#formatear: clssym, (yo#enviarMensaje: {rt.clases.Objeto}, {subclase}, Arreglo#vacio))
-    cods#agregarAlFinal: ({M.enviarMensaje(~t, "fijar_nombre", ~t)}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre))
+    cods#agregarAlFinal: ({rt.enviarMensaje(~t, "fijar_nombre", ~t)}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre))
     ParaCadaElemento: nodo#declaraciones, procedimiento: declr
         si EsInstancia: declr, AST#NodoDeclaraciónDeAtributosEnClase
             cods#agregarAlFinal: (yo#visitar: (clonar AST#NodoAtributos#crear con
@@ -226,7 +226,7 @@ metodo CompiladorSimpleALua#visitarMétodo: nodo
     fijar clssym a IdentificadorDe: nodo#deClase
     fijar nrdyo a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
     fijar cuerpoMet a subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
-    devolver {;(~t).methods[~t] = ~t}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre), cuerpoMet
+    devolver {rt.enviarMensaje(~t, "agregarMetodo", ~t, ~t)}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre), cuerpoMet
 finmetodo
 
 metodo CompiladorSimpleALua#visitarAtributos: nodo
@@ -234,7 +234,7 @@ metodo CompiladorSimpleALua#visitarAtributos: nodo
     fijar clssym a IdentificadorDe: nodo#deClase
     fijar cods a Arreglo#vacio
     ParaCadaElemento: nodo#nombres, procedimiento: nodoId
-        cods#agregarAlFinal: ({;(~t):addAttribute(~t)}#formatear: clssym, (EscaparParaLua: nodoId#nombre))
+        cods#agregarAlFinal: ({rt.enviarMensaje(~t, "agregarAtributo", ~t)}#formatear: clssym, (EscaparParaLua: nodoId#nombre))
     finprocedimiento
     devolver Unir: cods, {~%}#formatear
 finmetodo
@@ -333,5 +333,5 @@ funcion CompilarALua: ast, ámbito
     variables comp, ini
     fijar comp a CompiladorSimpleALua#crear: ámbito
     fijar ini a comp#iniciar
-    devolver {~t~%~t}#formatear: ini, comp#visitar: ast
+    devolver {local rt = require "backends.lua.runtime"~%~t~%~t}#formatear: ini, comp#visitar: ast
 finfuncion

@@ -1,5 +1,19 @@
 local M = {}
 
+local function itertofunc(iter, ...)
+   local iterfunc, state, ctrl, closing = iter(...)
+   local function nextiter()
+      assert(not ended())
+      local res = table.pack(iterfunc(state, ctrl))
+      ctrl = res[1]
+      return ctrl, table.unpack(res, 2)
+   end
+   local function ended()
+      return ctrl == nil
+   end
+   return nextiter, ended
+end
+
 function M.pdformat(fmt, ...)
    --[[
       Sintáxis de formatos de PseudoD:
@@ -14,30 +28,54 @@ function M.pdformat(fmt, ...)
         inserta el resultado
       - `~|%` = consume el siguiente fin de línea, eliminandolo del texto
    --]]
-   local litescpatt = "~([~%eEq])"
-   local valescpatt = "~([tT])"
-   local nlescpatt = "~|%[\n\r]*"
 
-   local LITS = {
-      ["~"] = "~", ["%"] = "\n", ["e"] = "}", ["E"] = "»", ["q"] = '"',
-   }
-
-   local vals = {...}
-   local i = 1
-   local function escapepatt(esc)
-      local value = vals[i]
-      i = i + 1
-      if esc == "t" then
-         return M.enviarMensaje(value, "comoTexto")
+   local paramIdx = 1
+   local params = table.pack(...)
+   local nextiter, ended = itertofunc(utf8.codes, fmt)
+   local function readch()
+      local pos, code = nextiter()
+      local ch = utf8.char(code)
+      return pos, code, ch
+   end
+   local result = ""
+   while not ended() do
+      local pos, code, ch = readch()
+      if ch == "~" then
+         assert(not ended())
+         local nxpos, nxcode, nxch = readch()
+         if nxch == "t" then
+            result = result .. M.enviarMensaje(params[paramIdx], "comoTexto")
+            paramIdx = paramIdx + 1
+         elseif nxch == "T" then
+            M.pdasserttype(params[paramIdx], "texto")
+            result = result .. params[paramIdx]
+            paramIdx = paramIdx + 1
+         elseif nxch == "~" then
+            result = result .. "~"
+         elseif nxch == "%" then
+            result = result .. "\n"
+         elseif nxch == "e" then
+            result = result .. "}"
+         elseif nxch == "E" then
+            result = result .. "»"
+         elseif nxch == "q" then
+            result = result .. '"'
+         elseif nxch == "|" then
+            assert(not ended())
+            nxpos, nxcode, nxch = readch()
+            assert(nxch == "%")
+            nxpos, nxcode, nxch = readch()
+            -- TODO: Agrega soporte para \r\n y \r
+            assert(nxch == "\n")
+         else
+            error("todo")
+         end
       else
-         M.pdasserttype(value, "texto", "Se esperaba un texto para formato ~T de #formatear")
-         return value
+         result = result .. ch
       end
    end
 
-   fmt = string.gsub(fmt, nlescpatt, "")
-   fmt = string.gsub(fmt, litescpatt, LITS)
-   return string.gsub(fmt, valescpatt, escapepatt)
+   return result
 end
 
 function M.strtopdformat(str)
@@ -161,7 +199,7 @@ function M.objeto()
             error(("Método %q no encontrado"):format(mensaje))
          end
       else
-         return M.enviarMensaje(obj.methods[mensaje], "llamar", ...)
+         return M.enviarMensaje(obj.methods[mensaje], "llamar", self, ...)
       end
    end
 
@@ -189,7 +227,7 @@ function M.pdasserttype(val, typ, msg)
    if msg then
       assert(M.pdtypeof(val) == typ, msg)
    else
-      assert(M.pdtypeof(val) == typ, ("Esperaba un objeto %q pero se obtuvo %q"):format(M.pdtypeof(val), typ))
+      assert(M.pdtypeof(val) == typ, ("Esperaba un objeto %q pero se obtuvo %q"):format(typ, M.pdtypeof(val)))
    end
 end
 
@@ -453,7 +491,7 @@ primitiveClone(METODOS_PROC)
 local function makeDispatcher(methodstbl, clsname)
    return function(self, message, ...)
       if methodstbl[message] == nil then
-         error(("Mensaje %q no encontrado en la instancia %d de %s"):format(message, self, clsname))
+         error(("Mensaje %q no encontrado en la instancia %s de %s"):format(message, self, clsname))
       else
          return methodstbl[message](self, ...)
       end
@@ -570,6 +608,21 @@ local METODOS_ARREGLO = {
    end,
 }
 
+function pp(tbl)
+   if type(tbl) == "string" then
+      return ("%q"):format(tbl)
+   end
+   if type(tbl) ~= "table" then
+      return tostring(tbl)
+   end
+   local r = "{"
+   for k, v in pairs(tbl) do
+      r = r .. ("%q = %s, "):format(k, pp(v))
+   end
+   r = r .. "}"
+   return r
+end
+
 function M.mkarreglo(vals)
    local arr = M.objeto()
    local valsIdx = arr:newAttribute()
@@ -589,8 +642,12 @@ end
 function M.arregloipairs(arr)
    return function(arr, idx)
       idx = idx + 1
-      return idx, M.enviarMensaje(arr, "en", idx)
-   end, arr, -1, nil
+      if idx > M.enviarMensaje(arr, "longitud") then
+         return nil, nil
+      else
+         return idx, M.enviarMensaje(arr, "en", idx)
+      end
+   end, arr, 0
 end
 
 function M.arreglounpack(arr)
@@ -598,7 +655,7 @@ function M.arreglounpack(arr)
    for i, x in M.arregloipairs(arr) do
       tbl[i] = x
    end
-   return table.unpack(tbl, 0, M.enviarMensaje(arr, "longitud"))
+   return table.unpack(tbl, 1, M.enviarMensaje(arr, "longitud"))
 end
 
 M.clases = {}
@@ -642,7 +699,8 @@ end
 function Objeto.methods:_crearConYo(inst)
    local obj = M.objeto()
    local mets = self:getAttribute(Objeto.metodosDeInstanciaIdx)
-   for name, proc in pairs(mets) do
+   for i, pair in M.arregloipairs(mets) do
+      local name, proc = M.arreglounpack(pair)
       M.pdasserttype(name, "texto")
       inst.methods[name] = function(self, ...)
          return M.enviarMensaje(proc, "llamar", inst, ...)
@@ -658,7 +716,8 @@ function Objeto.methods:_crear()
    for i = 1, nattrs do
       inst:newAttribute()
    end
-   for name, proc in pairs(mets) do
+   for i, pair in M.arregloipairs(mets) do
+      local name, proc = M.arreglounpack(pair)
       M.pdasserttype(name, "texto")
       inst.methods[name] = proc
    end

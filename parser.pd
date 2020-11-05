@@ -892,7 +892,6 @@ fijar grPrograma a
             sino
                 fijar area a AreaTotal: (res#en: 0), (ÚltimoElemento: res)
             finsi
-            Escribir: {PROGRAMA}
             devolver clonar AST#NodoPrograma#crear con
                 areaTextual: area
                 instrucciones: res
