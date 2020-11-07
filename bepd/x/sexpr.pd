@@ -1,0 +1,219 @@
+utilizar bepd/builtins
+utilizar bepd/x/puerto como Puerto
+utilizar bepd/utilidades/texto/ascii como ASCII
+
+clase Símbolo
+    metodo estatico desdeTexto: txt
+
+    atributo valor
+
+    metodo comoTexto
+finclase
+
+metodo estatico Símbolo#desdeTexto: txt
+    variable x
+    fijar x a yo#crear
+    fijar x#valor a txt
+    devolver x
+finmetodo
+
+metodo Símbolo#comoTexto
+    devolver yo#valor
+finmetodo
+
+funcion MapearTexto: texto, func
+    variable res
+    fijar res a {}
+    ParaCadaElemento: texto, procedimiento: car
+        fijar res a res#concatenar: (%func: car)
+    finprocedimiento
+    devolver res
+finfuncion
+
+funcion EscaparTexto: texto
+    devolver MapearTexto: texto, funcion: car
+        si car = {\}
+            devolver {\\}
+        finsi
+        si car = {~q}#formatear
+            devolver {\~q}#formatear
+        finsi
+        si car = {~%}#formatear
+            devolver {\n}
+        finsi
+        [ El siguiente tabulador en el texto DEBE SER LITERAL.
+          O, en otras palabras, no lo conviertas a espacios. ]
+        si car = {	}
+            devolver {\t}
+        finsi
+        devolver car
+    finfuncion
+finfuncion
+
+funcion DesescaparTexto: texto
+    variables acc, i
+    fijar acc a {}
+    fijar i a 0
+    mientras i < texto#longitud
+        variable c
+        fijar c a texto#en: i
+        si c = {\}
+            fijar i a i + 1
+            necesitas i < texto#longitud
+            fijar c a texto#en: i
+            variable r
+            si c = {n}
+                fijar r a {~%}#formatear
+            finsi
+            si c = {t}
+                [ Misma advertencia sobre este tabulador. ]
+                fijar r a {	}
+            finsi
+            si c = {~q}#formatear
+                fijar r a {~q}#formatear
+            finsi
+            si c = {\}
+                fijar r a {\}
+            finsi
+            necesitas no EsNulo: r
+            fijar acc a acc#concatenar: r
+        sino
+            fijar acc a acc#concatenar: c
+        finsi
+        fijar i a i + 1
+    finmientras
+    devolver acc
+finfuncion
+
+variable EXTRA_ID
+fijar EXTRA_ID a {-+<>}
+
+funcion EsCarácterIdentificador: ch
+    devolver (ASCII#EsAlfabético: ch) || (ASCII#EsDígitoDecimal: ch) || (Contiene: EXTRA_ID, ch)
+finfuncion
+
+procedimiento SiguienteCarácter: puerto
+    variable ch
+    fijar ch a puerto#leerCarácter
+    si no (ch = Puerto#EOF)
+        puerto#desleerCarácter
+    finsi
+    devolver ch
+finprocedimiento
+
+procedimiento ParsearSímbolo: ch, puerto
+    variable acc
+    fijar acc a ch
+    mientras EsCarácterIdentificador: (SiguienteCarácter: puerto)
+        fijar acc a acc#concatenar: puerto#leerCarácter
+    finmientras
+    si EsNúmeroEntero: acc
+        devolver ConvertirAEntero: acc
+    sino
+        si (acc = {true}) || (acc = {false})
+            si acc = {true}
+                devolver VERDADERO
+            sino
+                devolver FALSO
+            finsi
+        sino
+            devolver Símbolo#desdeTexto: acc
+        finsi
+    finsi
+finprocedimiento
+
+procedimiento ParsearLista: puerto
+    variables elementos, cont
+    fijar elementos a Arreglo#vacio
+    fijar cont a VERDADERO
+    mientras cont
+        Puerto#SaltarEspacios: puerto
+        si (SiguienteCarácter: puerto) = {)}
+            puerto#leerCarácter
+            fijar cont a FALSO
+        sino
+            elementos#agregarAlFinal: (ParsearDato: puerto)
+        finsi
+    finmientras
+    devolver elementos
+finprocedimiento
+
+procedimiento ParsearTexto: puerto
+    funcion TerminaConBarra: t
+        si t#longitud = 0
+            devolver FALSO
+        sino
+            devolver (t#en: (t#longitud - 1)) = {\}
+        finsi
+    finfuncion
+    variable texto
+    fijar texto a (Puerto#LeerHasta: puerto, {~q}#formatear)
+    mientras TerminaConBarra: texto
+        fijar texto a texto#concatenar: {~q}#formatear
+        fijar texto a texto#concatenar: (Puerto#LeerHasta: puerto, {~q}#formatear)
+    finmientras
+    devolver DesescaparTexto: texto
+finprocedimiento
+
+procedimiento ParsearDato: puerto
+    variable ch
+    fijar ch a puerto#leerCarácter
+    si ch = {(}
+        devolver ParsearLista: puerto
+    finsi
+    si ch = {~q}#formatear
+        devolver ParsearTexto: puerto
+    finsi
+    si EsCarácterIdentificador: ch
+        devolver ParsearSímbolo: ch, puerto
+    finsi
+    __FallarConMensaje: ({Se esperaba una lista, símbolo, texto o número, pero se encontró ~t}#formatear: ch)
+finprocedimiento
+
+procedimiento DesparsearLista: puerto, dato
+    puerto#escribirTexto: {(}
+    ParaCadaElemento: dato, procedimiento: x
+        DesparsearDato: puerto, x
+        puerto#escribirTexto: { }
+    finprocedimiento
+    puerto#escribirTexto: {)}
+finprocedimiento
+
+procedimiento DesparsearBoole: puerto, dato
+    si dato
+        puerto#escribirTexto: {true}
+    sino
+        puerto#escribirTexto: {false}
+    finsi
+finprocedimiento
+
+procedimiento DesparsearNúmero: puerto, dato
+    puerto#escribirTexto: dato#comoTexto
+finprocedimiento
+
+procedimiento DesparsearTexto: puerto, dato
+    puerto#escribirTexto: ({~q~t~q}#formatear: (EscaparTexto: dato))
+finprocedimiento
+
+procedimiento DesparsearSímbolo: puerto, dato
+    puerto#escribirTexto: dato#comoTexto
+finprocedimiento
+
+procedimiento DesparsearDato: puerto, dato
+    si EsInstancia: dato, Arreglo
+        devolver DesparsearLista: puerto, dato
+    finsi
+    si EsInstancia: dato, Boole
+        devolver DesparsearBoole: puerto, dato
+    finsi
+    si EsInstancia: dato, Numero
+        devolver DesparsearNúmero: puerto, dato
+    finsi
+    si EsInstancia: dato, Texto
+        devolver DesparsearTexto: puerto, dato
+    finsi
+    si EsInstancia: dato, Símbolo
+        devolver DesparsearSímbolo: puerto, dato
+    finsi
+    __FallarConMensaje: ({Se esperaba un arreglo, símbolo, texto o número, pero se encontró un ~t}#formatear: (TipoDe: dato))
+finprocedimiento
