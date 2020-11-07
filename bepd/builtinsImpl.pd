@@ -320,7 +320,7 @@ funcion ConvertirAEntero: texto
     finsi
     ParaCadaElementoConÍndice: resto, procedimiento: el, i
         variable exponente
-        fijar exponente a (texto#longitud - i) - 1
+        fijar exponente a (resto#longitud - i) - 1
         variable p
         fijar p a Elevar: 10, exponente
         fijar n a n + (p * DígitoAEntero: el)
