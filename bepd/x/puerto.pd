@@ -66,6 +66,22 @@ metodo PuertoDeLectura#desleerCarácter
     devolver car
 finmetodo
 
+clase PuertoDeEscritura hereda Puerto
+    metodo estatico paraTexto
+
+    metodo escribirTexto: txt
+finclase
+
+atributo PuertoDeEscritura#texto
+
+metodo estatico PuertoDeEscritura#paraTexto
+    devolver clonar yo#crear con texto: {} finclonar
+finmetodo
+
+metodo PuertoDeEscritura#escribirTexto: txt
+    fijar yo#texto a yo#texto#concatenar: txt
+finmetodo
+
 funcion TerminaCon: texto, final
     variables tamTexto, tamFinal
     fijar tamTexto a texto#longitud
@@ -133,4 +149,12 @@ finprocedimiento
 
 funcion TextoComoPuerto: texto
     devolver PuertoDeLectura#desdeTexto: texto
+finfuncion
+
+funcion PuertoParaTexto
+    devolver PuertoDeEscritura#paraTexto
+finfuncion
+
+funcion TextoDePuertoDeEscritura: puertoDeEscritura
+    devolver puertoDeEscritura#texto
 finfuncion
