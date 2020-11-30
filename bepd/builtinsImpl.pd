@@ -448,7 +448,7 @@ arreglo cuyos elementos serán utilizados también como argumentos.}
 @devuelve{Lo que @param{proc} devuelva al ser llamado.}
 DOCUMENTA]
 procedimiento Aplicar': proc, ...argsYFinal
-    devolver Aplicar: proc, (Aplicar: ArregloConFinal, argsYFinal)
+    devolver Aplicar: proc, (Aplicar: &ArregloConFinal, argsYFinal)
 finprocedimiento
 
 [DOCUMENTA
@@ -789,3 +789,14 @@ DOCUMENTA]
 procedimiento Inalcanzable
     __FallarConMensaje: {Inalcanzable}
 finprocedimiento
+
+funcion LlamarConEC: proc
+    variable res
+    __Capturar: procedimiento: esc
+        fijar res a %proc: procedimiento: val
+            fijar res a val
+            %esc
+        finprocedimiento
+    finprocedimiento
+    devolver res
+finfuncion

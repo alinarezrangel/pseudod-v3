@@ -6,6 +6,8 @@ utilizar caminaNodos como CN
 
 utilizar resoluciónDeNombres como RN
 
+utilizar módulos como Módulos
+
 funcion EscaparParaLua: texto
     variable res
     fijar res a {"} [ " ]
@@ -28,26 +30,27 @@ funcion IdentificadorDe: id
 finfuncion
 
 clase CompiladorSimpleALua hereda CN#CaminaNodos
-    metodo estatico crearSubámbitoDesdeNodo: nodo
-    metodo estatico crearSubámbitoDesdeNombreEnNodo: nodo, llave
+    metodo crearSubámbitoDesdeNodo: nodo
+    metodo crearSubámbitoDesdeNombreEnNodo: nodo, llave
 
-    metodo inicializar: ámbito
+    metodo inicializar: moddb, ámbito
 
     metodo iniciar
 finclase
 
-atributo CompiladorSimpleALua#_ámbito
+atributos CompiladorSimpleALua#_ámbito, CompiladorSimpleALua#_moddb
 
-metodo estatico CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
+metodo CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
     devolver yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídos}
 finmetodo
 
-metodo estatico CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, llave
-    devolver CompiladorSimpleALua#crear: (nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, llave)
+metodo CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, llave
+    devolver CompiladorSimpleALua#crear: yo#_moddb, (nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, llave)
 finmetodo
 
-metodo CompiladorSimpleALua#inicializar: ámbito
+metodo CompiladorSimpleALua#inicializar: moddb, ámbito
     fijar yo#_ámbito a ámbito
+    fijar yo#_moddb a moddb
 finmetodo
 
 metodo CompiladorSimpleALua#iniciar
@@ -156,7 +159,7 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarFunción: nodo
     variables cods, id, subyo
-    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
+    fijar subyo a yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
     fijar id a IdentificadorDe: nodo#nombre
     fijar cods a Arreglo#vacio
     cods#agregarAlFinal: ({~t = ~t}#formatear:
@@ -178,9 +181,9 @@ metodo CompiladorSimpleALua#visitarSi: nodo
     variables cods, subSiVerdadero, subSiFalso
 
     fijar subSiVerdadero a
-        CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSiVerdadero}
+        yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSiVerdadero}
     fijar subSiFalso a
-        CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSiFalso}
+        yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSiFalso}
 
     fijar cods a Arreglo#vacio
     cods#agregarAlFinal: ({if ~t then}#formatear: (yo#visitar: nodo#condicional))
@@ -205,7 +208,7 @@ finmetodo
 metodo CompiladorSimpleALua#visitarMientras: nodo
     variables cods, subyo
 
-    fijar subSiVerdadero a CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
+    fijar subSiVerdadero a yo#crearSubámbitoDesdeNodo: nodo
 
     fijar cods a Arreglo#vacio
     cods#agregarAlFinal: ({while ~t do}#formatear: (yo#visitar: nodo#condicional))
@@ -222,7 +225,7 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarMétodo: nodo
     variables clssym, nrdyo, subyo, cuerpoMet
-    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
+    fijar subyo a yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
     fijar clssym a IdentificadorDe: nodo#deClase
     fijar nrdyo a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
     fijar cuerpoMet a subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
@@ -302,7 +305,7 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarFunciónAnónima: nodo
     variable nrdyo, subyo
-    fijar subyo a CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
+    fijar subyo a yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
     si nodo#esMétodo
         fijar nrdyo a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
     sino
@@ -329,9 +332,9 @@ metodo CompiladorSimpleALua#visitarNo: nodo
     devolver {not ~t}#formatear: (yo#visitar: nodo#expresión)
 finmetodo
 
-funcion CompilarALua: ast, ámbito
+funcion CompilarALua: moddb, ast, ámbito
     variables comp, ini
-    fijar comp a CompiladorSimpleALua#crear: ámbito
+    fijar comp a CompiladorSimpleALua#crear: moddb, ámbito
     fijar ini a comp#iniciar
     devolver {local rt = require "backends.lua.runtime"~%~t~%~t}#formatear: ini, comp#visitar: ast
 finfuncion

@@ -1,0 +1,195 @@
+utilizar bepd/builtins
+utilizar bepd/x/enum
+utilizar bepd/x/sistemaDeArchivos/archivo como Archivo
+
+
+clase ConfiguraciónGlobal
+    metodo estatico predeterminado: usarVariablesDeEntorno
+
+    metodo rutasDondeBuscar
+    metodo extensionesAProbar
+finclase
+
+atributo ConfiguraciónGlobal#rutas, ConfiguraciónGlobal#extensiones
+
+metodo ConfiguraciónGlobal#inicializar: rutas, exts
+    fijar yo#rutas a rutas
+    fijar yo#extensiones a exts
+finmetodo
+
+metodo ConfiguraciónGlobal#rutasDondeBuscar
+    devolver yo#rutas
+finmetodo
+
+metodo ConfiguraciónGlobal#extensionesAProbar
+    devolver yo#extensiones
+finmetodo
+
+metodo estatico ConfiguraciónGlobal#predeterminado
+    devolver yo#crear:
+        (Arreglo#crearCon:
+            {.},
+            {/opt/pseudod/lib/pseudod/v3},
+            {/opt/pseudod/lib/pseudod/v3/r0}),
+        (Arreglo#crearCon:
+            {pd},
+            {psd},
+            {pseudo},
+            {pseudod})
+finmetodo
+
+
+clase LlaveDeMódulo
+    metodo ruta
+    metodo nombre
+    metodo extensión
+
+    metodo nombreCompletoDelArchivo
+
+    metodo comoTexto
+finclase
+
+atributos LlaveDeMódulo#ruta, LlaveDeMódulo#nombre, LlaveDeMódulo#extensión
+
+metodo LlaveDeMódulo#inicializar: ruta, nombre, ext
+    fijar yo#ruta a ruta
+    fijar yo#nombre a nombre
+    fijar yo#extensión a ext
+finmetodo
+
+metodo LlaveDeMódulo#nombreCompletoDelArchivo
+    devolver {~t/~t.~t}#formatear: yo#ruta, yo#nombre, yo#extensión
+finmetodo
+
+metodo LlaveDeMódulo#comoTexto
+    devolver {(LlaveDeMódulo: ~t)}#formatear: yo#nombreCompletoDelArchivo
+finmetodo
+
+
+procedimiento BuscarMódulo: conf, nombre
+    variables rutaEnc, nombreEnc, extEnc
+    LlamarConEC: procedimiento: esc
+        ParaCadaElemento: conf#rutasDondeBuscar, procedimiento: ruta
+            ParaCadaElemento: conf#extensionesAProbar, procedimiento: ext
+                si Archivo#Existe: ({~t/~t.~t}#formatear: ruta, nombre, ext)
+                    fijar rutaEnc a ruta
+                    fijar nombreEnc a nombre
+                    fijar extEnc a ext
+                    %esc: NULO
+                finsi
+            finprocedimiento
+        finprocedimiento
+    finprocedimiento
+    si (EsNulo: rutaEnc) || (EsNulo: nombreEnc) || (EsNulo: extEnc)
+        devolver NULO
+    finsi
+    devolver LlaveDeMódulo#crear: rutaEnc, nombreEnc, extEnc
+finprocedimiento
+
+
+clase Módulo
+    metodo llave
+    metodo ruta
+    metodo nombre
+    metodo exporta
+    metodo rutaAlCompilado
+
+    metodo comoTexto
+finclase
+
+atributos Módulo#llave, Módulo#exporta, Módulo#rutaAlCompilado
+
+metodo Módulo#ruta
+    devolver yo#llave#ruta
+finmetodo
+
+metodo Módulo#nombre
+    devolver yo#llave#nombre
+finmetodo
+
+metodo Módulo#comoTexto
+    devolver {(Módulo: llave = ~t, exporta = ~t, rutaAlCompilado = ~t)}#formatear: yo#llave, yo#exporta, yo#rutaAlCompilado
+finmetodo
+
+
+clase BaseDeDatos
+    metodo estatico conConfiguración: conf
+
+    metodo buscarMóduloPorLlave: llaveDeMódulo
+    metodo buscarMóduloPorNombre: nombre
+    metodo agregarMódulo: módulo
+
+    metodo serializar: puerto
+    metodo deserializar: puerto
+finclase
+
+atributos BaseDeDatos#módulos, BaseDeDatos#conf
+
+metodo estatico BaseDeDatos#conConfiguración: conf
+    devolver yo#crear: conf
+finmetodo
+
+metodo BaseDeDatos#inicializar: conf
+    fijar yo#conf a conf
+    fijar yo#módulos a Diccionario#vacío
+finmetodo
+
+metodo BaseDeDatos#buscarMóduloPorLlave: llave
+    devolver yo#buscarMóduloPorNombre: llave#nombre
+finmetodo
+
+metodo BaseDeDatos#buscarMóduloPorNombre: nombre
+    si yo#módulos#contiene: nombre
+        devolver yo#módulos#en: nombre
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo BaseDeDatos#agregarMódulo: mod
+    yo#módulos#fijarEn: mod#nombre, mod
+finmetodo
+
+metodo BaseDeDatos#serializar: puerto
+    NoImplementado
+finmetodo
+
+metodo BaseDeDatos#deserializar: puerto
+    NoImplementado
+finmetodo
+
+
+procedimiento ResolverMóduloPorNombre: db, conf, nombre, compilar, encontrado, error
+    variables enc, llave, mod
+    fijar enc a db#buscarMóduloPorNombre: nombre
+    si EsNulo: enc
+        fijar llave a BuscarMódulo: conf, nombre
+        si EsNulo: llave
+            devolver %error
+        finsi
+        fijar enc a db#buscarMóduloPorLlave: llave
+        si EsNulo: enc
+            devolver %compilar: llave
+        sino
+            devolver %encontrado: enc
+        finsi
+    sino
+        devolver %encontrado: enc
+    finsi
+finprocedimiento
+
+[variables db, conf
+fijar conf a ConfiguraciónGlobal#predeterminado
+fijar db a BaseDeDatos#conConfiguración: conf
+db#agregarMódulo: (clonar Módulo#_crear con
+    llave: (LlaveDeMódulo#crear: {/opt/pseudod/lib/pseudod/v3/r0}, {bepd/builtins}, {pd})
+    exporta: (Arreglo#crearCon: {foo}, {bar}, {baz})
+    rutaAlCompilado: {foo/bar/baz}
+finclonar)
+Escribir: (ResolverMóduloPorNombre: db, conf, {bepd}, procedimiento: llave
+               devolver {LLAVE: ~t}#formatear: llave
+           finprocedimiento, procedimiento: mod
+               devolver {MOD: ~t}#formatear: mod
+           finprocedimiento, procedimiento
+               __FallarConMensaje: {ERR}
+           finprocedimiento)]

@@ -1,0 +1,12 @@
+utilizar bepd/builtins
+utilizar bepd/x/puerto/deArchivo como PDA
+
+
+procedimiento Existe: nombre
+    [ TODO: Debería ser una llamada a stat(2) ]
+    variables p, exs
+    fijar p a PDA#PuertoDeArchivoDeLectura#abrir: nombre
+    fijar exs a p#archivo#estaAbierto
+    p#cerrar
+    devolver exs
+finprocedimiento
