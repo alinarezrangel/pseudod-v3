@@ -939,12 +939,16 @@ procedimiento MostrarParseadoDeTexto: txt, gr
     MostrarParseado: tks, gr
 finprocedimiento
 
-procedimiento CrearAST: txt
-    variable tks, tknz
+procedimiento CrearAST: textoOPuerto
+    variables tks, tknz, pt
+    si EsInstancia: textoOPuerto, Texto
+        fijar pt a Puerto#TextoComoPuerto: textoOPuerto
+    sino
+        fijar pt a textoOPuerto
+    finsi
     fijar tknz a
         Tokenizador#Tokenizador#crear:
-            (PuertoConPos#PuertoConPosiciónTextual#crear:
-                (Puerto#TextoComoPuerto: txt))
+            (PuertoConPos#PuertoConPosiciónTextual#crear: pt)
     fijar tks a Comb#Tokens#desdeTokenizador: tknz
 
     variables nodo

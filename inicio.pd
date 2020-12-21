@@ -5,6 +5,8 @@ utilizar bepd/x/puerto/deArchivo como PDA
 utilizar tokenizador como Tokenizador
 utilizar parser como Parser
 utilizar compilador como Compilador
+utilizar resoluciónDeNombres como RN
+utilizar backends/lua como LuaBack
 utilizar módulos como Módulos
 
 
@@ -162,16 +164,14 @@ finprocedimiento
 
 procedimiento Base: programa
     Escribir: {-- Inicio}
-    variables ast, ámbito, db, conf
+    variables comp, db, conf
     Escribir: {-- Inicializando la base de datos de módulos...}
     fijar conf a Módulos#ConfiguraciónGlobal#predeterminado
     fijar db a Módulos#BaseDeDatos#conConfiguración: conf
-    Escribir: {-- Creando el AST...}
-    fijar ast a Parser#CrearAST: programa
-    Escribir: {-- Resolviendo nombres...}
-    fijar ámbito a Compilador#ResolverNombres: ast
-    Escribir: {-- Compilando a LUA...}
-    Escribir: (Compilador#CompilarALua: db, ast, ámbito)
+    Escribir: {-- Inicializando el compilador a Lua}
+    fijar comp a LuaBack#CompiladorALua#crear: db
+    Escribir: {-- Compilando el programa...}
+    Escribir: (comp#compilarTexto: (Módulos#LlaveDeMódulo#crear: {hello}, {world}, {pd}), programa)
 finprocedimiento
 
 procedimiento LeerArchivo: nombre
@@ -200,10 +200,7 @@ procedimiento IniciarREPL: ctx
     Escribir: {-- TODO}
     Base: {
 
-variable A
-fijar A a "Hola"
-escribir A
-nl
+utilizar bepd/x/cli como X
 
 }
 finprocedimiento

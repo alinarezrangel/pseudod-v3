@@ -1,5 +1,49 @@
 utilizar bepd/builtins
+utilizar bepd/x/puerto como Puerto
 
-utilizar resoluciónDeNombres
-utilizar backends/lua
+utilizar parser como Parser
+utilizar resoluciónDeNombres como RN
+utilizar módulos como Módulos
 
+funcion NombresExportados: ámbitoDeMódulo
+    variable nombres
+    fijar nombres a Arreglo#vacio
+    ámbitoDeMódulo#_mapeo#paraCadaPar: procedimiento: nombre, id
+        nombres#agregarAlFinal: nombre
+    finprocedimiento
+    devolver nombres
+finfuncion
+
+clase CompiladorBase
+    atributo baseDeDatos
+
+    metodo compilarPuerto: llaveDeMódulo, puerto
+    metodo compilarTexto: llaveDeMódulo, texto
+
+    metodo compilarAST: ast, ámbito
+finclase
+
+metodo CompiladorBase#compilarAST: ast, ámbito
+    MétodoAbstracto
+finmetodo
+
+metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
+    Escribir: {-- Inicio}
+    variables ast, ámbito, compilado
+    Escribir: {-- Creando el AST...}
+    fijar ast a Parser#CrearAST: puerto
+    Escribir: {-- Resolviendo nombres...}
+    fijar ámbito a RN#ResolverNombres: ast
+    Escribir: {-- Compilando...}
+    fijar compilado a yo#compilarAST: ast, ámbito
+    Escribir: compilado
+    devolver clonar Módulos#Módulo#_crear con
+        llave: llaveDeMódulo
+        exporta: (NombresExportados: ámbito)
+        rutaAlCompilado: ({.__pdcache/~t.compilado}#formatear: llaveDeMódulo#nombre)
+    finclonar
+finmetodo
+
+metodo CompiladorBase#compilarTexto: llaveDeMódulo, texto
+    devolver yo#compilarPuerto: llaveDeMódulo, (Puerto#TextoComoPuerto: texto)
+finmetodo

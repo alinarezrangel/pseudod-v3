@@ -8,6 +8,8 @@ utilizar resoluciónDeNombres como RN
 
 utilizar módulos como Módulos
 
+utilizar compilador como Compilador
+
 funcion EscaparParaLua: texto
     variable res
     fijar res a {"} [ " ]
@@ -243,7 +245,21 @@ metodo CompiladorSimpleALua#visitarAtributos: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarUtilizar: nodo
-    NoImplementado
+    variables módulo, res
+    si EsInstancia: nodo#módulo, AST#NodoIdentificador
+        fijar módulo a nodo#módulo#nombre
+    sino
+        fijar módulo a nodo#módulo
+    finsi
+    fijar res a (Módulos#ResolverMóduloPorNombre: yo#_moddb, módulo, procedimiento: llave
+                     devolver {LLAVE: ~t}#formatear: llave
+                 finprocedimiento, procedimiento: mod
+                     devolver {MOD: ~t}#formatear: mod
+                 finprocedimiento, procedimiento
+                     __FallarConMensaje: ({Error: no se pudo encontrar el módulo <~t>}#formatear: módulo)
+                 finprocedimiento)
+    Escribir: res
+    devolver {}
 finmetodo
 
 metodo CompiladorSimpleALua#visitarIdentificador: nodo
@@ -338,3 +354,16 @@ funcion CompilarALua: moddb, ast, ámbito
     fijar ini a comp#iniciar
     devolver {local rt = require "backends.lua.runtime"~%~t~%~t}#formatear: ini, comp#visitar: ast
 finfuncion
+
+clase CompiladorALua hereda Compilador#CompiladorBase
+    metodo inicializar: db
+    metodo compilarAST: ast, ámbito
+finclase
+
+metodo CompiladorALua#inicializar: db
+    fijar yo#baseDeDatos a db
+finmetodo
+
+metodo CompiladorALua#compilarAST: ast, ámbito
+    devolver CompilarALua: yo#baseDeDatos, ast, ámbito
+finmetodo

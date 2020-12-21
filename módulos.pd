@@ -115,6 +115,8 @@ finmetodo
 clase BaseDeDatos
     metodo estatico conConfiguración: conf
 
+    metodo configuración
+
     metodo buscarMóduloPorLlave: llaveDeMódulo
     metodo buscarMóduloPorNombre: nombre
     metodo agregarMódulo: módulo
@@ -123,14 +125,14 @@ clase BaseDeDatos
     metodo deserializar: puerto
 finclase
 
-atributos BaseDeDatos#módulos, BaseDeDatos#conf
+atributos BaseDeDatos#módulos, BaseDeDatos#configuración
 
 metodo estatico BaseDeDatos#conConfiguración: conf
     devolver yo#crear: conf
 finmetodo
 
 metodo BaseDeDatos#inicializar: conf
-    fijar yo#conf a conf
+    fijar yo#configuración a conf
     fijar yo#módulos a Diccionario#vacío
 finmetodo
 
@@ -159,8 +161,9 @@ metodo BaseDeDatos#deserializar: puerto
 finmetodo
 
 
-procedimiento ResolverMóduloPorNombre: db, conf, nombre, compilar, encontrado, error
-    variables enc, llave, mod
+procedimiento ResolverMóduloPorNombre: db, nombre, compilar, encontrado, error
+    variables enc, llave, mod, conf
+    fijar conf a db#configuración
     fijar enc a db#buscarMóduloPorNombre: nombre
     si EsNulo: enc
         fijar llave a BuscarMódulo: conf, nombre
@@ -186,7 +189,7 @@ db#agregarMódulo: (clonar Módulo#_crear con
     exporta: (Arreglo#crearCon: {foo}, {bar}, {baz})
     rutaAlCompilado: {foo/bar/baz}
 finclonar)
-Escribir: (ResolverMóduloPorNombre: db, conf, {bepd}, procedimiento: llave
+Escribir: (ResolverMóduloPorNombre: db, {bepd}, procedimiento: llave
                devolver {LLAVE: ~t}#formatear: llave
            finprocedimiento, procedimiento: mod
                devolver {MOD: ~t}#formatear: mod
