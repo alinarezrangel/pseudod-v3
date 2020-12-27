@@ -404,7 +404,7 @@ fijar grNo a
         funcion: res
             devolver clonar AST#NodoNo#crear con
                 areaTextual: AreaTotal: (res#en: 0), (res#en: 1)
-                nombre: res#en: 1
+                expresión: res#en: 1
             finclonar
         finfuncion,
         (seq:
