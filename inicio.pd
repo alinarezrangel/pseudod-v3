@@ -2,6 +2,7 @@ utilizar bepd/builtins
 utilizar bepd/x/enum
 utilizar bepd/x/puerto como Puerto
 utilizar bepd/x/puerto/deArchivo como PDA
+utilizar bepd/x/sistemaDeArchivos/archivo como Archivos
 utilizar tokenizador como Tokenizador
 utilizar parser como Parser
 utilizar compilador como Compilador
@@ -174,25 +175,12 @@ procedimiento Base: programa
     Escribir: (comp#compilarTexto: (Módulos#LlaveDeMódulo#crear: {hello}, {world}, {pd}), programa)
 finprocedimiento
 
-procedimiento LeerArchivo: nombre
-    variables pt, txt, car
-    fijar pt a PDA#PuertoDeArchivoDeLectura#abrir: nombre
-    fijar txt a {}
-    fijar car a pt#leerCarácter
-    mientras no (car = Puerto#EOF)
-        fijar txt a txt#concatenar: car
-        fijar car a pt#leerCarácter
-    finmientras
-    pt#cerrar
-    devolver txt
-finprocedimiento
-
 procedimiento Compilar: ctx, programa
     Base: programa
 finprocedimiento
 
 procedimiento CompilarArchivo: ctx, nombreDelArchivo
-    Compilar: ctx, (LeerArchivo: nombreDelArchivo)
+    Compilar: ctx, (Archivos#LeerArchivo: nombreDelArchivo)
 finprocedimiento
 
 procedimiento IniciarREPL: ctx
@@ -200,7 +188,9 @@ procedimiento IniciarREPL: ctx
     Escribir: {-- TODO}
     Base: {
 
-utilizar bepd/x/cli como X
+utilizar outputs/demo (Hola como H)
+
+H: 12
 
 }
 finprocedimiento

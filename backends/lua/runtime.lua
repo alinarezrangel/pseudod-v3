@@ -658,6 +658,38 @@ function M.arreglounpack(arr)
    return table.unpack(tbl, 1, M.enviarMensaje(arr, "longitud"))
 end
 
+function M.ns(tbl)
+   local ns = M.objeto()
+   local tblIdx = arr:newAttribute()
+   ns:setAttribute(tblIdx, tbl)
+   -- FIXME: Si una función o variable `metodoNoEncontrado` se define en un
+   -- módulo, la implementación actual no permitiría acceder o llamar a esta.
+   ns.methods["metodoNoEncontrado"] = function(self, mensaje, argumentos)
+      local tbl = self:getAttribute(tblIdx)
+      if tbl[mensaje] == nil then
+         error(("%q no existe en el espacio de nombres"):format(mensaje))
+      end
+      local descriptor = tbl[mensaje]
+      local value = descriptor.value
+      if descriptor.autoexecutable then
+         return M.enviarMensaje(value, "llamar", M.arreglounpack(argumentos))
+      else
+         assert(M.enviarMensaje(argumentos, "longitud") == 0)
+         return value
+      end
+   end
+   ns.__pd_ns = true
+   function ns:at(varname)
+      local tbl = self:getAttribute(tblIdx)
+      if tbl[mensaje] == nil then
+         error(("%q no existe en el espacio de nombres"):format(mensaje))
+      end
+      local descriptor = tbl[mensaje]
+      return descriptor.value
+   end
+   return ns
+end
+
 M.clases = {}
 
 local Objeto = M.objeto()
@@ -763,5 +795,29 @@ Arreglo.methods["crearCon"] = function(self, ...)
 end
 
 M.clases.Arreglo = Arreglo
+
+local EspacioDeNombres = M.enviarMensaje(Objeto, "subclase")
+M.enviarMensaje(EspacioDeNombres, "fijar_nombre", "EspacioDeNombres")
+
+EspacioDeNombres.methods["crear"] = function(self)
+   return M.ns({})
+end
+
+EspacioDeNombres.methods["vacío"] = function(self)
+   return M.ns({})
+end
+
+EspacioDeNombres.methods["vacio"] = function(self)
+   return M.ns({})
+end
+
+M.clases.EspacioDeNombres = EspacioDeNombres
+
+function M.importar(ruta)
+   return M.ns(require(ruta))
+end
+
+-- Utilizado como variable temporal por el compilador.
+M.ans_rt = nil
 
 return M

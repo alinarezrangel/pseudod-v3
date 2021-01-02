@@ -1,5 +1,6 @@
 utilizar bepd/builtins
 utilizar bepd/utilidades/texto
+utilizar bepd/x/sistemaDeArchivos/archivo como Archivos
 
 utilizar ast como AST
 utilizar caminaNodos como CN
@@ -9,6 +10,21 @@ utilizar resoluciónDeNombres como RN
 utilizar módulos como Módulos
 
 utilizar compilador como Compilador
+
+[ El backend de Lua está separado en dos partes. Espero, con el tiempo,
+  "limpiar" mucho de este código (recuerda que el patrón del visitante ("Visitor
+  Pattern") es realmente una manera de hacer "pattern matching" en lenguajes que
+  no lo soportan).
+
+  De cualquier forma, las dos partes son:
+
+  - La clase `CompiladosSimpleALua` (hereda `CaminaNodos`): Va por cada nodo
+    del AST y lo compila a Lua.
+  - La clase `CompiladorALua` (hereda `CompiladorBase`): Compila ASTs, archivos
+    y textos. "Orquestra" las operaciones de `CompiladorSimpleALua`.
+
+  Para facilitar las cosas, `CompiladorSimpleALua` tiene un atributo
+ `_compilador` que apunta al `CompiladorALua` que lo maneja. ]
 
 funcion EscaparParaLua: texto
     variable res
@@ -35,24 +51,30 @@ clase CompiladorSimpleALua hereda CN#CaminaNodos
     metodo crearSubámbitoDesdeNodo: nodo
     metodo crearSubámbitoDesdeNombreEnNodo: nodo, llave
 
-    metodo inicializar: moddb, ámbito
+    metodo inicializar: moddb, ámbito, compilador
 
     metodo iniciar
 finclase
 
-atributos CompiladorSimpleALua#_ámbito, CompiladorSimpleALua#_moddb
+atributos CompiladorSimpleALua#_ámbito, [ Ámbito actual ]
+          CompiladorSimpleALua#_moddb, [ Base de datos de módulos ]
+          CompiladorSimpleALua#_compilador [ `CompiladorALua` que esta compilando ]
 
 metodo CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
     devolver yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídos}
 finmetodo
 
 metodo CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, llave
-    devolver CompiladorSimpleALua#crear: yo#_moddb, (nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, llave)
+    devolver CompiladorSimpleALua#crear:
+                 yo#_moddb,
+                 (nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, llave),
+                 yo#_compilador
 finmetodo
 
-metodo CompiladorSimpleALua#inicializar: moddb, ámbito
+metodo CompiladorSimpleALua#inicializar: moddb, ámbito, compilador
     fijar yo#_ámbito a ámbito
     fijar yo#_moddb a moddb
+    fijar yo#_compilador a compilador
 finmetodo
 
 metodo CompiladorSimpleALua#iniciar
@@ -245,21 +267,56 @@ metodo CompiladorSimpleALua#visitarAtributos: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarUtilizar: nodo
-    variables módulo, res
+    variables módulo, nombreDelMódulo, mapeoDeImportados, espacioDeNombresResuelto
     si EsInstancia: nodo#módulo, AST#NodoIdentificador
-        fijar módulo a nodo#módulo#nombre
+        fijar nombreDelMódulo a nodo#módulo#nombre
     sino
-        fijar módulo a nodo#módulo
+        fijar nombreDelMódulo a nodo#módulo
     finsi
-    fijar res a (Módulos#ResolverMóduloPorNombre: yo#_moddb, módulo, procedimiento: llave
-                     devolver {LLAVE: ~t}#formatear: llave
-                 finprocedimiento, procedimiento: mod
-                     devolver {MOD: ~t}#formatear: mod
-                 finprocedimiento, procedimiento
-                     __FallarConMensaje: ({Error: no se pudo encontrar el módulo <~t>}#formatear: módulo)
-                 finprocedimiento)
-    Escribir: res
-    devolver {}
+    fijar módulo a yo#_compilador#importarMódulo: nombreDelMódulo
+
+    fijar mapeoDeImportados a Diccionario#vacío
+    si no EsNulo: nodo#espacioDeNombres
+        fijar espacioDeNombresResuelto a RN#NombreResueltoDe: nodo#espacioDeNombres
+    finsi
+    si no EsNulo: nodo#nombresEspecíficos
+        ParaCadaElemento: nodo#nombresEspecíficos, procedimiento: importado
+            variables nombreEnMódulo, nombreFinal
+            [ Si importamos la variable "Hola" como "Adios", por ejemplo, con
+              `utilizar ejemplo (Hola como Adios)`, entonces nombreEnMódulo es `Hola`
+              y nombreFinal es `Adios`. Si esta variable importada no fue renombrada
+              (por ejemplo, `utilizar ejemplo (Hola)`) entonces nombreEnMódulo y
+              nombreFinal son iguales. ]
+            si EsInstancia: importado, AST#NodoIdentificador
+                fijar nombreEnMódulo a importado
+                fijar nombreFinal a importado
+            sino
+                fijar nombreEnMódulo a importado#en: 0
+                fijar nombreFinal a importado#en: 1
+            finsi
+            mapeoDeImportados#fijarEn: nombreEnMódulo#nombre, (RN#NombreResueltoDe: nombreFinal)
+        finprocedimiento
+    finsi
+    si (EsNulo: nodo#espacioDeNombres) && (EsNulo: nodo#nombresEspecíficos)
+        fijar mapeoDeImportados a
+            nodo#obtenerMetadato:
+                RN#LLAVE_RESOLUCIÓN_DE_NOMBRES,
+                {nombresImportadosResueltos}
+    finsi
+
+    variable cods
+    fijar cods a Arreglo#vacio
+    cods#agregarAlFinal: ({rt.ans_ns = rt.import(~t)}#formatear: (EscaparParaLua: módulo#rutaAlCompilado))
+    cods#agregarAlFinal: {;do}
+    mapeoDeImportados#paraCadaPar: procedimiento: nombre, id
+        cods#agregarAlFinal: ({  _~t = rt.ans_ns:at(~t);}#formatear: id, (EscaparParaLua: nombre))
+    finprocedimiento
+    cods#agregarAlFinal: {end}
+    si no EsNulo: espacioDeNombresResuelto
+        cods#agregarAlFinal: ({;_~t = rt.ans_ns;}#formatear: espacioDeNombresResuelto)
+    finsi
+
+    devolver (Unir: cods, {~%}#formatear)
 finmetodo
 
 metodo CompiladorSimpleALua#visitarIdentificador: nodo
@@ -348,9 +405,9 @@ metodo CompiladorSimpleALua#visitarNo: nodo
     devolver {not ~t}#formatear: (yo#visitar: nodo#expresión)
 finmetodo
 
-funcion CompilarALua: moddb, ast, ámbito
+funcion CompilarALua: moddb, ast, ámbito, compilador
     variables comp, ini
-    fijar comp a CompiladorSimpleALua#crear: moddb, ámbito
+    fijar comp a CompiladorSimpleALua#crear: moddb, ámbito, compilador
     fijar ini a comp#iniciar
     devolver {local rt = require "backends.lua.runtime"~%~t~%~t}#formatear: ini, comp#visitar: ast
 finfuncion
@@ -358,6 +415,7 @@ finfuncion
 clase CompiladorALua hereda Compilador#CompiladorBase
     metodo inicializar: db
     metodo compilarAST: ast, ámbito
+    metodo importarMódulo: nombreDelMódulo
 finclase
 
 metodo CompiladorALua#inicializar: db
@@ -365,5 +423,26 @@ metodo CompiladorALua#inicializar: db
 finmetodo
 
 metodo CompiladorALua#compilarAST: ast, ámbito
-    devolver CompilarALua: yo#baseDeDatos, ast, ámbito
+    devolver CompilarALua: yo#baseDeDatos, ast, ámbito, yo
+finmetodo
+
+metodo CompiladorALua#importarMódulo: nombreDelMódulo
+    variables móduloOLlave, móduloCompilado
+    fijar móduloOLlave a
+        Módulos#ResolverMóduloPorNombre: yo#baseDeDatos, nombreDelMódulo, procedimiento: llave
+            devolver llave
+        finprocedimiento, procedimiento: mod
+            devolver mod
+        finprocedimiento, procedimiento
+            __FallarConMensaje: ({Error: no se pudo encontrar el módulo ~t}#formatear: nombreDelMódulo)
+        finprocedimiento
+    si EsInstancia: móduloOLlave, Módulos#Módulo
+        devolver móduloOLlave
+    sino
+        fijar móduloCompilado a yo#compilarTexto:
+            móduloOLlave,
+            (Archivos#LeerArchivo: móduloOLlave#nombreCompletoDelArchivo)
+        yo#baseDeDatos#agregarMódulo: móduloCompilado
+        devolver móduloCompilado
+    finsi
 finmetodo

@@ -21,19 +21,24 @@ clase CompiladorBase
     metodo compilarTexto: llaveDeMódulo, texto
 
     metodo compilarAST: ast, ámbito
+
+    metodo importarMódulo: nombreDelMódulo
 finclase
 
 metodo CompiladorBase#compilarAST: ast, ámbito
     MétodoAbstracto
 finmetodo
 
+metodo CompiladorBase#importarMódulo: nombreDelMódulo
+    MétodoAbstracto
+finmetodo
+
 metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
-    Escribir: {-- Inicio}
     variables ast, ámbito, compilado
-    Escribir: {-- Creando el AST...}
     fijar ast a Parser#CrearAST: puerto
-    Escribir: {-- Resolviendo nombres...}
-    fijar ámbito a RN#ResolverNombres: ast
+    fijar ámbito a RN#ResolverNombres: ast, procedimiento: nombreDelMódulo
+        devolver yo#importarMódulo: nombreDelMódulo
+    finprocedimiento
     Escribir: {-- Compilando...}
     fijar compilado a yo#compilarAST: ast, ámbito
     Escribir: compilado

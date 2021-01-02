@@ -1,5 +1,20 @@
 utilizar bepd/builtins
+utilizar bepd/x/puerto como Puerto
 utilizar bepd/x/puerto/deArchivo como PDA
+
+
+procedimiento LeerArchivo: nombre
+    variables pt, txt, car
+    fijar pt a PDA#PuertoDeArchivoDeLectura#abrir: nombre
+    fijar txt a {}
+    fijar car a pt#leerCarácter
+    mientras no (car = Puerto#EOF)
+        fijar txt a txt#concatenar: car
+        fijar car a pt#leerCarácter
+    finmientras
+    pt#cerrar
+    devolver txt
+finprocedimiento
 
 
 procedimiento Existe: nombre

@@ -180,19 +180,3 @@ procedimiento ResolverMóduloPorNombre: db, nombre, compilar, encontrado, error
         devolver %encontrado: enc
     finsi
 finprocedimiento
-
-[variables db, conf
-fijar conf a ConfiguraciónGlobal#predeterminado
-fijar db a BaseDeDatos#conConfiguración: conf
-db#agregarMódulo: (clonar Módulo#_crear con
-    llave: (LlaveDeMódulo#crear: {/opt/pseudod/lib/pseudod/v3/r0}, {bepd/builtins}, {pd})
-    exporta: (Arreglo#crearCon: {foo}, {bar}, {baz})
-    rutaAlCompilado: {foo/bar/baz}
-finclonar)
-Escribir: (ResolverMóduloPorNombre: db, {bepd}, procedimiento: llave
-               devolver {LLAVE: ~t}#formatear: llave
-           finprocedimiento, procedimiento: mod
-               devolver {MOD: ~t}#formatear: mod
-           finprocedimiento, procedimiento
-               __FallarConMensaje: {ERR}
-           finprocedimiento)]

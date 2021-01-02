@@ -37,8 +37,11 @@ clase ResoluciónDeNombresCNImpl hereda CN#CaminaNodos
     metodo finalizar: nodo, llave
 finclase
 
-atributo ResoluciónDeNombresCNImpl#_nombres,
-         ResoluciónDeNombresCNImpl#_porResolver
+atributo ResoluciónDeNombresCNImpl#_nombres, [ Ámbito actual ]
+         ResoluciónDeNombresCNImpl#_porResolver,
+         [ <-- Procedimientos por llamar al terminar el ámbito ]
+         ResoluciónDeNombresCNImpl#_resolverMóduloProc
+         [ <-- Procedimiento para resolver módulos (`utilizar`) ]
 
 metodo ResoluciónDeNombresCNImpl#inicializar
     fijar yo#_nombres a Ámbito#Ámbito#vacío
@@ -201,16 +204,15 @@ finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
     si no EsNulo: nodo#espacioDeNombres
-        si yo#_nombres#contiene: nodo#espacioDeNombres#nombre
-            FijarNombreResuelto:
-                nodo#espacioDeNombres,
-                (yo#_nombres#obtener: nodo#espacioDeNombres#nombre)
+        variables espacioDeNombres, espacioDeNombresId
+        fijar espacioDeNombres a nodo#espacioDeNombres#nombre
+        si yo#_nombres#contiene: espacioDeNombres
+            fijar espacioDeNombresId a yo#_nombres#obtener: espacioDeNombres
         sino
-            variable id
-            fijar id a GenerarIdDeNombre
-            yo#_nombres#agregar: nodo#espacioDeNombres#nombre, id
-            FijarNombreResuelto: nodo#espacioDeNombres, id
+            fijar espacioDeNombresId a GenerarIdDeNombre
+            yo#_nombres#agregar: espacioDeNombres, espacioDeNombresId
         finsi
+        FijarNombreResuelto: nodo#espacioDeNombres, espacioDeNombresId
     finsi
     si no EsNulo: nodo#nombresEspecíficos
         ParaCadaElemento: nodo#nombresEspecíficos, procedimiento: importado
@@ -227,7 +229,24 @@ metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
         finprocedimiento
     finsi
     si (EsNulo: nodo#espacioDeNombres) && (EsNulo: nodo#nombresEspecíficos)
-        NoImplementado
+        variables móduloImportado, instanciaDeMódulo, mapeoDeImportados
+        fijar mapeoDeImportados a Diccionario#vacío
+        si EsInstancia: nodo#módulo, AST#NodoIdentificador
+            fijar móduloImportado a nodo#módulo#nombre
+        sino
+            fijar móduloImportado a nodo#módulo
+        finsi
+        fijar instanciaDeMódulo a yo#_resolverMóduloProc#\llamar\: móduloImportado
+        ParaCadaElemento: instanciaDeMódulo#exporta, procedimiento: nombre
+            variable id
+            fijar id a GenerarIdDeNombre
+            yo#_nombres#agregar: nombre, id
+            mapeoDeImportados#fijarEn: nombre, id
+        finprocedimiento
+        nodo#fijarMetadato:
+            LLAVE_RESOLUCIÓN_DE_NOMBRES,
+            {nombresImportadosResueltos},
+            mapeoDeImportados
     finsi
 finmetodo
 
@@ -340,11 +359,12 @@ metodo ResoluciónDeNombresCNImpl#resolverFunciónOMétodoAnónimo: nodo, esMét
     finprocedimiento
 finmetodo
 
-procedimiento ResolverNombres: ast
+procedimiento ResolverNombres: ast, resolverMódulo
     variable cn
     fijar cn a ResoluciónDeNombresCNImpl#crear
+    fijar cn#_resolverMóduloProc a resolverMódulo
     cn#visitar: ast
-    cn#finalizar: NULO, NULO
+    cn#finalizar: ast, NULO
     devolver cn#_nombres
 finprocedimiento
 
