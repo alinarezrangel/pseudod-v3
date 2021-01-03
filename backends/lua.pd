@@ -87,11 +87,17 @@ metodo CompiladorSimpleALua#iniciar
 finmetodo
 
 metodo CompiladorSimpleALua#visitarPrograma: nodo
-    variable instrs
+    variables instrs, ámbito
     fijar instrs a Arreglo#vacio
     ParaCadaElemento: nodo#instrucciones, procedimiento: instr
         instrs#agregarAlFinal: (yo#visitar: instr)
     finprocedimiento
+    fijar ámbito a RN#ObtenerNombresDefinídos: nodo
+    instrs#agregarAlFinal: {return rt.ns({}#formatear
+    ámbito#_mapeo#paraCadaPar: procedimiento: nombre, id
+        instrs#agregarAlFinal: ({  [~t] = _~t,}#formatear: (EscaparParaLua: nombre), id)
+    finprocedimiento
+    instrs#agregarAlFinal: {~e)}#formatear
     devolver Unir: instrs, {~%}#formatear
 finmetodo
 
