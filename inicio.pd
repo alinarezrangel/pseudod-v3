@@ -188,9 +188,14 @@ procedimiento IniciarREPL: ctx
     Escribir: {-- TODO}
     Base: {
 
-utilizar outputs/demo (Hola como H)
+funcion Hola: A, B
+    devolver A + B
+finfuncion
 
-H: 12
+variable Adios
+
+Hola
+Adios
 
 }
 finprocedimiento

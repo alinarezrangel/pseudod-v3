@@ -80,7 +80,7 @@ finmetodo
 metodo CompiladorSimpleALua#iniciar
     variable res
     fijar res a Arreglo#vacio
-    yo#_ámbito#_mapeo#paraCadaPar: procedimiento: nombreEnPseudoD, id
+    yo#_ámbito#paraCadaBinding: procedimiento: nombreEnPseudoD, id
         res#agregarAlFinal: ({local _~t  --  ~t}#formatear: id, nombreEnPseudoD)
     finprocedimiento
     devolver Unir: res, {~%}#formatear
@@ -94,7 +94,7 @@ metodo CompiladorSimpleALua#visitarPrograma: nodo
     finprocedimiento
     fijar ámbito a RN#ObtenerNombresDefinídos: nodo
     instrs#agregarAlFinal: {return rt.ns({}#formatear
-    ámbito#_mapeo#paraCadaPar: procedimiento: nombre, id
+    ámbito#paraCadaBinding: procedimiento: nombre, id
         instrs#agregarAlFinal: ({  [~t] = _~t,}#formatear: (EscaparParaLua: nombre), id)
     finprocedimiento
     instrs#agregarAlFinal: {~e)}#formatear
@@ -326,7 +326,14 @@ metodo CompiladorSimpleALua#visitarUtilizar: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarIdentificador: nodo
-    devolver IdentificadorDe: nodo
+    variables esAutoejecutable, identificador
+    fijar esAutoejecutable a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+    fijar identificador a IdentificadorDe: nodo
+    si esAutoejecutable
+        devolver yo#enviarMensaje: identificador, {llamar}, Arreglo#vacio
+    sino
+        devolver identificador
+    finsi
 finmetodo
 
 metodo CompiladorSimpleALua#visitarNúmeroLiteral: nodo

@@ -1,5 +1,20 @@
 utilizar bepd/builtins
 
+clase DatosDeVariable
+    atributos binding, esAutoejecutable
+
+    metodo comoTexto
+finclase
+
+metodo DatosDeVariable#inicializar: binding, esAutoejecutable
+    fijar yo#binding a binding
+    fijar yo#esAutoejecutable a esAutoejecutable
+finmetodo
+
+metodo DatosDeVariable#comoTexto
+    devolver {DV}
+finmetodo
+
 clase Ámbito
     metodo estatico vacío
     metodo estatico desdeArreglo: lst
@@ -10,14 +25,19 @@ clase Ámbito
     metodo inicializar
 
     metodo agregar: nombre, valor
-    metodo fijarValor: nombre, valor
+    metodo fijarBinding: nombre, valor
+    metodo marcarComoAutoejecutable: nombre
     metodo eliminar: nombre
-    metodo obtener: nombre
+    metodo obtenerBinding: nombre
+    metodo esAutoejecutable: nombre
     metodo contiene: nombre
 
     metodo crearSubámbito
 
     metodo comoTexto
+
+    metodo paraCadaBinding: proc
+    metodo paraCadaVariable: proc
 finclase
 
 atributos Ámbito#_mapeo
@@ -45,28 +65,44 @@ metodo Ámbito#inicializar
     fijar yo#ámbitoPadre a NULO
 finmetodo
 
-metodo Ámbito#agregar: nombre, valor
-    yo#_mapeo#fijarEn: nombre, valor
+metodo Ámbito#agregar: nombre, binding
+    yo#_mapeo#fijarEn: nombre, (DatosDeVariable#crear: binding, FALSO)
 finmetodo
 
-metodo Ámbito#fijarValor: nombre, valor
-    yo#_mapeo#fijarEn: nombre, valor
+metodo Ámbito#fijarBinding: nombre, binding
+    variable dv
+    fijar dv a yo#_mapeo#en: nombre
+    fijar dv#binding a binding
+finmetodo
+
+metodo Ámbito#marcarComoAutoejecutable: nombre
+    variable dv
+    fijar dv a yo#_mapeo#en: nombre
+    fijar dv#esAutoejecutable a VERDADERO
 finmetodo
 
 metodo Ámbito#eliminar: nombre
     yo#_mapeo#eliminar: nombre
 finmetodo
 
-metodo Ámbito#obtener: nombre
+metodo Ámbito#_obtener: nombre
     si yo#_mapeo#contiene: nombre
         devolver yo#_mapeo#en: nombre
     sino
         si EsNulo: yo#ámbitoPadre
             __FallarConMensaje: ({El ámbito no contiene el nombre ~T}#formatear: nombre)
         sino
-            devolver yo#ámbitoPadre#obtener: nombre
+            devolver yo#ámbitoPadre#_obtener: nombre
         finsi
     finsi
+finmetodo
+
+metodo Ámbito#obtenerBinding: nombre
+    devolver (yo#_obtener: nombre)#binding
+finmetodo
+
+metodo Ámbito#esAutoejecutable: nombre
+    devolver (yo#_obtener: nombre)#esAutoejecutable
 finmetodo
 
 metodo Ámbito#contiene: nombre
@@ -82,4 +118,14 @@ finmetodo
 
 metodo Ámbito#comoTexto
     devolver {(Ámbito: valores = ~t, padre = ~t)}#formatear: yo#_mapeo, yo#ámbitoPadre
+finmetodo
+
+metodo Ámbito#paraCadaBinding: proc
+    yo#paraCadaVariable: procedimiento: nombre, dv
+        devolver %proc: nombre, dv#binding
+    finprocedimiento
+finmetodo
+
+metodo Ámbito#paraCadaVariable: proc
+    yo#_mapeo#paraCadaPar: proc
 finmetodo

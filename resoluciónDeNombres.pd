@@ -86,7 +86,7 @@ finmetodo
 metodo ResoluciónDeNombresCNImpl#visitarClase: nodo
     procedimiento ResolverTodoEnLista: ls
         ParaCadaElemento: ls, procedimiento: nodo
-            FijarNombreResuelto: nodo, (yo#_nombres#obtener: nodo#nombre)
+            FijarNombreResuelto: nodo, (yo#_nombres#obtenerBinding: nodo#nombre)
         finprocedimiento
     finprocedimiento
 
@@ -117,7 +117,7 @@ metodo ResoluciónDeNombresCNImpl#visitarDeclaraciónDeMétodoEnClase: nodo
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarImplementa: nodo
-    FijarNombreResuelto: nodo#nombre, (yo#_nombres#obtener: yo#nombre#nombre)
+    FijarNombreResuelto: nodo#nombre, (yo#_nombres#obtenerBinding: yo#nombre#nombre)
 
     ParaCadaElemento: nodo#definiciones, procedimiento: declr
         yo#visitar: declr
@@ -153,6 +153,7 @@ metodo ResoluciónDeNombresCNImpl#visitarFunción: nodo
     fijar idfunc a GenerarIdDeNombre
     FijarNombreResuelto: nodo#nombre, idfunc
     yo#_nombres#agregar: nodo#nombre#nombre, idfunc
+    yo#_nombres#marcarComoAutoejecutable: nodo#nombre#nombre
 
     yo#resolverFunciónOMétodoAnónimo: nodo, FALSO
 finmetodo
@@ -207,7 +208,7 @@ metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
         variables espacioDeNombres, espacioDeNombresId
         fijar espacioDeNombres a nodo#espacioDeNombres#nombre
         si yo#_nombres#contiene: espacioDeNombres
-            fijar espacioDeNombresId a yo#_nombres#obtener: espacioDeNombres
+            fijar espacioDeNombresId a yo#_nombres#obtenerBinding: espacioDeNombres
         sino
             fijar espacioDeNombresId a GenerarIdDeNombre
             yo#_nombres#agregar: espacioDeNombres, espacioDeNombresId
@@ -251,7 +252,10 @@ metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarIdentificador: nodo
-    FijarNombreResuelto: nodo, (yo#_nombres#obtener: nodo#nombre)
+    FijarNombreResuelto: nodo, (yo#_nombres#obtenerBinding: nodo#nombre)
+    variable esAutoejecutable
+    fijar esAutoejecutable a yo#_nombres#esAutoejecutable: nodo#nombre
+    nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}, esAutoejecutable
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarNúmeroLiteral: nodo

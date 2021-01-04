@@ -8,7 +8,7 @@ utilizar módulos como Módulos
 funcion NombresExportados: ámbitoDeMódulo
     variable nombres
     fijar nombres a Arreglo#vacio
-    ámbitoDeMódulo#_mapeo#paraCadaPar: procedimiento: nombre, id
+    ámbitoDeMódulo#paraCadaBinding: procedimiento: nombre, id
         nombres#agregarAlFinal: nombre
     finprocedimiento
     devolver nombres
