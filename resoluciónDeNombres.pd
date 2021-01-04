@@ -204,6 +204,14 @@ metodo ResoluciónDeNombresCNImpl#visitarAtributos: nodo
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
+    variables móduloImportado, instanciaDeMódulo
+    si EsInstancia: nodo#módulo, AST#NodoIdentificador
+        fijar móduloImportado a nodo#módulo#nombre
+    sino
+        fijar móduloImportado a nodo#módulo
+    finsi
+    fijar instanciaDeMódulo a yo#_resolverMóduloProc#\llamar\: móduloImportado
+
     si no EsNulo: nodo#espacioDeNombres
         variables espacioDeNombres, espacioDeNombresId
         fijar espacioDeNombres a nodo#espacioDeNombres#nombre
@@ -217,31 +225,33 @@ metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
     finsi
     si no EsNulo: nodo#nombresEspecíficos
         ParaCadaElemento: nodo#nombresEspecíficos, procedimiento: importado
-            variable nombreImportado
+            variables nombreEnMódulo, nombreFinal
             si EsInstancia: importado, AST#NodoIdentificador
-                fijar nombreImportado a importado
+                fijar nombreEnMódulo a importado
+                fijar nombreFinal a importado
             sino
-                fijar nombreImportado a (importado#en: 1)
+                fijar nombreEnMódulo a importado#en: 0
+                fijar nombreFinal a importado#en: 1
             finsi
             variable id
             fijar id a GenerarIdDeNombre
-            yo#_nombres#agregar: nombreImportado#nombre, id
-            FijarNombreResuelto: nombreImportado, id
+            yo#_nombres#agregar: nombreFinal#nombre, id
+            si instanciaDeMódulo#exporta#esAutoejecutable: nombreEnMódulo#nombre
+                yo#_nombres#marcarComoAutoejecutable: nombreFinal#nombre
+            finsi
+            FijarNombreResuelto: nombreFinal, id
         finprocedimiento
     finsi
     si (EsNulo: nodo#espacioDeNombres) && (EsNulo: nodo#nombresEspecíficos)
-        variables móduloImportado, instanciaDeMódulo, mapeoDeImportados
+        variable mapeoDeImportados
         fijar mapeoDeImportados a Diccionario#vacío
-        si EsInstancia: nodo#módulo, AST#NodoIdentificador
-            fijar móduloImportado a nodo#módulo#nombre
-        sino
-            fijar móduloImportado a nodo#módulo
-        finsi
-        fijar instanciaDeMódulo a yo#_resolverMóduloProc#\llamar\: móduloImportado
-        ParaCadaElemento: instanciaDeMódulo#exporta, procedimiento: nombre
+        instanciaDeMódulo#exporta#paraCadaBinding: procedimiento: nombre, _binding
             variable id
             fijar id a GenerarIdDeNombre
             yo#_nombres#agregar: nombre, id
+            si instanciaDeMódulo#exporta#esAutoejecutable: nombre
+                yo#_nombres#marcarComoAutoejecutable: nombre
+            finsi
             mapeoDeImportados#fijarEn: nombre, id
         finprocedimiento
         nodo#fijarMetadato:

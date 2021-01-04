@@ -188,13 +188,8 @@ procedimiento IniciarREPL: ctx
     Escribir: {-- TODO}
     Base: {
 
-funcion Hola: A, B
-    devolver A + B
-finfuncion
+funcion Adios devolver 1 finfuncion
 
-variable Adios
-
-Hola
 Adios
 
 }

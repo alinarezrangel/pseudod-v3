@@ -5,15 +5,6 @@ utilizar parser como Parser
 utilizar resoluciónDeNombres como RN
 utilizar módulos como Módulos
 
-funcion NombresExportados: ámbitoDeMódulo
-    variable nombres
-    fijar nombres a Arreglo#vacio
-    ámbitoDeMódulo#paraCadaBinding: procedimiento: nombre, id
-        nombres#agregarAlFinal: nombre
-    finprocedimiento
-    devolver nombres
-finfuncion
-
 clase CompiladorBase
     atributo baseDeDatos
 
@@ -44,7 +35,7 @@ metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
     Escribir: compilado
     devolver clonar Módulos#Módulo#_crear con
         llave: llaveDeMódulo
-        exporta: (NombresExportados: ámbito)
+        exporta: ámbito
         rutaAlCompilado: ({.__pdcache/~t.compilado}#formatear: llaveDeMódulo#nombre)
     finclonar
 finmetodo
