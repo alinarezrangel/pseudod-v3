@@ -188,9 +188,8 @@ procedimiento IniciarREPL: ctx
     Escribir: {-- TODO}
     Base: {
 
-funcion Adios devolver 1 finfuncion
-
-Adios
+utilizar outputs/demo
+utilizar outputs/demo
 
 }
 finprocedimiento

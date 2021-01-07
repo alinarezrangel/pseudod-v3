@@ -12,7 +12,7 @@ metodo DatosDeVariable#inicializar: binding, esAutoejecutable
 finmetodo
 
 metodo DatosDeVariable#comoTexto
-    devolver {DV}
+    devolver {(DatosDeVariable#crear: ~t, ~t)}#formatear: yo#binding, yo#esAutoejecutable
 finmetodo
 
 clase Ámbito
@@ -25,7 +25,6 @@ clase Ámbito
     metodo inicializar
 
     metodo agregar: nombre, valor
-    metodo fijarBinding: nombre, valor
     metodo marcarComoAutoejecutable: nombre
     metodo eliminar: nombre
     metodo obtenerBinding: nombre
@@ -38,9 +37,11 @@ clase Ámbito
 
     metodo paraCadaBinding: proc
     metodo paraCadaVariable: proc
+
+    metodo todosLosBindings
 finclase
 
-atributos Ámbito#_mapeo
+atributos Ámbito#_mapeo, Ámbito#_todosLosBindings
 
 metodo estatico Ámbito#vacío
     devolver yo#crear
@@ -62,17 +63,13 @@ finmetodo
 
 metodo Ámbito#inicializar
     fijar yo#_mapeo a Diccionario#vacío
+    fijar yo#_todosLosBindings a Arreglo#vacio
     fijar yo#ámbitoPadre a NULO
 finmetodo
 
 metodo Ámbito#agregar: nombre, binding
     yo#_mapeo#fijarEn: nombre, (DatosDeVariable#crear: binding, FALSO)
-finmetodo
-
-metodo Ámbito#fijarBinding: nombre, binding
-    variable dv
-    fijar dv a yo#_mapeo#en: nombre
-    fijar dv#binding a binding
+    yo#_todosLosBindings#agregarAlFinal: binding
 finmetodo
 
 metodo Ámbito#marcarComoAutoejecutable: nombre
@@ -128,4 +125,14 @@ finmetodo
 
 metodo Ámbito#paraCadaVariable: proc
     yo#_mapeo#paraCadaPar: proc
+finmetodo
+
+metodo Ámbito#todosLosBindings
+    variable todosLosBindingsPadre
+    si no EsNulo: yo#ámbitoPadre
+        fijar todosLosBindingsPadre a yo#ámbitoPadre#todosLosBindings
+    sino
+        fijar todosLosBindingsPadre a Arreglo#vacio
+    finsi
+    devolver Concatenar: yo#_todosLosBindings, todosLosBindingsPadre
 finmetodo
