@@ -81,7 +81,7 @@ metodo CompiladorSimpleALua#iniciar
     variable res
     fijar res a Arreglo#vacio
     ParaCadaElemento: yo#_ámbito#todosLosBindings, procedimiento: id
-        res#agregarAlFinal: ({local _~t}#formatear: id)
+        res#agregarAlFinal: ({local _~t;}#formatear: id)
     finprocedimiento
     devolver Unir: res, {~%}#formatear
 finmetodo
@@ -90,14 +90,14 @@ metodo CompiladorSimpleALua#visitarPrograma: nodo
     variables instrs, ámbito
     fijar instrs a Arreglo#vacio
     ParaCadaElemento: nodo#instrucciones, procedimiento: instr
-        instrs#agregarAlFinal: (yo#visitar: instr)
+        instrs#agregarAlFinal: ((yo#visitar: instr)#concatenar: {;})
     finprocedimiento
     fijar ámbito a RN#ObtenerNombresDefinídos: nodo
     instrs#agregarAlFinal: {return rt.ns({}#formatear
     ámbito#paraCadaBinding: procedimiento: nombre, id
         instrs#agregarAlFinal: ({  [~t] = _~t,}#formatear: (EscaparParaLua: nombre), id)
     finprocedimiento
-    instrs#agregarAlFinal: {~e)}#formatear
+    instrs#agregarAlFinal: {~e);}#formatear
     devolver Unir: instrs, {~%}#formatear
 finmetodo
 
@@ -110,30 +110,30 @@ metodo CompiladorSimpleALua#visitarFijar: nodo
     variable obj, expr
     fijar obj a IdentificadorDe: nodo#objetivo
     fijar expr a yo#visitar: nodo#valor
-    devolver {~t = ~t}#formatear: obj, expr
+    devolver {~t = (~t);}#formatear: obj, expr
 finmetodo
 
 metodo CompiladorSimpleALua#visitarEscribir: nodo
-    devolver {rt.escribir(~t)}#formatear: (yo#visitar: nodo#valor)
+    devolver {rt.escribir(~t);}#formatear: (yo#visitar: nodo#valor)
 finmetodo
 
 metodo CompiladorSimpleALua#visitarNl: nodo
-    devolver {rt.nl()}
+    devolver {rt.nl();}
 finmetodo
 
 metodo CompiladorSimpleALua#visitarClase: nodo
     variables cods, clssym
     fijar clssym a IdentificadorDe: nodo#nombre
     fijar cods a Arreglo#vacio
-    cods#agregarAlFinal: ({~t = ~t}#formatear: clssym, (yo#enviarMensaje: {rt.clases.Objeto}, {subclase}, Arreglo#vacio))
-    cods#agregarAlFinal: ({rt.enviarMensaje(~t, "fijar_nombre", ~t)}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre))
+    cods#agregarAlFinal: ({~t = (~t);}#formatear: clssym, (yo#enviarMensaje: {rt.clases.Objeto}, {subclase}, Arreglo#vacio))
+    cods#agregarAlFinal: ({rt.enviarMensaje(~t, "fijar_nombre", ~t);}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre))
     ParaCadaElemento: nodo#declaraciones, procedimiento: declr
         si EsInstancia: declr, AST#NodoDeclaraciónDeAtributosEnClase
-            cods#agregarAlFinal: (yo#visitar: (clonar AST#NodoAtributos#crear con
+            cods#agregarAlFinal: ((yo#visitar: (clonar AST#NodoAtributos#crear con
                 areaTextual: declr#areaTextual
                 deClase: nodo#nombre
                 nombres: declr#nombres
-            finclonar))
+            finclonar))#concatenar: {;})
         sino
             [ Nada que hacer para los NodoDeclaraciónDeMétodoEnClase ]
         finsi
@@ -179,7 +179,7 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueldoDeYo, parámetro
     cods#agregarAlFinal: yo#iniciar
 
     ParaCadaElemento: cuerpo, procedimiento: stmt
-        cods#agregarAlFinal: (yo#visitar: stmt)
+        cods#agregarAlFinal: ((yo#visitar: stmt)#concatenar: {;})
     finprocedimiento
 
     cods#agregarAlFinal: {end}
@@ -192,7 +192,7 @@ metodo CompiladorSimpleALua#visitarFunción: nodo
     fijar subyo a yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
     fijar id a IdentificadorDe: nodo#nombre
     fijar cods a Arreglo#vacio
-    cods#agregarAlFinal: ({~t = ~t}#formatear:
+    cods#agregarAlFinal: ({~t = (~t);}#formatear:
         id,
         (subyo#expresiónDeFunción: NULO, nodo#parámetros, nodo#cuerpo)
     )
@@ -200,11 +200,11 @@ metodo CompiladorSimpleALua#visitarFunción: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarNecesitas: nodo
-    devolver {assert(~t)}#formatear: (yo#visitar: nodo#expresión)
+    devolver {assert(~t);}#formatear: (yo#visitar: nodo#expresión)
 finmetodo
 
 metodo CompiladorSimpleALua#visitarDevolver: nodo
-    devolver {return ~t}#formatear: (yo#visitar: nodo#expresión)
+    devolver {do return ~t; end;}#formatear: (yo#visitar: nodo#expresión)
 finmetodo
 
 metodo CompiladorSimpleALua#visitarSi: nodo
@@ -220,14 +220,14 @@ metodo CompiladorSimpleALua#visitarSi: nodo
 
     cods#agregarAlFinal: subSiVerdadero#iniciar
     ParaCadaElemento: nodo#siVerdadero, procedimiento: stmt
-        cods#agregarAlFinal: (subSiVerdadero#visitar: stmt)
+        cods#agregarAlFinal: ((subSiVerdadero#visitar: stmt)#concatenar: {;})
     finprocedimiento
 
     cods#agregarAlFinal: {else}
 
     cods#agregarAlFinal: subSiFalso#iniciar
     ParaCadaElemento: nodo#siFalso, procedimiento: stmt
-        cods#agregarAlFinal: (subSiFalso#visitar: stmt)
+        cods#agregarAlFinal: ((subSiFalso#visitar: stmt)#concatenar: {;})
     finprocedimiento
 
     cods#agregarAlFinal: {end}
@@ -245,7 +245,7 @@ metodo CompiladorSimpleALua#visitarMientras: nodo
 
     cods#agregarAlFinal: subyo#iniciar
     ParaCadaElemento: nodo#siVerdadero, procedimiento: stmt
-        cods#agregarAlFinal: (subyo#visitar: stmt)
+        cods#agregarAlFinal: ((subyo#visitar: stmt)#concatenar: {;})
     finprocedimiento
 
     cods#agregarAlFinal: {end}
@@ -259,7 +259,7 @@ metodo CompiladorSimpleALua#visitarMétodo: nodo
     fijar clssym a IdentificadorDe: nodo#deClase
     fijar nrdyo a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
     fijar cuerpoMet a subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
-    devolver {rt.enviarMensaje(~t, "agregarMetodo", ~t, ~t)}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre), cuerpoMet
+    devolver {rt.enviarMensaje(~t, "agregarMetodo", ~t, ~t);}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre), cuerpoMet
 finmetodo
 
 metodo CompiladorSimpleALua#visitarAtributos: nodo
@@ -267,7 +267,7 @@ metodo CompiladorSimpleALua#visitarAtributos: nodo
     fijar clssym a IdentificadorDe: nodo#deClase
     fijar cods a Arreglo#vacio
     ParaCadaElemento: nodo#nombres, procedimiento: nodoId
-        cods#agregarAlFinal: ({rt.enviarMensaje(~t, "agregarAtributo", ~t)}#formatear: clssym, (EscaparParaLua: nodoId#nombre))
+        cods#agregarAlFinal: ({rt.enviarMensaje(~t, "agregarAtributo", ~t);}#formatear: clssym, (EscaparParaLua: nodoId#nombre))
     finprocedimiento
     devolver Unir: cods, {~%}#formatear
 finmetodo
@@ -422,7 +422,7 @@ funcion CompilarALua: moddb, ast, ámbito, compilador
     variables comp, ini
     fijar comp a CompiladorSimpleALua#crear: moddb, ámbito, compilador
     fijar ini a comp#iniciar
-    devolver {local rt = require "backends.lua.runtime"~%~t~%~t}#formatear: ini, comp#visitar: ast
+    devolver {local rt = require "backends.lua.runtime";~%~t~%~t}#formatear: ini, comp#visitar: ast
 finfuncion
 
 clase CompiladorALua hereda Compilador#CompiladorBase
