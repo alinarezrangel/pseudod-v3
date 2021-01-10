@@ -469,5 +469,6 @@ metodo CompiladorALua#compilarTodo: llavePrincipal
     yo#baseDeDatos#paraCadaMódulo: procedimiento: módulo
         cods#agregarAlFinal: ({rt.modulos[~t] = function()~%~t~%end;}#formatear: (EscaparParaLua: módulo#llave#nombreCompletoDelArchivo), módulo#compilado)
     finprocedimiento
+    cods#agregarAlFinal: ({;rt.importar(~t);}#formatear: (EscaparParaLua: llavePrincipal#nombreCompletoDelArchivo))
     devolver Unir: cods, {~%}#formatear
 finmetodo
