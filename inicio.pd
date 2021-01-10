@@ -165,14 +165,18 @@ finprocedimiento
 
 procedimiento Base: programa
     Escribir: {-- Inicio}
-    variables comp, db, conf
+    variables comp, db, conf, llave, módulo
     Escribir: {-- Inicializando la base de datos de módulos...}
     fijar conf a Módulos#ConfiguraciónGlobal#predeterminado
     fijar db a Módulos#BaseDeDatos#conConfiguración: conf
     Escribir: {-- Inicializando el compilador a Lua}
     fijar comp a LuaBack#CompiladorALua#crear: db
     Escribir: {-- Compilando el programa...}
-    Escribir: (comp#compilarTexto: (Módulos#LlaveDeMódulo#crear: {hello}, {world}, {pd}), programa)
+    fijar llave a Módulos#LlaveDeMódulo#crear: {hello}, {world}, {pd}
+    fijar módulo a comp#compilarTexto: llave, programa
+    db#agregarMódulo: módulo
+    Escribir: {-- Final...}
+    Escribir: (comp#compilarTodo: llave)
 finprocedimiento
 
 procedimiento Compilar: ctx, programa
@@ -188,8 +192,7 @@ procedimiento IniciarREPL: ctx
     Escribir: {-- TODO}
     Base: {
 
-utilizar outputs/demo
-utilizar outputs/demo
+variable Nada
 
 }
 finprocedimiento

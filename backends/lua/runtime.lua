@@ -813,8 +813,21 @@ end
 
 M.clases.EspacioDeNombres = EspacioDeNombres
 
+M.modulos = {}
+M.modcache = {}
+
 function M.importar(ruta)
-   return M.ns(require(ruta))
+   local cached = M.modcache[ruta]
+   if cached then
+      return cached
+   end
+   local modfunc = M.modulos[ruta]
+   if modfunc then
+      local mod = modfunc()
+      M.modcache[ruta] = mod
+      return mod
+   end
+   error(("No se encontró el módulo %q"):format(ruta))
 end
 
 -- Utilizado como variable temporal por el compilador.

@@ -92,12 +92,12 @@ clase Módulo
     metodo ruta
     metodo nombre
     metodo exporta
-    metodo rutaAlCompilado
+    metodo compilado
 
     metodo comoTexto
 finclase
 
-atributos Módulo#llave, Módulo#exporta, Módulo#rutaAlCompilado
+atributos Módulo#llave, Módulo#exporta, Módulo#compilado
 
 metodo Módulo#ruta
     devolver yo#llave#ruta
@@ -108,7 +108,7 @@ metodo Módulo#nombre
 finmetodo
 
 metodo Módulo#comoTexto
-    devolver {(Módulo: llave = ~t, exporta = ~t, rutaAlCompilado = ~t)}#formatear: yo#llave, yo#exporta, yo#rutaAlCompilado
+    devolver {(Módulo: llave = ~t, exporta = ~t, compilado = ~t)}#formatear: yo#llave, yo#exporta, yo#compilado
 finmetodo
 
 
@@ -120,6 +120,8 @@ clase BaseDeDatos
     metodo buscarMóduloPorLlave: llaveDeMódulo
     metodo buscarMóduloPorNombre: nombre
     metodo agregarMódulo: módulo
+
+    metodo paraCadaMódulo: proc
 
     metodo serializar: puerto
     metodo deserializar: puerto
@@ -150,6 +152,12 @@ finmetodo
 
 metodo BaseDeDatos#agregarMódulo: mod
     yo#módulos#fijarEn: mod#nombre, mod
+finmetodo
+
+metodo BaseDeDatos#paraCadaMódulo: proc
+    yo#módulos#paraCadaPar: procedimiento: nombre, mod
+        %proc: mod
+    finprocedimiento
 finmetodo
 
 metodo BaseDeDatos#serializar: puerto

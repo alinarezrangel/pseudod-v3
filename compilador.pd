@@ -30,13 +30,11 @@ metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
     fijar ámbito a RN#ResolverNombres: ast, procedimiento: nombreDelMódulo
         devolver yo#importarMódulo: nombreDelMódulo
     finprocedimiento
-    Escribir: {-- Compilando...}
     fijar compilado a yo#compilarAST: ast, ámbito
-    Escribir: compilado
     devolver clonar Módulos#Módulo#_crear con
         llave: llaveDeMódulo
         exporta: ámbito
-        rutaAlCompilado: ({.__pdcache/~t.compilado}#formatear: llaveDeMódulo#nombre)
+        compilado: compilado
     finclonar
 finmetodo
 
