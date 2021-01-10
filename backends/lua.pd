@@ -80,7 +80,7 @@ finmetodo
 metodo CompiladorSimpleALua#iniciar
     variable res
     fijar res a Arreglo#vacio
-    ParaCadaElemento: yo#_ámbito#todosLosBindings, procedimiento: id
+    ParaCadaElemento: yo#_ámbito#todosLosBindingsLocales, procedimiento: id
         res#agregarAlFinal: ({local _~t;}#formatear: id)
     finprocedimiento
     devolver Unir: res, {~%}#formatear

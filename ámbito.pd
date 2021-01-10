@@ -39,6 +39,7 @@ clase Ámbito
     metodo paraCadaVariable: proc
 
     metodo todosLosBindings
+    metodo todosLosBindingsLocales
 finclase
 
 atributos Ámbito#_mapeo, Ámbito#_todosLosBindings
@@ -125,6 +126,10 @@ finmetodo
 
 metodo Ámbito#paraCadaVariable: proc
     yo#_mapeo#paraCadaPar: proc
+finmetodo
+
+metodo Ámbito#todosLosBindingsLocales
+    devolver yo#_todosLosBindings
 finmetodo
 
 metodo Ámbito#todosLosBindings
