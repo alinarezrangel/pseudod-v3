@@ -195,7 +195,8 @@ procedimiento IniciarREPL: ctx
 variable Nada
 
 fijar Nada#hola#adios a 12
-fijar Nada a 12
+fijar Nada a "hola
+mundo"
 
 }
 finprocedimiento

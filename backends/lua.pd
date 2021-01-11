@@ -34,7 +34,7 @@ funcion EscaparParaLua: texto
             fijar res a res#concatenar: {\"} [ " ]
         sino
             si car = {~%}#formatear
-                fijar res a res#concatenar: {~%}#formatear
+                fijar res a res#concatenar: {\n}
             sino
                 fijar res a res#concatenar: car
             finsi
