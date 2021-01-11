@@ -52,6 +52,7 @@ metodo ResoluciónDeNombresCNImpl#crearSubámbito
     variable sub
     fijar sub a ResoluciónDeNombresCNImpl#crear
     fijar sub#_nombres#ámbitoPadre a yo#_nombres
+    fijar sub#_resolverMóduloProc a yo#_resolverMóduloProc
     devolver sub
 finmetodo
 
