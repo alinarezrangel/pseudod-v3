@@ -194,13 +194,8 @@ procedimiento IniciarREPL: ctx
 
 variable Nada
 
-clase Hola
-    atributos mun, do
-finclase
-
-metodo Hola#diAlgo
-    devolver yo#mun + yo#do
-finmetodo
+fijar Nada#hola#adios a 12
+fijar Nada a 12
 
 }
 finprocedimiento

@@ -106,11 +106,19 @@ metodo CompiladorSimpleALua#visitarVariable: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarFijar: nodo
-    necesitas EsInstancia: nodo#objetivo, AST#NodoIdentificador
-    variable obj, expr
-    fijar obj a IdentificadorDe: nodo#objetivo
-    fijar expr a yo#visitar: nodo#valor
-    devolver {~t = (~t);}#formatear: obj, expr
+    si EsInstancia: nodo#objetivo, AST#NodoIdentificador
+        variables obj, expr
+        fijar obj a IdentificadorDe: nodo#objetivo
+        fijar expr a yo#visitar: nodo#valor
+        devolver {~t = (~t);}#formatear: obj, expr
+    sino
+        necesitas EsInstancia: nodo#objetivo, AST#NodoEnviarMensaje
+        necesitas nodo#objetivo#argumentos#longitud = 0
+        variable base, fieldname
+        fijar base a yo#visitar: nodo#objetivo#objeto
+        fijar fieldname a {fijar_}#concatenar: nodo#objetivo#mensaje
+        devolver yo#enviarMensaje: base, fieldname, (Arreglo#crearCon: nodo#valor)
+    finsi
 finmetodo
 
 metodo CompiladorSimpleALua#visitarEscribir: nodo

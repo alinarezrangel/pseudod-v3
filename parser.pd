@@ -465,19 +465,19 @@ variable grObjetivoMétodo
 fijar grObjetivoMétodo a
     Comb#Efecto:
         funcion: res
-            variables mensajesUnarios, mensajeFinal, obj
+            variables mensajesUnarios, mensajesFinales, obj
             fijar obj a res#en: 0
-
-            fijar mensajeFinal a res#en: 1
-            fijar obj a clonar mensajeFinal con
-                objeto: obj
-            finclonar
-
+            fijar mensajesFinales a res#en: 1
+            ParaCadaElemento: mensajesFinales, procedimiento: mensajeFinal
+                fijar obj a clonar mensajeFinal con
+                    objeto: obj
+                finclonar
+            finprocedimiento
             devolver obj
         finfuncion,
         (seq:
             grObjetivoComplejoInicio,
-            grEnviarMensaje)
+            (rep1': grEnviarMensaje))
 
 variable grObjetivo
 fijar grObjetivo a
