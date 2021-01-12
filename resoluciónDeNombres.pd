@@ -279,6 +279,7 @@ finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarLlamarProcedimiento: nodo
     yo#visitar: nodo#proc
+    necesitas nodo#proc#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
     ParaCadaElemento: nodo#argumentos, procedimiento: arg
         yo#visitar: arg
     finprocedimiento
