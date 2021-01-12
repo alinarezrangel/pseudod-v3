@@ -223,6 +223,13 @@ escribir Objeto
 nl
 __Lua: "function(x) return x end", Objeto
 
+clase Hola
+finclase
+
+metodo Hola#mundo
+    devolver __Lua: "function() return LUA_VERSION end"
+finmetodo
+
 }
 finprocedimiento
 

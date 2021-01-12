@@ -185,14 +185,14 @@ metodo CompiladorSimpleALua#visitarDefineMétodoEnClase: nodo
     NoImplementado
 finmetodo
 
-metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueldoDeYo, parámetros, cuerpo
+metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetros, cuerpo
     variables cods, params, met
     fijar cods a Arreglo#vacio
 
     fijar params a Unir: (Mapear: parámetros, &IdentificadorDe), {, }
 
-    si no EsNulo: nombreResueldoDeYo
-        fijar met a {_~t}#formatear: nombreResueldoDeYo
+    si no EsNulo: nombreResueltoDeYo
+        fijar met a {_~t}#formatear: nombreResueltoDeYo
         si parámetros#longitud > 0
             fijar params a {, }#concatenar: params
         finsi
