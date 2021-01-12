@@ -813,6 +813,16 @@ end
 
 M.clases.EspacioDeNombres = EspacioDeNombres
 
+M.builtins = {
+   Objeto = M.clases.Objeto,
+   Arreglo = M.clases.Arreglo,
+   EspacioDeNombres = M.clases.EspacioDeNombres,
+}
+
+function M.builtins.__Lua(str)
+   error("__Lua builtin: inalcanzable")
+end
+
 M.modulos = {}
 M.modcache = {}
 

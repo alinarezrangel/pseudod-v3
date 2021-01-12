@@ -219,9 +219,9 @@ procedimiento IniciarREPL: ctx
     ctx#mostrarMensaje: {-- TODO}
     Compilar: ctx, {
 
-escribir "Hola Mundo!"
-foo
+escribir Objeto
 nl
+__Lua: "function(x) return x end", Objeto
 
 }
 finprocedimiento

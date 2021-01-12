@@ -54,6 +54,9 @@ clase CompiladorSimpleALua hereda CN#CaminaNodos
     metodo inicializar: moddb, ámbito, compilador
 
     metodo iniciar
+    metodo registrarBuiltins
+
+    metodo esBuiltin: nombre, binding
 finclase
 
 atributos CompiladorSimpleALua#_ámbito, [ Ámbito actual ]
@@ -84,6 +87,19 @@ metodo CompiladorSimpleALua#iniciar
         res#agregarAlFinal: ({local _~t;}#formatear: id)
     finprocedimiento
     devolver Unir: res, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#registrarBuiltins
+    variable cods
+    fijar cods a Arreglo#vacio
+    yo#_compilador#_builtins#paraCadaPar: procedimiento: nombreEnRT, binding
+        cods#agregarAlFinal: ({_~t = rt.builtins[~t];}#formatear: binding, (EscaparParaLua: nombreEnRT))
+    finprocedimiento
+    devolver Unir: cods, {~%}#formatear
+finmetodo
+
+metodo CompiladorSimpleALua#esBuiltin: nombre, binding
+    devolver (yo#_compilador#_builtins#en: nombre) = binding
 finmetodo
 
 metodo CompiladorSimpleALua#visitarPrograma: nodo
@@ -366,7 +382,22 @@ metodo CompiladorSimpleALua#enviarMensaje: objeto, mensaje, argumentos
 finmetodo
 
 metodo CompiladorSimpleALua#visitarLlamarProcedimiento: nodo
+    si yo#esBuiltin: {__Lua}, (RN#NombreResueltoDe: nodo#proc)
+        devolver yo#compilarBuiltinLua: nodo
+    finsi
     devolver yo#enviarMensaje: (IdentificadorDe: nodo#proc), {llamar}, nodo#argumentos
+finmetodo
+
+metodo CompiladorSimpleALua#compilarBuiltinLua: nodo
+    necesitas nodo#argumentos#longitud >= 1
+    variables arg, argumentosEvaluados
+    fijar arg a nodo#argumentos#en: 0
+    necesitas EsInstancia: arg, AST#NodoTextoLiteral
+    fijar argumentosEvaluados a
+        Mapear:
+            (PedazoDeArreglo: nodo#argumentos, 1, -1),
+            funcion: x devolver yo#visitar: x finfuncion
+    devolver {((~t)(~t))}#formatear: arg#valor, (Unir: argumentosEvaluados, {, })
 finmetodo
 
 metodo CompiladorSimpleALua#visitarEnviarMensaje: nodo
@@ -427,21 +458,31 @@ metodo CompiladorSimpleALua#visitarNo: nodo
 finmetodo
 
 funcion CompilarALua: moddb, ast, ámbito, compilador
-    variables comp, ini
+    variables comp, ini, builtins
     fijar comp a CompiladorSimpleALua#crear: moddb, ámbito, compilador
     fijar ini a comp#iniciar
-    devolver {local rt = require "backends.lua.runtime";~%~t~%~t}#formatear: ini, comp#visitar: ast
+    fijar builtins a comp#registrarBuiltins
+    devolver {local rt = require "backends.lua.runtime";~%~t~%~t~%~t}#formatear: ini, builtins, (comp#visitar: ast)
 finfuncion
 
 clase CompiladorALua hereda Compilador#CompiladorBase
     metodo inicializar: db
     metodo compilarAST: ast, ámbito
     metodo importarMódulo: nombreDelMódulo
+    metodo inyectarNombresEnÁmbito: ámbito
     metodo compilarTodo: llavePrincipal
 finclase
 
+atributo CompiladorALua#_builtins
+
 metodo CompiladorALua#inicializar: db
     fijar yo#baseDeDatos a db
+    fijar yo#_builtins a
+        Diccionario#desdePares:
+            {Objeto}, RN#GenerarIdDeNombre,
+            {Arreglo}, RN#GenerarIdDeNombre,
+            {EspacioDeNombres}, RN#GenerarIdDeNombre,
+            {__Lua}, RN#GenerarIdDeNombre
 finmetodo
 
 metodo CompiladorALua#compilarAST: ast, ámbito
@@ -467,6 +508,12 @@ metodo CompiladorALua#importarMódulo: nombreDelMódulo
         yo#baseDeDatos#agregarMódulo: móduloCompilado
         devolver móduloCompilado
     finsi
+finmetodo
+
+metodo CompiladorALua#inyectarNombresEnÁmbito: ámbito
+    yo#_builtins#paraCadaPar: procedimiento: nombreEnRT, binding
+        ámbito#agregar: nombreEnRT, binding
+    finprocedimiento
 finmetodo
 
 metodo CompiladorALua#compilarTodo: llavePrincipal

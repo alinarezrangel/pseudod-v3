@@ -374,10 +374,11 @@ metodo ResoluciónDeNombresCNImpl#resolverFunciónOMétodoAnónimo: nodo, esMét
     finprocedimiento
 finmetodo
 
-procedimiento ResolverNombres: ast, resolverMódulo
+procedimiento ResolverNombres: ast, resolverMódulo, inyectarNombres
     variable cn
     fijar cn a ResoluciónDeNombresCNImpl#crear
     fijar cn#_resolverMóduloProc a resolverMódulo
+    %inyectarNombres: cn#_nombres
     cn#visitar: ast
     cn#finalizar: ast, NULO
     devolver cn#_nombres

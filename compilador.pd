@@ -14,6 +14,7 @@ clase CompiladorBase
     metodo compilarAST: ast, ámbito
 
     metodo importarMódulo: nombreDelMódulo
+    metodo inyectarNombresEnÁmbito: ámbito
 finclase
 
 metodo CompiladorBase#compilarAST: ast, ámbito
@@ -24,11 +25,17 @@ metodo CompiladorBase#importarMódulo: nombreDelMódulo
     MétodoAbstracto
 finmetodo
 
+metodo CompiladorBase#inyectarNombresEnÁmbito: ámbito
+    MétodoAbstracto
+finmetodo
+
 metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
     variables ast, ámbito, compilado
     fijar ast a Parser#CrearAST: puerto
     fijar ámbito a RN#ResolverNombres: ast, procedimiento: nombreDelMódulo
         devolver yo#importarMódulo: nombreDelMódulo
+    finprocedimiento, procedimiento: ámbito
+        yo#inyectarNombresEnÁmbito: ámbito
     finprocedimiento
     fijar compilado a yo#compilarAST: ast, ámbito
     devolver clonar Módulos#Módulo#_crear con
