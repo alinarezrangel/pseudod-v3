@@ -24,25 +24,23 @@ Uso:  pseudod OPCIONES... (<archivo> | -c <programa>) [-b <ruta>]
 
 Opciones:
 
- <archivo>                        : Ejecuta el archivo <archivo>.
- -c <programa>                    : Ejecuta <programa> en vez de <archivo>.
- -b <ruta>                        : Fija <ruta> a la ruta a la BEPD.
- -B <ruta>                        : Igual a `-b <ruta>`. Obsoleto, existe
-                                    por compatibilidad.
- -X <experimento>                 : Activa el experimento <experimento>.
- --tokenizar-v3 <archivo>         : Tokeniza el archivo <archivo>.
- --Mtokenizar-v3 <opt>            : Pasa <opt> como una opción para el
-                                    tokenizador.
- -v | --version                   : Muestra el nombre del intérprete y
-                                    la versión.
- --solo-version                   : Solamente muestra la versión del
-                                    intérprete.
- -h | --help | -a | --ayuda | -?  : Muestra este mensaje de ayuda y termina.
- -i                               : Inicia el REPL. Equivalente a llamar
-                                    `pseudod` sin <archivo> ni `-c`.
- -L <ruta>                        : Busca bibliotecas en la ruta <ruta>.
- -l <ruta>                        : No hace nada. Existe por compatibilidad.
- -I <param>                       : Inspecciona el parámetro <param>.
+ <archivo>                          : Ejecuta el archivo <archivo>.
+ -c <programa>                      : Ejecuta <programa> en vez de <archivo>.
+ -b <ruta>                          : Fija <ruta> a la ruta a la BEPD.
+ -B <ruta>                          : Igual a `-b <ruta>`. Obsoleto, existe
+                                      por compatibilidad.
+ -X <experimento>                   : Activa el experimento <experimento>.
+ -v | --version                     : Muestra el nombre del intérprete y
+                                      la versión.
+ --solo-version                     : Solamente muestra la versión del
+                                      intérprete.
+ -h | --help | -a | --ayuda | -?    : Muestra este mensaje de ayuda y termina.
+ -i                                 : Inicia el REPL. Equivalente a llamar
+                                      `pseudod` sin <archivo> ni `-c`.
+ -o <archivo> | --salida <archivo>  : Escribe el programa compilado a
+                                      <archivo>.
+ --sin-mensajes                     : No escribe los mensajes del compilador.
+ -l <ruta>                          : Ignorado, existe por compatibilidad.
 
 Si la opción `-b` no es especificada, la ruta a la BEPD se extráe de:
 
@@ -148,7 +146,7 @@ procedimiento ParsearOpción: ctx, arg, resto
         fijar ctx#archivoDeSalida a ObtenerArchivoDesdeCLI: (resto#en: 0)
         devolver 1
     finsi
-    si arg = {--no-mensajes}
+    si arg = {--sin-mensajes}
         fijar ctx#mostrarMensajes a FALSO
         devolver 0
     finsi

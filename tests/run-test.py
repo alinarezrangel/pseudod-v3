@@ -38,7 +38,7 @@ def get_pseudod_exec():
         '-X', 'v3x',
         from_project_root('inicio.pd'),
         '--',
-        '--no-mensajes',
+        '--sin-mensajes',
         # FIXME: De nuevo, solo funciona en *NIX
         '/dev/stdin',
     ]
@@ -92,7 +92,7 @@ def run_test_for_file(program_filename):
         to_exe = get_pseudod_exec()
         print(f'> {to_exe}')
         proc = run(to_exe, input=program)
-        if proc.stdout.find('Error') == -1 and proc.returncode == 0:
+        if proc.returncode == 0:
             output = run_as_lua(proc.stdout)
             res = test(header, True, output)
         else:
@@ -147,7 +147,7 @@ def run_tests(test_dir):
             full_filename = os.path.join(root, name)
             print('At file', full_filename)
             test_result = run_test_for_file(full_filename)
-            print(f'Ran test "{test_result.name}":')
+            print(f'Ran test "{test_result.name}" -- \'{name}\':')
             print(f'  Passed = {test_result.passed}')
             print(f'  Successfull = {test_result.successfull}')
             print(f'  Had to pass = {test_result.has_to_pass}')
