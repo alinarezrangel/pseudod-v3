@@ -73,9 +73,12 @@ clase ContextoDeCLI
               mostrarVersión,
               rutaDeLaBEPD,
               interactivo,
-              archivoDeSalida
+              archivoDeSalida,
+              mostrarMensajes
 
     metodo comoTexto
+
+    metodo mostrarMensaje: texto
 finclase
 
 metodo ContextoDeCLI#inicializar
@@ -86,10 +89,17 @@ metodo ContextoDeCLI#inicializar
     fijar yo#rutaDeLaBEPD a NULO
     fijar yo#interactivo a FALSO
     fijar yo#archivoDeSalida a NULO
+    fijar yo#mostrarMensajes a VERDADERO
 finmetodo
 
 metodo ContextoDeCLI#comoTexto
-    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo, yo#archivoDeSalida
+    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo, yo#archivoDeSalida, yo#mostrarMensajes
+finmetodo
+
+metodo ContextoDeCLI#mostrarMensaje: texto
+    si yo#mostrarMensajes
+        Escribir: texto
+    finsi
 finmetodo
 
 funcion ObtenerArchivoDesdeCLI: argumentoDelCLI
@@ -138,6 +148,10 @@ procedimiento ParsearOpción: ctx, arg, resto
         fijar ctx#archivoDeSalida a ObtenerArchivoDesdeCLI: (resto#en: 0)
         devolver 1
     finsi
+    si arg = {--no-mensajes}
+        fijar ctx#mostrarMensajes a FALSO
+        devolver 0
+    finsi
     devolver NULO
 finprocedimiento
 
@@ -177,21 +191,21 @@ procedimiento ParsearCLI: cli
 finprocedimiento
 
 procedimiento Compilar: ctx, programa
-    Escribir: {-- Inicio}
+    ctx#mostrarMensaje: {-- Inicio}
     variables comp, db, conf, llave, módulo, compilado
-    Escribir: {-- Inicializando la base de datos de módulos...}
+    ctx#mostrarMensaje: {-- Inicializando la base de datos de módulos...}
     fijar conf a Módulos#ConfiguraciónGlobal#predeterminado
     fijar db a Módulos#BaseDeDatos#conConfiguración: conf
-    Escribir: {-- Inicializando el compilador a Lua}
+    ctx#mostrarMensaje: {-- Inicializando el compilador a Lua}
     fijar comp a LuaBack#CompiladorALua#crear: db
-    Escribir: {-- Compilando el programa...}
+    ctx#mostrarMensaje: {-- Compilando el programa...}
     fijar llave a Módulos#LlaveDeMódulo#crear: {hello}, {world}, {pd}
     fijar módulo a comp#compilarTexto: llave, programa
     db#agregarMódulo: módulo
-    Escribir: {-- Final...}
+    ctx#mostrarMensaje: {-- Final...}
     fijar compilado a comp#compilarTodo: llave
     si no EsNulo: ctx#archivoDeSalida
-        Escribir: ({-- Guardando en ~t}#formatear: ctx#archivoDeSalida)
+        ctx#mostrarMensaje: ({-- Guardando en ~t}#formatear: ctx#archivoDeSalida)
         Archivos#EscribirArchivo: ctx#archivoDeSalida, (compilado#concatenar: {~%}#formatear)
     sino
         Escribir: compilado
@@ -203,8 +217,8 @@ procedimiento CompilarArchivo: ctx, nombreDelArchivo
 finprocedimiento
 
 procedimiento IniciarREPL: ctx
-    Escribir: {-- REPL del compilador}
-    Escribir: {-- TODO}
+    ctx#mostrarMensaje: {-- REPL del compilador}
+    ctx#mostrarMensaje: {-- TODO}
     Compilar: ctx, {
 
 escribir "Hola Mundo!"
