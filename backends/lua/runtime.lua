@@ -660,7 +660,7 @@ end
 
 function M.ns(tbl)
    local ns = M.objeto()
-   local tblIdx = arr:newAttribute()
+   local tblIdx = ns:newAttribute()
    ns:setAttribute(tblIdx, tbl)
    -- FIXME: Si una función o variable `metodoNoEncontrado` se define en un
    -- módulo, la implementación actual no permitiría acceder o llamar a esta.
