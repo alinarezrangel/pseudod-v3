@@ -1,0 +1,12 @@
+{
+    "nombre": "Llamar a una funcion no autoejecutable",
+    "espera": "error",
+    "error en": [5, 9]
+}
+====================
+variable X
+fijar X a funcion: A, B
+    devolver (A + B)#comoTexto
+finfuncion
+escribir X: 1, 2
+nl

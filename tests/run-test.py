@@ -45,8 +45,7 @@ def get_pseudod_exec():
 
 
 def run_as_lua(program):
-    proc = run([search_in_path('lua5.4'), '-'], check=True, input=program)
-    return proc.stdout
+    return run([search_in_path('lua5.4'), '-'], check=False, input=program)
 
 
 @dataclass
@@ -94,8 +93,11 @@ def run_test_for_file(program_filename):
         print(f'> {to_exe}')
         proc = run(to_exe, input=program)
         if proc.returncode == 0:
-            output = run_as_lua(proc.stdout)
-            res = test(header, True, output)
+            proc = run_as_lua(proc.stdout)
+            if proc.returncode == 0:
+                res = test(header, True, proc.stdout)
+            else:
+                res = test(header, False, proc.stdout)
         else:
             res = test(header, False, proc.stdout)
 

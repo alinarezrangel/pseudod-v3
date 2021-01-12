@@ -219,11 +219,22 @@ procedimiento IniciarREPL: ctx
     ctx#mostrarMensaje: {-- TODO}
     Compilar: ctx, {
 
-funcion VersiónDeLua
-    devolver __Lua: "function() return _VERSION end"
-finfuncion
+procedimiento ParaCadaElemento: arr, proc
+    variable i
+    fijar i a 0
+    mientras i < arr#longitud
+        %proc: (arr#en: i)
+        fijar i a i + 1
+    finmientras
+finprocedimiento
 
-escribir VersiónDeLua
+variables arr, s
+fijar arr a Arreglo#crearCon: 1, 2, 3, 4, 5
+fijar s a 0
+ParaCadaElemento: arr, procedimiento: el
+    fijar s a s + el
+finprocedimiento
+escribir s#comoTexto
 nl
 
 }
