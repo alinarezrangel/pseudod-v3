@@ -335,10 +335,16 @@ fijar grFunciónAnónima a
             finclonar
         finfuncion,
         (seq:
-            (alt: (try': (kw: {funcion})), (try': (kw: {metodo}))),
+            (alt:
+                (try': (kw: {funcion})),
+                (try': (kw: {procedimiento})),
+                (try': (kw: {metodo}))),
             grParámetrosDeFunción,
             (until:
-                (alt: (try': (kw: {finfuncion})), (try': (kw: {finmetodo}))),
+                (alt:
+                    (try': (kw: {finfuncion})),
+                    (try': (kw: {finmetodo})),
+                    (try': (kw: {finprocedimiento}))),
                 (delay: funcion devolver grInstrucción finfuncion)))
 
 variable grEnviarMensaje
