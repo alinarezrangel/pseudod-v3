@@ -1,0 +1,19 @@
+{
+    "nombre": "Subámbitos",
+    "espera": "éxito",
+    "salida contiene": "13\n12\n"
+}
+====================
+variables X, Y
+fijar X a {1}
+fijar Y a {2}
+si X = X
+    variable Y
+    fijar Y a {3}
+    escribir X
+    escribir Y
+    nl
+finsi
+escribir X
+escribir Y
+nl

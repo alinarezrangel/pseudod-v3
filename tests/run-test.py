@@ -75,7 +75,7 @@ class TestedFile:
 def run_test_for_file(program_filename):
     with open(program_filename, 'r') as fin:
         contents = fin.read()
-        parts = contents.split('=' * 20)
+        parts = contents.split(('=' * 20) + '\n')
         assert len(parts) == 2
         header = json.loads(parts[0])
         # `header` tiene la forma:
@@ -86,6 +86,7 @@ def run_test_for_file(program_filename):
         #   'tiene que pasar': bool,  opcional(true)
         #   'error contiene': 'TEXTO'  opcional
         #   'error en': [linea int, columna int]  opcional
+        #   'salida contiene': str opcional
         # }
         has_to_pass = header.get('tiene que pasar', True)
         program = parts[1]
@@ -111,23 +112,30 @@ def test(header, successfull, output):
     expected_success = header.get('espera', 'éxito') == 'éxito'
     error_contains = header.get('error contiene')
     error_in = header.get('error en')
+    output_contains = header.get('salida contiene')
 
-    if successfull and not expected_success:
-        return TestFailure('Expected error, got success')
-    elif not successfull and expected_success:
-        return TestFailure('Expected success, got error')
-
-    if error_contains is not None and output.find(error_contains) == -1:
-        return TestFailure(f'Expected error to contain "{error_contains}"')
-
-    if error_in is not None:
-        line, column = error_in
-        for match in re.finditer(r'«[^:]*:([0-9]+):([0-9]+)»', output):
-            if not match:
-                return TestFailure(f'Expected error at {line=} and {column=}')
-            matched_line = int(match.group(1))
-            matched_column = int(match.group(2))
-            if line != matched_line or column != matched_column:
+    if successfull:
+        if not expected_success:
+            return TestFailure('Expected error, got success')
+        if output_contains is not None and output.find(output_contains) == -1:
+            return TestFailure(f'Expected output to contain "{output_contains}"')
+    else:
+        if expected_success:
+            return TestFailure('Expected success, got error')
+        if error_contains is not None and output.find(error_contains) == -1:
+            return TestFailure(f'Expected error to contain "{error_contains}"')
+        if error_in is not None:
+            line, column = error_in
+            found = False
+            for match in re.finditer(r'«[^:]*:([0-9]+):([0-9]+)»', output):
+                if not match:
+                    return TestFailure(f'Expected error at {line=} and {column=}')
+                matched_line = int(match.group(1))
+                matched_column = int(match.group(2))
+                if line == matched_line or column == matched_column:
+                    found = True
+                    break
+            if not found:
                 return TestFailure(f'Expected error at {line=} and {column=}')
 
     return TestSuccess(successfull=successfull)

@@ -1,0 +1,13 @@
+{
+    "nombre": "Redefinir variable",
+    "tiene que pasar": false,
+    "espera": "error",
+    "error en": [4, 0]
+}
+====================
+variable X
+escribir {hola}
+nl
+variable X
+escribir {mundo}
+nl

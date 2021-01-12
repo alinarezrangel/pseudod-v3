@@ -1,0 +1,20 @@
+{
+    "nombre": "Condicional 'si'",
+    "espera": "éxito",
+    "salida contiene": "VF\n"
+}
+====================
+variables X, Y
+fijar X a 1
+fijar Y a 2
+si X = X
+    escribir {V}
+sino
+    escribir {F}
+finsi
+si X = Y
+    escribir {V}
+sino
+    escribir {F}
+finsi
+nl

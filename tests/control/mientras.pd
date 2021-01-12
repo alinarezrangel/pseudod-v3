@@ -1,0 +1,17 @@
+{
+    "nombre": "Bucle mientras",
+    "espera": "éxito",
+    "salida contiene": "4950\n"
+}
+====================
+[ Calcula la suma de todos los enteros entre 0 y `to` ]
+variables i, acc, to
+fijar i a 0
+fijar to a 100
+fijar acc a 0
+mientras i < to
+    fijar acc a acc + i
+    fijar i a i + 1
+finmientras
+escribir acc#comoTexto
+nl

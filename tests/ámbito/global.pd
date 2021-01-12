@@ -1,0 +1,14 @@
+{
+    "nombre": "Ámbito global",
+    "espera": "éxito",
+    "salida contiene": "123\n"
+}
+====================
+variables X, Y, Z
+fijar X a {1}
+fijar Y a {2}
+fijar Z a {3}
+escribir X
+escribir Y
+escribir Z
+nl
