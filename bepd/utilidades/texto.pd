@@ -128,3 +128,19 @@ funcion Unir: textos, separador
         devolver res
     finsi
 finfuncion
+
+[DOCUMENTA
+@brief{Repíte un texto @pd{n} veces.}
+
+Repíte el texto @pd{txt} @pd{n} veces.
+DOCUMENTA]
+funcion RepetirTexto: txt, n
+    variables acc, i
+    fijar acc a {}
+    fijar i a 0
+    mientras i < n
+        fijar i a i + 1
+        fijar acc a acc#concatenar: txt
+    finmientras
+    devolver acc
+finfuncion

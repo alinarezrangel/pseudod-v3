@@ -246,13 +246,13 @@ finmetodo
 metodo CompiladorSimpleALua#visitarMientras: nodo
     variables cods, subyo
 
-    fijar subSiVerdadero a yo#crearSubámbitoDesdeNodo: nodo
+    fijar subyo a yo#crearSubámbitoDesdeNodo: nodo
 
     fijar cods a Arreglo#vacio
     cods#agregarAlFinal: ({while ~t do}#formatear: (yo#visitar: nodo#condicional))
 
     cods#agregarAlFinal: subyo#iniciar
-    ParaCadaElemento: nodo#siVerdadero, procedimiento: stmt
+    ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
         cods#agregarAlFinal: ((subyo#visitar: stmt)#concatenar: {;})
     finprocedimiento
 
