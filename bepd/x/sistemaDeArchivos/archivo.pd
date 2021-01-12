@@ -25,3 +25,11 @@ procedimiento Existe: nombre
     p#cerrar
     devolver exs
 finprocedimiento
+
+
+procedimiento EscribirArchivo: nombre, contenido
+    variable pt
+    fijar pt a PDA#PuertoDeArchivoDeEscritura#abrir: nombre
+    pt#escribirTexto: contenido
+    pt#cerrar
+finprocedimiento

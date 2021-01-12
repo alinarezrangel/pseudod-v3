@@ -67,7 +67,13 @@ variable MostrarVersión
 fijar MostrarVersión a Enum: {MostrarVersión}, {VERSIÓN_Y_NOMBRE}, {SOLO_VERSIÓN}, {NO}
 
 clase ContextoDeCLI
-    atributos archivoAEjecutar, programaAEjecutar, mostrarAyuda, mostrarVersión, rutaDeLaBEPD, interactivo
+    atributos archivoAEjecutar,
+              programaAEjecutar,
+              mostrarAyuda,
+              mostrarVersión,
+              rutaDeLaBEPD,
+              interactivo,
+              archivoDeSalida
 
     metodo comoTexto
 finclase
@@ -79,10 +85,11 @@ metodo ContextoDeCLI#inicializar
     fijar yo#mostrarVersión a MostrarVersión#NO
     fijar yo#rutaDeLaBEPD a NULO
     fijar yo#interactivo a FALSO
+    fijar yo#archivoDeSalida a NULO
 finmetodo
 
 metodo ContextoDeCLI#comoTexto
-    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo
+    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo, yo#archivoDeSalida
 finmetodo
 
 funcion ObtenerArchivoDesdeCLI: argumentoDelCLI
@@ -125,6 +132,12 @@ procedimiento ParsearOpción: ctx, arg, resto
         fijar ctx#programaAEjecutar a resto#en: 0
         devolver 1
     finsi
+    si (arg = {-o}) || (arg = {--salida})
+        necesitas EsNulo: ctx#archivoDeSalida
+        necesitas resto#longitud > 0
+        fijar ctx#archivoDeSalida a ObtenerArchivoDesdeCLI: (resto#en: 0)
+        devolver 1
+    finsi
     devolver NULO
 finprocedimiento
 
@@ -163,9 +176,9 @@ procedimiento ParsearCLI: cli
     devolver ctx
 finprocedimiento
 
-procedimiento Base: programa
+procedimiento Compilar: ctx, programa
     Escribir: {-- Inicio}
-    variables comp, db, conf, llave, módulo
+    variables comp, db, conf, llave, módulo, compilado
     Escribir: {-- Inicializando la base de datos de módulos...}
     fijar conf a Módulos#ConfiguraciónGlobal#predeterminado
     fijar db a Módulos#BaseDeDatos#conConfiguración: conf
@@ -176,11 +189,13 @@ procedimiento Base: programa
     fijar módulo a comp#compilarTexto: llave, programa
     db#agregarMódulo: módulo
     Escribir: {-- Final...}
-    Escribir: (comp#compilarTodo: llave)
-finprocedimiento
-
-procedimiento Compilar: ctx, programa
-    Base: programa
+    fijar compilado a comp#compilarTodo: llave
+    si no EsNulo: ctx#archivoDeSalida
+        Escribir: ({-- Guardando en ~t}#formatear: ctx#archivoDeSalida)
+        Archivos#EscribirArchivo: ctx#archivoDeSalida, (compilado#concatenar: {~%}#formatear)
+    sino
+        Escribir: compilado
+    finsi
 finprocedimiento
 
 procedimiento CompilarArchivo: ctx, nombreDelArchivo
@@ -190,10 +205,11 @@ finprocedimiento
 procedimiento IniciarREPL: ctx
     Escribir: {-- REPL del compilador}
     Escribir: {-- TODO}
-    Base: {
+    Compilar: ctx, {
 
-si 1
-escribir 12
+escribir "Hola Mundo!"
+foo
+nl
 
 }
 finprocedimiento

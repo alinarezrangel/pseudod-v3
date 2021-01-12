@@ -64,3 +64,39 @@ finmetodo
 metodo PuertoDeArchivoDeLectura#cerrar
     yo#archivo#cerrar
 finmetodo
+
+
+clase PuertoDeArchivoDeEscritura hereda Puerto#Puerto [ implementa Puerto#PuertoDeEscritura ]
+    atributo archivo
+
+    metodo estatico desdeArchivo: archivo
+    metodo estatico abrir: nombre
+
+    metodo escribirTexto: texto
+
+    metodo cerrar
+finclase
+
+metodo estatico PuertoDeArchivoDeEscritura#desdeArchivo: archivo
+    devolver yo#crear: archivo
+finmetodo
+
+metodo estatico PuertoDeArchivoDeEscritura#abrir: nombre
+    devolver yo#crear: (__AbrirArchivo: nombre, 11)
+finmetodo
+
+metodo PuertoDeArchivoDeEscritura#inicializar: archivo
+    fijar yo#archivo a archivo
+finmetodo
+
+metodo PuertoDeArchivoDeEscritura#escribirTexto: texto
+    ParaCadaElemento: texto, procedimiento: carácter
+        variable byte
+        fijar byte a __TextoAByte: carácter
+        yo#archivo#escribirByte: byte
+    finprocedimiento
+finmetodo
+
+metodo PuertoDeArchivoDeEscritura#cerrar
+    yo#archivo#cerrar
+finmetodo
