@@ -176,7 +176,7 @@ procedimiento ParsearCLI: cli
         sino
             fijar consumidos a ParsearOpción: ctx, arg, (PedazoDeArreglo: cli, (i + 1), -1)
             si EsNulo: consumidos
-                necesitas no ((arg#en: 0) = {-})
+                necesitas (arg = {-}) || (no ((arg#en: 0) = {-}))
                 posicionales#agregarAlFinal: arg
                 fijar i a i + 1
             sino
