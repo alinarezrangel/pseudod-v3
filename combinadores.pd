@@ -1,5 +1,6 @@
 utilizar bepd/builtins
 utilizar bepd/x/puerto como Puerto
+utilizar bepd/x/puerto/conPosición como PuertoConPos
 
 utilizar tokens como TokensNS
 
@@ -69,6 +70,100 @@ metodo Tokens#irAPunto: punto
     fijar yo#punto a punto
 finmetodo
 
+funcion AproximarPosiciónActual: tokens
+    variables p, tk, inicio
+    fijar p a tokens#puntoActual
+    tokens#retroceder
+    fijar tk a tokens#leerToken
+    [ TODO: Hacer que esto no dependa de que `puntoActual` devuelva un número ]
+    fijar inicio a tokens#puntoActual > p
+    tokens#irAPunto: p
+    [ A simple vista, puede parecer redundante `tokens#irAPunto: p`, digo,
+      `leerToken` ya avanza el token y dado que habíamos retrocedido, ¿no
+      nos debería dejar esto justo donde empezamos? Pero hay que tener en
+      cuenta que `retroceder` no hace nada si ya está al principio del
+      programa. ]
+    si tk = Puerto#EOF
+        [ El programa está "vacío" ]
+        devolver NULO
+    sino
+        si inicio
+            devolver tk#areaDelToken#posiciónInicial
+        sino
+            devolver tk#areaDelToken#posiciónFinal
+        finsi
+    finsi
+finfuncion
+
+clase Error
+    atributos mensaje, lugar, causa
+
+    metodo inicializar: mensaje, lugar, causa
+
+    metodo estatico conMensaje: mensaje
+    metodo estatico conMensajeYLugar: mensaje, lugar
+    metodo estatico conMensajeLugarYCausa: mensaje, lugar, causa
+    metodo estatico enToken: mensaje, token
+    metodo estatico enTokenConCausa: mensaje, token, causa
+    metodo estatico conCausa: mensaje, causa
+
+    metodo comoTexto
+finclase
+
+metodo estatico Error#conMensaje: mensaje
+    devolver yo#crear: mensaje, (PuertoConPos#PosiciónTextual#crear: {<desconocido>}, 1, 0), NULO
+finmetodo
+
+metodo estatico Error#conMensajeYLugar: mensaje, lugar
+    devolver yo#crear: mensaje, lugar, NULO
+finmetodo
+
+metodo estatico Error#conMensajeLugarYCausa: mensaje, lugar, causa
+    devolver yo#crear: mensaje, lugar, causa
+finmetodo
+
+metodo estatico Error#enToken: mensaje, token
+    variable pos
+    si token = Puerto#EOF
+        fijar pos a PuertoConPos#PosiciónTextual#crear: {<desconocido>}, 1, 0
+    sino
+        fijar pos a token#areaDelToken#posiciónInicial
+    finsi
+    devolver yo#crear: mensaje, pos, NULO
+finmetodo
+
+metodo estatico Error#enTokenConCausa: mensaje, token, causa
+    variable pos
+    si token = Puerto#EOF
+        fijar pos a PuertoConPos#PosiciónTextual#crear: {<desconocido>}, 1, 0
+    sino
+        fijar pos a token#areaDelToken#posiciónInicial
+    finsi
+    devolver yo#crear: mensaje, pos, causa
+finmetodo
+
+metodo estatico Error#conCausa: mensaje, causa
+    devolver yo#crear: mensaje, causa#lugar, causa
+finmetodo
+
+metodo Error#inicializar: mensaje, lugar, causa
+    fijar yo#mensaje a mensaje
+    fijar yo#lugar a lugar
+    fijar yo#causa a causa
+finmetodo
+
+metodo Error#comoTexto
+    devolver {(Error en ~t: ~t causado por ~t)}#formatear: yo#lugar, yo#mensaje, yo#causa
+finmetodo
+
+funcion ComoTextoBonito: tkOEOF
+    si tkOEOF = Puerto#EOF
+        devolver {el fin del programa}
+    sino
+        devolver tkOEOF#comoTextoBonito
+    finsi
+finfuncion
+
 clase Combinador
     metodo parsear: tokens
 finclase
@@ -83,7 +178,13 @@ metodo CombToken#parsear: tokens
     fijar posAct a tokens#puntoActual
     fijar tk a tokens#leerToken
     si no yo#predicado#\llamar\: tk
-        devolver Resultado#error: (yo#generarMensajeDeError#\llamar\: tk)
+        variable pos
+        si tk = Puerto#EOF
+            fijar pos a AproximarPosiciónActual: tokens
+        sino
+            fijar pos a tk#areaDelToken#posiciónInicial
+        finsi
+        devolver Resultado#error: (yo#generarMensajeDeError#\llamar\: tk, pos)
     finsi
     devolver Resultado#ok: tk
 finmetodo
@@ -104,8 +205,8 @@ funcion PalabraClave: pal
             devolver tk#palabraClave = pal
         finsi
     finfuncion
-    funcion genMensjError: tk
-        devolver {Se esperaba la palabra clave [~t] pero se obtuvo ~t}#formatear: pal, tk
+    funcion genMensjError: tk, pos
+        devolver Error#conMensajeYLugar: ({Se esperaba la palabra clave [~t] pero se obtuvo ~t}#formatear: pal, (ComoTextoBonito: tk)), pos
     finfuncion
     devolver Token: &pred, &genMensjError
 finfuncion
@@ -114,8 +215,8 @@ funcion Identificador
     funcion pred: tk
         devolver EsInstancia: tk, TokensNS#TokenIdentificador
     finfuncion
-    funcion genMensjError: tk
-        devolver {Se esperaba un identificador pero se obtuvo ~t}#formatear: tk
+    funcion genMensjError: tk, pos
+        devolver Error#conMensajeYLugar: ({Se esperaba un identificador pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)), pos
     finfuncion
     devolver Token: &pred, &genMensjError
 finfuncion
@@ -124,8 +225,8 @@ funcion NumeroLiteral
     funcion pred: tk
         devolver EsInstancia: tk, TokensNS#TokenNumero
     finfuncion
-    funcion genMensjError: tk
-        devolver {Se esperaba un número pero se obtuvo ~t}#formatear: tk
+    funcion genMensjError: tk, pos
+        devolver Error#conMensajeYLugar: ({Se esperaba un número pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)), pos
     finfuncion
     devolver Token: &pred, &genMensjError
 finfuncion
@@ -134,8 +235,8 @@ funcion Operador
     funcion pred: tk
         devolver EsInstancia: tk, TokensNS#TokenOperador
     finfuncion
-    funcion genMensjError: tk
-        devolver {Se esperaba un operador pero se obtuvo ~t}#formatear: tk
+    funcion genMensjError: tk, pos
+        devolver Error#conMensajeYLugar: ({Se esperaba un operador pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)), pos
     finfuncion
     devolver Token: &pred, &genMensjError
 finfuncion
@@ -144,8 +245,8 @@ funcion TextoLiteral
     funcion pred: tk
         devolver EsInstancia: tk, TokensNS#TokenTexto
     finfuncion
-    funcion genMensjError: tk
-        devolver {Se esperaba un texto literal pero se obtuvo ~t}#formatear: tk
+    funcion genMensjError: tk, pos
+        devolver Error#conMensajeYLugar: ({Se esperaba un texto literal pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)), pos
     finfuncion
     devolver Token: &pred, &genMensjError
 finfuncion
@@ -156,8 +257,7 @@ clase CombComponer hereda Combinador
 finclase
 
 metodo CombComponer#parsear: tokens
-    variables posAct, tk, res
-    fijar posAct a tokens#puntoActual
+    variable res
     fijar res a Resultado#ok: Arreglo#vacio
     ParaCadaElemento: yo#combinadores, procedimiento: comb
         si res#esError devolver NULO finsi
@@ -184,14 +284,27 @@ clase CombElegir hereda Combinador
     metodo parsear: tokens
 finclase
 
+metodo CombElegir#mensajeDeError: tokens
+    variables p, tk, pos
+    fijar p a tokens#puntoActual
+    fijar tk a tokens#leerToken
+    tokens#irAPunto: p
+    si tk = Puerto#EOF
+        fijar pos a AproximarPosiciónActual: tokens
+    sino
+        fijar pos a tk#areaDelToken#posiciónInicial
+    finsi
+    devolver Error#conMensajeYLugar: ({No se esperaba ~t}#formatear: (ComoTextoBonito: tk)), pos
+finmetodo
+
 metodo CombElegir#parsear: tokens
-    variables posIni, tk, res, encajoCombinador
+    variables posIni, res, encajoCombinador
     fijar posIni a tokens#puntoActual
-    fijar res a Resultado#error: {Ninguno de los combinadores tuvo éxito}
+    fijar res a Resultado#error: (yo#mensajeDeError: tokens)
     fijar encajoCombinador a FALSO
     ParaCadaElemento: yo#combinadores, procedimiento: comb
         si encajoCombinador devolver NULO finsi
-        variables r, posFinal
+        variables posFinal, r
         fijar r a comb#parsear: tokens
         fijar posFinal a tokens#puntoActual
         si r#esError && (posIni = posFinal)
@@ -263,10 +376,17 @@ clase CombMensajeDeError hereda Combinador
 finclase
 
 metodo CombMensajeDeError#parsear: tokens
-    variable res
+    variables res, optTk, pos
+    fijar pos a tokens#puntoActual
+    fijar optTk a tokens#leerToken
+    tokens#irAPunto: pos
     fijar res a yo#combinador#parsear: tokens
     si res#esError
-        devolver Resultado#error: ({~t : ~t}#formatear: yo#mensaje, res#error)
+        si optTk = Puerto#EOF
+            devolver Resultado#error: (Error#conCausa: yo#mensaje, res#error)
+        sino
+            devolver Resultado#error: (Error#enTokenConCausa: yo#mensaje, optTk, res#error)
+        finsi
     sino
         devolver res
     finsi
@@ -302,21 +422,23 @@ clase CombRepetir hereda Combinador
 finclase
 
 metodo CombRepetir#parsear: tokens
-    variables resultados, rescomb, posIni, posFinal
+    variable resultados
     fijar resultados a Arreglo#vacio
-    fijar posIni a tokens#puntoActual
-    fijar rescomb a yo#combinador#parsear: tokens
-    fijar posFinal a tokens#puntoActual
-    mientras rescomb#esOk && (no posIni = posFinal)
-        resultados#agregarAlFinal: rescomb#valor
+    mientras VERDADERO
+        variables rescomb, posIni, posFinal
         fijar posIni a tokens#puntoActual
         fijar rescomb a yo#combinador#parsear: tokens
         fijar posFinal a tokens#puntoActual
+        si rescomb#esOk
+            resultados#agregarAlFinal: rescomb#valor
+        sino
+            si posIni = posFinal
+                devolver Resultado#ok: resultados
+            sino
+                devolver rescomb
+            finsi
+        finsi
     finmientras
-    si rescomb#esOk && (posIni = posFinal)
-        resultados#agregarAlFinal: rescomb#valor
-    finsi
-    devolver Resultado#ok: resultados
 finmetodo
 
 funcion Repetir: combinador
@@ -334,15 +456,14 @@ finclase
 metodo CombNoSigue#parsear: tokens
     variables posIni, res
     fijar posIni a tokens#puntoActual
-    tokens#irAPunto: posIni
     fijar res a yo#combinador#parsear: tokens
     si res#esError
         devolver Resultado#ok: NULO
     sino
         variable tk
-        fijar tk a tokens#leerToken
         tokens#irAPunto: posIni
-        devolver Resultado#error: ({El combinador de NoSigue la logrado parsear en ~t}#formatear: tk#areaDelToken)
+        fijar tk a tokens#leerToken
+        devolver Resultado#error: (Error#enToken: ({El combinador de NoSigue la logrado parsear en ~t}#formatear: tk#areaDelToken), tk)
     finsi
 finmetodo
 
@@ -363,21 +484,22 @@ metodo CombHasta#parsear: tokens
     fijar resultados a Arreglo#vacio
     fijar terminó a FALSO
     mientras no terminó
-        variables pos, resFinal, resPrincipal
-        fijar pos a tokens#puntoActual
+        variables posIni, posFinal, resFinal, resPrincipal
+        fijar posIni a tokens#puntoActual
         fijar resFinal a yo#final#parsear: tokens
+        fijar posFinal a tokens#puntoActual
         si resFinal#esOk
             fijar terminó a VERDADERO
         sino
-            tokens#irAPunto: pos
+            si no (posIni = posFinal)
+                devolver resFinal
+            finsi
+            tokens#irAPunto: posIni
             fijar resPrincipal a yo#principal#parsear: tokens
             si resPrincipal#esOk
                 resultados#agregarAlFinal: resPrincipal#valor
             sino
-                devolver Resultado#error: (
-                    {CombHasta: El combinador principal falló: ~t}#formatear:
-                    resPrincipal#error
-                )
+                devolver resPrincipal
             finsi
         finsi
     finmientras

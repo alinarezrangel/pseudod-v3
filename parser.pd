@@ -1,4 +1,5 @@
 utilizar bepd/builtins
+utilizar bepd/utilidades/texto
 utilizar bepd/x/puerto como Puerto
 utilizar bepd/x/puerto/conPosición como PuertoConPos
 utilizar bepd/algoritmos como Algoritmos
@@ -113,6 +114,16 @@ finfuncion
 
 funcion until: term, rep
     devolver Comb#Hasta: term, rep
+finfuncion
+
+funcion eof
+    funcion pred: tk
+        devolver tk = Puerto#EOF
+    finfuncion
+    funcion genMensjError: tk, pos
+        devolver Comb#Error#conMensajeYLugar: ({Se esperaba el fin del programa pero se obtuvo ~t}#formatear: (Comb#ComoTextoBonito: tk)), pos
+    finfuncion
+    devolver Comb#Token: &pred, &genMensjError
 finfuncion
 
 funcion AreaTotal: inicio, final
@@ -301,11 +312,12 @@ fijar grParámetrosDeFunción a
             finsi
             devolver params
         finfuncion,
-        (opt':
-            (try': (kw: {:})),
-            (delim1:
-                grId,
-                (try': (kw: {,}))))
+        (msjerror: {En los parámetros de una función/metodo/procedimiento:},
+            (opt':
+                (try': (kw: {:})),
+                (delim1:
+                    grId,
+                    (try': (kw: {,})))))
 
 variable grFunciónAnónima
 fijar grFunciónAnónima a
@@ -497,7 +509,8 @@ fijar grVariable a
                 (try': (kw: {variable})),
                 (try': (kw: {variables})),
                 (try': (kw: {adquirir}))),
-            (delim1: grId, (try': (kw: {,}))))
+            (msjerror: {En los nombres de las variables a crear:},
+                       (delim1: grId, (try': (kw: {,})))))
 
 variable grFijar
 fijar grFijar a
@@ -509,7 +522,11 @@ fijar grFijar a
                 valor: (res#en: 3)
             finclonar
         finfuncion,
-        (seq: (try': (kw: {fijar})), grObjetivo, (kw: {a}), grExpr)
+        (seq:
+            (try': (kw: {fijar})),
+            (msjerror: {En el objetivo de `fijar`:}, grObjetivo),
+            (kw: {a}),
+            (msjerror: {Se esperaba una expresión (el valor de `fijar`)}, grExpr))
 
 variable grEscribir
 fijar grEscribir a
@@ -520,7 +537,8 @@ fijar grEscribir a
                 valor: (res#en: 1)
             finclonar
         finfuncion,
-        (seq: (try': (kw: {escribir})), grExpr)
+        (msjerror: {En `escribir`:},
+            (seq: (try': (kw: {escribir})), grExpr))
 
 variable grNl
 fijar grNl a
@@ -686,17 +704,19 @@ fijar grFunción a
                 cuerpo: cuerpo
             finclonar
         finfuncion,
-        (seq:
-            (alt:
-                (try': (kw: {funcion})),
-                (try': (kw: {procedimiento}))),
-            grId,
-            grParámetrosDeFunción,
-            (rep0': (delay: funcion devolver grInstrucción finfuncion)),
-            (alt:
-                (try': (kw: {finfuncion})),
-                (try': (kw: {finprocedimiento})),
-                (try': (kw: {finfun}))))
+        (msjerror: {En una función o procedimiento:},
+            (seq:
+                (alt:
+                    (try': (kw: {funcion})),
+                    (try': (kw: {procedimiento}))),
+                grId,
+                grParámetrosDeFunción,
+                (msjerror: {En el cuerpo de la función/procedimiento:},
+                    (rep0': (delay: funcion devolver grInstrucción finfuncion))),
+                (alt:
+                    (try': (kw: {finfuncion})),
+                    (try': (kw: {finprocedimiento})),
+                    (try': (kw: {finfun})))))
 
 variable grNecesitas
 fijar grNecesitas a
@@ -707,7 +727,8 @@ fijar grNecesitas a
                 expresión: res#en: 1
             finclonar
         finfuncion,
-        (seq: (try': (kw: {necesitas})), grExpr)
+        (msjerror: {En `necesitas`:},
+            (seq: (try': (kw: {necesitas})), grExpr))
 
 variable grDevolver
 fijar grDevolver a
@@ -718,7 +739,8 @@ fijar grDevolver a
                 expresión: res#en: 1
             finclonar
         finfuncion,
-        (seq: (try': (kw: {devolver})), grExpr)
+        (msjerror: {En `devolver`:},
+            (seq: (try': (kw: {devolver})), grExpr))
 
 variable grSi
 fijar grSi a
@@ -739,14 +761,17 @@ fijar grSi a
                 siFalso: falso
             finclonar
         finfuncion,
-        (seq:
-            (try': (kw: {si})),
-            grExpr,
-            (rep0': (delay: funcion devolver grInstrucción finfuncion)),
-            (opt':
-                (try': (kw: {sino})),
-                (rep0': (delay: funcion devolver grInstrucción finfuncion))),
-            (kw: {finsi}))
+        (msjerror: {En condicional `si`},
+            (seq:
+                (try': (kw: {si})),
+                (msjerror: {En la condición}, grExpr),
+                (msjerror: {"Si es verdadero":},
+                    (rep0': (delay: funcion devolver grInstrucción finfuncion))),
+                (opt':
+                    (try': (kw: {sino})),
+                    (msjerror: {"Si es falso":},
+                        (rep0': (delay: funcion devolver grInstrucción finfuncion)))),
+                (kw: {finsi})))
 
 variable grMientras
 fijar grMientras a
@@ -758,11 +783,13 @@ fijar grMientras a
                 cuerpo: res#en: 2
             finclonar
         finfuncion,
-        (seq:
-            (try': (kw: {mientras})),
-            grExpr,
-            (rep0': (delay: funcion devolver grInstrucción finfuncion)),
-            (kw: {finmientras}))
+        (msjerror: {En bucle `mientras`},
+            (seq:
+                (try': (kw: {mientras})),
+                (msjerror: {En el condicional:}, grExpr),
+                (msjerror: {En el cuerpo del bucle:},
+                    (rep0': (delay: funcion devolver grInstrucción finfuncion))),
+                (kw: {finmientras})))
 
 variable grMétodo
 fijar grMétodo a
@@ -776,14 +803,16 @@ fijar grMétodo a
                 cuerpo: res#en: 5
             finclonar
         finfuncion,
-        (seq:
-            (try': (kw: {metodo})),
-            grId,
-            (kw: {#}),
-            grId,
-            grParámetrosDeFunción,
-            (rep0': (delay: funcion devolver grInstrucción finfuncion)),
-            (kw: {finmetodo}))
+        (msjerror: {En `metodo` (fuera de clase):},
+            (seq:
+                (try': (kw: {metodo})),
+                grId,
+                (kw: {#}),
+                grId,
+                grParámetrosDeFunción,
+                (msjerror: {En el cuerpo del método:},
+                    (rep0': (delay: funcion devolver grInstrucción finfuncion))),
+                (kw: {finmetodo})))
 
 variable grAtributos
 fijar grAtributos a
@@ -802,14 +831,17 @@ fijar grAtributos a
                 nombres: nombres
             finclonar
         finfuncion,
-        (seq:
-            (try': (kw: {atributo})),
-            (delim1:
-                (seq:
-                    grId,
-                    (kw: {#}),
-                    grId),
-                (try': (kw: {,}))))
+        (msjerror: {En `atributo`/`atributos` (fuera de clase):},
+            (seq:
+                (alt:
+                    (try': (kw: {atributo})),
+                    (try': (kw: {atributos}))),
+                (delim1:
+                    (seq:
+                        grId,
+                        (kw: {#}),
+                        grId),
+                    (try': (kw: {,})))))
 
 variable grUtilizar
 fijar grUtilizar a
@@ -844,22 +876,25 @@ fijar grUtilizar a
                 nombresEspecíficos: nombresEspecíficos
             finclonar
         finfuncion,
-        (seq:
-            (try': (kw: {utilizar})),
-            (alt: (try': grId), (try': grTexto)),
-            (opt':
-                (try': (kw: {como})),
-                grId),
-            (opt':
-                (try': (kw: {(})),
-                (delim0:
-                    (seq:
-                        grId,
-                        (opt':
-                            (try': (kw: {como})),
-                            grId)),
-                    (try': (kw: {,}))),
-                (kw: {)})))
+        (msjerror: {En `utilizar`:},
+            (seq:
+                (try': (kw: {utilizar})),
+                (msjerror: {En el nombre del módulo a importar:},
+                    (alt: (try': grId), (try': grTexto))),
+                (opt':
+                    (try': (kw: {como})),
+                    (msjerror: {En el nombre del espacio de nombres:}, grId)),
+                (opt':
+                    (try': (kw: {(})),
+                    (msjerror: {En los nombres a importar},
+                        (delim0:
+                            (seq:
+                                grId,
+                                (opt':
+                                    (try': (kw: {como})),
+                                    grId)),
+                            (try': (kw: {,})))),
+                    (kw: {)}))))
 
 variable grInstrucción
 fijar grInstrucción a
@@ -884,20 +919,21 @@ variable grPrograma
 fijar grPrograma a
     Comb#Efecto:
         funcion: res
-            variable area
+            variables cuerpo, area
+            fijar cuerpo a res#en: 0
             si res#longitud = 0
                 variable pos
                 fijar pos a (PuertoConPos#PosiciónTextual#crear: {}, 1, 0)
                 fijar area a Tokens#AreaTextual#crear: pos, pos
             sino
-                fijar area a AreaTotal: (res#en: 0), (ÚltimoElemento: res)
+                fijar area a AreaTotal: (cuerpo#en: 0), (ÚltimoElemento: cuerpo)
             finsi
             devolver clonar AST#NodoPrograma#crear con
                 areaTextual: area
-                instrucciones: res
+                instrucciones: cuerpo
             finclonar
         finfuncion,
-        (rep0': grInstrucción)
+        (seq: (rep0': grInstrucción), eof)
 
 procedimiento MostrarTokenizado: tks
     variable T
@@ -939,6 +975,30 @@ procedimiento MostrarParseadoDeTexto: txt, gr
     MostrarParseado: tks, gr
 finprocedimiento
 
+funcion ErrorComoTraceback: error
+    variables acc, prim
+    fijar acc a {}
+    fijar prim a FALSO
+    mientras no EsNulo: error
+        variable indent
+        si acc#longitud > 0
+            fijar acc a acc#concatenar: {~%}#formatear
+            fijar prim a VERDADERO
+        finsi
+        si prim
+            fijar indent a {    }
+        sino
+            fijar indent a {  }
+        finsi
+        fijar acc a acc#concatenar: ({~t~t: ~t}#formatear: indent, error#lugar, error#mensaje)
+        fijar error a error#causa
+        si no EsNulo: error
+            fijar acc a acc#concatenar: ({~%  Causado por:}#formatear)
+        finsi
+    finmientras
+    devolver {Error:~%}#formatear#concatenar: acc
+finfuncion
+
 procedimiento CrearAST: textoOPuerto
     variables tks, tknz, pt
     si EsInstancia: textoOPuerto, Texto
@@ -953,6 +1013,9 @@ procedimiento CrearAST: textoOPuerto
 
     variables nodo
     fijar nodo a grPrograma#parsear: tks
+    si nodo#esError
+        Escribir: (ErrorComoTraceback: nodo#error)
+    finsi
     necesitas nodo#esOk
     devolver nodo#valor
 finprocedimiento

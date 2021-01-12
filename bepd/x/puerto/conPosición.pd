@@ -24,6 +24,8 @@ clase PuertoConPosiciónTextual hereda Puerto#Puerto
 
     metodo leerCarácter
     metodo desleerCarácter
+
+    metodo posiciónActual
 finclase
 
 atributos

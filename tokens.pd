@@ -24,6 +24,7 @@ clase Token
     metodo inicializar: area, texto
 
     metodo comoTexto
+    metodo comoTextoBonito
 finclase
 
 metodo Token#inicializar: area, texto
@@ -35,18 +36,33 @@ metodo Token#comoTexto
     devolver {(Token (~t) en ~t contiene [~t])}#formatear: (TipoDe: yo), yo#areaDelToken, yo#texto
 finmetodo
 
+metodo Token#comoTextoBonito
+    devolver {un token general [~t]}#formatear: yo#texto
+finmetodo
+
 clase TokenIdentificador hereda Token
+    metodo comoTextoBonito
 finclase
+
+metodo TokenIdentificador#comoTextoBonito
+    devolver {un identificador [~t]}#formatear: yo#texto
+finmetodo
 
 clase TokenPalabraClave hereda Token
     atributo palabraClave
 
     metodo inicializar: area, texto, palabra
+
+    metodo comoTextoBonito
 finclase
 
 metodo TokenPalabraClave#inicializar: area, texto, palabra
     (Token#_crearConYo: yo)#inicializar: area, texto
     fijar yo#palabraClave a palabra
+finmetodo
+
+metodo TokenPalabraClave#comoTextoBonito
+    devolver {una palabra clave [~t]}#formatear: yo#texto
 finmetodo
 
 variable PALABRAS_CLAVE
@@ -71,6 +87,8 @@ clase TokenNumero hereda Token
     atributo valor
 
     metodo inicializar: area, texto, valor
+
+    metodo comoTextoBonito
 finclase
 
 metodo TokenNumero#inicializar: area, texto, valor
@@ -78,16 +96,36 @@ metodo TokenNumero#inicializar: area, texto, valor
     fijar yo#valor a valor
 finmetodo
 
+metodo TokenNumero#comoTextoBonito
+    devolver {un número ~t}#formatear: yo#texto
+finmetodo
+
 clase TokenOperador hereda Token
     metodo op
+
+    metodo comoTextoBonito
 finclase
 
 metodo TokenOperador#op
     devolver yo#texto
 finmetodo
 
+metodo TokenOperador#comoTextoBonito
+    devolver {un operador [~t]}#formatear: yo#texto
+finmetodo
+
 clase TokenTexto hereda Token
+    metodo comoTextoBonito
 finclase
 
+metodo TokenTexto#comoTextoBonito
+    devolver {un texto [~t]}#formatear: yo#texto
+finmetodo
+
 clase TokenComentario hereda Token
+    metodo comoTextoBonito
 finclase
+
+metodo TokenComentario#comoTextoBonito
+    devolver {un comentario [~t]}#formatear: yo#texto
+finmetodo
