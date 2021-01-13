@@ -84,12 +84,12 @@ class DebugInfo:
         print(f'PseudoD error?: {self.pseudod_error}')
         if self.pseudod_error:
             print('PseudoD output:', '-' * 50)
-            print(self.pseudod_output)
+            print(self.pseudod_output, end='')
             print('-' * 62)
         print(f'Lua error?: {self.lua_error}')
         if self.lua_output is not None:
             print('Lua output:', '-' * 50)
-            print(self.lua_output)
+            print(self.lua_output, end='')
             print('-' * 62)
 
 

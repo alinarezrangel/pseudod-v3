@@ -549,14 +549,14 @@ local METODOS_ARREGLO = {
 
    agregarAlFinal = function(self, nv)
       local vals = self:getAttribute(ARREGLO_ATTRS_IDX)
-      vals[vals.n + 1] = nv
+      vals[vals.n] = nv
       vals.n = vals.n + 1
    end,
 
    mapear = function(self, proc)
       local vals = self:getAttribute(ARREGLO_ATTRS_IDX)
       local nvals = { n = vals.n }
-      for i = 1, vals.n do
+      for i = 0, (vals.n - 1) do
          nvals[i] = M.enviarMensaje(proc, "llamar", vals[i])
       end
       return M.mkarreglo(nvals)
@@ -565,7 +565,7 @@ local METODOS_ARREGLO = {
    reducir = function(self, inic, proc)
       local acc = inic
       local vals = self:getAttribute(ARREGLO_ATTRS_IDX)
-      for i = 1, vals.n do
+      for i = 0, (vals.n - 1) do
          acc = M.enviarMensaje(proc, "llamar", acc, vals[i])
       end
       return acc
@@ -574,7 +574,7 @@ local METODOS_ARREGLO = {
    comoTexto = function(self)
       local str = "(Arreglo#crearCon: "
       local vals = self:getAttribute(ARREGLO_ATTRS_IDX)
-      for i = 1, vals.n do
+      for i = 0, (vals.n - 1) do
          str = str .. M.enviarMensaje(vals[i], "comoTexto") .. ", "
       end
       str = str .. ")"
@@ -584,7 +584,7 @@ local METODOS_ARREGLO = {
    clonar = function(self)
       local vals = self:getAttribute(ARREGLO_ATTRS_IDX)
       local nvals = { n = vals.n }
-      for i = 1, vals.n do
+      for i = 0, (vals.n - 1) do
          nvals[i] = M.enviarMensaje(vals[i], "clonar")
       end
       return M.mkarreglo(nvals)
@@ -599,7 +599,7 @@ local METODOS_ARREGLO = {
       if vals.n ~= ovls.n then
          return false
       end
-      for i = 1, vals.n do
+      for i = 0, (vals.n - 1) do
          if not M.enviarMensaje(vals[i], "igualA", ovls[i]) then
             return false
          end
@@ -636,18 +636,23 @@ function M.mkarreglo(vals)
 end
 
 function M.arreglo(...)
-   return M.mkarreglo(table.pack(...))
+   local pk = table.pack(...)
+   local reidxpk = { n = pk.n }
+   for i = 1, pk.n do
+      reidxpk[i - 1] = pk[i]
+   end
+   return M.mkarreglo(reidxpk)
 end
 
 function M.arregloipairs(arr)
    return function(arr, idx)
       idx = idx + 1
-      if idx > M.enviarMensaje(arr, "longitud") then
+      if idx >= M.enviarMensaje(arr, "longitud") then
          return nil, nil
       else
          return idx, M.enviarMensaje(arr, "en", idx)
       end
-   end, arr, 0
+   end, arr, -1
 end
 
 function M.arreglounpack(arr)
@@ -655,7 +660,7 @@ function M.arreglounpack(arr)
    for i, x in M.arregloipairs(arr) do
       tbl[i] = x
    end
-   return table.unpack(tbl, 1, M.enviarMensaje(arr, "longitud"))
+   return table.unpack(tbl, 0, M.enviarMensaje(arr, "longitud") - 1)
 end
 
 function M.ns(tbl)
