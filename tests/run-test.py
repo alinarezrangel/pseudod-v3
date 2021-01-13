@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import re
+import argparse
 from dataclasses import dataclass
 
 
@@ -69,6 +70,27 @@ class TestedFile:
     name: str
     has_to_pass: bool
     error: object  # TestFailure | None
+    debug: 'DebugInfo'
+
+
+@dataclass
+class DebugInfo:
+    pseudod_output: str
+    lua_output: object  # str | None
+    pseudod_error: bool
+    lua_error: bool
+
+    def pretty_print(self):
+        print(f'PseudoD error?: {self.pseudod_error}')
+        if self.pseudod_error:
+            print('PseudoD output:', '-' * 50)
+            print(self.pseudod_output)
+            print('-' * 62)
+        print(f'Lua error?: {self.lua_error}')
+        if self.lua_output is not None:
+            print('Lua output:', '-' * 50)
+            print(self.lua_output)
+            print('-' * 62)
 
 
 def run_test_for_file(program_filename):
@@ -92,14 +114,21 @@ def run_test_for_file(program_filename):
         to_exe = get_pseudod_exec()
         print(f'> {to_exe}')
         proc = run(to_exe, input=program)
+        pseudod_output = proc.stdout
+        pseudod_error = proc.returncode != 0
         if proc.returncode == 0:
             proc = run_as_lua(proc.stdout)
+            lua_output = proc.stdout
+            lua_error = proc.returncode != 0
             if proc.returncode == 0:
                 res = test(header, True, proc.stdout)
             else:
                 res = test(header, False, proc.stdout)
         else:
+            lua_output = None
             res = test(header, False, proc.stdout)
+
+        debug = DebugInfo(pseudod_output, lua_output, pseudod_error, lua_error)
 
         return TestedFile(
             passed=isinstance(res, TestSuccess),
@@ -107,6 +136,7 @@ def run_test_for_file(program_filename):
             name=header['nombre'],
             has_to_pass=has_to_pass,
             error=(res if isinstance(res, TestFailure) else None),
+            debug=debug,
         )
 
 
@@ -164,6 +194,9 @@ def run_tests(test_dir):
             if test_result.error:
                 print(f'  Error: {test_result.error.message}')
 
+            if not test_result.passed:
+                test_result.debug.pretty_print()
+
             if test_result.passed:
                 passed += 1
                 passed_tests.append(name)
@@ -177,10 +210,34 @@ def run_tests(test_dir):
     print('  Tests failed:', expected_to_pass - passed, f'-- {failed_tests}')
 
 
+def run_test_only_for_file(filename):
+    test_result = run_test_for_file(filename)
+    print(f'Ran test "{test_result.name}" -- \'{filename}\':')
+    print(f'  Passed = {test_result.passed}')
+    print(f'  Successfull = {test_result.successfull}')
+    print(f'  Had to pass = {test_result.has_to_pass}')
+    if test_result.error:
+        print(f'  Error: {test_result.error.message}')
+
+    if not test_result.passed:
+        test_result.debug.pretty_print()
+
+
 def main():
     TESTS_DIR = get_script_dir()
-    print('Advertencia: este programa debe ser ejecutado desde la raíz del proyecto, no desde el subdirectorio `tests/`')
-    run_tests(TESTS_DIR)
+    parser = argparse.ArgumentParser(
+        description='''Run the tests of the project.
+
+        Warning: this program must be executed from the project root, not from the `tests/` subdirectory.
+        '''
+    )
+    parser.add_argument('--run-test', help='The test file that will be executed', type=str, default=None)
+    args = parser.parse_args()
+    print('Warning: this program must be executed from the project root, not from the `tests/` subdirectory.')
+    if args.run_test is not None:
+        run_test_only_for_file(args.run_test)
+    else:
+        run_tests(TESTS_DIR)
 
 
 if __name__ == '__main__':
