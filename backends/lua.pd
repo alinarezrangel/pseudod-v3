@@ -480,11 +480,38 @@ metodo CompiladorALua#inicializar: db
     fijar yo#_builtins a
         Diccionario#desdePares:
             {Objeto}, RN#GenerarIdDeNombre,
+            {VERDADERO}, RN#GenerarIdDeNombre,
+            {FALSO}, RN#GenerarIdDeNombre,
+            {NULO}, RN#GenerarIdDeNombre,
+            {Aplicar}, RN#GenerarIdDeNombre,
+            {ProcedimientoVarargs}, RN#GenerarIdDeNombre,
+            {TipoDe}, RN#GenerarIdDeNombre,
+            {__EnviarMensaje}, RN#GenerarIdDeNombre,
+            {__FallarConMensaje}, RN#GenerarIdDeNombre,
+            {__ClonarObjeto}, RN#GenerarIdDeNombre,
+            {__CompararObjeto}, RN#GenerarIdDeNombre,
+            {__AbrirArchivo}, RN#GenerarIdDeNombre,
+            {__ByteATexto}, RN#GenerarIdDeNombre,
+            {__TextoAByte}, RN#GenerarIdDeNombre,
+            {__ByteEof}, RN#GenerarIdDeNombre,
+            {__Capturar}, RN#GenerarIdDeNombre,
+            {__Argv}, RN#GenerarIdDeNombre,
+
+            {Boole}, RN#GenerarIdDeNombre,
+            {Numero}, RN#GenerarIdDeNombre,
             {Arreglo}, RN#GenerarIdDeNombre,
+            {Procedimiento}, RN#GenerarIdDeNombre,
+            {Texto}, RN#GenerarIdDeNombre,
             {EspacioDeNombres}, RN#GenerarIdDeNombre,
+            {Referencia}, RN#GenerarIdDeNombre,
+            {TipoNulo}, RN#GenerarIdDeNombre,
             {__Lua}, RN#GenerarIdDeNombre
     fijar yo#_builtinsAutoejecutables a
-        Arreglo#crearCon: {__Lua}
+        Arreglo#crearCon:
+            {__Lua}, {Aplicar}, {ProcedimientoVarargs}, {TipoDe},
+            {__EnviarMensaje}, {__FallarConMensaje}, {__ClonarObjeto},
+            {__CompararObjeto}, {__AbrirArchivo}, {__ByteATexto},
+            {__TextoAByte}, {__ByteEof}, {__Capturar}
 finmetodo
 
 metodo CompiladorALua#compilarAST: ast, ámbito

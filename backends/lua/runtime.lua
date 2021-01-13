@@ -818,14 +818,166 @@ end
 
 M.clases.EspacioDeNombres = EspacioDeNombres
 
+local Boole = M.enviarMensaje(Objeto, "subclase")
+M.enviarMensaje(Boole, "fijar_nombre", "Boole")
+
+Boole.methods["crear"] = function(self) return true end
+Boole.methods["verdadero"] = function(self) return true end
+Boole.methods["falso"] = function(self) return false end
+
+M.clases.Boole = Boole
+
+local Numero = M.enviarMensaje(Objeto, "subclase")
+M.enviarMensaje(Numero, "fijar_nombre", "Numero")
+
+Numero.methods["crear"] = function(self) return 0 end
+
+M.clases.Numero = Numero
+
+local Procedimiento = M.enviarMensaje(Objeto, "subclase")
+M.enviarMensaje(Procedimiento, "fijar_nombre", "Procedimiento")
+
+Procedimiento.methods["crear"] = function(self)
+   error("No se puede crear un procedimiento con #crear")
+end
+
+M.clases.Procedimiento = Procedimiento
+
+local Referencia = M.enviarMensaje(Objeto, "subclase")
+M.enviarMensaje(Referencia, "fijar_nombre", "Referencia")
+
+Referencia.methods["crear"] = function(self)
+   error("No se puede crear una referencia con #crear")
+end
+
+M.clases.Referencia = Referencia
+
+local TipoNulo = M.enviarMensaje(Objeto, "subclase")
+M.enviarMensaje(TipoNulo, "fijar_nombre", "TipoNulo")
+
+TipoNulo.methods["crear"] = function(self) return nil end
+
+M.clases.TipoNulo = TipoNulo
+
 M.builtins = {
    Objeto = M.clases.Objeto,
+   Boole = M.clases.Boole,
+   Numero = M.clases.Numero,
    Arreglo = M.clases.Arreglo,
+   Procedimiento = M.clases.Procedimiento,
    EspacioDeNombres = M.clases.EspacioDeNombres,
+   Referencia = M.clases.Referencia,
+   TipoNulo = M.clases.TipoNulo,
+
+   VERDADERO = true,
+   FALSO = false,
+   NULO = nil,
+
+   __Argv = M.arreglo(),
 }
 
 function M.builtins.__Lua(str)
    error("__Lua builtin: inalcanzable")
+end
+
+function M.builtins.Aplicar(proc, arr)
+   return M.enviarMensaje(proc, "llamar", M.arreglounpack(arr))
+end
+
+function M.builtins.ProcedimientoVarargs(n, proc)
+   return function(...)
+      local arr = M.arreglo(...)
+      assert(M.enviarMensaje(arr, "longitud") >= n)
+      local pos, var = {}, M.arreglo()
+      for i, v in M.arregloipairs(arr) do
+         if i < n then
+            pos[i + 1] = v
+         else
+            M.enviarMensaje(var, "agregarAlFinal", v)
+         end
+      end
+      pos[n + 1] = var
+      return M.enviarMensaje(proc, "llamar", table.unpack(pos, 1, n + 1))
+   end
+end
+
+function M.builtins.TipoDe(val)
+   local luat = type(val)
+   if luat == "number" then
+      return M.clases.Numero
+   elseif luat == "bool" then
+      return M.clases.Boole
+   elseif luat == "string" then
+      return M.clases.Texto
+   elseif luat == "nil" then
+      return M.clases.TipoNulo
+   elseif luat == "function" then
+      return M.clases.Procedimiento
+   elseif val.__pd_arreglo then
+      return M.clases.Arreglo
+   elseif val.__pd_ns then
+      return M.clases.EspacioDeNombres
+   else
+      return M.enviarMensaje(val, "__tipo")
+   end
+end
+
+function M.builtins.__EnviarMensaje(val, msg, args)
+   return M.enviarMensaje(val, msg, M.arreglounpack(args))
+end
+
+function M.builtins.__FallarConMensaje(msg)
+   assert(type(msg) == "string")
+   error(msg)
+end
+
+function M.builtins.__ClonarObjeto(val)
+   assert(type(val) == "table")
+   return val:clone()
+end
+
+function M.builtins.__CompararObjeto(lhs, rhs)
+   assert(type(val) == "table")
+   return lhs:equalTo(rhs)
+end
+
+function M.builtins.__AbrirArchivo(path, mode)
+   assert(false)
+end
+
+function M.builtins.__ByteATexto(byte)
+   return utf8.char(byte)
+end
+
+function M.builtins.__TextoAByte(texto)
+   return utf8.codepoint(texto)
+end
+
+function M.builtins.__ByteEof()
+   return -1
+end
+
+function M.builtins.__Capturar(proc)
+   local mark = {}
+   local in_extent = true
+   local function escape()
+      if not in_extent then
+         error("No se puede llamar a la continuación de __Capturar fuera de su extensión dinámica")
+      else
+         error(mark)
+      end
+   end
+   local ok, err = pcall(function()
+         return M.enviarMensaje(proc, "llamar", escape)
+   end)
+   in_extent = false
+   if ok then
+      return true
+   elseif rawequal(err, mark) then
+      return false
+   else
+      error(err)
+   end
 end
 
 M.modulos = {}
