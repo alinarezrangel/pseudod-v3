@@ -366,10 +366,10 @@ metodo ResoluciónDeNombresCNImpl#resolverFunciónOMétodoAnónimo: nodo, esMét
         variable cl
         fijar cl a clonar rdn con finclonar
         ParaCadaElemento: nodo#parámetros, procedimiento: param
-            cl#_nombres#eliminar: param#nombre
+            cl#_nombres#eliminarNombreYBinding: param#nombre
         finprocedimiento
         si esMétodo
-            cl#_nombres#eliminar: {yo}
+            cl#_nombres#eliminarNombreYBinding: {yo}
         finsi
         cl#finalizar: nodo, {nombresDefinídosSinParámetros}
     finprocedimiento

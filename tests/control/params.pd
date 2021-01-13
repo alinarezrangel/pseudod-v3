@@ -1,0 +1,14 @@
+{
+    "nombre": "Función con parámetros",
+    "espera": "éxito",
+    "salida contiene": "hola mundo\n"
+}
+====================
+funcion Hola: A
+    variable X
+    fijar X a {hola }
+    devolver X#concatenar: A
+finfuncion
+
+escribir Hola: {mundo}
+nl

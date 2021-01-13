@@ -126,6 +126,7 @@ def run_test_for_file(program_filename):
                 res = test(header, False, proc.stdout)
         else:
             lua_output = None
+            lua_error = False
             res = test(header, False, proc.stdout)
 
         debug = DebugInfo(pseudod_output, lua_output, pseudod_error, lua_error)

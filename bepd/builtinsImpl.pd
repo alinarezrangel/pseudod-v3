@@ -790,6 +790,35 @@ procedimiento Inalcanzable
     __FallarConMensaje: {Inalcanzable}
 finprocedimiento
 
+[DOCUMENTA
+@brief{Llama a un procedimiento con una continuación de escape.}
+
+@pd{proc} será llamado con un procedimiento @code{E} que, cuando sea llamado
+con un valor @code{X}, dicho @code{X} será devuelto de esta llamada a
+@pd{LlamarConEC}. Si @pd{proc} devuelve un valor (es decir, nunca llama a
+@code{E}), este valor será devuelto de @pd{LlamarConEC}.
+
+Por ejemplo, el siguiente programa termina el @pd{ParaCadaElemento} cuando se
+encuentre un @pd{5}:
+
+@codeblock|{
+variables arreglo, seEncontró
+fijar arreglo a Arreglo#crearCon: 1, 2, 3, 5, 7, 11, 13, 17
+fijar seEncontró a LlamarConEC: procedimiento: escapar
+    ParaCadaElemento: arreglo, procedimiento: elemento
+        Escribir: ({Estoy en ~t}#formatear: elemento)
+        si elemento = 5
+            %escapar: VERDADERO
+        finsi
+    finprocedimiento
+    devolver FALSO
+finprocedimiento
+Escribir: seEncontró
+}|
+
+@code{seEncontró} será verdadero si se encontró un @pd{5}. Prueba eliminándolo
+del arreglo para ver como cambia el resultado.
+DOCUMENTA]
 funcion LlamarConEC: proc
     variable res
     __Capturar: procedimiento: esc
@@ -800,3 +829,16 @@ funcion LlamarConEC: proc
     finprocedimiento
     devolver res
 finfuncion
+
+[DOCUMENTA
+@brief{Elimina el elemento en el índice @pd{idx}.}
+
+Devuelve una copia de @pd{arr} sin el elemento en el índice @pd{idx}.
+DOCUMENTA]
+procedimiento EliminarElementoEnÍndice: arr, idx
+    necesitas arr#longitud > 0
+    variables elementosAntes, elementosDespués
+    fijar elementosAntes a PedazoDeArreglo: arr, 0, idx
+    fijar elementosDespués a PedazoDeArreglo: arr, (idx + 1), -1
+    devolver Concatenar: elementosAntes, elementosDespués
+finprocedimiento

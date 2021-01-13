@@ -26,7 +26,8 @@ clase Ámbito
 
     metodo agregar: nombre, valor
     metodo marcarComoAutoejecutable: nombre
-    metodo eliminar: nombre
+    metodo eliminarNombre: nombre
+    metodo eliminarNombreYBinding: nombre
     metodo obtenerBinding: nombre
     metodo esAutoejecutable: nombre
     metodo contiene: nombre
@@ -79,8 +80,24 @@ metodo Ámbito#marcarComoAutoejecutable: nombre
     fijar dv#esAutoejecutable a VERDADERO
 finmetodo
 
-metodo Ámbito#eliminar: nombre
+metodo Ámbito#eliminarNombre: nombre
     yo#_mapeo#eliminar: nombre
+finmetodo
+
+metodo Ámbito#eliminarNombreYBinding: nombre
+    variables idx, bindingDelNombre
+    fijar bindingDelNombre a (yo#_mapeo#en: nombre)#binding
+    yo#_mapeo#eliminar: nombre
+    fijar idx a LlamarConEC: procedimiento: esc
+        ParaCadaElementoConÍndice: yo#_todosLosBindings, procedimiento: binding, i
+            si binding = bindingDelNombre
+                %esc: i
+            finsi
+        finprocedimiento
+        devolver NULO
+    finprocedimiento
+    necesitas no EsNulo: idx
+    fijar yo#_todosLosBindings a EliminarElementoEnÍndice: yo#_todosLosBindings, idx
 finmetodo
 
 metodo Ámbito#_obtener: nombre
