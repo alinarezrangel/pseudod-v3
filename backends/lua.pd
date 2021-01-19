@@ -186,10 +186,20 @@ metodo CompiladorSimpleALua#visitarDefineMétodoEnClase: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetros, cuerpo
-    variables cods, params, met
+    variables cods, params, variadic, met
     fijar cods a Arreglo#vacio
+    fijar variadic a NULO
 
-    fijar params a Unir: (Mapear: parámetros, &IdentificadorDe), {, }
+    funcion CódigoDeParam: param
+        si EsInstancia: param, AST#NodoIdentificador
+            devolver IdentificadorDe: param
+        sino
+            fijar variadic a param
+            devolver {...}
+        finsi
+    finfuncion
+
+    fijar params a Unir: (Mapear: parámetros, &CódigoDeParam), {, }
 
     si no EsNulo: nombreResueltoDeYo
         fijar met a {_~t}#formatear: nombreResueltoDeYo
@@ -201,6 +211,12 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetro
     finsi
     cods#agregarAlFinal: ({function(~t~t)}#formatear: met, params)
     cods#agregarAlFinal: yo#iniciar
+    si no EsNulo: variadic
+        [ Los parámetros no son declarados al principio de las
+          funciones/métodos/procedimientos. Por esto debemos declarar este
+          manualmente. ]
+        cods#agregarAlFinal: ({local ~t = rt.arreglo(...)}#formatear: (IdentificadorDe: variadic#interno))
+    finsi
 
     ParaCadaElemento: cuerpo, procedimiento: stmt
         cods#agregarAlFinal: ((yo#visitar: stmt)#concatenar: {;})
@@ -369,16 +385,50 @@ metodo CompiladorSimpleALua#visitarTextoLiteral: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#enviarMensaje: objeto, mensaje, argumentos
-    variables args, argsComoTexto
-    fijar args a Mapear: argumentos, funcion: arg
-        devolver yo#visitar: arg
+    variables args, argsComoTexto, funciónParaEnviarMensaje
+
+    fijar args a Arreglo#vacio
+    ParaCadaElemento: argumentos, procedimiento: arg
+        si EsInstancia: arg, AST#NodoVariadic
+            args#agregarAlFinal: arg
+        sino
+            si args#longitud = 0
+                args#agregarAlFinal: Arreglo#vacio
+            sino
+                si EsInstancia: (ÚltimoElemento: args), AST#NodoVariadic
+                    args#agregarAlFinal: Arreglo#vacio
+                finsi
+            finsi
+            (ÚltimoElemento: args)#agregarAlFinal: arg
+        finsi
+    finprocedimiento
+
+    funcion CompilarArgumentosSimples: args
+        devolver Unir: (Mapear: args, funcion: x devolver yo#visitar: x finfuncion), {, }
     finfuncion
-    si args#longitud = 0
-        fijar argsComoTexto a {}
-    sino
-        fijar argsComoTexto a {, }#concatenar: (Unir: args, {, })
+
+    fijar funciónParaEnviarMensaje a NULO
+    si args#longitud = 1
+        si EsInstancia: (args#en: 0), Arreglo
+            fijar argsComoTexto a CompilarArgumentosSimples: (args#en: 0)
+            fijar funciónParaEnviarMensaje a {enviarMensaje}
+        finsi
     finsi
-    devolver {rt.enviarMensaje(~t, ~t~t)}#formatear: objeto, (EscaparParaLua: mensaje), argsComoTexto
+    si EsNulo: funciónParaEnviarMensaje
+        fijar funciónParaEnviarMensaje a {enviarMensajeV}
+        fijar argsComoTexto a Unir: (Mapear: args, funcion: arg
+            si EsInstancia: arg, AST#NodoVariadic
+                devolver yo#visitar: arg#interno
+            sino
+                devolver {{ __pd_var=true, n=~t, ~t ~e}#formatear: arg#longitud, (CompilarArgumentosSimples: arg)
+            finsi
+        finfuncion), {, }
+    finsi
+    si argsComoTexto#longitud > 0
+        fijar argsComoTexto a {, }#concatenar: argsComoTexto
+    finsi
+
+    devolver {rt.~t(~t, ~t~t)}#formatear: funciónParaEnviarMensaje, objeto, (EscaparParaLua: mensaje), argsComoTexto
 finmetodo
 
 metodo CompiladorSimpleALua#visitarLlamarProcedimiento: nodo

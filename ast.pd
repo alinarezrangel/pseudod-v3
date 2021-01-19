@@ -41,6 +41,15 @@ metodo Nodo#contieneMetadato: klase, llave
     finsi
 finmetodo
 
+clase NodoVariadic hereda Nodo
+    atributo interno
+    metodo comoTexto
+finclase
+
+metodo NodoVariadic#comoTexto
+    devolver {(NodoVariadic: ~t en ~t con ~t)}#formatear: yo#interno, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
+
 clase NodoInstrucción hereda Nodo
 finclase
 

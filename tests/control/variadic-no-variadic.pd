@@ -1,0 +1,22 @@
+{
+    "nombre": "Variadic: No variadic",
+    "espera": "éxito",
+    "salida contiene": "hola mundo\n"
+}
+====================
+funcion PruebaUno
+    devolver {ho}
+finfuncion
+
+funcion PruebaDos: X
+    devolver {l}#concatenar: X
+finfuncion
+
+funcion PruebaTres: X, Y
+    devolver ({ }#concatenar: X)#concatenar: Y
+finfuncion
+
+escribir PruebaUno
+escribir PruebaDos: {a}
+escribir PruebaTres: {mun}, {do}
+nl

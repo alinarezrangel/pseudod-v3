@@ -36,6 +36,8 @@ clase CaminaNodos
     metodo visitarSonIguales: nodo
     metodo visitarReferenciar: nodo
     metodo visitarNo: nodo
+
+    metodo visitarVariadic: nodo
 finclase
 
 metodo CaminaNodos#visitar: nodo
@@ -134,6 +136,10 @@ metodo CaminaNodos#visitar: nodo
         devolver yo#visitarNo: nodo
     finsi
 
+    si EsInstancia: nodo, AST#NodoVariadic
+        devolver yo#visitarVariadic: nodo
+    finsi
+
     [ Nunca se llega hasta aquí. ]
     Escribir: ({#visitar no implementado para ~t}#formatear: (TipoDe: nodo))
     necesitas FALSO
@@ -171,3 +177,5 @@ metodo CaminaNodos#visitarFunciónAnónima: nodo finmetodo
 metodo CaminaNodos#visitarSonIguales: nodo finmetodo
 metodo CaminaNodos#visitarReferenciar: nodo finmetodo
 metodo CaminaNodos#visitarNo: nodo finmetodo
+
+metodo CaminaNodos#visitarVariadic: nodo finmetodo

@@ -474,6 +474,28 @@ funcion NoSigue: combinador
     devolver comb
 finfuncion
 
+clase CombSigue hereda Combinador
+    atributo combinador
+    metodo parsear: tokens
+finclase
+
+metodo CombSigue#parsear: tokens
+    variables posIni, res
+    fijar posIni a tokens#puntoActual
+    fijar res a yo#combinador#parsear: tokens
+    si res#esOk
+        tokens#irAPunto: posIni
+    finsi
+    devolver res
+finmetodo
+
+funcion Sigue: combinador
+    variable comb
+    fijar comb a CombSigue#_crear
+    fijar comb#combinador a combinador
+    devolver comb
+finfuncion
+
 clase CombHasta hereda Combinador
     atributos final, principal
     metodo parsear: tokens

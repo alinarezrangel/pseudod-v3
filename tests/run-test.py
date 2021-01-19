@@ -146,12 +146,19 @@ def test(header, successfull, output):
     error_contains = header.get('error contiene')
     error_in = header.get('error en')
     output_contains = header.get('salida contiene')
+    output_lines = header.get('líneas de salida')
 
     if successfull:
         if not expected_success:
             return TestFailure('Expected error, got success')
         if output_contains is not None and output.find(output_contains) == -1:
             return TestFailure(f'Expected output to contain "{output_contains}"')
+        if output_lines is not None and output.split('\n') == output_lines:
+            return TestFailure(
+                'Expected output to contain lines "{}"'.format(
+                    '\n'.join(output_lines)
+                )
+            )
     else:
         if expected_success:
             return TestFailure('Expected success, got error')

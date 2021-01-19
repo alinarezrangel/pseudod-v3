@@ -521,6 +521,27 @@ function M.enviarMensaje(obj, mensaje, ...)
    end
 end
 
+function M.enviarMensajeV(obj, mensaje, ...)
+   local partes = table.pack(...)
+   local args = { n = 0 }
+   for i = 1, partes.n do
+      local parte = partes[i]
+      if parte.__pd_var then
+         for j = 1, parte.n do
+            args[args.n + j] = parte[j]
+         end
+         args.n = args.n + parte.n
+      else
+         for j, v in M.arregloipairs(parte) do
+            args[args.n + j + 1] = v
+         end
+         local n = M.enviarMensaje(parte, "longitud")
+         args.n = args.n + n
+      end
+   end
+   return M.enviarMensaje(obj, mensaje, table.unpack(args, 1, args.n))
+end
+
 function M.escribir(val)
    M.pdasserttype(val, "texto", "escribir necesita un texto")
    io.write(val)

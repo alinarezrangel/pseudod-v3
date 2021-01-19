@@ -1,0 +1,70 @@
+{
+    "nombre": "Variadic",
+    "espera": "éxito",
+    "líneas de salida": [
+        "0",
+        "6",
+        "10",
+        "1",
+        "3",
+        "6",
+        "6",
+        "9",
+        "10",
+        "10",
+        "12",
+        "6",
+        "10",
+        "11",
+        "6",
+        "12"
+    ]
+}
+====================
+procedimiento Escribir: X
+    escribir X#comoTexto
+    nl
+finprocedimiento
+
+funcion Suma: A
+    variables acc, i
+    fijar acc a 0
+    fijar i a 0
+    mientras i < A#longitud
+        fijar acc a acc + (A#en: i)
+        fijar i a i + 1
+    finmientras
+    devolver acc
+finfuncion
+
+funcion PruebaUno: ...X
+    devolver Suma: X
+finfuncion
+
+funcion PruebaDos: X, ...Y
+    devolver X + (Suma: Y)
+finfuncion
+
+funcion PruebaTres: X, Y, ...Z
+    devolver X + Y + (Suma: Z)
+finfuncion
+
+variables W, V
+fijar W a Arreglo#crearCon: 1, 2, 3
+fijar V a Arreglo#vacio
+Escribir: PruebaUno  [ 0 ]
+Escribir: (PruebaUno: 6)  [ 6 ]
+Escribir: (PruebaUno: 6, 4)  [ 10 ]
+Escribir: (PruebaDos: 1)  [ 1 ]
+Escribir: (PruebaDos: 1, 2)  [ 3 ]
+Escribir: (PruebaDos: 1, 2, 3)  [ 6 ]
+Escribir: (PruebaUno: ...W)  [ 6 ]
+Escribir: (PruebaUno: 1, ...W, 2)  [ 9 ]
+Escribir: (PruebaUno: ...W, 2, 2)  [ 10 ]
+Escribir: (PruebaUno: 0, 0, ...W, 2, 2)  [ 10 ]
+Escribir: (PruebaUno: ...W, 0, ...W)  [ 12 ]
+Escribir: (PruebaDos: ...W)  [ 6 ]
+Escribir: (PruebaDos: ...W, 4)  [ 10 ]
+Escribir: (PruebaDos: 2, 3, ...W)  [ 11 ]
+Escribir: (PruebaDos: 0, 0, ...W, 0, 0)  [ 6 ]
+Escribir: (PruebaTres: ...V, 1, ...W, ...V, 2, 3, ...V)  [ 12 ]

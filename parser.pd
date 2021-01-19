@@ -223,6 +223,31 @@ fijar grParens a
             (delay: funcion devolver grExpr finfuncion),
             (kw: {)}))
 
+variable grVariadicArg
+fijar grVariadicArg a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar AST#NodoVariadic#_crear con
+                areaTextual: AreaTotal: ((res#en: 0)#en: 0), (res#en: 1)
+                interno: res#en: 1
+            finclonar
+        finfuncion,
+        (seq: (try: (kw: {.}), (kw: {.}), (kw: {.})), (alt: grId, grParens))
+
+variable grArgumentos
+fijar grArgumentos a
+    Comb#Efecto:
+        funcion: res
+            devolver res#en: 1
+        finfuncion,
+        (seq:
+            (try': (kw: {:})),
+            (delim1:
+                (alt:
+                    grVariadicArg,
+                    (delay: funcion devolver grExprSinOperador finfuncion)),
+                (try': (kw: {,}))))
+
 variable grLlamarProc
 fijar grLlamarProc a
     Comb#Efecto:
@@ -233,11 +258,7 @@ fijar grLlamarProc a
                 argumentos: res#en: 1
             finclonar
         finfuncion,
-        (seq:
-            (try: grId, (kw: {:})),
-            (delim1:
-                (delay: funcion devolver grExprSinOperador finfuncion),
-                (try': (kw: {,}))))
+        (seq: (try: grId, (Comb#Sigue: (kw: {:}))), grArgumentos)
 
 variable idORefMensaje
 fijar idORefMensaje a
@@ -301,14 +322,30 @@ fijar grAutoejecutar a
                     (delay: funcion devolver grExprSinOperador finfuncion),
                     (try': (kw: {,})))))
 
+variable grVariadic
+fijar grVariadic a
+    Comb#Efecto:
+        funcion: res
+            devolver clonar AST#NodoVariadic#_crear con
+                areaTextual: AreaTotal: ((res#en: 0)#en: 0), (res#en: 1)
+                interno: res#en: 1
+            finclonar
+        finfuncion,
+        (seq: (try: (kw: {.}), (kw: {.}), (kw: {.})), grId)
+
 variable grParámetrosDeFunción
 fijar grParámetrosDeFunción a
     Comb#Efecto:
         funcion: res
-            variable params
+            variables parte, params
             fijar params a Arreglo#vacio
             si res#longitud > 0
                 fijar params a res#en: 1
+                ParaCadaElementoConÍndice: params, funcion: param, i
+                    si (EsInstancia: param, AST#NodoVariadic) && no (i = (params#longitud - 1))
+                        __FallarConMensaje: {Variadic solo puede estar al final de la lista de parámetros}
+                    finsi
+                finfuncion
             finsi
             devolver params
         finfuncion,
@@ -316,7 +353,7 @@ fijar grParámetrosDeFunción a
             (opt':
                 (try': (kw: {:})),
                 (delim1:
-                    grId,
+                    (alt: grVariadic, grId),
                     (try': (kw: {,})))))
 
 variable grFunciónAnónima
@@ -352,11 +389,7 @@ fijar grEnviarMensaje a
     Comb#Efecto:
         funcion: res
             variable args
-            si (res#en: 2)#longitud = 0
-                fijar args a Arreglo#vacio
-            sino
-                fijar args a (res#en: 2)#en: 1
-            finsi
+            fijar args a res#en: 2
             devolver clonar AST#NodoEnviarMensaje#crear con
                 areaTextual: (res#en: 0)#areaDelToken
                 objeto: NULO
@@ -367,11 +400,7 @@ fijar grEnviarMensaje a
         (seq:
             (try': (kw: {#})),
             id,
-            (opt':
-                (try: (kw: {:})),
-                (delim1:
-                    (delay: funcion devolver grExprSinOperador finfuncion),
-                    (try': (kw: {,})))))
+            (opt: grArgumentos))
 
 variable grSonIguales
 fijar grSonIguales a
