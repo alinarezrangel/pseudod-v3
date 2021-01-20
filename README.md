@@ -22,9 +22,9 @@ Primero, descarga e instala la [implementacioń original de
 PseudoD][pseudod-orig]. Luego, puedes iniciar el compilador ejecutando en un
 terminal:
 
-    pseudod -X v3x inicio.pd
+    pseudod -X v3x inicio.pd -- ARCHIVO
 
-Para ejecutar el archivo `inicio.pd` del compilador.
+Para compilar el archivo `ARCHIVO`.
 
 ## Estructura del programa ##
 
