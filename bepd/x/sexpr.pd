@@ -111,11 +111,7 @@ procedimiento ParsearSímbolo: ch, puerto
         devolver ConvertirAEntero: acc
     sino
         si (acc = {true}) || (acc = {false})
-            si acc = {true}
-                devolver VERDADERO
-            sino
-                devolver FALSO
-            finsi
+            devolver acc = {true}
         sino
             devolver Símbolo#desdeTexto: acc
         finsi
@@ -157,6 +153,7 @@ finprocedimiento
 
 procedimiento ParsearDato: puerto
     variable ch
+    Puerto#SaltarEspacios: puerto
     fijar ch a puerto#leerCarácter
     si ch = {(}
         devolver ParsearLista: puerto

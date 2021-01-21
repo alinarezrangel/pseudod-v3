@@ -1,6 +1,8 @@
 utilizar bepd/builtins
 utilizar bepd/x/enum
 utilizar bepd/x/sistemaDeArchivos/archivo como Archivo
+utilizar bepd/x/sexpr como SExpr
+utilizar ámbito como Ámbito
 
 
 clase ConfiguraciónGlobal
@@ -123,8 +125,8 @@ clase BaseDeDatos
 
     metodo paraCadaMódulo: proc
 
-    metodo serializar: puerto
-    metodo deserializar: puerto
+    metodo guardarMódulos: puerto
+    metodo cargarMódulos: puerto
 finclase
 
 atributos BaseDeDatos#módulos, BaseDeDatos#configuración
@@ -160,12 +162,109 @@ metodo BaseDeDatos#paraCadaMódulo: proc
     finprocedimiento
 finmetodo
 
-metodo BaseDeDatos#serializar: puerto
-    NoImplementado
+metodo BaseDeDatos#guardarMódulos: puerto
+    funcion A: ...X
+        devolver X
+    finfuncion
+
+    funcion S: T
+        devolver SExpr#Símbolo#desdeTexto: T
+    finfuncion
+
+    funcion MapearMódulos: proc
+        variable acc
+        fijar acc a Arreglo#vacio
+        yo#módulos#paraCadaValor: procedimiento: mod
+            acc#agregarAlFinal: (%proc: mod)
+        finprocedimiento
+        devolver acc
+    finfuncion
+
+    variable datum
+    fijar datum a (A:
+        (S: {base-de-datos}),
+        (ArregloConFinal:
+            (S: {modulos}),
+            (MapearMódulos: funcion: mod
+                devolver A:
+                    (A: (S: {nombre}), mod#nombre),
+                    (A: (S: {ruta}), mod#ruta),
+                    (A: (S: {extension}), mod#llave#extensión),
+                    (ArregloConFinal:
+                        (S: {exporta}),
+                        (funcion
+                            variable acc
+                            fijar acc a Arreglo#vacio
+                            mod#exporta#paraCadaVariable: funcion: var, dv
+                                acc#agregarAlFinal: (A: var, dv#esAutoejecutable)
+                            finfuncion
+                            devolver acc
+                        finfuncion)#\llamar\),
+                    (A: (S: {compilado}), mod#compilado)
+            finfuncion)))
+    SExpr#DesparsearDato: puerto, datum
 finmetodo
 
-metodo BaseDeDatos#deserializar: puerto
-    NoImplementado
+metodo BaseDeDatos#cargarMódulos: puerto
+    funcion SExprADiccionario: se
+        necesitas EsInstancia: se, Arreglo
+        variable acc
+        fijar acc a Diccionario#vacío
+        ParaCadaElemento: se, procedimiento: val
+            necesitas EsInstancia: val, Arreglo
+            si val#longitud = 2
+                acc#fijarEn: (val#en: 0), (val#en: 1)
+            sino
+                acc#fijarEn: (val#en: 0), (PedazoDeArreglo: val, 1, -1)
+            finsi
+        finprocedimiento
+        devolver acc
+    finfuncion
+
+    funcion SExprAPropiedades: se, ignorarPrimero
+        necesitas EsInstancia: se, Arreglo
+        variable acc
+        fijar acc a Diccionario#vacío
+        ParaCadaElementoConÍndice: se, procedimiento: val, i
+            si ignorarPrimero && (i = 0)
+                devolver NULO
+            finsi
+            necesitas EsInstancia: val, Arreglo
+            necesitas EsInstancia: (val#en: 0), SExpr#Símbolo
+            acc#fijarEn: (val#en: 0)#comoTexto, (PedazoDeArreglo: val, 1, -1)
+        finprocedimiento
+        devolver acc
+    finfuncion
+
+    funcion S: T
+        devolver SExpr#Símbolo#desdeTexto: T
+    finfuncion
+
+    variables datum, props, módulos
+    fijar datum a SExpr#ParsearDato: puerto
+    necesitas EsInstancia: datum, Arreglo
+    necesitas (datum#en: 0) = (S: {base-de-datos})
+    fijar props a SExprAPropiedades: datum, VERDADERO
+    fijar módulos a props#en: {modulos}
+    ParaCadaElemento: módulos, procedimiento: mod
+        variables vals, exporta
+        fijar vals a SExprADiccionario: mod
+        si yo#módulos#contiene: (vals#en: (S: {nombre}))
+            __FallarConMensaje: ({El módulo ~t ya exíste}#formatear: (mod#en: (S: {nombre})))
+        finsi
+        fijar exporta a Ámbito#Ámbito#crear
+        ParaCadaElemento: (vals#en: (S: {exporta})), procedimiento: par
+            exporta#agregar: (par#en: 0), NULO
+            si par#en: 1
+                exporta#marcarComoAutoejecutable: (par#en: 0)
+            finsi
+        finprocedimiento
+        yo#módulos#fijarEn: (vals#en: (S: {nombre})), (clonar Módulo#_crear con
+            llave: (LlaveDeMódulo#crear: (vals#en: (S: {ruta})), (vals#en: (S: {nombre})), (vals#en: (S: {extension})))
+            exporta: exporta
+            compilado: (vals#en: (S: {compilado}))
+        finclonar)
+    finprocedimiento
 finmetodo
 
 

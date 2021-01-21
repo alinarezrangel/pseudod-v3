@@ -158,3 +158,27 @@ finfuncion
 funcion TextoDePuertoDeEscritura: puertoDeEscritura
     devolver puertoDeEscritura#texto
 finfuncion
+
+[ Puertos estándar: ]
+
+clase PuertoEstándar
+    metodo leerCarácter
+    metodo desleerCarácter
+    metodo escribirTexto: texto
+finclase
+
+metodo PuertoEstándar#leerCarácter
+    devolver __LeerCaracter
+finmetodo
+
+metodo PuertoEstándar#desleerCarácter
+    __FallarConMensaje: {No se puede #desleerCarácter en un puerto estándar}
+finmetodo
+
+metodo PuertoEstándar#escribirTexto: texto
+    escribir texto
+finmetodo
+
+variables EntradaEstándar, SalidaEstándar
+fijar EntradaEstándar a PuertoEstándar#_crear
+fijar SalidaEstándar a PuertoEstándar#_crear
