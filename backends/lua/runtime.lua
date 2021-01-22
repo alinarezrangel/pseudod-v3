@@ -1018,6 +1018,62 @@ function M.importar(ruta)
    error(("No se encontró el módulo %q"):format(ruta))
 end
 
+function M.scope(upper)
+   local realscope = {}
+   local null = {}
+   local meta = {}
+
+   local function isnull(v)
+      return rawequal(v, null)
+   end
+
+   local function tonil(v)
+      if isnull(v) then
+         return nil
+      else
+         return v
+      end
+   end
+
+   local function fromnil(v)
+      if v == nil then
+         return null
+      else
+         return v
+      end
+   end
+
+   function meta:__index(key)
+      if realscope[key] ~= nil then
+         return tonil(realscope[key])
+      elseif upper == nil then
+         error("Variable " .. key .. " does not exists (getter)")
+      else
+         return upper[key]
+      end
+   end
+
+   function meta:__newindex(key, value)
+      if realscope[key] ~= nil then
+         realscope[key] = fromnil(value)
+      elseif upper == nil then
+         error("Variable " .. key .. " does not exists (setter)")
+      else
+         upper[key] = value
+      end
+   end
+
+   function meta.newname(key)
+      realscope[key] = null
+   end
+
+   return setmetatable({}, meta)
+end
+
+function M.scopenewname(scope, name)
+   getmetatable(scope).newname(name)
+end
+
 -- Utilizado como variable temporal por el compilador.
 M.ans_rt = nil
 

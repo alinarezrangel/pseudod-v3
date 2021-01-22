@@ -44,7 +44,7 @@ funcion EscaparParaLua: texto
 finfuncion
 
 funcion IdentificadorDe: id
-    devolver {_}#concatenar: (RN#NombreResueltoDe: id)#comoTexto
+    devolver {_s._}#concatenar: (RN#NombreResueltoDe: id)#comoTexto
 finfuncion
 
 clase CompiladorSimpleALua hereda CN#CaminaNodos
@@ -81,10 +81,16 @@ metodo CompiladorSimpleALua#inicializar: moddb, ámbito, compilador
 finmetodo
 
 metodo CompiladorSimpleALua#iniciar
-    variable res
+    variables res, padre
     fijar res a Arreglo#vacio
+    si no EsNulo: yo#_ámbito#ámbitoPadre
+        fijar padre a {_s}
+    sino
+        fijar padre a {}
+    finsi
+    res#agregarAlFinal: ({local _s = rt.scope(~t)}#formatear: padre)
     ParaCadaElemento: yo#_ámbito#todosLosBindingsLocales, procedimiento: id
-        res#agregarAlFinal: ({local _~t;}#formatear: id)
+        res#agregarAlFinal: ({rt.scopenewname(_s, "_~t");}#formatear: id)
     finprocedimiento
     devolver Unir: res, {~%}#formatear
 finmetodo
@@ -93,7 +99,7 @@ metodo CompiladorSimpleALua#registrarBuiltins
     variable cods
     fijar cods a Arreglo#vacio
     yo#_compilador#_builtins#paraCadaPar: procedimiento: nombreEnRT, binding
-        cods#agregarAlFinal: ({_~t = rt.builtins[~t];}#formatear: binding, (EscaparParaLua: nombreEnRT))
+        cods#agregarAlFinal: ({_s._~t = rt.builtins[~t];}#formatear: binding, (EscaparParaLua: nombreEnRT))
     finprocedimiento
     devolver Unir: cods, {~%}#formatear
 finmetodo
@@ -111,7 +117,7 @@ metodo CompiladorSimpleALua#visitarPrograma: nodo
     fijar ámbito a RN#ObtenerNombresDefinídos: nodo
     instrs#agregarAlFinal: {return rt.ns({}#formatear
     ámbito#paraCadaBinding: procedimiento: nombre, id
-        instrs#agregarAlFinal: ({  [~t] = _~t,}#formatear: (EscaparParaLua: nombre), id)
+        instrs#agregarAlFinal: ({  [~t] = _s._~t,}#formatear: (EscaparParaLua: nombre), id)
     finprocedimiento
     instrs#agregarAlFinal: {~e);}#formatear
     devolver Unir: instrs, {~%}#formatear
@@ -186,13 +192,13 @@ metodo CompiladorSimpleALua#visitarDefineMétodoEnClase: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetros, cuerpo
-    variables cods, params, variadic, met
+    variables cods, params, variadic, met, paramsbody
     fijar cods a Arreglo#vacio
     fijar variadic a NULO
 
     funcion CódigoDeParam: param
         si EsInstancia: param, AST#NodoIdentificador
-            devolver IdentificadorDe: param
+            devolver {_~t}#formatear: (RN#NombreResueltoDe: param)
         sino
             fijar variadic a param
             devolver {...}
@@ -209,13 +215,25 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetro
     sino
         fijar met a {}
     finsi
+
+    funcion CódigoDeParamBody: param
+        si EsInstancia: param, AST#NodoIdentificador
+            devolver {rt.scopenewname(_s, "_~t"); ~t = _~t}#formatear: (RN#NombreResueltoDe: param), (IdentificadorDe: param), (RN#NombreResueltoDe: param)
+        sino
+            devolver {rt.scopenewname(_s, "_~t")}#formatear: (RN#NombreResueltoDe: param#interno)
+        finsi
+    finfuncion
+
+    fijar paramsbody a Unir: (Mapear: parámetros, &CódigoDeParamBody), {;~%}#formatear
+
     cods#agregarAlFinal: ({function(~t~t)}#formatear: met, params)
     cods#agregarAlFinal: yo#iniciar
+    cods#agregarAlFinal: (paramsbody#concatenar: {;})
     si no EsNulo: variadic
         [ Los parámetros no son declarados al principio de las
           funciones/métodos/procedimientos. Por esto debemos declarar este
           manualmente. ]
-        cods#agregarAlFinal: ({local ~t = rt.arreglo(...)}#formatear: (IdentificadorDe: variadic#interno))
+        cods#agregarAlFinal: ({~t = rt.arreglo(...)}#formatear: (IdentificadorDe: variadic#interno))
     finsi
 
     ParaCadaElemento: cuerpo, procedimiento: stmt
@@ -355,11 +373,11 @@ metodo CompiladorSimpleALua#visitarUtilizar: nodo
     cods#agregarAlFinal: ({rt.ans_ns = rt.import(~t)}#formatear: (EscaparParaLua: módulo#llave#nombreCompletoDelArchivo))
     cods#agregarAlFinal: {;do}
     mapeoDeImportados#paraCadaPar: procedimiento: nombre, id
-        cods#agregarAlFinal: ({  _~t = rt.ans_ns:at(~t);}#formatear: id, (EscaparParaLua: nombre))
+        cods#agregarAlFinal: ({  _s._~t = rt.ans_ns:at(~t);}#formatear: id, (EscaparParaLua: nombre))
     finprocedimiento
     cods#agregarAlFinal: {end}
     si no EsNulo: espacioDeNombresResuelto
-        cods#agregarAlFinal: ({;_~t = rt.ans_ns;}#formatear: espacioDeNombresResuelto)
+        cods#agregarAlFinal: ({;_s._~t = rt.ans_ns;}#formatear: espacioDeNombresResuelto)
     finsi
 
     devolver (Unir: cods, {~%}#formatear)
