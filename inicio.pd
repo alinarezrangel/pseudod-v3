@@ -41,6 +41,10 @@ Opciones:
                                       <archivo>.
  --sin-mensajes                     : No escribe los mensajes del compilador.
  -l <ruta>                          : Ignorado, existe por compatibilidad.
+ --guardar-db <archivo>             : Guarda la base de datos luego de
+                                      compilar en <archivo>
+ --cargar-db <archivo>              : Carga la base de datos <archivo> antes de
+                                      compilar.
 
 Si la opción `-b` no es especificada, la ruta a la BEPD se extráe de:
 
@@ -72,7 +76,9 @@ clase ContextoDeCLI
               rutaDeLaBEPD,
               interactivo,
               archivoDeSalida,
-              mostrarMensajes
+              mostrarMensajes,
+              guardaBaseDeDatos,
+              cargaBasesDeDatos
 
     metodo comoTexto
 
@@ -88,10 +94,12 @@ metodo ContextoDeCLI#inicializar
     fijar yo#interactivo a FALSO
     fijar yo#archivoDeSalida a NULO
     fijar yo#mostrarMensajes a VERDADERO
+    fijar yo#guardaBaseDeDatos a NULO
+    fijar yo#cargaBasesDeDatos a Arreglo#vacio
 finmetodo
 
 metodo ContextoDeCLI#comoTexto
-    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo, yo#archivoDeSalida, yo#mostrarMensajes
+    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t, guardaBaseDeDatos ~t, cargaBasesDeDatos ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo, yo#archivoDeSalida, yo#mostrarMensajes, yo#guardaBaseDeDatos, yo#cargaBasesDeDatos
 finmetodo
 
 metodo ContextoDeCLI#mostrarMensaje: texto
@@ -150,6 +158,17 @@ procedimiento ParsearOpción: ctx, arg, resto
         fijar ctx#mostrarMensajes a FALSO
         devolver 0
     finsi
+    si arg = {--guardar-db}
+        necesitas EsNulo: ctx#guardaBaseDeDatos
+        necesitas resto#longitud > 0
+        fijar ctx#guardaBaseDeDatos a ObtenerArchivoDesdeCLI: (resto#en: 0)
+        devolver 1
+    finsi
+    si arg = {--cargar-db}
+        necesitas resto#longitud > 0
+        ctx#cargaBasesDeDatos#agregarAlFinal: (ObtenerArchivoDesdeCLI: (resto#en: 0))
+        devolver 1
+    finsi
     devolver NULO
 finprocedimiento
 
@@ -191,26 +210,26 @@ finprocedimiento
 procedimiento Compilar: ctx, programa
     ctx#mostrarMensaje: {-- Inicio}
     variables comp, db, conf, llave, módulo, compilado
+
     ctx#mostrarMensaje: {-- Inicializando la base de datos de módulos...}
     fijar conf a Módulos#ConfiguraciónGlobal#predeterminado
     fijar db a Módulos#BaseDeDatos#conConfiguración: conf
-    db#cargarMódulos: (Puerto#PuertoDeLectura#desdeTexto: {
-(base-de-datos
-  (modulos
-    ((nombre "sample/foo")
-     (ruta "example/sample")
-     (extension "pseudo")
-     (exporta
-       ("Hello" true)
-       ("World" false))
-     (compilado "-- hola mundo"))))
-})
+    ParaCadaElemento: ctx#cargaBasesDeDatos, procedimiento: nombreDelArchivo
+        ctx#mostrarMensaje: ({Cargando ~t}#formatear: nombreDelArchivo)
+        variable arch
+        fijar arch a PDA#PuertoDeArchivoDeLectura#abrir: nombreDelArchivo
+        db#cargarMódulos: arch
+        arch#cerrar
+    finprocedimiento
+
     ctx#mostrarMensaje: {-- Inicializando el compilador a Lua}
     fijar comp a LuaBack#CompiladorALua#crear: db
+
     ctx#mostrarMensaje: {-- Compilando el programa...}
-    fijar llave a Módulos#LlaveDeMódulo#crear: {hello}, {world}, {pd}
+    fijar llave a Módulos#LlaveDeMódulo#crear: {hello}, {goodbye}, {pd}
     fijar módulo a comp#compilarTexto: llave, programa
     db#agregarMódulo: módulo
+
     ctx#mostrarMensaje: {-- Final...}
     fijar compilado a comp#compilarTodo: llave
     si no EsNulo: ctx#archivoDeSalida
@@ -218,6 +237,14 @@ procedimiento Compilar: ctx, programa
         Archivos#EscribirArchivo: ctx#archivoDeSalida, (compilado#concatenar: {~%}#formatear)
     sino
         Escribir: compilado
+    finsi
+
+    si no EsNulo: ctx#guardaBaseDeDatos
+        ctx#mostrarMensaje: ({-- Guardando base de datos en ~t}#formatear: ctx#guardaBaseDeDatos)
+        variable arch
+        fijar arch a PDA#PuertoDeArchivoDeEscritura#abrir: ctx#guardaBaseDeDatos
+        db#guardarMódulos: arch
+        arch#cerrar
     finsi
 finprocedimiento
 
@@ -230,53 +257,9 @@ procedimiento IniciarREPL: ctx
     ctx#mostrarMensaje: {-- TODO}
     Compilar: ctx, {
 
-procedimiento Escribir: X
-    escribir X#comoTexto
-    nl
-finprocedimiento
+utilizar world (Escribir)
 
-funcion Suma: A
-    variables acc, i
-    fijar acc a 0
-    fijar i a 0
-    mientras i < A#longitud
-        fijar acc a acc + (A#en: i)
-        fijar i a i + 1
-    finmientras
-    devolver acc
-finfuncion
-
-funcion PruebaUno: ...X
-    devolver Suma: X
-finfuncion
-
-funcion PruebaDos: X, ...Y
-    devolver X + (Suma: Y)
-finfuncion
-
-funcion PruebaTres: X, Y, ...Z
-    devolver X + Y + (Suma: Z)
-finfuncion
-
-variables W, V
-fijar W a Arreglo#crearCon: 1, 2, 3
-fijar V a Arreglo#vacio
-Escribir: PruebaUno  [ 0 ]
-Escribir: (PruebaUno: 6)  [ 6 ]
-Escribir: (PruebaUno: 6, 4)  [ 10 ]
-Escribir: (PruebaDos: 1)  [ 1 ]
-Escribir: (PruebaDos: 1, 2)  [ 3 ]
-Escribir: (PruebaDos: 1, 2, 3)  [ 6 ]
-Escribir: (PruebaUno: ...W)  [ 6 ]
-Escribir: (PruebaUno: 1, ...W, 2)  [ 9 ]
-Escribir: (PruebaUno: ...W, 2, 2)  [ 10 ]
-Escribir: (PruebaUno: 0, 0, ...W, 2, 2)  [ 10 ]
-Escribir: (PruebaUno: ...W, 0, ...W)  [ 12 ]
-Escribir: (PruebaDos: ...W)  [ 6 ]
-Escribir: (PruebaDos: ...W, 4)  [ 10 ]
-Escribir: (PruebaDos: 2, 3, ...W)  [ 11 ]
-Escribir: (PruebaDos: 0, 0, ...W, 0, 0)  [ 6 ]
-Escribir: (PruebaTres: ...V, 1, ...W, ...V, 2, 3, ...V)  [ 12 ]
+Escribir: "Hola Mundo"
 
 }
 finprocedimiento
