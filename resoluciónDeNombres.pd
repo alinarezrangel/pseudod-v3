@@ -311,7 +311,7 @@ metodo ResoluciónDeNombresCNImpl#visitarReferenciar: nodo
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarNo: nodo
-    yo#visitar: nodo#nombre
+    yo#visitar: nodo#expresión
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarVariadic: nodo
