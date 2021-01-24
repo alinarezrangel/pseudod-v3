@@ -34,7 +34,7 @@ funcion EsOperador: car
 finfuncion
 
 funcion EsSímbolo: car
-    devolver Contiene: {():#.%,}, car
+    devolver Contiene: {():#.%,&}, car
 finfuncion
 
 procedimiento LeerPalabra: acc, puerto
@@ -113,6 +113,16 @@ procedimiento LeerLexema: puerto
     finsi
     si EsSímbolo: car
         variable posFin
+        si car = {&}
+            variable c
+            fijar c a puerto#leerCarácter
+            si c = {&}
+                fijar posFin a puerto#posiciónActual
+                devolver Tokens#TokenOperador#crear: (Tokens#AreaTextual#crear: posIni, posFin), {&&}
+            sino
+                puerto#desleerCarácter
+            finsi
+        finsi
         fijar posFin a puerto#posiciónActual
         devolver Tokens#TokenPalabraClave#crear: (Tokens#AreaTextual#crear: posIni, posFin), car, car
     finsi

@@ -280,7 +280,7 @@ fijar idORefMensaje a
             (seq:
                 (kw: {(}),
                 grId,
-                (rep0: (kw: {#}), id),
+                (rep0: (try': (kw: {#})), id),
                 (kw: {)})))
 
 variable grNoLlamar

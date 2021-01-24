@@ -480,16 +480,22 @@ metodo CompiladorSimpleALua#visitarOperador: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarNoLlamar: nodo
-    variables cod
-    si nodo#mensajes#longitud > 0
-        fijar cod a Reducir: (yo#visitar: nodo#base), funcion: acc, mensaje
-            devolver {rt.enviarMensaje(~t, ~t)}#formatear: acc, (EscaparParaLua: mensaje)
-        finfuncion, (PedazoDeArreglo: nodo#mensajes, 0, -1)
-        fijar cod a {rt.enviarMensaje(~t, ~t, ...)}#formatear: cod, (ÚltimoElemento: nodo#mensajes)
+    variable base
+    si EsInstancia: nodo#base, AST#NodoIdentificador
+        fijar base a IdentificadorDe: nodo#base
     sino
-        fijar cod a {rt.enviarMensaje(~t, "llamar", ...)}#formatear: (yo#visitar: nodo#base)
+        fijar base a yo#visitar: nodo#base
     finsi
-    devolver {function(...) return ~t end}#formatear: cod
+    si nodo#mensajes#longitud > 0
+        variable cod
+        fijar cod a Reducir: base, funcion: acc, mensaje
+            devolver {rt.enviarMensaje(~t, ~t)}#formatear: acc, (EscaparParaLua: mensaje#texto)
+        finfuncion, (PedazoDeArreglo: nodo#mensajes, 0, -2)
+        fijar cod a {rt.enviarMensaje(~t, ~t, ...)}#formatear: cod, (EscaparParaLua: (ÚltimoElemento: nodo#mensajes)#texto)
+        devolver {function(...) return ~t end}#formatear: cod
+    sino
+        devolver base
+    finsi
 finmetodo
 
 metodo CompiladorSimpleALua#visitarAutoejecutar: nodo

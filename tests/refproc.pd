@@ -1,0 +1,28 @@
+{
+    "nombre": "Referencias a procedimientos y variables",
+    "espera": "éxito",
+    "salida contiene": "adios\n3\n4\nadios\n"
+}
+====================
+funcion Hola: A, B
+    devolver A + B
+finfuncion
+
+variable Mundo
+fijar Mundo a {adios}
+
+variables X, Y
+fijar X a &Hola
+fijar Y a &Mundo
+escribir Y
+nl
+escribir (X#\llamar\: 1, 2)#comoTexto
+nl
+
+fijar X a &(Hola)
+fijar Y a &(Mundo#comoTexto)
+
+escribir (X#\llamar\: 2, 2)#comoTexto
+nl
+escribir Y#\llamar\
+nl

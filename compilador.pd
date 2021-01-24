@@ -31,13 +31,17 @@ finmetodo
 
 metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
     variables ast, ámbito, compilado
+    Escribir: {---- Parsear:}
     fijar ast a Parser#CrearAST: puerto
+    Escribir: {---- RN:}
     fijar ámbito a RN#ResolverNombres: ast, procedimiento: nombreDelMódulo
         devolver yo#importarMódulo: nombreDelMódulo
     finprocedimiento, procedimiento: ámbito
         yo#inyectarNombresEnÁmbito: ámbito
     finprocedimiento
+    Escribir: {---- Compilar:}
     fijar compilado a yo#compilarAST: ast, ámbito
+    Escribir: {---- Mod:}
     devolver clonar Módulos#Módulo#_crear con
         llave: llaveDeMódulo
         exporta: ámbito
