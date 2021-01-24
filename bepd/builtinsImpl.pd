@@ -197,7 +197,7 @@ funcion Reducir: base, func, arr
     variable acc
     fijar acc a base
     ParaCadaElemento: arr, procedimiento: el
-        fijar acc a (func#\llamar\: acc, el)
+        fijar acc a %func: acc, el
     finprocedimiento
     devolver acc
 finfuncion
