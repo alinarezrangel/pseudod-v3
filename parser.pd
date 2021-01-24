@@ -622,7 +622,7 @@ fijar grMétodoClase a
         finfuncion,
         (seq:
             (try': (kw: {metodo})),
-            (opt: (try': (kw: {estatico}))),
+            (opt': (try': (kw: {estatico}))),
             grId,
             grParámetrosDeFunción)
 
@@ -689,7 +689,7 @@ fijar grDefineMétodoEnClase a
         finfuncion,
         (seq:
             (try': (kw: {metodo})),
-            (opt: (try': (kw: {estatico}))),
+            (opt': (try': (kw: {estatico}))),
             grId,
             grParámetrosDeFunción,
             (rep0: (delay: funcion devolver grInstrucción finfuncion)),
@@ -831,16 +831,18 @@ fijar grMétodo a
     Comb#Efecto:
         funcion: res
             devolver clonar AST#NodoMétodo#crear con
-                areaTextual: AreaTotal: (res#en: 0), (res#en: 6)
-                deClase: res#en: 1
-                nombre: res#en: 3
-                parámetros: res#en: 4
-                cuerpo: res#en: 5
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 7)
+                esEstático: (res#en: 1)#longitud > 0
+                deClase: res#en: 2
+                nombre: res#en: 4
+                parámetros: res#en: 5
+                cuerpo: res#en: 6
             finclonar
         finfuncion,
         (msjerror: {En `metodo` (fuera de clase):},
             (seq:
                 (try': (kw: {metodo})),
+                (opt': (try': (kw: {estatico}))),
                 grId,
                 (kw: {#}),
                 grId,

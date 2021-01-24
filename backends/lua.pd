@@ -317,7 +317,11 @@ metodo CompiladorSimpleALua#visitarMétodo: nodo
     fijar clssym a IdentificadorDe: nodo#deClase
     fijar nrdyo a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
     fijar cuerpoMet a subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
-    devolver {rt.enviarMensaje(~t, "agregarMetodo", ~t, ~t);}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre), cuerpoMet
+    si nodo#esEstático
+        devolver {(~t).methods[~t] = ~t}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre), cuerpoMet
+    sino
+        devolver {rt.enviarMensaje(~t, "agregarMetodo", ~t, ~t);}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre), cuerpoMet
+    finsi
 finmetodo
 
 metodo CompiladorSimpleALua#visitarAtributos: nodo

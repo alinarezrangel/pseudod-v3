@@ -259,28 +259,26 @@ procedimiento IniciarREPL: ctx
 
 utilizar world (Escribir)
 
-funcion Hola: A, B
-    devolver A + B
-finfuncion
+clase Hola
+finclase
 
-variable Mundo
-fijar Mundo a "adios"
+metodo estatico Hola#mundo
+    devolver "hola mundo"
+finmetodo
 
-variables X, Y
-fijar X a &Hola
-fijar Y a &Mundo
-escribir Y
+clase Mundo
+    metodo estatico hola
+finclase
+
+metodo estatico Mundo#hola
+    devolver "mundo hola"
+finmetodo
+
+escribir Hola#mundo
 nl
-escribir (X#\llamar\: 1 , 2)#comoTexto
+escribir Mundo#hola
 nl
 
-fijar X a &(Hola)
-fijar Y a &(Mundo#comoTexto)
-
-escribir (X#\llamar\: 2 , 2)#comoTexto
-nl
-escribir Y#\llamar\
-nl
 
 }
 finprocedimiento

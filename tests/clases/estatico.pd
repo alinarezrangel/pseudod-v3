@@ -1,0 +1,25 @@
+{
+    "nombre": "Métodos estáticos",
+    "espera": "éxito",
+    "salida contiene": "hola mundo\nmundo hola\n"
+}
+====================
+clase Hola
+finclase
+
+metodo estatico Hola#mundo
+    devolver {hola mundo}
+finmetodo
+
+clase Mundo
+    metodo estatico hola
+finclase
+
+metodo estatico Mundo#hola
+    devolver {mundo hola}
+finmetodo
+
+escribir Hola#mundo
+nl
+escribir Mundo#hola
+nl

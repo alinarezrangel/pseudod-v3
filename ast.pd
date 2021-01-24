@@ -209,13 +209,13 @@ metodo NodoMientras#comoTexto
 finmetodo
 
 clase NodoMétodo hereda NodoInstrucción
-    atributos deClase, nombre, parámetros, cuerpo
+    atributos deClase, esEstático, nombre, parámetros, cuerpo
 
     metodo comoTexto
 finclase
 
 metodo NodoMétodo#comoTexto
-    devolver {(NodoMétodo: de ~t nombre = ~t pide ~t es ~t en ~t con ~t)}#formatear: yo#deClase, yo#nombre, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
+    devolver {(NodoMétodo: de ~t es estático = ~t nombre = ~t pide ~t es ~t en ~t con ~t)}#formatear: yo#deClase, yo#esEstático, yo#nombre, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
 clase NodoAtributos hereda NodoInstrucción
