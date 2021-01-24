@@ -389,6 +389,6 @@ finmetodo
 
 metodo Diccionario#mapear: proc
     devolver Diccionario#desdeArreglo: (Mapear: yo#_pares, funcion: par
-        devolver %proc: (el#en: 0), (el#en: 1)
+        devolver %proc: (par#en: 0), (par#en: 1)
     finfuncion)
 finmetodo

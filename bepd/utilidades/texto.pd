@@ -19,7 +19,7 @@ funcion Partir': texto, separador, opciones
     fijar comoPerl a TextoContiene: opciones, {p}
     fijar sinVacíos a TextoContiene: opciones, {-}
 
-    necesitas no (comoPerl && sinVacío)
+    necesitas no (comoPerl && sinVacíos)
 
     procedimiento agregarParte: parte
         si comoPerl && no ((parte = {}) && (parteAnterior = parte))
