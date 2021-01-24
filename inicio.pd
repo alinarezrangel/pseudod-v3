@@ -1,5 +1,6 @@
 utilizar bepd/builtins
 utilizar bepd/x/enum
+utilizar bepd/utilidades/texto
 utilizar bepd/x/puerto como Puerto
 utilizar bepd/x/puerto/deArchivo como PDA
 utilizar bepd/x/sistemaDeArchivos/archivo como Archivos
@@ -207,6 +208,14 @@ procedimiento ParsearCLI: cli
     devolver ctx
 finprocedimiento
 
+funcion LlaveDeMóduloDesdeArchivoDelCLI: archivo
+    variables archivoSinExtensión, extensión, partes
+    fijar partes a Partir: archivo, {.}
+    fijar archivoSinExtensión a Unir: (PedazoDeArreglo: partes, 0, -2), {.}
+    fijar extensión a ÚltimoElemento: partes
+    devolver Módulos#LlaveDeMódulo#crear: {.}, archivoSinExtensión, extensión
+finfuncion
+
 procedimiento Compilar: ctx, programa
     ctx#mostrarMensaje: {-- Inicio}
     variables comp, db, conf, llave, módulo, compilado
@@ -226,7 +235,11 @@ procedimiento Compilar: ctx, programa
     fijar comp a LuaBack#CompiladorALua#crear: db
 
     ctx#mostrarMensaje: {-- Compilando el programa...}
-    fijar llave a Módulos#LlaveDeMódulo#crear: {hello}, {goodbye}, {pd}
+    si no EsNulo: ctx#archivoAEjecutar
+        fijar llave a LlaveDeMóduloDesdeArchivoDelCLI: ctx#archivoAEjecutar
+    sino
+        fijar llave a Módulos#LlaveDeMódulo#crear: {.}, {<stdin>}, {pd}
+    finsi
     fijar módulo a comp#compilarTexto: llave, programa
     db#agregarMódulo: módulo
 
