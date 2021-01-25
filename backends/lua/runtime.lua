@@ -14,6 +14,17 @@ local function itertofunc(iter, ...)
    return nextiter, ended
 end
 
+local function prettyprint(val, indent)
+   indent = indent or 0
+   local ind = string.rep("  ", indent)
+   for k, v in pairs(val) do
+      print(("%s%q = %s"):format(ind, k, v))
+      if type(v) == "table" then
+         prettyprint(v, indent + 1)
+      end
+   end
+end
+
 function M.pdformat(fmt, ...)
    --[[
       Sintáxis de formatos de PseudoD:
@@ -265,9 +276,9 @@ local function primitiveCompare(tbl)
    tbl["comparar"] = function(self, other)
       if self == other then
          return "eq"
-      elseif self < other then
+      elseif type(self) == type(other) and self < other then
          return "lt"
-      elseif self > other then
+      elseif type(self) == type(other) and self > other then
          return "gt"
       else
          return "none"
@@ -609,6 +620,10 @@ local METODOS_ARREGLO = {
          nvals[i] = M.enviarMensaje(vals[i], "clonar")
       end
       return M.mkarreglo(nvals)
+   end,
+
+   ["operador_="] = function(self, other)
+      return M.enviarMensaje(self, "igualA", other)
    end,
 
    igualA = function(self, other)
