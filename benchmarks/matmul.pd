@@ -1,0 +1,112 @@
+[ Representamos una matris como un arreglo de arreglos (filas x columnas) ]
+
+procedimiento ParaNúmerosEnRango: min, max, proc
+    variable i
+    fijar i a min
+    mientras i < max
+        %proc: i
+        fijar i a i + 1
+    finmientras
+finprocedimiento
+
+procedimiento ParaCadaElemento: arr, proc
+    ParaNúmerosEnRango: 0, arr#longitud, procedimiento: i
+        devolver %proc: (arr#en: i)
+    finprocedimiento
+finprocedimiento
+
+[ m = filas, n = columnas ]
+funcion Ceros: m, n
+    variables arr
+    fijar arr a Arreglo#vacio
+    ParaNúmerosEnRango: 0, m, procedimiento: i
+        variable x
+        fijar x a Arreglo#vacio
+        ParaNúmerosEnRango: 0, n, procedimiento: j
+            x#agregarAlFinal: 0
+        finprocedimiento
+        arr#agregarAlFinal: x
+    finprocedimiento
+    devolver arr
+finfuncion
+
+funcion En: mat, m, n
+    devolver (mat#en: m)#en: n
+finfuncion
+
+procedimiento FijarEn: mat, m, n, val
+    (mat#en: m)#fijarEn: n, val
+finprocedimiento
+
+funcion Filas: mat
+    devolver mat#longitud
+finfuncion
+
+funcion Columnas: mat
+    necesitas mat#longitud > 0
+    devolver (mat#en: 0)#longitud
+finfuncion
+
+funcion MultiplicarMatrices: lhs, rhs
+    necesitas (Columnas: lhs) = (Filas: rhs)
+    variable res
+    fijar res a Ceros: (Filas: lhs), (Columnas: rhs)
+    ParaNúmerosEnRango: 0, (Filas: lhs), procedimiento: i
+        ParaNúmerosEnRango: 0, (Columnas: rhs), procedimiento: j
+            variable suma
+            fijar suma a 0
+            ParaNúmerosEnRango: 0, (Columnas: lhs), procedimiento: k
+                fijar suma a suma + ((En: lhs, i, k) * (En: rhs, k, j))
+            finprocedimiento
+            FijarEn: res, i, j, suma
+        finprocedimiento
+    finprocedimiento
+    devolver res
+finfuncion
+
+clase TipoNR
+    metodo comoTexto
+finclase
+
+metodo TipoNR#comoTexto
+    devolver {NR}
+finmetodo
+
+variable NR
+fijar NR a TipoNR#_crear
+
+funcion CrearMatris: ...X
+    variables mat, row
+    fijar mat a Arreglo#vacio
+    fijar row a Arreglo#vacio
+    ParaCadaElemento: X, procedimiento: el
+        si el = NR
+            mat#agregarAlFinal: row
+            fijar row a Arreglo#vacio
+        sino
+            row#agregarAlFinal: el
+        finsi
+    finprocedimiento
+    mat#agregarAlFinal: row
+    devolver mat
+finfuncion
+
+funcion MatrisComoTexto: mat
+    variable acc
+    fijar acc a { ____~%}#formatear
+    ParaCadaElemento: mat, procedimiento: row
+        fijar acc a acc#concatenar: {(}
+        ParaCadaElemento: row, procedimiento: el
+            fijar acc a acc#concatenar: ({~t	}#formatear: el)
+        finprocedimiento
+        fijar acc a acc#concatenar: {)~%}#formatear
+    finprocedimiento
+    devolver acc#concatenar: { ^^^^}#formatear
+finfuncion
+
+ParaNúmerosEnRango: 0, 1000, procedimiento: i
+    variables A, B
+    fijar A a CrearMatris: 1, 2, 3, NR, 4, 5, 6
+    fijar B a CrearMatris: 7, 8, NR, 9, 10, NR, 11, 12
+    necesitas (MultiplicarMatrices: A, B) = (CrearMatris: 58, 64, NR, 139, 154)
+finprocedimiento

@@ -606,9 +606,12 @@ metodo CompiladorALua#importarMódulo: nombreDelMódulo
         finprocedimiento, procedimiento
             __FallarConMensaje: ({Error: no se pudo encontrar el módulo ~t}#formatear: nombreDelMódulo)
         finprocedimiento
+    Escribir: ({--- Buscando: ~t}#formatear: nombreDelMódulo)
     si EsInstancia: móduloOLlave, Módulos#Módulo
+        Escribir: {--- Encontrado}
         devolver móduloOLlave
     sino
+        Escribir: {--- No encontrado, compilandolo}
         fijar móduloCompilado a yo#compilarTexto:
             móduloOLlave,
             (Archivos#LeerArchivo: móduloOLlave#nombreCompletoDelArchivo)

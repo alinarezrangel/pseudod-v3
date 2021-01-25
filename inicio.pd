@@ -270,28 +270,9 @@ procedimiento IniciarREPL: ctx
     ctx#mostrarMensaje: {-- TODO}
     Compilar: ctx, {
 
-utilizar world (Escribir)
+utilizar bepd/builtins
 
-clase Hola
-finclase
-
-metodo estatico Hola#mundo
-    devolver "hola mundo"
-finmetodo
-
-clase Mundo
-    metodo estatico hola
-finclase
-
-metodo estatico Mundo#hola
-    devolver "mundo hola"
-finmetodo
-
-escribir Hola#mundo
-nl
-escribir Mundo#hola
-nl
-
+Escribir: "Hola Mundo"
 
 }
 finprocedimiento

@@ -1,0 +1,16 @@
+funcion Ackermann: m, n
+    si m = 0
+        devolver n + 1
+    finsi
+    si n = 0
+        devolver Ackermann: (m - 1), 1
+    finsi
+    devolver Ackermann: (m - 1), (Ackermann: m, (n - 1))
+finfuncion
+
+variable i
+fijar i a 0
+mientras i < 10
+    necesitas (Ackermann: 3, 4) = 125
+    fijar i a i + 1
+finmientras
