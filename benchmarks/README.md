@@ -26,7 +26,9 @@ En el commit `71009de00cf9e4d57c759477d1650f9d30fc3728`, 2021-01-25:
 
 El `:t` significa "tiempo" y el `:m` significa memoria.
 
-## `matmul` -- Multiplicación de matrices ##
+## Benchmarks ##
+
+### `matmul` -- Multiplicación de matrices ###
 
 [`matmul.pd`](./matmul.pd) implementa un programa sencillo de multiplicación de
 matrices. Para este benchmark `matmul` multiplica una matris de 2x3 por una de
@@ -35,7 +37,7 @@ matrices. Para este benchmark `matmul` multiplica una matris de 2x3 por una de
 - 2021-01-25, commit `71009de00cf9e4d57c759477d1650f9d30fc3728`: Con la
   implementación en C++ de PseudoD v3, `matmul` tarda un promedio de 15
   segundos, mientras que en la versión compilada a Lua 5.4 tarda solo 1.7
-  segundos (un incremento de 1000% o x10). Este incremento de x10 parece ser
+  segundos (un incremento de 800% o x8). Este incremento de x8-x10 parece ser
   bastante consistente después de cambiar varias veces la cantidad de
   iteraciones del bucle exterior.
   
@@ -57,15 +59,16 @@ matrices. Para este benchmark `matmul` multiplica una matris de 2x3 por una de
   ==44308==   total heap usage: 6,207,921 allocs, 6,207,921 frees, 443,122,051 bytes allocated
   ```
   
-  El programa en lua consume 5 veces menos memoria, y es 10 veces más rápido.
+  El programa en lua consume 5 veces menos memoria, y es 8 veces más rápido.
 
-## `ack` -- Función Ackermann ##
+### `ack` -- Función Ackermann ###
 
 [`ack.pd`](./ack.pd) implementa la función Ackermann y calcula `ack(3, 4)` 10
 veces.
 
 - 2021-01-25, commit `71009de00cf9e4d57c759477d1650f9d30fc3728`: Con la
-  implementación en C++ toma 12 segundos. En lua toma de 2 segundos.
+  implementación en C++ toma 12 segundos. En lua toma de 2 segundos (incremento
+  de x6).
 
   Uso de memoria con la implementación en C++:
   
@@ -82,3 +85,11 @@ veces.
   ==45289==     in use at exit: 0 bytes in 0 blocks
   ==45289==   total heap usage: 6,259,119 allocs, 6,259,119 frees, 390,596,647 bytes allocated
   ```
+  
+  Lo que es una reducción de 4 veces en memoria.
+
+## Referencias ##
+
+- [ecraven/r7rs-benchmarks](https://github.com/ecraven/r7rs-benchmarks/).
+- [Programming Language Benchmarks](https://attractivechaos.github.io/plb/).
+- [Gambit Benchmarks](http://www.iro.umontreal.ca/~gambit/bench.html).
