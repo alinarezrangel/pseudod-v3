@@ -36,6 +36,7 @@ clase CaminaNodos
     metodo visitarSonIguales: nodo
     metodo visitarReferenciar: nodo
     metodo visitarNo: nodo
+    metodo visitarClonar: nodo
 
     metodo visitarVariadic: nodo
 finclase
@@ -135,6 +136,9 @@ metodo CaminaNodos#visitar: nodo
     si EsInstancia: nodo, AST#NodoNo
         devolver yo#visitarNo: nodo
     finsi
+    si EsInstancia: nodo, AST#NodoClonar
+        devolver yo#visitarClonar: nodo
+    finsi
 
     si EsInstancia: nodo, AST#NodoVariadic
         devolver yo#visitarVariadic: nodo
@@ -177,5 +181,6 @@ metodo CaminaNodos#visitarFunciónAnónima: nodo finmetodo
 metodo CaminaNodos#visitarSonIguales: nodo finmetodo
 metodo CaminaNodos#visitarReferenciar: nodo finmetodo
 metodo CaminaNodos#visitarNo: nodo finmetodo
+metodo CaminaNodos#visitarClonar: nodo finmetodo
 
 metodo CaminaNodos#visitarVariadic: nodo finmetodo

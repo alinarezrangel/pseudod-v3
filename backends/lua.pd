@@ -541,6 +541,21 @@ metodo CompiladorSimpleALua#visitarNo: nodo
     devolver {not ~t}#formatear: (yo#visitar: nodo#expresión)
 finmetodo
 
+metodo CompiladorSimpleALua#visitarClonar: nodo
+    variable tabla
+    fijar tabla a {{~t~e}#formatear:
+        (Unir:
+            (Mapear: nodo#campos, funcion: res
+                devolver {[~t] = ~t}#formatear: (EscaparParaLua: (res#en: 0)), (yo#visitar: (res#en: 1))
+            finfuncion),
+            {, })
+    devolver {rt.clonar(~t, ~t)}#formatear: (yo#visitar: nodo#expresiónAClonar), tabla
+finmetodo
+
+metodo CompiladorSimpleALua#visitarVariadic: nodo
+    Inalcanzable
+finmetodo
+
 funcion CompilarALua: moddb, ast, ámbito, compilador
     variables comp, ini, builtins
     fijar comp a CompiladorSimpleALua#crear: moddb, ámbito, compilador

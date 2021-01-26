@@ -1102,6 +1102,14 @@ function M.scopenewname(scope, name)
    getmetatable(scope).newname(name)
 end
 
+function M.clonar(obj, fields)
+   local cl = M.enviarMensaje(obj, "clonar")
+   for k, v in pairs(fields) do
+      M.enviarMensaje(cl, "fijar_" .. k, v)
+   end
+   return cl
+end
+
 -- Utilizado como variable temporal por el compilador.
 M.ans_rt = nil
 

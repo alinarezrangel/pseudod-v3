@@ -314,6 +314,13 @@ metodo ResoluciónDeNombresCNImpl#visitarNo: nodo
     yo#visitar: nodo#expresión
 finmetodo
 
+metodo ResoluciónDeNombresCNImpl#visitarClonar: nodo
+    yo#visitar: nodo#expresiónAClonar
+    ParaCadaElemento: nodo#campos, procedimiento: campo
+        yo#visitar: (campo#en: 1)
+    finprocedimiento
+finmetodo
+
 metodo ResoluciónDeNombresCNImpl#visitarVariadic: nodo
     Inalcanzable
 finmetodo

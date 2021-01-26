@@ -458,6 +458,28 @@ fijar grNo a
             (try': (kw: {no})),
             (delay: funcion devolver grExpr finfuncion))
 
+variable grClonar
+fijar grClonar a
+    Comb#Efecto:
+        funcion: res
+            variables exprAClonar, campos
+            fijar exprAClonar a res#en: 1
+            fijar campos a Mapear: (res#en: 3), funcion: res
+                devolver Arreglo#crearCon: (res#en: 0)#texto, (res#en: 2)
+            finfuncion
+            devolver clonar AST#NodoClonar#crear con
+                areaTextual: AreaTotal: (res#en: 0), (res#en: 4)
+                expresiónAClonar: exprAClonar
+                campos: campos
+            finclonar
+        finfuncion,
+        (seq:
+            (try': (kw: {clonar})),
+            (delay: funcion devolver grExpr finfuncion),
+            (kw: {con}),
+            (rep0: (try': id), (kw: {:}), (delay: funcion devolver grExpr finfuncion)),
+            (kw: {finclonar}))
+
 variable grExprSinOperador
 fijar grExprSinOperador a
     Comb#Efecto:
@@ -482,6 +504,7 @@ fijar grExprSinOperador a
                 grSonIguales,
                 grReferenciar,
                 grNo,
+                grClonar,
                 (try': grId),
                 (try': grNum),
                 (try': grTexto)),

@@ -355,3 +355,13 @@ finclase
 metodo NodoNo#comoTexto
     devolver {(NodoNo: ~t en ~t con ~t)}#formatear: yo#expresión, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
+
+clase NodoClonar hereda NodoExpresion
+    atributos expresiónAClonar, campos
+
+    metodo comoTexto
+finclase
+
+metodo NodoClonar#comoTexto
+    devolver {(NodoClonar: ~t => ~t en ~t con ~t)}#formatear: yo#expresiónAClonar, yo#campos, yo#areaTextual, yo#metadatosComoTexto
+finmetodo
