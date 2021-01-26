@@ -132,9 +132,23 @@ procedimiento LeerLexema: puerto
         fijar posFin a puerto#posiciónActual
         devolver Tokens#TokenTexto#crear: (Tokens#AreaTextual#crear: posIni, posFin), texto
     finsi
-    si car = {«}
+    si car = (__ByteATexto: 194)
+        fijar car a puerto#leerCarácter
+        necesitas car = (__ByteATexto: 171)
+
         variables texto, posFin
-        fijar texto a Puerto#LeerHasta: puerto, {»}
+        fijar texto a {}
+        LlamarConEC: procedimiento: ec
+            mientras VERDADERO
+                fijar texto a texto#concatenar: (Puerto#LeerHasta: puerto, (__ByteATexto: 194))
+                fijar car a puerto#leerCarácter
+                si (car = (__ByteATexto: 187)) || (car = Puerto#EOF)
+                    %ec: NULO
+                finsi
+                fijar texto a texto#concatenar: (__ByteATexto: 194)
+                fijar texto a texto#concatenar: car
+            finmientras
+        finprocedimiento
         fijar posFin a puerto#posiciónActual
         devolver Tokens#TokenTexto#crear: (Tokens#AreaTextual#crear: posIni, posFin), texto
     finsi
