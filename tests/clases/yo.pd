@@ -1,0 +1,22 @@
+{
+    "nombre": "Yo en metodos",
+    "espera": "éxito",
+    "salida contiene": "1\n2\n"
+}
+====================
+clase Hola
+    atributo X
+    metodo comoTexto
+finclase
+
+metodo Hola#comoTexto
+    devolver yo#X#comoTexto
+finmetodo
+
+variables A, B
+fijar A a Hola#crear
+fijar A#X a 1
+fijar B a Hola#crear
+fijar B#X a 2
+escribir A#comoTexto nl
+escribir B#comoTexto nl

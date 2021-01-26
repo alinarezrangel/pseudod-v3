@@ -1,0 +1,27 @@
+{
+    "nombre": "Palabra clave `clonar`",
+    "espera": "éxito",
+    "salida contiene": "Hola Mundo\nNULO\nHola Mundo\nAdios Mundo\n"
+}
+====================
+clase Hola
+    atributos hola, mundo
+
+    metodo comoTexto
+finclase
+
+metodo Hola#comoTexto
+    devolver {~t ~t}#formatear: yo#hola, yo#mundo
+finmetodo
+
+variables A, B
+fijar A a Hola#crear
+fijar A#hola a {Hola}
+fijar A#mundo a {Mundo}
+escribir A#comoTexto nl
+escribir B#comoTexto nl
+fijar B a clonar A con
+    hola: {Adios}
+finclonar
+escribir A#comoTexto nl
+escribir B#comoTexto nl
