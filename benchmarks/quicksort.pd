@@ -1,0 +1,62 @@
+[ Basado en la implementación mostrada en
+  https://en.wikipedia.org/wiki/Quicksort ]
+
+procedimiento ParaNúmerosEnRango: min, max, proc
+    variable i
+    fijar i a min
+    mientras i < max
+        %proc: i
+        fijar i a i + 1
+    finmientras
+finprocedimiento
+
+procedimiento Swap: arr, i, j
+    variable buff
+    fijar buff a arr#en: i
+    arr#fijarEn: i, (arr#en: j)
+    arr#fijarEn: j, buff
+finprocedimiento
+
+funcion Particionar: arr, inicio, final
+    variables pivote, i
+    fijar pivote a arr#en: (final - 1)
+    fijar i a inicio
+    ParaNúmerosEnRango: inicio, final, procedimiento: j
+        si (arr#en: j) < pivote
+            Swap: arr, i, j
+            fijar i a i + 1
+        finsi
+    finprocedimiento
+    Swap: arr, i, (final - 1)
+    devolver i
+finfuncion
+
+funcion QuickSort': arr, inicio, final
+    si inicio < final
+        variable p
+        fijar p a Particionar: arr, inicio, final
+        QuickSort': arr, inicio, p
+        QuickSort': arr, (p + 1), final
+    finsi
+finfuncion
+
+funcion QuickSort: arr
+    fijar arr a clonar arr con finclonar
+    QuickSort': arr, 0, arr#longitud
+    devolver arr
+finfuncion
+
+funcion Rango: hasta
+    variable X
+    fijar X a Arreglo#vacio
+    ParaNúmerosEnRango: 0, hasta, procedimiento: i
+        X#agregarAlFinal: i
+    finprocedimiento
+    devolver X
+finfuncion
+
+ParaNúmerosEnRango: 0, 500, procedimiento: _i
+    variable arr
+    fijar arr a Arreglo#crearCon: 16, 9, 17, 1, 12, 4, 8, 18, 2, 11, 5, 7, 13, 0, 19, 6, 14, 3, 10, 15
+    necesitas (QuickSort: arr) = (Rango: 20)
+finprocedimiento

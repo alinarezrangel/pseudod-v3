@@ -16,13 +16,24 @@ el comando `time` de Bash en Linux Mint. La memoria fue medida con `valgrid`.
 
 En el commit `71009de00cf9e4d57c759477d1650f9d30fc3728`, 2021-01-25:
 
-|-----------------+----------+----------+-------+-------|
-|                 | matmul:t | matmul:m | ack:t | ack:m |
-|-----------------+----------+----------+-------+-------|
-| PseudoD v3 C++  | 15s      | 35MB     | 12s   | 28MB  |
-|-----------------+----------+----------+-------+-------|
-| Compilado a Lua | 1.7s     | 6MB      | 2s    | 6MB   |
-|-----------------+----------+----------+-------+-------|
+```
+|-------------+-------------------+-----------------|
+|             | PseudoD v3 en C++ | Compilado a Lua |
+|-------------+-------------------+-----------------|
+| matmul:t    | 15s               | 1.7s            |
+|-------------+-------------------+-----------------|
+| matmul:m    | 35MB              | 6MB             |
+|-------------+-------------------+-----------------|
+| ack:t       | 12s               | 2s              |
+|-------------+-------------------+-----------------|
+| ack:m       | 28MB              | 6MB             |
+|-------------+-------------------+-----------------|
+| fib:t       | 13s               | 1.5s            |
+|-------------+-------------------+-----------------|
+| quicksort:t | 16s               | 1.8             |
+|-------------+-------------------+-----------------|
+
+```
 
 El `:t` significa "tiempo" y el `:m` significa memoria.
 
@@ -87,6 +98,23 @@ veces.
   ```
   
   Lo que es una reducción de 4 veces en memoria.
+
+### `fib` -- Fibonacci ###
+
+[`fib.pd`](./fib.pd) implementa la función de Fibonacci de forma tanto
+iterativa como recursiva.
+
+- 2021-01-25, commit `8d9b80fa2fdf0eb3a1cd19edc352c05a8196a7c4`: La
+  implementación de C++ toma 13 segundos. En Lua toma 1.5 segundos.
+
+### `quicksort` -- QuickSort ###
+
+[`quicksort`](./quicksort.pd) implementa el famoso algoritmo de ordenamiento
+QuickSort.
+
+- 2021-01-25, commit `8d9b80fa2fdf0eb3a1cd19edc352c05a8196a7c4`: La
+  implementación en C++ toma 16 segundos, mientras que la compilada a Lua toma
+  1.8 - 1.9 segundos.
 
 ## Referencias ##
 

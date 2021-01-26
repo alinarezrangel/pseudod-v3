@@ -1,0 +1,36 @@
+procedimiento ParaNúmerosEnRango: min, max, proc
+    variable i
+    fijar i a min
+    mientras i < max
+        %proc: i
+        fijar i a i + 1
+    finmientras
+finprocedimiento
+
+funcion IterFib: n
+    variable A, B
+    fijar A a 1
+    fijar B a 1
+    si n =< 1
+        devolver 1
+    finsi
+    ParaNúmerosEnRango: 0, (n - 1), procedimiento: _i
+        variable B'
+        fijar B' a A
+        fijar A a A + B
+        fijar B a B'
+    finprocedimiento
+    devolver A
+finfuncion
+
+funcion RecurFib: n
+    si n =< 1
+        devolver 1
+    sino
+        devolver (RecurFib: (n - 1)) + (RecurFib: (n - 2))
+    finsi
+finfuncion
+
+ParaNúmerosEnRango: 0, 23, procedimiento: i
+    necesitas (RecurFib: i) = (IterFib: i)
+finprocedimiento
