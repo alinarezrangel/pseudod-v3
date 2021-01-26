@@ -14,15 +14,19 @@ local function itertofunc(iter, ...)
    return nextiter, ended
 end
 
-local function prettyprint(val, indent)
-   print(val)
+local function prettyprint(val, indent, recur)
+   indent = indent or 0
+   local ind = string.rep("  ", indent)
+   if not recur then
+      print(ind .. ("%s"):format(val))
+   end
    if type(val) == "table" then
-      indent = indent or 1
-      local ind = string.rep("  ", indent)
+      indent = indent + 1
+      ind = " " .. ind
       for k, v in pairs(val) do
          print(("%s%q = %s"):format(ind, k, v))
          if type(v) == "table" then
-            prettyprint(v, indent + 1)
+            prettyprint(v, indent + 1, true)
          end
       end
    end
@@ -205,6 +209,7 @@ function M.objeto()
       for i = 1, self.attrs.n do
          clone.attrs[i] = M.enviarMensaje(self.attrs[i], "clonar")
       end
+      clone.attrs.n = self.attrs.n
       for name, proc in pairs(self.methods) do
          clone.methods[name] = M.enviarMensaje(proc, "clonar")
       end

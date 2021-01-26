@@ -1,0 +1,32 @@
+{
+    "nombre": "Hereda",
+    "espera": "éxito",
+    "salida contiene": "Hola#hola\nMundo#hola\nHola#hola\nQue#hola\n"
+}
+====================
+clase Hola
+    metodo hola
+finclase
+
+metodo Hola#hola
+    devolver {Hola#hola}
+finmetodo
+
+clase Mundo hereda Hola finclase
+
+metodo Mundo#hola
+    devolver {Mundo#hola}
+finmetodo
+
+clase Adios hereda Hola finclase
+
+clase Que hereda (Mundo) finclase
+
+metodo Que#hola
+    devolver {Que#hola}
+finmetodo
+
+escribir Hola#crear#hola nl
+escribir Mundo#crear#hola nl
+escribir Adios#crear#hola nl
+escribir Que#crear#hola nl

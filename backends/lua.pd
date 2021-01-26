@@ -152,10 +152,15 @@ metodo CompiladorSimpleALua#visitarNl: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarClase: nodo
-    variables cods, clssym
+    variables cods, clssym, base
     fijar clssym a IdentificadorDe: nodo#nombre
     fijar cods a Arreglo#vacio
-    cods#agregarAlFinal: ({~t = (~t);}#formatear: clssym, (yo#enviarMensaje: {rt.clases.Objeto}, {subclase}, Arreglo#vacio))
+    si no EsNulo: nodo#claseBase
+        fijar base a yo#visitar: nodo#claseBase
+    sino
+        fijar base a {rt.clases.Objeto}
+    finsi
+    cods#agregarAlFinal: ({~t = (~t);}#formatear: clssym, (yo#enviarMensaje: ({(~t)}#formatear: base), {subclase}, Arreglo#vacio))
     cods#agregarAlFinal: ({rt.enviarMensaje(~t, "fijar_nombre", ~t);}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre))
     ParaCadaElemento: nodo#declaraciones, procedimiento: declr
         si EsInstancia: declr, AST#NodoDeclaraciónDeAtributosEnClase
@@ -395,7 +400,11 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarIdentificador: nodo
     variables esAutoejecutable, identificador
-    fijar esAutoejecutable a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+    si nodo#contieneMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+        fijar esAutoejecutable a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+    sino
+        fijar esAutoejecutable a FALSO
+    finsi
     fijar identificador a IdentificadorDe: nodo
     si esAutoejecutable
         devolver yo#enviarMensaje: identificador, {llamar}, Arreglo#vacio

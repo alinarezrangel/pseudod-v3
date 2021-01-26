@@ -691,9 +691,9 @@ fijar grClase a
         (seq:
             (try': (kw: {clase})),
             grId,
-            (opt': (try': (kw: {hereda})), grId),
-            (rep0: (try': (kw: {implementa})), grId),
-            (rep0: (try': (kw: {extiende})), grId),
+            (opt': (try': (kw: {hereda})), (delay: funcion devolver grExpr finfuncion)),
+            (rep0: (try': (kw: {implementa})), (delay: funcion devolver grExpr finfuncion)),
+            (rep0: (try': (kw: {extiende})), (delay: funcion devolver grExpr finfuncion)),
             (until:
                 (try': (kw: {finclase})),
                 grCuerpoDeClase))
