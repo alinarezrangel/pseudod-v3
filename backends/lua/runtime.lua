@@ -1029,6 +1029,10 @@ function M.builtins.__Capturar(proc)
    end
 end
 
+function M.builtins.__LeerCaracter()
+   return io.read(1) or -1
+end
+
 M.modulos = {}
 M.modcache = {}
 

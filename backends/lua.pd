@@ -595,6 +595,7 @@ metodo CompiladorALua#inicializar: db
             {__ByteEof}, RN#GenerarIdDeNombre,
             {__Capturar}, RN#GenerarIdDeNombre,
             {__Argv}, RN#GenerarIdDeNombre,
+            {__LeerCaracter}, RN#GenerarIdDeNombre,
 
             {Boole}, RN#GenerarIdDeNombre,
             {Numero}, RN#GenerarIdDeNombre,
