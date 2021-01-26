@@ -226,6 +226,12 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetro
 
     fijar paramsbody a Unir: (Mapear: parámetros, &CódigoDeParamBody), {;~%}#formatear
 
+    si no EsNulo: nombreResueltoDeYo
+        fijar paramsbody a paramsbody#concatenar:
+            ({~%;rt.scopenewname(_s, "_~t"); _s._~t = _~t}#formatear:
+                nombreResueltoDeYo, nombreResueltoDeYo, nombreResueltoDeYo)
+    finsi
+
     cods#agregarAlFinal: ({function(~t~t)}#formatear: met, params)
     cods#agregarAlFinal: yo#iniciar
     cods#agregarAlFinal: (paramsbody#concatenar: {;})
