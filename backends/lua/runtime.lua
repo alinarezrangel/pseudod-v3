@@ -2,28 +2,33 @@ local M = {}
 
 local function itertofunc(iter, ...)
    local iterfunc, state, ctrl, closing = iter(...)
+   local function ended()
+      return ctrl == nil
+   end
    local function nextiter()
       assert(not ended())
       local res = table.pack(iterfunc(state, ctrl))
       ctrl = res[1]
-      return ctrl, table.unpack(res, 2)
-   end
-   local function ended()
-      return ctrl == nil
+      return ctrl, table.unpack(res, 2, res.n)
    end
    return nextiter, ended
 end
 
 local function prettyprint(val, indent)
-   indent = indent or 0
-   local ind = string.rep("  ", indent)
-   for k, v in pairs(val) do
-      print(("%s%q = %s"):format(ind, k, v))
-      if type(v) == "table" then
-         prettyprint(v, indent + 1)
+   print(val)
+   if type(val) == "table" then
+      indent = indent or 1
+      local ind = string.rep("  ", indent)
+      for k, v in pairs(val) do
+         print(("%s%q = %s"):format(ind, k, v))
+         if type(v) == "table" then
+            prettyprint(v, indent + 1)
+         end
       end
    end
 end
+
+M.prettyprint = prettyprint
 
 function M.pdformat(fmt, ...)
    --[[
@@ -45,15 +50,22 @@ function M.pdformat(fmt, ...)
    local nextiter, ended = itertofunc(utf8.codes, fmt)
    local function readch()
       local pos, code = nextiter()
-      local ch = utf8.char(code)
+      local ch
+      if code ~= nil then
+         ch = utf8.char(code)
+      end
       return pos, code, ch
    end
    local result = ""
-   while not ended() do
-      local pos, code, ch = readch()
+   while true do
+      local pos, code = nextiter()
+      if ended() then
+         break
+      end
+      local ch = utf8.char(code)
       if ch == "~" then
-         assert(not ended())
          local nxpos, nxcode, nxch = readch()
+         assert(not ended())
          if nxch == "t" then
             result = result .. M.enviarMensaje(params[paramIdx], "comoTexto")
             paramIdx = paramIdx + 1
@@ -72,10 +84,11 @@ function M.pdformat(fmt, ...)
          elseif nxch == "q" then
             result = result .. '"'
          elseif nxch == "|" then
-            assert(not ended())
             nxpos, nxcode, nxch = readch()
+            assert(not ended())
             assert(nxch == "%")
             nxpos, nxcode, nxch = readch()
+            assert(not ended())
             -- TODO: Agrega soporte para \r\n y \r
             assert(nxch == "\n")
          else
