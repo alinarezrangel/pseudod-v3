@@ -87,7 +87,7 @@ finmetodo
 metodo ResoluciónDeNombresCNImpl#visitarClase: nodo
     procedimiento ResolverTodoEnLista: ls
         ParaCadaElemento: ls, procedimiento: nodo
-            FijarNombreResuelto: nodo, (yo#_nombres#obtenerBinding: nodo#nombre)
+            yo#visitar: nodo
         finprocedimiento
     finprocedimiento
 
@@ -118,7 +118,7 @@ metodo ResoluciónDeNombresCNImpl#visitarDeclaraciónDeMétodoEnClase: nodo
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarImplementa: nodo
-    FijarNombreResuelto: nodo#nombre, (yo#_nombres#obtenerBinding: yo#nombre#nombre)
+    FijarNombreResuelto: nodo#nombre, (yo#_nombres#obtenerBinding: nodo#nombre#nombre)
 
     ParaCadaElemento: nodo#definiciones, procedimiento: declr
         yo#visitar: declr
