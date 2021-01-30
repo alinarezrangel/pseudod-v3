@@ -1,5 +1,7 @@
 local M = {}
 
+local PSEUDOD_IMPL = "Lua Bootstrap"
+
 local function itertofunc(iter, ...)
    local iterfunc, state, ctrl, closing = iter(...)
    local function ended()
@@ -975,6 +977,7 @@ M.builtins = {
    NULO = nil,
 
    __Argv = M.arreglo(),
+   __Impl = PSEUDOD_IMPL,
 }
 
 function M.builtins.__Lua(str)

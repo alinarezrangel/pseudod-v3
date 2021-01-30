@@ -490,7 +490,12 @@ metodo CompiladorSimpleALua#compilarBuiltinLua: nodo
     fijar argumentosEvaluados a
         Mapear:
             (PedazoDeArreglo: nodo#argumentos, 1, -1),
-            funcion: x devolver yo#visitar: x finfuncion
+            funcion: x
+                si EsInstancia: x, AST#NodoVariadic
+                    __FallarConMensaje: {No se puede pasar un variadic a un builtin}
+                finsi
+                devolver yo#visitar: x
+            finfuncion
     devolver {((~t)(~t))}#formatear: arg#valor, (Unir: argumentosEvaluados, {, })
 finmetodo
 
@@ -612,6 +617,7 @@ metodo CompiladorALua#inicializar: db
             {__Capturar}, RN#GenerarIdDeNombre,
             {__Argv}, RN#GenerarIdDeNombre,
             {__LeerCaracter}, RN#GenerarIdDeNombre,
+            {__Impl}, RN#GenerarIdDeNombre,
 
             {Boole}, RN#GenerarIdDeNombre,
             {Numero}, RN#GenerarIdDeNombre,

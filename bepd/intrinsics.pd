@@ -1,0 +1,5 @@
+[ No importes ni exportes nada. Quizás solo renombra algunos builtins. ]
+
+funcion EstoyEn: impl
+    devolver __Impl = impl
+finfuncion
