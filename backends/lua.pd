@@ -36,7 +36,11 @@ funcion EscaparParaLua: texto
             si car = {~%}#formatear
                 fijar res a res#concatenar: {\n}
             sino
-                fijar res a res#concatenar: car
+                si car = {\}
+                    fijar res a res#concatenar: {\\}
+                sino
+                    fijar res a res#concatenar: car
+                finsi
             finsi
         finsi
     finprocedimiento
@@ -116,8 +120,11 @@ metodo CompiladorSimpleALua#visitarPrograma: nodo
     finprocedimiento
     fijar ámbito a RN#ObtenerNombresDefinídos: nodo
     instrs#agregarAlFinal: {return rt.ns({}#formatear
-    ámbito#paraCadaBinding: procedimiento: nombre, id
-        instrs#agregarAlFinal: ({  [~t] = _s._~t,}#formatear: (EscaparParaLua: nombre), id)
+    ámbito#paraCadaVariable: procedimiento: nombre, dv
+        instrs#agregarAlFinal: ({  [~t] = { value = _s._~t, autoexecutable = ~t ~e,}#formatear:
+            (EscaparParaLua: nombre),
+            dv#binding,
+            (dv#esAutoejecutable#escojer: {true}, {false}))
     finprocedimiento
     instrs#agregarAlFinal: {~e);}#formatear
     devolver Unir: instrs, {~%}#formatear

@@ -33,16 +33,31 @@ def from_project_root(*path_parts):
     return os.path.join(get_script_dir(), '..', *path_parts)
 
 
-def get_pseudod_exec():
-    return [
-        search_in_path('pseudod'),
-        '-X', 'v3x',
-        from_project_root('inicio.pd'),
-        '--',
-        '--sin-mensajes',
-        # FIXME: De nuevo, solo funciona en *NIX
-        '/dev/stdin',
-    ]
+def get_pseudod_exec(pseudod_impl):
+    if pseudod_impl == "interpreter":
+        return [
+            search_in_path('pseudod'),
+            '-X', 'v3x',
+            from_project_root('inicio.pd'),
+            '--',
+            '--sin-mensajes',
+            # FIXME: De nuevo, solo funciona en *NIX
+            '/dev/stdin',
+        ]
+    elif pseudod_impl == "lua":
+        return [
+            search_in_path('lua5.4'),
+            from_project_root('outputs/testing.lua'),
+            '--sin-mensajes',
+            '-',
+        ]
+    elif pseudod_impl == "boots":
+        return [
+            search_in_path('lua5.4'),
+            from_project_root('outputs/boots/pseudod.lua'),
+            '--sin-mensajes',
+            '-',
+        ]
 
 
 def run_as_lua(program):
@@ -93,7 +108,7 @@ class DebugInfo:
             print('-' * 62)
 
 
-def run_test_for_file(program_filename):
+def run_test_for_file(program_filename, pseudod_impl):
     with open(program_filename, 'r') as fin:
         contents = fin.read()
         parts = contents.split(('=' * 20) + '\n')
@@ -111,7 +126,7 @@ def run_test_for_file(program_filename):
         # }
         has_to_pass = header.get('tiene que pasar', True)
         program = parts[1]
-        to_exe = get_pseudod_exec()
+        to_exe = get_pseudod_exec(pseudod_impl)
         print(f'> {to_exe}')
         proc = run(to_exe, input=program)
         pseudod_output = proc.stdout
@@ -181,7 +196,7 @@ def test(header, successfull, output):
     return TestSuccess(successfull=successfull)
 
 
-def run_tests(test_dir):
+def run_tests(test_dir, pseudod_impl):
     passed = 0
     expected_to_pass = 0
     passed_tests = []
@@ -194,7 +209,7 @@ def run_tests(test_dir):
                 continue
             full_filename = os.path.join(root, name)
             print('At file', full_filename)
-            test_result = run_test_for_file(full_filename)
+            test_result = run_test_for_file(full_filename, pseudod_impl)
             print(f'Ran test "{test_result.name}" -- \'{name}\':')
             print(f'  Passed = {test_result.passed}')
             print(f'  Successfull = {test_result.successfull}')
@@ -218,8 +233,8 @@ def run_tests(test_dir):
     print('  Tests failed:', expected_to_pass - passed, f'-- {failed_tests}')
 
 
-def run_test_only_for_file(filename):
-    test_result = run_test_for_file(filename)
+def run_test_only_for_file(filename, pseudod_impl):
+    test_result = run_test_for_file(filename, pseudod_impl)
     print(f'Ran test "{test_result.name}" -- \'{filename}\':')
     print(f'  Passed = {test_result.passed}')
     print(f'  Successfull = {test_result.successfull}')
@@ -240,12 +255,14 @@ def main():
         '''
     )
     parser.add_argument('--run-test', help='The test file that will be executed', type=str, default=None)
+    parser.add_argument('--pseudod-impl', help='Implementation of PseudoD to use', type=str, default='interpreter')
     args = parser.parse_args()
     print('Warning: this program must be executed from the project root, not from the `tests/` subdirectory.')
+    pseudod_impl = args.pseudod_impl
     if args.run_test is not None:
-        run_test_only_for_file(args.run_test)
+        run_test_only_for_file(args.run_test, pseudod_impl)
     else:
-        run_tests(TESTS_DIR)
+        run_tests(TESTS_DIR, pseudod_impl)
 
 
 if __name__ == '__main__':

@@ -271,7 +271,10 @@ procedimiento IniciarREPL: ctx
     Compilar: ctx, {
 
 
-utilizar bepd/builtins como Builtins
+funcion Hola: A devolver A * 2 finfuncion
+variable Mundo
+fijar Mundo a funcion: A devolver A * 2 finfuncion
+variable Adios
 
 
 }

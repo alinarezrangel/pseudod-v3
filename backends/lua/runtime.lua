@@ -219,7 +219,7 @@ function M.objeto()
    function obj:recvMensaje(mensaje, ...)
       if obj.methods[mensaje] == nil then
          if obj.methods["metodoNoEncontrado"] ~= nil then
-            return M.enviarMensaje(obj.methods["metodoNoEncontrado"], "llamar", mensaje, M.arreglo(...))
+            return M.enviarMensaje(obj.methods["metodoNoEncontrado"], "llamar", self, mensaje, M.arreglo(...))
          elseif mensaje == "igualA" or mensaje == "operador_=" then
             return self:equalTo(...)
          elseif mensaje == "clonar" then
@@ -412,10 +412,12 @@ local METODOS_TEXTO = {
    en = function(self, idx)
       M.pdasserttype(idx, "numero")
       -- Recuerda que los índices en PseudoD comienzan desde 0
+      local i = 0
       for p, c in utf8.codes(self) do
-         if p == (idx - 1) then
+         if i == idx then
             return utf8.char(c)
          end
+         i = i + 1
       end
       error("string indexing out of bounds")
    end,
@@ -436,17 +438,35 @@ local METODOS_TEXTO = {
       M.pdasserttype(end_, "numero")
       -- Recuerda (de nuevo) que los índices en PseudoD comienzan desde 0
       local acc = ""
+      local pos = 0
       for p, c in utf8.codes(self) do
-         p = p - 1
-         if p >= start and p < end_ then
+         if pos >= start and pos < end_ then
             acc = acc .. utf8.char(c)
          end
+         pos = pos + 1
       end
       return acc
    end,
 
    buscar = function(self, from, str)
-      error("not implemented: buscar")
+      if string.len(str) == 0 then
+         return from
+      end
+      local cp = 0
+      local startfrombyte = 1
+      for p, c in utf8.codes(self) do
+         if cp >= from then
+            startfrombyte = p
+            break
+         end
+         cp = cp + 1
+      end
+      local start, end_ = string.find(self, str, startfrombyte, true)
+      if not start then
+         return nil
+      else
+         return start - 1
+      end
    end,
 
    buscarEnReversa = function(self, from, str)
@@ -603,6 +623,23 @@ local METODOS_ARREGLO = {
       vals.n = vals.n + 1
    end,
 
+   redimensionar = function(self, newsize)
+      local vals = self:getAttribute(ARREGLO_ATTRS_IDX)
+      if newsize == vals.n then
+         return
+      elseif newsize < vals.n then
+         for i = newsize, (vals.n - 1) do
+            vals[i] = nil
+         end
+         vals.n = newsize
+      else -- newsize > vals.n
+         for i = vals.n, (newsize - 1) do
+            vals[i] = nil
+         end
+         vals.n = newsize
+      end
+   end,
+
    mapear = function(self, proc)
       local vals = self:getAttribute(ARREGLO_ATTRS_IDX)
       local nvals = { n = vals.n }
@@ -740,10 +777,10 @@ function M.ns(tbl)
    ns.__pd_ns = true
    function ns:at(varname)
       local tbl = self:getAttribute(tblIdx)
-      if tbl[mensaje] == nil then
-         error(("%q no existe en el espacio de nombres"):format(mensaje))
+      if tbl[varname] == nil then
+         error(("%q no existe en el espacio de nombres"):format(varname))
       end
-      local descriptor = tbl[mensaje]
+      local descriptor = tbl[varname]
       return descriptor.value
    end
    return ns
@@ -793,7 +830,7 @@ function Objeto.methods:_crearConYo(inst)
    for i, pair in M.arregloipairs(mets) do
       local name, proc = M.arreglounpack(pair)
       M.pdasserttype(name, "texto")
-      inst.methods[name] = function(self, ...)
+      obj.methods[name] = function(self, ...)
          return M.enviarMensaje(proc, "llamar", inst, ...)
       end
    end
@@ -812,6 +849,7 @@ function Objeto.methods:_crear()
       M.pdasserttype(name, "texto")
       inst.methods[name] = proc
    end
+   M.enviarMensaje(inst, "fijar___tipo", self)
    return inst
 end
 
@@ -913,6 +951,14 @@ TipoNulo.methods["crear"] = function(self) return nil end
 
 M.clases.TipoNulo = TipoNulo
 
+local Texto = M.enviarMensaje(Objeto, "subclase")
+M.enviarMensaje(Texto, "fijar_nombre", "Texto")
+
+Texto.methods["vacío"] = function(self) return "" end
+Texto.methods["crear"] = function(self) return "" end
+
+M.clases.Texto = Texto
+
 M.builtins = {
    Objeto = M.clases.Objeto,
    Boole = M.clases.Boole,
@@ -922,6 +968,7 @@ M.builtins = {
    EspacioDeNombres = M.clases.EspacioDeNombres,
    Referencia = M.clases.Referencia,
    TipoNulo = M.clases.TipoNulo,
+   Texto = M.clases.Texto,
 
    VERDADERO = true,
    FALSO = false,
@@ -959,7 +1006,7 @@ function M.builtins.TipoDe(val)
    local luat = type(val)
    if luat == "number" then
       return M.clases.Numero
-   elseif luat == "bool" then
+   elseif luat == "boolean" then
       return M.clases.Boole
    elseif luat == "string" then
       return M.clases.Texto
@@ -991,12 +1038,17 @@ function M.builtins.__ClonarObjeto(val)
 end
 
 function M.builtins.__CompararObjeto(lhs, rhs)
-   assert(type(val) == "table")
+   assert(type(lhs) == "table")
    return lhs:equalTo(rhs)
 end
 
 function M.builtins.__AbrirArchivo(path, mode)
-   assert(false)
+   assert(type(path) == "string")
+   assert(type(mode) == "number")
+   if not jit then
+      assert(math.type(mode) == "integer")
+   end
+   return M.abrirArchivo(path, mode)
 end
 
 function M.builtins.__ByteATexto(byte)
@@ -1054,6 +1106,8 @@ function M.importar(ruta)
    end
    error(("No se encontró el módulo %q"):format(ruta))
 end
+
+M.import = M.importar
 
 function M.scope(upper)
    local realscope = {}
@@ -1117,6 +1171,159 @@ function M.clonar(obj, fields)
       M.enviarMensaje(cl, "fijar_" .. k, v)
    end
    return cl
+end
+
+local function parseFileMode(mode)
+   local function getdigit(num)
+      return num % 10, num / 10
+   end
+   local res = {
+      read = false,
+      write = false,
+      binary = false,
+      truncate = false
+   }
+   local digit
+   digit, mode = getdigit(mode)
+   if digit == 1 then
+      res.write = true
+   else
+      res.read = true
+   end
+   digit, mode = getdigit(mode)
+   if digit == 1 then
+      res.binary = true
+   end
+   digit, mode = getdigit(mode)
+   if digit == 1 then
+      res.truncate = true
+   end
+   return res
+end
+
+local function fileModeToString(modeTbl)
+   local mode
+   if modeTbl.read and not modeTbl.write then
+      assert(not modeTbl.truncate, "cannot truncate a read-only file")
+      mode = "r"
+   elseif not modeTbl.read and modeTbl.write then
+      if modeTbl.truncate then
+         mode = "w"
+      else
+         mode = "w"
+      end
+   else
+      assert(false, "cannot open a file for both reading and writing")
+   end
+
+   if modeTbl.binary then
+      mode = mode .. "b"
+   end
+
+   return mode
+end
+
+function M.abrirArchivo(path, mode)
+   local modeStr = fileModeToString(parseFileMode(mode))
+   local file = M.objeto()
+   local fileIdx = file:newAttribute()
+   file.getfile = function(self)
+      return self:getAttribute(fileIdx)
+   end
+   file:setAttribute(fileIdx, io.open(path, modeStr))
+
+   file.methods["clonar"] = function(self)
+      error("no se pueden clonar archivos")
+   end
+   file.methods["igualA"] = function(self, _)
+      error("no se pueden comparar archivos")
+   end
+   file.methods["operador_="] = function(self, _)
+      error("no se pueden comparar archivos")
+   end
+   file.methods["cerrar"] = function(self)
+      if self:getfile() ~= nil then
+         self:getfile():close()
+         self:setAttribute(fileIdx, nil)
+      end
+   end
+   file.methods["estaAbierto"] = function(self)
+      return self:getfile() ~= nil
+   end
+   file.methods["leerByte"] = function(self)
+      local function isutf8(s)
+         local cont = "[\x80-\xBF]"
+         local patt1 = "[\0-\x7F]"
+         local patt2 = "[\xC0-\xDF]" .. cont
+         local patt3 = "[\xE0-\xEF]" .. cont .. cont
+         local patt4 = "[\xF0-\xF7]" .. string.rep(cont, 3)
+         local patt5 = "[\xF8-\xFB]" .. string.rep(cont, 4)
+         local patt6 = "[\xFC-\xFD]" .. string.rep(cont, 5)
+         local function fullmatch(patt)
+            return string.match(s, patt) == s
+         end
+         local patts = { patt1, patt2, patt3, patt4, patt5, patt6 }
+         for i = 1, #patts do
+            if fullmatch(patts[i]) then
+               return true
+            end
+         end
+         return false
+      end
+      assert(self:getfile() ~= nil)
+      local s = ""
+      for i = 1, 6 do
+         local c = self:getfile():read(1)
+         if not c then
+            if string.len(s) ~= 0 then
+               error("EOF after partial UTF-8 sequence")
+            end
+            return -1
+         end
+         s = s .. c
+         if isutf8(s) then
+            return utf8.codepoint(s)
+         end
+      end
+      error("wat: could not read overlong or invalud utf-8 sequence")
+   end
+   file.methods["obtenerSiguienteByte"] = function(self)
+      assert(self:getfile() ~= nil)
+      local f = self:getfile()
+      local p = f:seek()
+      local c = f:read(1)
+      f:seek("set", p)
+      return c
+   end
+   file.methods["escribirByte"] = function(self, byte)
+      if self:getfile() == nil then
+         error(("wrote to closed file: %q (%s)"):format(path, mode))
+      else
+         self:getfile():write(utf8.char(byte))
+      end
+   end
+   file.methods["posicionActual"] = function(self)
+      assert(self:getfile() ~= nil)
+      return self:getfile():seek()
+   end
+   file.methods["cambiarPosicion"] = function(self, pos)
+      assert(self:getfile() ~= nil)
+      self:getfile():seek("set", pos)
+   end
+   file.methods["finDelArchivo"] = function(self)
+      assert(self:getfile() ~= nil)
+      return not self:getfile():read()
+   end
+   file.methods["error"] = function(self)
+      return false
+   end
+   file.methods["nombreDelArchivo"] = function(self)
+      return path
+   end
+   file.methods["modo"] = function(self)
+      return mode
+   end
+   return file
 end
 
 -- Utilizado como variable temporal por el compilador.
