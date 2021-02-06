@@ -238,19 +238,21 @@ function M.objeto()
 end
 
 function M.pdtypeof(val)
-   local MAPPINGS = {
-      number = "numero",
-      string = "texto",
-      boolean = "boole",
-      ["function"] = "procedimiento",
-      ["nil"] = "nulo",
-   }
-   if MAPPINGS[type(val)] ~= nil then
-      return MAPPINGS[type(val)]
-   elseif type(val) == "table" and val.__pd_object then
+   local t = type(val)
+   if t == "table" and val.__pd_object then
       return "objeto"
-   else
+   elseif t == "table" or t == "thread" or t == "userdata" then
       error(("%s directly passed across PD FFI"):format(type(val)))
+   elseif t == "number" then
+      return "numero"
+   elseif t == "string" then
+      return "texto"
+   elseif t == "boolean" then
+      return "boole"
+   elseif t == "function" then
+      return "procedimiento"
+   elseif t == "nil" then
+      return "nulo"
    end
 end
 
@@ -408,20 +410,17 @@ local METODOS_TEXTO = {
    end,
 
    longitud = function(self)
-      return utf8.len(self)
+      return string.len(self)
    end,
 
    en = function(self, idx)
       M.pdasserttype(idx, "numero")
       -- Recuerda que los índices en PseudoD comienzan desde 0
-      local i = 0
-      for p, c in utf8.codes(self) do
-         if i == idx then
-            return utf8.char(c)
-         end
-         i = i + 1
+      if idx < 0 or idx >= string.len(self) then
+         error("string indexing out of bounds")
+      else
+         return string.sub(self, idx + 1, idx + 1)
       end
-      error("string indexing out of bounds")
    end,
 
    concatenar = function(self, other)
@@ -439,31 +438,16 @@ local METODOS_TEXTO = {
       M.pdasserttype(start, "numero")
       M.pdasserttype(end_, "numero")
       -- Recuerda (de nuevo) que los índices en PseudoD comienzan desde 0
-      local acc = ""
-      local pos = 0
-      for p, c in utf8.codes(self) do
-         if pos >= start and pos < end_ then
-            acc = acc .. utf8.char(c)
-         end
-         pos = pos + 1
-      end
-      return acc
+      return string.sub(self, start + 1, end_)
    end,
 
    buscar = function(self, from, str)
+      M.pdasserttype(from, "numero")
+      M.pdasserttype(str, "texto")
       if string.len(str) == 0 then
          return from
       end
-      local cp = 0
-      local startfrombyte = 1
-      for p, c in utf8.codes(self) do
-         if cp >= from then
-            startfrombyte = p
-            break
-         end
-         cp = cp + 1
-      end
-      local start, end_ = string.find(self, str, startfrombyte, true)
+      local start, end_ = string.find(self, str, from + 1, true)
       if not start then
          return nil
       else
@@ -530,8 +514,8 @@ local METODOS_BOOLE = {
 primitiveClone(METODOS_BOOLE)
 
 local METODOS_PROC = {
-   igualA = function(self, other) return self == other end,
-   ["operador_="] = function(self, other) return self == other end,
+   igualA = function(self, other) return rawequal(self, other) end,
+   ["operador_="] = function(self, other) return rawequal(self, other) end,
 
    llamar = function(self, ...)
       return self(...)
@@ -756,6 +740,13 @@ function M.arreglounpack(arr)
    return table.unpack(tbl, 0, M.enviarMensaje(arr, "longitud") - 1)
 end
 
+function M.fastarreglounpack(arr)
+   assert(type(arr) == "table")
+   assert(arr.__pd_object and arr.__pd_arreglo)
+   local t = arr:getAttribute(ARREGLO_ATTRS_IDX)
+   return table.unpack(t, 0, t.n)
+end
+
 function M.ns(tbl)
    local ns = M.objeto()
    local tblIdx = ns:newAttribute()
@@ -790,84 +781,178 @@ end
 
 M.clases = {}
 
-local Objeto = M.objeto()
-Objeto.atributosDeInstanciaIdx = Objeto:addAttribute("atributosDeInstancia")
-Objeto.metodosDeInstanciaIdx = Objeto:addAttribute("metodosDeInstancia")
-Objeto.claseBaseIdx = Objeto:addAttribute("claseBase")
-Objeto.nombreIdx = Objeto:addAttribute("nombre")
+function M.mkclase()
+   local Cls = M.objeto()
+   Cls.atributosDeInstanciaIdx = Cls:addAttribute("atributosDeInstancia")
+   Cls.metodosDeInstanciaIdx = Cls:addAttribute("metodosDeInstancia")
+   Cls.claseBaseIdx = Cls:addAttribute("claseBase")
+   Cls.nombreIdx = Cls:addAttribute("nombre")
 
-Objeto:setAttribute(Objeto.atributosDeInstanciaIdx, 0)
-Objeto:setAttribute(Objeto.metodosDeInstanciaIdx, M.arreglo())
+   Cls:setAttribute(Cls.atributosDeInstanciaIdx, 0)
+   Cls:setAttribute(Cls.metodosDeInstanciaIdx, M.arreglo())
 
-function Objeto.methods:comoTexto()
-   return "Clase " .. M.enviarMensaje(self, "nombre")
-end
+   Cls.__pd_cls = true
 
-function Objeto.methods:agregarAtributo(nombre)
-   M.pdasserttype(nombre, "texto")
-   local nattrs = self:getAttribute(Objeto.atributosDeInstanciaIdx) + 1
-   self:setAttribute(Objeto.atributosDeInstanciaIdx, nattrs)
-   local mets = self:getAttribute(Objeto.metodosDeInstanciaIdx)
-   M.enviarMensaje(mets, "agregarAlFinal",
-                   M.arreglo(nombre,
-                             function(self)
-                                return self:getAttribute(nattrs)
-                             end))
-   M.enviarMensaje(mets, "agregarAlFinal",
-                   M.arreglo("fijar_" .. nombre,
-                             function(self, v)
-                                self:setAttribute(nattrs, v)
-                             end))
-   return nattrs
-end
+   function Cls.methods:igualA(other)
+      return self == other
+   end
 
-function Objeto.methods:agregarMetodo(nombre, proc)
-   local mets = self:getAttribute(Objeto.metodosDeInstanciaIdx)
-   M.enviarMensaje(mets, "agregarAlFinal", M.arreglo(nombre, proc))
-end
+   function Cls.methods:clonar()
+      return self
+   end
 
-function Objeto.methods:_crearConYo(inst)
-   local obj = M.objeto()
-   local mets = self:getAttribute(Objeto.metodosDeInstanciaIdx)
-   for i, pair in M.arregloipairs(mets) do
-      local name, proc = M.arreglounpack(pair)
-      M.pdasserttype(name, "texto")
-      obj.methods[name] = function(self, ...)
-         return M.enviarMensaje(proc, "llamar", inst, ...)
+   Cls.methods["operador_="] = Cls.methods.igualA
+
+   function Cls.methods:comoTexto()
+      return ("Clase %s"):format(self:getAttribute(Cls.nombreIdx))
+   end
+
+   function Cls.methods:fijar_claseBase(base)
+      if base == nil then
+         return
       end
+      local nattrs = self:getAttribute(Cls.atributosDeInstanciaIdx)
+      local mets = self:getAttribute(Cls.metodosDeInstanciaIdx)
+      assert(nattrs == 0, "no se puede cambiar la clase base de una clase con atributos")
+      assert(M.enviarMensaje(mets, "longitud") == 0, "no se puede cambiar la clase base de una clase con métodos")
+      assert(M.pdtypeof(base) == "objeto" and base.__pd_cls)
+      nattrs = nattrs + base:getAttribute(base.atributosDeInstanciaIdx)
+      self:setAttribute(Cls.atributosDeInstanciaIdx, nattrs)
+      self:setAttribute(Cls.claseBaseIdx, base)
    end
-   return obj
-end
 
-function Objeto.methods:_crear()
-   local inst = M.objeto()
-   local nattrs = self:getAttribute(Objeto.atributosDeInstanciaIdx)
-   local mets = self:getAttribute(Objeto.metodosDeInstanciaIdx)
-   for i = 1, nattrs do
-      inst:newAttribute()
+   function Cls.methods:agregarAtributo(nombre)
+      M.pdasserttype(nombre, "texto")
+      local nattrs = self:getAttribute(Cls.atributosDeInstanciaIdx) + 1
+      self:setAttribute(Cls.atributosDeInstanciaIdx, nattrs)
+      local mets = self:getAttribute(Cls.metodosDeInstanciaIdx)
+      M.enviarMensaje(mets, "agregarAlFinal",
+                      M.arreglo(nombre,
+                                function(self)
+                                   return self:getAttribute(nattrs)
+                                end))
+      M.enviarMensaje(mets, "agregarAlFinal",
+                      M.arreglo("fijar_" .. nombre,
+                                function(self, v)
+                                   self:setAttribute(nattrs, v)
+                                end))
+      return nattrs
    end
-   for i, pair in M.arregloipairs(mets) do
-      local name, proc = M.arreglounpack(pair)
-      M.pdasserttype(name, "texto")
-      inst.methods[name] = proc
+
+   function Cls.methods:agregarMetodo(nombre, proc)
+      local mets = self:getAttribute(Cls.metodosDeInstanciaIdx)
+      M.enviarMensaje(mets, "agregarAlFinal", M.arreglo(nombre, proc))
    end
-   M.enviarMensaje(inst, "fijar___tipo", self)
-   return inst
+
+   -- Nota sobre los métodos _crearConYo y _crear:
+   --
+   -- Originalmente estos métodos tenían una implementación recursiva: ya que
+   -- el trabajo tiene que realizarse desde la clase base hasta las hijas, la
+   -- implementaciones básicamente eran:
+   --
+   -- ```
+   -- function recur(clase)
+   --   if clase.base then recur(clase.base) end
+   --   return work(clase)
+   -- end
+   -- recur(self)
+   -- ```
+   --
+   -- Sin embargo, cambiarlo a una implementación iterativa de la forma:
+   --
+   -- ```
+   -- local stack = {}
+   -- while true do
+   --   stack[#stack + 1] = clase
+   --   if not clase.base then break end
+   --   clase = clase.base
+   -- end
+   -- for i = #stack, 1, -1 do
+   --   work(stack[i])
+   -- end
+   -- ```
+   --
+   -- Tiene mejor rendimiento a pesar de que en teoría ambos realizan la misma
+   -- cantidad de trabajo. Imagino que se debe a que Lua, siendo un lenguaje
+   -- principalmente imperativo, no optimiza de igual forma las llamadas a
+   -- funciones que los bucles.
+
+   function Cls.methods:_crearConYo(inst)
+      local obj = M.objeto()
+      local stack = {}
+      local cls = self
+      while true do
+         local base = cls:getAttribute(cls.claseBaseIdx)
+         stack[#stack + 1] = cls
+         if base == nil then
+            break
+         end
+         cls = base
+      end
+      for i = #stack, 1, -1 do
+         cls = stack[i]
+         local mets = cls:getAttribute(cls.metodosDeInstanciaIdx)
+         for i, pair in M.arregloipairs(mets) do
+            local name, proc = M.fastarreglounpack(pair)
+            M.pdasserttype(name, "texto")
+            obj.methods[name] = function(self, ...)
+               return M.enviarMensaje(proc, "llamar", inst, ...)
+            end
+         end
+      end
+      return obj
+   end
+
+   function Cls.methods:_crear()
+      local inst = M.objeto()
+      local stack = {}
+      local cls = self
+      while true do
+         local base = cls:getAttribute(cls.claseBaseIdx)
+         stack[#stack + 1] = cls
+         if base == nil then
+            break
+         end
+         cls = base
+      end
+      for i = #stack, 1, -1 do
+         cls = stack[i]
+         local nattrs = cls:getAttribute(cls.atributosDeInstanciaIdx)
+         local mets = cls:getAttribute(cls.metodosDeInstanciaIdx)
+         for i = 1, nattrs do
+            inst:newAttribute()
+         end
+         for i, pair in M.arregloipairs(mets) do
+            local name, proc = M.fastarreglounpack(pair)
+            M.pdasserttype(name, "texto")
+            inst.methods[name] = proc
+         end
+      end
+      M.enviarMensaje(inst, "fijar___tipo", self)
+      return inst
+   end
+
+   function Cls.methods:crear(...)
+      local inst = M.enviarMensaje(self, "_crear")
+      M.enviarMensaje(inst, "inicializar", ...)
+      return inst
+   end
+
+   function Cls.methods:subclase()
+      local subcls = M.mkclase()
+      M.enviarMensaje(subcls, "fijar_claseBase", self)
+      M.enviarMensaje(subcls, "fijar_nombre", "<clase anónima>")
+      subcls.__pd_cls = true
+      return subcls
+   end
+
+   return Cls
 end
 
-function Objeto.methods:crear(...)
-   local inst = M.enviarMensaje(self, "_crear")
-   M.enviarMensaje(inst, "inicializar", ...)
-   return inst
-end
+local Objeto = M.mkclase()
 
-function Objeto.methods:subclase()
-   local subcls = M.enviarMensaje(self, "clonar")
-   M.enviarMensaje(subcls, "fijar_claseBase", self)
-   M.enviarMensaje(subcls, "fijar_nombre", "<clase anónima>")
-   return subcls
-end
-
+M.enviarMensaje(Objeto, "fijar_claseBase", nil)
+M.enviarMensaje(Objeto, "fijar_nombre", "Objeto")
 M.enviarMensaje(Objeto, "agregarAtributo", "__tipo")
 M.enviarMensaje(Objeto, "agregarMetodo", "inicializar", function(self) end)
 
@@ -1048,18 +1133,16 @@ end
 function M.builtins.__AbrirArchivo(path, mode)
    assert(type(path) == "string")
    assert(type(mode) == "number")
-   if not jit then
-      assert(math.type(mode) == "integer")
-   end
+   assert(math.type(mode) == "integer")
    return M.abrirArchivo(path, mode)
 end
 
 function M.builtins.__ByteATexto(byte)
-   return utf8.char(byte)
+   return string.char(byte)
 end
 
 function M.builtins.__TextoAByte(texto)
-   return utf8.codepoint(texto)
+   return string.byte(texto)
 end
 
 function M.builtins.__ByteEof()
@@ -1117,12 +1200,8 @@ function M.scope(upper)
    local null = {}
    local meta = {}
 
-   local function isnull(v)
-      return rawequal(v, null)
-   end
-
    local function tonil(v)
-      if isnull(v) then
+      if rawequal(v, null) then
          return nil
       else
          return v
@@ -1254,41 +1333,13 @@ function M.abrirArchivo(path, mode)
       return self:getfile() ~= nil
    end
    file.methods["leerByte"] = function(self)
-      local function isutf8(s)
-         local cont = "[\x80-\xBF]"
-         local patt1 = "[\0-\x7F]"
-         local patt2 = "[\xC0-\xDF]" .. cont
-         local patt3 = "[\xE0-\xEF]" .. cont .. cont
-         local patt4 = "[\xF0-\xF7]" .. string.rep(cont, 3)
-         local patt5 = "[\xF8-\xFB]" .. string.rep(cont, 4)
-         local patt6 = "[\xFC-\xFD]" .. string.rep(cont, 5)
-         local function fullmatch(patt)
-            return string.match(s, patt) == s
-         end
-         local patts = { patt1, patt2, patt3, patt4, patt5, patt6 }
-         for i = 1, #patts do
-            if fullmatch(patts[i]) then
-               return true
-            end
-         end
-         return false
-      end
       assert(self:getfile() ~= nil)
-      local s = ""
-      for i = 1, 6 do
-         local c = self:getfile():read(1)
-         if not c then
-            if string.len(s) ~= 0 then
-               error("EOF after partial UTF-8 sequence")
-            end
-            return -1
-         end
-         s = s .. c
-         if isutf8(s) then
-            return utf8.codepoint(s)
-         end
+      local c = self:getfile():read(1)
+      if not c then
+         return -1
+      else
+         return string.byte(c)
       end
-      error("wat: could not read overlong or invalud utf-8 sequence")
    end
    file.methods["obtenerSiguienteByte"] = function(self)
       assert(self:getfile() ~= nil)
@@ -1302,7 +1353,7 @@ function M.abrirArchivo(path, mode)
       if self:getfile() == nil then
          error(("wrote to closed file: %q (%s)"):format(path, mode))
       else
-         self:getfile():write(utf8.char(byte))
+         self:getfile():write(string.char(byte))
       end
    end
    file.methods["posicionActual"] = function(self)
