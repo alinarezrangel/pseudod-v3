@@ -110,22 +110,31 @@ necesitas
 }|
 DOCUMENTA]
 funcion Unir: textos, separador
-    variable res
-    fijar res a Reducir: NULO, funcion: acc, el
-        variable sep
-        si acc = NULO
-            fijar sep a {}
-            fijar acc a {}
-        sino
-            fijar sep a separador
-        finsi
-        devolver {~t~t~t}#formatear: acc, sep, el
-    finfuncion, textos
-
-    si EsNulo: res
-        devolver {}
+    si __Impl = {Lua Bootstrap}
+        devolver __Lua: {function(textos, separador)
+assert(rt.pdtypeof(textos) == "objeto")
+assert(textos.__pd_arreglo)
+local vals, n = textos.attrs[rt.ARREGLO_ATTRS_IDX], textos.attrs[rt.ARREGLO_ATTRS_IDX].n
+return table.concat(vals, separador, 0, n - 1)
+end}, textos, separador
     sino
-        devolver res
+        variable res
+        fijar res a Reducir: NULO, funcion: acc, el
+            variable sep
+            si acc = NULO
+                fijar sep a {}
+                fijar acc a {}
+            sino
+                fijar sep a separador
+            finsi
+            devolver {~t~t~t}#formatear: acc, sep, el
+        finfuncion, textos
+
+        si EsNulo: res
+            devolver {}
+        sino
+            devolver res
+        finsi
     finsi
 finfuncion
 

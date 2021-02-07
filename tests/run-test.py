@@ -41,20 +41,19 @@ def get_pseudod_exec(pseudod_impl):
             from_project_root('inicio.pd'),
             '--',
             '--sin-mensajes',
-            # FIXME: De nuevo, solo funciona en *NIX
-            '/dev/stdin',
+            '-',
         ]
-    elif pseudod_impl == "lua":
+    elif pseudod_impl == "stage0":
         return [
             search_in_path('lua5.4'),
-            from_project_root('outputs/testing.lua'),
+            from_project_root('bootstrapped/stage0/pseudod.lua'),
             '--sin-mensajes',
             '-',
         ]
-    elif pseudod_impl == "boots":
+    elif pseudod_impl == "stage1":
         return [
             search_in_path('lua5.4'),
-            from_project_root('outputs/boots/pseudod.lua'),
+            from_project_root('bootstrapped/stage1/pseudod.lua'),
             '--sin-mensajes',
             '-',
         ]

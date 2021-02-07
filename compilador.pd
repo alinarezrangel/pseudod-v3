@@ -15,6 +15,7 @@ clase CompiladorBase
 
     metodo importarMódulo: nombreDelMódulo
     metodo inyectarNombresEnÁmbito: ámbito
+    metodo removerNombresDeÁmbito: ámbito
 finclase
 
 metodo CompiladorBase#compilarAST: ast, ámbito
@@ -29,6 +30,10 @@ metodo CompiladorBase#inyectarNombresEnÁmbito: ámbito
     MétodoAbstracto
 finmetodo
 
+metodo CompiladorBase#removerNombresDeÁmbito: ámbito
+    MétodoAbstracto
+finmetodo
+
 metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
     variables ast, ámbito, compilado
     Escribir: ({---- Parsear: ~t}#formatear: llaveDeMódulo)
@@ -38,6 +43,8 @@ metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
         devolver yo#importarMódulo: nombreDelMódulo
     finprocedimiento, procedimiento: ámbito
         yo#inyectarNombresEnÁmbito: ámbito
+    finprocedimiento, procedimiento: ámbito
+        yo#removerNombresDeÁmbito: ámbito
     finprocedimiento
     Escribir: ({---- Compilar: ~t}#formatear: llaveDeMódulo)
     fijar compilado a yo#compilarAST: ast, ámbito

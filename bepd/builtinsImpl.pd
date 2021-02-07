@@ -65,15 +65,26 @@ Realiza una búsqueda lineal sobre @param{arr} buscando un valor igual a
 @devuelve{@pd{VERDADERO} o @pd{FALSO}.}
 DOCUMENTA]
 funcion Contiene: arr, valor
-    variable idx
-    fijar idx a 0
-    mientras idx < arr#longitud
-        si (arr#en: idx) = valor
-            devolver VERDADERO
-        finsi
-        fijar idx a idx + 1
-    finmientras
-    devolver FALSO
+    si __Impl = {Lua Bootstrap}
+        devolver __Lua: {function(arr, valor)
+for i, v in rt.arregloipairs(arr) do
+   if rt.enviarMensaje(v, "operador_=", valor) then
+       return true
+   end
+end
+return false
+end}, arr, valor
+    sino
+        variable idx
+        fijar idx a 0
+        mientras idx < arr#longitud
+            si (arr#en: idx) = valor
+                devolver VERDADERO
+            finsi
+            fijar idx a idx + 1
+        finmientras
+        devolver FALSO
+    finsi
 finfuncion
 
 [DOCUMENTA
@@ -98,12 +109,26 @@ finprocedimiento
 @devuelve{Nada, el valor devuelto por @param{proc} es ignorado.}
 DOCUMENTA]
 procedimiento ParaCadaElemento: arr, proc
-    variable i
-    fijar i a 0
-    mientras i < arr#longitud
-        proc#\llamar\: (arr#en: i)
-        fijar i a i + 1
-    finmientras
+    si __Impl = {Lua Bootstrap}
+        devolver __Lua: {function(arr, proc)
+if type(proc) == "function" then
+    for i, v in rt.arregloipairs(arr) do
+        proc(v)
+    end
+else
+    for i, v in rt.arregloipairs(arr) do
+        rt.enviarMensaje(proc, "llamar", v)
+    end
+end
+end}, arr, proc
+    sino
+        variable i
+        fijar i a 0
+        mientras i < arr#longitud
+            proc#\llamar\: (arr#en: i)
+            fijar i a i + 1
+        finmientras
+    finsi
 finprocedimiento
 
 [DOCUMENTA
@@ -129,12 +154,26 @@ finprocedimiento
 @devuelve{Nada, el valor devuelto por @param{proc} es ignorado.}
 DOCUMENTA]
 procedimiento ParaCadaElementoConÍndice: arr, proc
-    variable i
-    fijar i a 0
-    mientras i < arr#longitud
-        proc#\llamar\: (arr#en: i), i
-        fijar i a i + 1
-    finmientras
+    si __Impl = {Lua Bootstrap}
+        devolver __Lua: {function(arr, proc)
+if type(proc) == "function" then
+    for i, v in rt.arregloipairs(arr) do
+        proc(v, i)
+    end
+else
+    for i, v in rt.arregloipairs(arr) do
+        rt.enviarMensaje(proc, "llamar", v, i)
+    end
+end
+end}, arr, proc
+    sino
+        variable i
+        fijar i a 0
+        mientras i < arr#longitud
+            proc#\llamar\: (arr#en: i), i
+            fijar i a i + 1
+        finmientras
+    finsi
 finprocedimiento
 
 [DOCUMENTA
@@ -194,12 +233,30 @@ a procesar.}
 @devuelve{Resultado de la reducción, o @param{base} si el arreglo está vacío.}
 DOCUMENTA]
 funcion Reducir: base, func, arr
-    variable acc
-    fijar acc a base
-    ParaCadaElemento: arr, procedimiento: el
-        fijar acc a %func: acc, el
-    finprocedimiento
-    devolver acc
+    si __Impl = {Lua Bootstrap}
+        devolver __Lua: {function(base, func, arr)
+if type(func) == "function" then
+    local acc = base
+    for i, v in rt.arregloipairs(arr) do
+        acc = func(acc, v)
+    end
+    return acc
+else
+    local acc = base
+    for i, v in rt.arregloipairs(arr) do
+        acc = rt.enviarMensaje(func, "llamar", acc, v)
+    end
+    return acc
+end
+end}, base, func, arr
+    sino
+        variable acc
+        fijar acc a base
+        ParaCadaElemento: arr, procedimiento: el
+            fijar acc a %func: acc, el
+        finprocedimiento
+        devolver acc
+    finsi
 finfuncion
 
 [DOCUMENTA
@@ -372,14 +429,26 @@ necesitas Concatenar = Arreglo#vacio
 }|
 DOCUMENTA]
 funcion Concatenar: ...arrs
-    variable final
-    fijar final a Arreglo#vacio
-    ParaCadaElemento: arrs, procedimiento: arr
-        ParaCadaElemento: arr, procedimiento: el
-            final#agregarAlFinal: el
+    si __Impl = {Lua Bootstrap}
+        devolver __Lua: «function(arrs)
+local res = rt.arreglo()
+for _i, arr in rt.arregloipairs(arrs) do
+    for _j, val in rt.arregloipairs(arr) do
+        rt.enviarMensaje(res, "agregarAlFinal", val)
+    end
+end
+return res
+end», arrs
+    sino
+        variable final
+        fijar final a Arreglo#vacio
+        ParaCadaElemento: arrs, procedimiento: arr
+            ParaCadaElemento: arr, procedimiento: el
+                final#agregarAlFinal: el
+            finprocedimiento
         finprocedimiento
-    finprocedimiento
-    devolver final
+        devolver final
+    finsi
 finfuncion
 
 [DOCUMENTA
@@ -454,7 +523,7 @@ finprocedimiento
 [DOCUMENTA
 @brief{Como @pd{Aplicar'} pero "@italic{a la izquierda}".}
 
-Mientras que @pd{Aplicar'i: proc, a, b, c..., args} es equivalente a
+Mientras que @pd{Aplicar': proc, a, b, c..., args} es equivalente a
 @pd{Aplicar: proc, (ArregloConFinal: a, b, c..., args)},
 @pd{Aplicar'i: proc, a, b, c..., args} es equivalente a
 @pd{Aplicar: proc, (Concatenar: args, (Arreglo#crearCon: a, b, c...))}.
@@ -647,7 +716,11 @@ finfuncion
 @brief{Determina si @param{val} es @pd{NULO}.}
 DOCUMENTA]
 funcion EsNulo: val
-    devolver ((TipoDe: val) = TipoNulo) && (val = NULO)
+    si __Impl = {Lua Bootstrap}
+        devolver __Lua: {function(val) return rawequal(val, nil) end}, val
+    sino
+        devolver ((TipoDe: val) = TipoNulo) && (val = NULO)
+    finsi
 finfuncion
 
 [DOCUMENTA

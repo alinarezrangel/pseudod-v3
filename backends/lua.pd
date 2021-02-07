@@ -24,7 +24,12 @@ utilizar compilador como Compilador
     y textos. "Orquestra" las operaciones de `CompiladorSimpleALua`.
 
   Para facilitar las cosas, `CompiladorSimpleALua` tiene un atributo
- `_compilador` que apunta al `CompiladorALua` que lo maneja. ]
+  `_compilador` que apunta al `CompiladorALua` que lo maneja. ]
+
+[ Nombre código del backend. Véase también la variable del mismo nombre en
+  `backends/lua/runtime.lua` y la variable __Impl. ]
+variable PSEUDOD_IMPL
+fijar PSEUDOD_IMPL a {Lua Bootstrap}
 
 funcion EscaparParaLua: texto
     variable res
@@ -283,30 +288,99 @@ metodo CompiladorSimpleALua#visitarDevolver: nodo
     devolver {do return ~t; end;}#formatear: (yo#visitar: nodo#expresión)
 finmetodo
 
+clase ComparaciónDeBuiltin
+    atributos tipoIgualdad, rhs
+finclase
+
+funcion SepararComparaciónDeBuiltin: nodo, rnBuiltin
+    variables lhs, rhs, op
+    si EsInstancia: nodo, AST#NodoOperador
+        fijar lhs a nodo#lhs
+        fijar rhs a nodo#rhs
+        si nodo#op#texto = {=}
+            fijar op a AST#TipoIgualdad#IGUALES
+        sino
+            devolver FALSO
+        finsi
+    sino
+        si EsInstancia: nodo, AST#NodoSonIguales
+            fijar lhs a nodo#lhs
+            fijar rhs a nodo#rhs
+            si nodo#tipoIgualdad = AST#TipoIgualdad#IGUALES
+                fijar op a AST#TipoIgualdad#IGUALES
+            sino
+                fijar op a AST#TipoIgualdad#DIFERENTES
+            finsi
+        sino
+            devolver FALSO
+        finsi
+    finsi
+    si no (EsInstancia: lhs, AST#NodoIdentificador)
+        devolver FALSO
+    finsi
+    si no (RN#NombreResueltoDe: lhs) = rnBuiltin
+        devolver FALSO
+    finsi
+    variable valorRhs
+    si EsInstancia: rhs, AST#NodoTextoLiteral
+        fijar valorRhs a rhs#valor
+    sino
+        si EsInstancia: rhs, AST#NodoNumeroLiteral
+            fijar valorRhs a rhs#valor
+        sino
+            devolver FALSO
+        finsi
+    finsi
+    devolver clonar ComparaciónDeBuiltin#crear con
+        tipoIgualdad: op
+        rhs: valorRhs
+    finclonar
+finfuncion
+
 metodo CompiladorSimpleALua#visitarSi: nodo
     variables cods, subSiVerdadero, subSiFalso
 
+    fijar cods a Arreglo#vacio
     fijar subSiVerdadero a
         yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSiVerdadero}
     fijar subSiFalso a
         yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSiFalso}
 
-    fijar cods a Arreglo#vacio
-    cods#agregarAlFinal: ({if ~t then}#formatear: (yo#visitar: nodo#condicional))
-
-    cods#agregarAlFinal: subSiVerdadero#iniciar
-    ParaCadaElemento: nodo#siVerdadero, procedimiento: stmt
-        cods#agregarAlFinal: ((subSiVerdadero#visitar: stmt)#concatenar: {;})
+    procedimiento CompilarBloque: nodos, sub
+        cods#agregarAlFinal: sub#iniciar
+        ParaCadaElemento: nodos, procedimiento: stmt
+            cods#agregarAlFinal: ((sub#visitar: stmt)#concatenar: {;})
+        finprocedimiento
     finprocedimiento
 
-    cods#agregarAlFinal: {else}
-
-    cods#agregarAlFinal: subSiFalso#iniciar
-    ParaCadaElemento: nodo#siFalso, procedimiento: stmt
-        cods#agregarAlFinal: ((subSiFalso#visitar: stmt)#concatenar: {;})
-    finprocedimiento
-
-    cods#agregarAlFinal: {end}
+    [ Si se compara directamente __Impl con una literal de texto igual a
+      PSEUDOD_IMPL, entonces compila únicamente la rama que sabemos que
+      pasará. ]
+    variable cmp
+    fijar cmp a SepararComparaciónDeBuiltin: nodo#condicional, (yo#_compilador#_builtins#en: {__Impl})
+    si EsInstancia: cmp, ComparaciónDeBuiltin
+        cods#agregarAlFinal: {;do;}
+        si cmp#tipoIgualdad = AST#TipoIgualdad#IGUALES
+            si cmp#rhs = PSEUDOD_IMPL
+                CompilarBloque: nodo#siVerdadero, subSiVerdadero
+            sino
+                CompilarBloque: nodo#siFalso, subSiFalso
+            finsi
+        sino
+            si cmp#rhs = PSEUDOD_IMPL
+                CompilarBloque: nodo#siFalso, subSiFalso
+            sino
+                CompilarBloque: nodo#siVerdadero, subSiVerdadero
+            finsi
+        finsi
+        cods#agregarAlFinal: {;end;}
+    sino
+        cods#agregarAlFinal: ({if ~t then}#formatear: (yo#visitar: nodo#condicional))
+        CompilarBloque: nodo#siVerdadero, subSiVerdadero
+        cods#agregarAlFinal: {else}
+        CompilarBloque: nodo#siFalso, subSiFalso
+        cods#agregarAlFinal: {end}
+    finsi
 
     devolver Unir: cods, {~%}#formatear
 finmetodo
@@ -670,6 +744,12 @@ metodo CompiladorALua#inyectarNombresEnÁmbito: ámbito
     finprocedimiento
     ParaCadaElemento: yo#_builtinsAutoejecutables, procedimiento: nombre
         ámbito#marcarComoAutoejecutable: nombre
+    finprocedimiento
+finmetodo
+
+metodo CompiladorALua#removerNombresDeÁmbito: ámbito
+    yo#_builtins#paraCadaPar: procedimiento: nombreEnRT, _binding
+        ámbito#eliminarNombre: nombreEnRT
     finprocedimiento
 finmetodo
 

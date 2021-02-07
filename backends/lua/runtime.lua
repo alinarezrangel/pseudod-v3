@@ -587,6 +587,7 @@ function M.nl()
 end
 
 local ARREGLO_ATTRS_IDX = 1
+M.ARREGLO_ATTRS_IDX = ARREGLO_ATTRS_IDX
 
 local METODOS_ARREGLO = {
    en = function(self, i)
