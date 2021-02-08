@@ -2,11 +2,23 @@ utilizar bepd/builtins
 utilizar bepd/x/puerto como Puerto
 utilizar bepd/utilidades/texto/ascii como ASCII
 
+[DOCUMENTA
+@brief{Símbolo de una expresión S.}
+DOCUMENTA]
 clase Símbolo
+    [DOCUMENTA
+    @brief{Crea un símbolo desde el texto @pd{txt}.}
+    DOCUMENTA]
     metodo estatico desdeTexto: txt
 
+    [DOCUMENTA
+    @brief{Valor textual del token.}
+    DOCUMENTA]
     atributo valor
 
+    [DOCUMENTA
+    @brief{Alias para el método @code{#valor}.}
+    DOCUMENTA]
     metodo comoTexto
 finclase
 
@@ -21,6 +33,12 @@ metodo Símbolo#comoTexto
     devolver yo#valor
 finmetodo
 
+[DOCUMENTA
+@brief{Mapea cada carácter de un texto.}
+
+Devuelve un nuevo texto en el que cada carácter es el resultado de llamar
+@pd{func} en el carácter de la misma posición en @pd{texto}.
+DOCUMENTA]
 funcion MapearTexto: texto, func
     variable res
     fijar res a {}
@@ -30,6 +48,12 @@ funcion MapearTexto: texto, func
     devolver res
 finfuncion
 
+[DOCUMENTA
+@brief{Escapa el texto para una expresión S.}
+
+El texto devuelto escapa de manera correcta todos los carácteres especiales
+como "\", '"' y los tabuladores.
+DOCUMENTA]
 funcion EscaparTexto: texto
     devolver MapearTexto: texto, funcion: car
         si car = {\}
@@ -50,6 +74,11 @@ funcion EscaparTexto: texto
     finfuncion
 finfuncion
 
+[DOCUMENTA
+@brief{Desescapa el texto de una expresión S.}
+
+Inverso de @pd{EscaparTexto}.
+DOCUMENTA]
 funcion DesescaparTexto: texto
     variables acc, i
     fijar acc a {}
@@ -88,10 +117,20 @@ finfuncion
 variable EXTRA_ID
 fijar EXTRA_ID a {-+<>}
 
+[DOCUMENTA
+@brief{Determina si @pd{ch} es un carácter válido para un símbolo.}
+DOCUMENTA]
 funcion EsCarácterIdentificador: ch
     devolver (ASCII#EsAlfabético: ch) || (ASCII#EsDígitoDecimal: ch) || (Contiene: EXTRA_ID, ch)
 finfuncion
 
+[DOCUMENTA
+@brief{Obtiene el siguiente carácter en @pd{puerto} sin consumirlo.}
+
+Equivalente a llamar a @code{#leerCarácter} seguido de @code{desleerCarácter},
+excepto que tiene en cuenta el caso en que @code{#leerCarácter} devuelve
+@pd{Puerto#EOF}.
+DOCUMENTA]
 procedimiento SiguienteCarácter: puerto
     variable ch
     fijar ch a puerto#leerCarácter
@@ -151,6 +190,33 @@ procedimiento ParsearTexto: puerto
     devolver DesescaparTexto: texto
 finprocedimiento
 
+[DOCUMENTA
+@brief{Parsea una expresión S desde el puerto.}
+
+Lee una expresión S de @pd{puerto} y la devuelve como un objeto en PseudoD.
+
+La gramática de las expresiones S implementadas en este módulo es:
+
+@codeblock|{
+datum = list | string | number | bool | symbol
+number = la misma sintáxis que los números en PseudoD
+bool = "true" | "false"
+symbol = (carácteres alfabéticos ASCII, dígitos decimales ASCII, cualquiera de "-", "+", "<", ">")+
+string = '"' (véase más abajo) '"'
+list = "(" datum* ")"
+}|
+
+La sintáxis de las literales textuales (strings) es una secuencia de carácteres
+excepto que los carácteres tabulador, fin de línea, comillas dobles '"' y la
+barra inversa "\" tienen que ser escapadas con una barra inversa "\".
+
+Para distinguir entre textos y símbolos, los textos (strings) son devueltos
+como instancias de @pd{Texto}, mientras que los símbolos como instancias de
+@pd{Símbolo}.
+
+Las listas son transformadas a instancias de @pd{Arreglo}. "true" y "false" a
+@pd{VERDADERO} y @pd{FALSO}, y números a @pd{Numero}.
+DOCUMENTA]
 procedimiento ParsearDato: puerto
     variable ch
     Puerto#SaltarEspacios: puerto
@@ -196,6 +262,14 @@ procedimiento DesparsearSímbolo: puerto, dato
     puerto#escribirTexto: dato#comoTexto
 finprocedimiento
 
+[DOCUMENTA
+@brief{Serializa un objeto de PseudoD a una expresión S.}
+
+Escribe esta expresión a @pd{puerto}, que debe ser un puerto de escritura.
+
+@pd{dato} debe estar compuesto de los mismos tipos de objeto que los datos
+devueltos por @pd{ParsearDato} (arreglos, booles, números, textos y símbolos).
+DOCUMENTA]
 procedimiento DesparsearDato: puerto, dato
     si EsInstancia: dato, Arreglo
         devolver DesparsearLista: puerto, dato

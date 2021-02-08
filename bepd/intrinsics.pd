@@ -1,5 +1,14 @@
 [ No importes ni exportes nada. Quizás solo renombra algunos builtins. ]
 
+[DOCUMENTA
+@brief{Verifica en tiempo de ejecución si se está en la implementación dada.}
+
+Recuerda que comparaciones de la forma @pd{si __Impl = impl ... sino ... finsi}
+son tratadas de manera especial por el compilador. Si por algún motívo no
+deseas esto, puedes utilizar esta función.
+
+@devuelve{Si @pd{__Impl} es igual a @pd{impl}.}
+DOCUMENTA]
 funcion EstoyEn: impl
     devolver __Impl = impl
 finfuncion

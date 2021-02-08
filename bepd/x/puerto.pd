@@ -1,5 +1,8 @@
 utilizar bepd/builtins
 
+[DOCUMENTA
+@brief{Tipo de la constante @pd{EOF}.}
+DOCUMENTA]
 clase TipoEOF
     metodo comoTexto
 finclase
@@ -8,9 +11,19 @@ metodo TipoEOF#comoTexto
     devolver {EOF}
 finmetodo
 
+[DOCUMENTA
+@brief{Fin de un puerto.}
+DOCUMENTA]
 variable EOF
 fijar EOF a TipoEOF#crear
 
+[DOCUMENTA
+@brief{Una lectura parcial.}
+
+@code{leído} es el texto leído del puerto. @code{finPorEOF} es un @pd{Boole}
+que es @pd{VERDADERO} si la lectura parcial terminó porque se encontró un
+@pd{EOF} o @pd{FALSO} si se terminó por otro motivo.
+DOCUMENTA]
 clase LecturaParcial
     atributos leído, finPorEOF
 
@@ -21,13 +34,43 @@ metodo LecturaParcial#comoTexto
     devolver {(LecturaParcial con leído: [~t], finPorEOF: ~t)}#formatear: yo#leído, (yo#finPorEOF#escojer: {VERDADERO}, {FALSO})
 finmetodo
 
+[DOCUMENTA
+@brief{Clase base para los puertos.}
+DOCUMENTA]
 clase Puerto
 finclase
 
+[DOCUMENTA
+@brief{Puerto de lectura de un texto.}
+
+Implementa la interfáz de un puerto de lectura sobre un texto. Todos los
+puertos de lectura deben implementar los métodos de instancia que esta clase
+define.
+DOCUMENTA]
 clase PuertoDeLectura hereda Puerto
+    [DOCUMENTA
+    @brief{Crea un @pd{PuertoDeLectura} que leerá desde @pd{texto}.}
+
+    Para construir una instancia de esta clase, prefiere siempre utilizar
+    @pd{TextoComoPuerto}.
+    DOCUMENTA]
     metodo estatico desdeTexto: texto
 
+    [DOCUMENTA
+    @brief{Lee un carácter del puerto y lo devuelve.}
+
+    Si el puerto ya llegó a su final (no hay nada más que leer) entonces
+    devuelve @pd{EOF}.
+    DOCUMENTA]
     metodo leerCarácter
+
+    [DOCUMENTA
+    @brief{Vuelve a poner un carácter en el buffer del puerto.}
+
+    @code{desleerCarácter} vuelve a poner el último carácter leído por
+    @code{leerCarácter} en el puerto, de forma que la siguiente llamada
+    a @code{leerCarácter} lo vuelve a devolver.
+    DOCUMENTA]
     metodo desleerCarácter
 finclase
 
@@ -66,9 +109,33 @@ metodo PuertoDeLectura#desleerCarácter
     devolver car
 finmetodo
 
+[DOCUMENTA
+@brief{Puerto de escritura de un texto.}
+
+Implementa la interfáz de un puerto de escritura sobre un texto. Todos los
+puertos de escritura deben implementar los métodos de instancia que esta clase
+define.
+DOCUMENTA]
 clase PuertoDeEscritura hereda Puerto
+    [DOCUMENTA
+    @brief{Crea un @pd{PuertoDeEscritura}.}
+
+    Para construir una instancia de esta clase, prefiere siempre utilizar
+    @pd{PuertoParaTexto}.
+    DOCUMENTA]
     metodo estatico paraTexto
 
+    [DOCUMENTA
+    @brief{Devuelve todo el texto escrito hasta ahora en el puerto.}
+
+    Prefiere siempre la función @pd{TextoDePuertoDeEscritura} sobre este
+    método.
+    DOCUMENTA]
+    metodo texto
+
+    [DOCUMENTA
+    @brief{Escribe @pd{txt} en el puerto.}
+    DOCUMENTA]
     metodo escribirTexto: txt
 finclase
 
@@ -82,6 +149,9 @@ metodo PuertoDeEscritura#escribirTexto: txt
     fijar yo#texto a yo#texto#concatenar: txt
 finmetodo
 
+[DOCUMENTA
+@brief{Determina si @pd{texto} tiene a @pd{final} como postfijo.}
+DOCUMENTA]
 funcion TerminaCon: texto, final
     variables tamTexto, tamFinal
     fijar tamTexto a texto#longitud
@@ -94,6 +164,29 @@ funcion TerminaCon: texto, final
     devolver parteFinal = final
 finfuncion
 
+[DOCUMENTA
+@brief{Lee del puerto de lectura @pd{puerto} hasta que se cumpla un predicado.}
+
+Lee carácteres de @pd{puerto}, acumulandolos en un texto @code{acc}. En cada
+parte (incluyendo al principio cuando el acumulador está vacío) se llama a
+@pd{predicado} con @code{acc} para determinar si se debe continuar (en caso de
+devolver @pd{VERDADERO}) o detenerse (en caso de devolver @pd{FALSO}). No
+incluye el último carácter leído (de hecho, es desleído).
+
+Devuelve dicho acumulador.
+
+Puede parecer raro que el texto devuelto no incluya el último texto leído, pero
+esta función fue hecha para leer hasta encontrar carácteres, no patrónes más
+complejos. Por ejemplo:
+
+@ejemplo|{
+variable p
+fijar p a TextoComoPuerto: {hola mundo. que tal}
+necesitas (LeerMientras: p, funcion: texto
+    devolver TerminaCon: texto, {.}
+finfuncion) = {hola mundo}
+}|
+DOCUMENTA]
 procedimiento LeerMientras: puerto, predicado
     variable buff
     fijar buff a {}
@@ -119,16 +212,39 @@ procedimiento LeerMientras: puerto, predicado
     devolver buff
 finprocedimiento
 
+[DOCUMENTA
+@brief{Determina si @pd{texto} termina con un espacio en blanco " " o un fín
+de línea.}
+DOCUMENTA]
 funcion TerminaConEspacios: texto
     devolver (TerminaCon: texto, {~%}#formatear) || (TerminaCon: texto, { })
 finfuncion
 
+[DOCUMENTA
+@brief{Lee todos los espacios en blanco de un puerto.}
+
+Lee carácteres de @pd{puerto} hasta que se encuentre uno que no sea un espacio
+en blanco (definído por @pd{TerminaConEspacios}). Esto básicamente avanza el
+puerto de forma que la siguiente llamada a @pd{PuertoDeLectura#leerCarácter} no
+devuelva un espacio en blanco.
+
+@devuelve{Un texto que contiene todos los espacios en blanco que se leyeron.}
+DOCUMENTA]
 procedimiento SaltarEspacios: puerto
     devolver LeerMientras: puerto, funcion: buffer
         devolver (buffer#longitud = 0) || TerminaConEspacios: buffer
     finfuncion
 finprocedimiento
 
+[DOCUMENTA
+@brief{Lee una palabra de un puerto.}
+
+Lee de @pd{puerto} una "palabra" como en C++: Una palabra es cualquier
+secuencia de carácteres que no seán espacios en blanco. Esto incluye carácteres
+Unicode que normalmente se considerarían espacios.
+
+@devuelve{Un texto: la palabra leída.}
+DOCUMENTA]
 procedimiento LeerPalabra: puerto
     SaltarEspacios: puerto
     devolver LeerMientras: puerto, funcion: buffer
@@ -136,6 +252,11 @@ procedimiento LeerPalabra: puerto
     finfuncion
 finprocedimiento
 
+[DOCUMENTA
+@brief{Lee de @pd{puerto} hasta que se encuentre el texto @pd{hasta}.}
+
+@devuelve{El texto leído. Incluye @pd{hasta}.}
+DOCUMENTA]
 procedimiento LeerHasta: puerto, hasta
     variable res
     fijar res a {}
@@ -147,14 +268,29 @@ procedimiento LeerHasta: puerto, hasta
     devolver res#subTexto: 0, (res#longitud - hasta#longitud)
 finprocedimiento
 
+[DOCUMENTA
+@brief{Devuelve un puerto de lectura que lee carácteres de @pd{texto}.}
+
+Alias de @pd{PuertoDeLectura#desdeTexto}.
+DOCUMENTA]
 funcion TextoComoPuerto: texto
     devolver PuertoDeLectura#desdeTexto: texto
 finfuncion
 
+[DOCUMENTA
+@brief{Devuelve un puerto de escritura acumula lo escrito como un texto.}
+
+Alias de @pd{PuertoDeEscritura#paraTexto}.
+DOCUMENTA]
 funcion PuertoParaTexto
     devolver PuertoDeEscritura#paraTexto
 finfuncion
 
+[DOCUMENTA
+@brief{Devuelve todo el texto escrito hasta ahora en el puerto.}
+
+@pd{puertoDeEscritura} debe haber sido creado por @pd{PuertoParaTexto}.
+DOCUMENTA]
 funcion TextoDePuertoDeEscritura: puertoDeEscritura
     devolver puertoDeEscritura#texto
 finfuncion
@@ -179,6 +315,21 @@ metodo PuertoEstándar#escribirTexto: texto
     escribir texto
 finmetodo
 
-variables EntradaEstándar, SalidaEstándar
+[DOCUMENTA
+@brief{La entrada estándar del programa.}
+
+Este es un puerto de lectura que lee carácteres desde la entrada estándar. El
+método @code{#desleerCarácter} no está soportado (esto es un bug y será
+corregido en futuras versiones).
+DOCUMENTA]
+variable EntradaEstándar
 fijar EntradaEstándar a PuertoEstándar#_crear
+
+[DOCUMENTA
+@brief{La salida estándar del programa.}
+
+Un puerto de escritura que escribe textos a la salida estándar del programa
+(utilizando la palabra clave @code{escribir}).
+DOCUMENTA]
+variable SalidaEstándar
 fijar SalidaEstándar a PuertoEstándar#_crear

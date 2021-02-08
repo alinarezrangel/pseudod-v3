@@ -1,11 +1,37 @@
 utilizar bepd/builtins
 utilizar bepd/x/puerto como Puerto
 
+[DOCUMENTA
+@brief{Representa una posición dentro de un archivo o texto.}
+DOCUMENTA]
 clase PosiciónTextual
-    atributos nombreDelArchivo, línea, columna
+    [DOCUMENTA
+    @brief{Nombre del archivo donde se está.}
+    DOCUMENTA]
+    atributo nombreDelArchivo
 
+    [DOCUMENTA
+    @brief{Número de línea dentro del archivo.}
+
+    Comienza desde 1.
+    DOCUMENTA]
+    atributo línea
+
+    [DOCUMENTA
+    @brief{Número de columna dentro del archivo.}
+
+    Comienza desde 0.
+    DOCUMENTA]
+    atributo columna
+
+    [DOCUMENTA
+    @brief{Inicializa la posición textual.}
+    DOCUMENTA]
     metodo inicializar: nombreDelArchivo, línea, columna
 
+    [DOCUMENTA
+    @brief{Devuelve una representación para humanos de la posición textual.}
+    DOCUMENTA]
     metodo comoTexto
 finclase
 
@@ -19,12 +45,20 @@ metodo PosiciónTextual#comoTexto
     devolver {«~t:~t:~t»}#formatear: yo#nombreDelArchivo, yo#línea, yo#columna
 finmetodo
 
+[DOCUMENTA
+@brief{Un puerto de lectura que mantiene una posición textual.}
+
+Provee la misma interfáz que un @pd{Puerto#PuertoDeLectura}.
+DOCUMENTA]
 clase PuertoConPosiciónTextual hereda Puerto#Puerto
     metodo inicializar: puerto
 
     metodo leerCarácter
     metodo desleerCarácter
 
+    [DOCUMENTA
+    @brief{Devuelve la posición actual en el puerto.}
+    DOCUMENTA]
     metodo posiciónActual
 finclase
 

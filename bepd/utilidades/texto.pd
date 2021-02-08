@@ -10,6 +10,25 @@ funcion TextoContiene: texto, parte
     devolver no ((texto#buscar: 0, parte) = NULO)
 finfuncion
 
+[DOCUMENTA
+@brief{Parte @pd{texto} de acuerdo a @pd{separador}.}
+
+@pd{opciones} es un texto que puede contener los carácteres @code{p} o @code{-}
+pero no ambos:
+
+@itemlist(
+@item{@code{p} activa el @italic{modo perl}. En el modo perl, partes íguales
+del resultado son colapsadas a una sola. Por ejemplo:
+@pd|{Partir': {hola,,mundo,1,1,1,1}, {,}, {p}}| produce
+@pd|{Arreglo#crearCon: {hola}, {}, {mundo}, {1}}|. Nota como los múltiples
+@code{1}s fueron colapsados.}
+@item{@code{-} elimina cualquier parte vacía @code{""} que se pudiese producir.}
+@item{Si @pd{opciones} es un texto vacío, no colapsa ningún valor.}
+)
+
+No deberías utilizar esta función, en cambio, utiliza @pd{Partir},
+@pd{PartirComoPerl} o @pd{PartirSinVacíos}.
+DOCUMENTA]
 funcion Partir': texto, separador, opciones
     variables siguienteÍndice, partes, índice, comoPerl, sinVacíos, parte, parteAnterior
 
@@ -74,6 +93,12 @@ funcion Partir: texto, separador
     devolver Partir': texto, separador, {}
 finfuncion
 
+[DOCUMENTA
+@brief{Parte un texto sin dejar duplicados.}
+
+Similar a @pd{Partir} pero elimína elementos duplicados. Por ejemplo,
+@pd{PartirComoPerl: "1:1:2:2:3:3", ":"} es @pd{Arreglo#crearCon: "1", "2", "3"}.
+DOCUMENTA]
 funcion PartirComoPerl: texto, separador
     devolver Partir': texto, separador, {p}
 finfuncion
@@ -141,7 +166,8 @@ finfuncion
 [DOCUMENTA
 @brief{Repíte un texto @pd{n} veces.}
 
-Repíte el texto @pd{txt} @pd{n} veces.
+Devuelve un texto que es la concatenación de @pd{txt} con sí mismo @pd{n}
+veces.
 DOCUMENTA]
 funcion RepetirTexto: txt, n
     variables acc, i

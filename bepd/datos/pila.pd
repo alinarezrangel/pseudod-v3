@@ -1,18 +1,60 @@
 utilizar bepd/builtinsImpl
 
+[DOCUMENTA
+@brief{Una lista de elementos FILO.}
+
+Una pila mantiene una lista de elementos de forma que solo se pueden agregar y
+remover elementos en la parte superior de la pila.
+DOCUMENTA]
 clase Pila
+    [DOCUMENTA
+    @brief{Construye una pila vacía.}
+    DOCUMENTA]
     metodo estatico vacía
+
+    [DOCUMENTA
+    @brief{Construye una pila con los elementos del arreglo @pd{arr}.}
+    DOCUMENTA]
     metodo estatico desdeArreglo: arr
 
+    [DOCUMENTA
+    @brief{Convierte esta pila a un @pd{Texto}.}
+    DOCUMENTA]
     metodo comoTexto
 
+    [DOCUMENTA
+    @brief{Devuelve la cantidad de elementos en la pila.}
+    DOCUMENTA]
     metodo longitud
+
+    [DOCUMENTA
+    @brief{Devuelve @pd{VERDADERO} si la pila está vacía, @pd{FALSO} de
+    lo contrario.}
+    DOCUMENTA]
     metodo estáVacía
 
+    [DOCUMENTA
+    @brief{Apila un nuevo valor en la pila.}
+
+    Este valor ahora estará en la parte superior.
+    DOCUMENTA]
     metodo apilar: valor
+
+    [DOCUMENTA
+    @brief{Desapila el último valor apilado y lo devuelve.}
+    DOCUMENTA]
     metodo desapilar
+
+    [DOCUMENTA
+    @brief{Devuelve el último valor apilado.}
+
+    A diferencia de @pd{Pila#desapilar} este método no desapila el valor.
+    DOCUMENTA]
     metodo últimoValorApilado
 
+    [DOCUMENTA
+    @brief{Vacía la pila, desapilando todos los valores hasta que esté vacía.}
+    DOCUMENTA]
     metodo vaciar
 finclase
 

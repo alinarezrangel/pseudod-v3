@@ -1,5 +1,34 @@
 utilizar bepd/builtins
 
+[DOCUMENTA
+@brief{Crea una enumeración.}
+
+Devuelve una clase que representa una enumeración. @pd{nombre} debe ser el
+nombre de la variable que contiene a dicha clase (esto es necesario para que la
+clase devuelta contenga el atributo @code{#nombre} correcto y para que el
+método @code{#comoTexto} de las instancias sea correcto).
+
+@pd{...campos} debe ser una secuencia de textos, cada uno será un valor
+distínto de la enumeración.
+
+Una enumeración es una clase con un número fijo de instancias únicas. Cada una
+de estas instancias está expuesta por un método estático con su mismo
+nombre. Cada instancia solo tiene tres métodos: @code{igualA} (junto a
+@code{operador_=}) y @code{comoTexto}. Las instancias solo se comparan como
+iguales a si mismas.
+
+Por ejemplo:
+
+@ejemplo|{
+variables Letras, ExtensiónDeArchivo
+fijar Letras a Enum: {Letras}, {ALPHA}, {BETA}, {GAMMA}, {OMEGA}, {DELTA}
+fijar ExtensiónDeArchivo a Enum: {ExtensiónDeArchivo}, {PD}, {TXT}, {MD}, {PNG}, {OTRO}, {ALPHA}
+
+necesitas Letras#ALPHA = Letras#ALPHA
+necesitas no (Letras#BETA = Letras#ALPHA)
+necesitas no (Letras#ALPHA = ExtensiónDeArchivo#ALPHA)
+}|
+DOCUMENTA]
 funcion Enum: nombre, ...campos
     clase Enumeración
         metodo inicializar: valor

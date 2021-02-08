@@ -3,6 +3,12 @@ utilizar bepd/x/puerto como Puerto
 utilizar bepd/x/puerto/deArchivo como PDA
 
 
+[DOCUMENTA
+@brief{Lee todo un archivo, devolviendo su contenido como un texto.}
+
+Abre @pd{nombre} como un archivo de lectura binario, leyendo todo su contenido
+como el texto devuelto.
+DOCUMENTA]
 procedimiento LeerArchivo: nombre
     variables pt, txt, car
     fijar pt a PDA#PuertoDeArchivoDeLectura#abrir: nombre
@@ -17,6 +23,13 @@ procedimiento LeerArchivo: nombre
 finprocedimiento
 
 
+[DOCUMENTA
+@brief{Determina si el archivo en @pd{nombre} existe o no.}
+
+Actualmente intenta abrir el archivo, devolviendo @pd{VERDADERO} si se pudo
+abrir con éxito o @pd{FALSO} de lo contrario. Esto es problemático porque
+indicará que el archivo no existe incluso si existe pero no se puede leer.
+DOCUMENTA]
 procedimiento Existe: nombre
     [ TODO: Debería ser una llamada a stat(2) ]
     variables p, exs
@@ -27,6 +40,12 @@ procedimiento Existe: nombre
 finprocedimiento
 
 
+[DOCUMENTA
+@brief{Escribe @pd{contenido} al archivo @pd{nombre}, eliminando su contenido
+anterior.}
+
+El archivo es abierto en modo de escritura binaria y truncado.
+DOCUMENTA]
 procedimiento EscribirArchivo: nombre, contenido
     variable pt
     fijar pt a PDA#PuertoDeArchivoDeEscritura#abrir: nombre

@@ -322,6 +322,11 @@ funcion Algún: arr
     finfuncion), arr
 finfuncion
 
+[DOCUMENTA
+@brief{Convierte un dígito a un entero.}
+
+@param{dígito} debe ser un texto de longitud 1 que contiene un dígito decimal.
+DOCUMENTA]
 funcion DígitoAEntero: dígito
     variables DÍGITOS, dig
     fijar DÍGITOS a {0123456789}

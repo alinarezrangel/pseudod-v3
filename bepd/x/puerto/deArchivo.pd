@@ -1,15 +1,39 @@
 utilizar bepd/builtins
 utilizar bepd/x/puerto como Puerto
 
+[DOCUMENTA
+@brief{Puerto de lectura que lee un archivo.}
+
+Provee la misma interfáz que @pd{Puerto#PuertoDeLectura}.
+DOCUMENTA]
 clase PuertoDeArchivoDeLectura hereda Puerto#Puerto [ implementa Puerto#PuertoDeLectura ]
+    [DOCUMENTA
+    @brief{Archivo del que se lee.}
+    DOCUMENTA]
     atributo archivo
 
+    [DOCUMENTA
+    @brief{Crea y devuelve una instancia que lee desde el archivo especificado.}
+
+    Es muy importante no leer ni desleer carácteres de @pd{archivo} mientras
+    este puerto siga abierto.
+    DOCUMENTA]
     metodo estatico desdeArchivo: archivo
+
+    [DOCUMENTA
+    @brief{Crea y devuelve una instancia que lee desde el archivo en
+    @pd{nombre}.}
+
+    @pd{nombre} es abierto en modo de lectura y modo binario.
+    DOCUMENTA]
     metodo estatico abrir: nombre
 
     metodo leerCarácter
     metodo desleerCarácter
 
+    [DOCUMENTA
+    @brief{Cierra el archivo de este puerto.}
+    DOCUMENTA]
     metodo cerrar
 finclase
 
@@ -66,14 +90,36 @@ metodo PuertoDeArchivoDeLectura#cerrar
 finmetodo
 
 
+[DOCUMENTA
+@brief{Un puerto de escritura que escribe a un archivo.}
+
+Provee la misma interfáz que @pd{Puerto#PuertoDeEscritura}.
+DOCUMENTA]
 clase PuertoDeArchivoDeEscritura hereda Puerto#Puerto [ implementa Puerto#PuertoDeEscritura ]
+    [DOCUMENTA
+    @brief{Archivo al que se escribe.}
+    DOCUMENTA]
     atributo archivo
 
+    [DOCUMENTA
+    @brief{Crea y devuelve una instancia que escribe al archivo especificado.}
+
+    Es posible escribir a @pd{archivo} mientras esta instancia siga abierta.
+    DOCUMENTA]
     metodo estatico desdeArchivo: archivo
+
+    [DOCUMENTA
+    @brief{Crea y devuelve una instancia que escribe al archivo en @pd{nombre}.}
+
+    @pd{nombre} es abierto en modo de escritura y modo binario.
+    DOCUMENTA]
     metodo estatico abrir: nombre
 
     metodo escribirTexto: texto
 
+    [DOCUMENTA
+    @brief{Cierra el archivo del puerto.}
+    DOCUMENTA]
     metodo cerrar
 finclase
 
