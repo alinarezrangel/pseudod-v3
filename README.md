@@ -1,45 +1,44 @@
 # Compilador de PseudoD #
 
-## Soporte del lenguaje ##
+## Utilizando el compilador ##
 
-Este nuevo compilador planea soportar totalmente PseudoD v3 (el activado por la
-opción `-X v3x` en el intérprete anterior). También esta planeado soportar
-parte de PseudoD 2.
+El compilador está escrito en PseudoD, lo que significa que podrías necesitar
+otra implementación para ejecutarlo. Esto es problemático ya que la única otra
+implementación de PseudoD, el [intérprete en C++][pseudod-orig] es
+increíblemente lento e ineficiente. Para solucionar este problema yo ya compilé
+el compilador con el intérprete, proceso que tardó aproximadamente 160
+minutos. El resultado lo puedes encontrar en los directorios
+`bootstrapped/stage0/` y `bootstrapped/stage1/`. De esta forma, si tienes un
+intérprete de Lua 5.4 puedes simplemente usar:
 
-## ¿Cómo utilizar el compilador? ##
+```sh
+lua5.4 bootstrapped/stage1/pseudod.lua --help
+```
 
-Debido a que este compilador está escrito en PseudoD mismo, primero necesitas
-una implementación de PseudoD. Actualmente el compilador está escrito en un
-subconjunto de PseudoD 3 que también puede ser interpretado por la
-implementación original de [PseudoD 2/3 en C++][pseudod-orig].
+De cualquier forma, si deseas compilar tu mismo el compilador desde cero,
+puedes usar el `Makefile`:
 
-Una vez que el compilador este listo, los compilados de si mismo serán
-distribuidos por la página del proyecto.
+```sh
+make
+```
 
-### Ejecutando el compilador ###
+`make` va a compilar el compilador hasta stage 1 y luego va a ejecutar todas
+las pruebas.
 
-Primero, descarga e instala la [implementacioń original de
-PseudoD][pseudod-orig]. Luego, puedes iniciar el compilador ejecutando en un
-terminal:
+## Dependencias ##
 
-    pseudod -X v3x inicio.pd -- ARCHIVO
-
-Para compilar el archivo `ARCHIVO`.
-
-## Estructura del programa ##
-
-Los archivos `.pd` en el directorio actual constituyen el compilador mismo. El
-directorio `bepd/` es una nueva biblioteca estándar para PseudoD 3. `backends/`
-incluye archivos de soporte para los backends soportados (actualmente solo Lua
-5.4).
+- Lua 5.4.
+- Opcionalmente: [PseudoD (original en C++)][pseudod-orig].
+- Python 3.8 o superior es necesario para ejecutar las pruebas.
 
 ## Documentación ##
 
-La documentación del código en PseudoD esta dentro de los mismos archivos
-utilizando comentarios de documentación (`DOCUMENTA`). Aun gran parte de estos
-no están documentados.
+Los archivos `ESTRUCTURA.md` y `ARQUITECTURA.md` contienen la estructura de
+archivos y la arquitectura del compilador.
 
-Más documentación, ya sea sobre la estructura del compilador, como funcionan
-los backends y demás, véase el directorio [docs/](docs/).
+El directorio `docs/` contiene documentación adicional.
+
+Todos los archivos de PseudoD (y el runtime de Lua) están documentados con
+comentarios.
 
 [pseudod-orig]: https://github.com/alinarezrangel/PseudoD
