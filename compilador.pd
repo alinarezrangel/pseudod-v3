@@ -5,16 +5,99 @@ utilizar parser como Parser
 utilizar resoluciónDeNombres como RN
 utilizar módulos como Módulos
 
+[DOCUMENTA
+@brief{Clase base para los compiladores.}
+
+Los compiladores manejan todo el proceso desde tokenizar un puerto hasta
+compilarlo y guardarlo en la base de datos. Esta clase base sirve como interfáz
+principal de los compiladores.
+
+La interfáz no incluye una forma de construir el compilador. Esto dependerá de
+cada backend.
+DOCUMENTA]
 clase CompiladorBase
+    [DOCUMENTA
+    @brief{La base de datos que el compilador debe usar.}
+    DOCUMENTA]
     atributo baseDeDatos
 
+    [DOCUMENTA
+    @brief{Compila un puerto.}
+
+    El módulo que el puerto contiene está identificado por la llave
+    @pd{llaveDeMódulo}. Devuelve la instancia de @pd{Módulos#Módulo}. Llama a
+    @pd{compilarAST} con el AST ya parseado, todo el trabajo de leer, tokenizar
+    y parsear es hecho automáticamente.
+
+    Este método compila el módulo incluso si ya estába compilado en la base de
+    datos. Para importar un módulo sin realizar trabajo adicional de ya existír
+    en la base de datos, ve @pd{importarMódulo}.
+
+    @pd{puerto} debe ser un puerto (ya sea normal o con posición).
+
+    Este método también invoca automaticamente a @pd{RN#ResolverNombres}, así
+    la resolución de nombres también es realizada automaticamente.
+    DOCUMENTA]
     metodo compilarPuerto: llaveDeMódulo, puerto
+
+    [DOCUMENTA
+    @brief{Compila un texto.}
+
+    Equivalente a convertir el texto a un puerto y luego llamar
+    @pd{compilarPuerto}.
+    DOCUMENTA]
     metodo compilarTexto: llaveDeMódulo, texto
 
+    [DOCUMENTA
+    @brief{Compila un AST.}
+
+    @pd{ast} es el AST del programa, cuyos nombres ya han sido
+    resueltos. @pd{ámbito} es el ámbito global del programa tal como es
+    devuelto por @pd{RN#ResolverNombres}.
+
+    Devuelve un texto que es el compilado del AST.
+
+    Es un método abstracto.
+    DOCUMENTA]
     metodo compilarAST: ast, ámbito
 
+    [DOCUMENTA
+    @brief{Importa un módulo.}
+
+    @pd{nombreDelMódulo} es el nombre del módulo a importar.
+
+    El trabajo de este método es básicamente buscar @pd{nombreDelMódulo} en la
+    base de datos de módulos, devolver el valor de la base de datos si ya
+    exíste o abrir el archivo y llamar a @pd{compilarPuerto} si no.
+
+    Este método es llamado por @pd{compilarPuerto} como parámetro
+    @pd{resolverMódulo} de @pd{RN#ResolverNombres}. También puede ser utilizado
+    por @pd{compilarAST}.
+
+    Es un método abstracto.
+
+    @devuelve{La instancia de @pd{Módulos#Módulo} del módulo importado.}
+    DOCUMENTA]
     metodo importarMódulo: nombreDelMódulo
+
+    [DOCUMENTA
+    @brief{Inyecta builtins en un ámbito.}
+
+    Utilizado por @pd{RN#ResolverNombres}. @pd{ámbito} es el ámbito global de
+    cada módulo.
+
+    Es un método abstracto.
+    DOCUMENTA]
     metodo inyectarNombresEnÁmbito: ámbito
+
+    [DOCUMENTA
+    @brief{Elimina builtins de un ámbito.}
+
+    Utilizado por @pd{RN#ResolverNombres}. @pd{ámbito} es el ámbito global de
+    cada módulo.
+
+    Es un método abstracto.
+    DOCUMENTA]
     metodo removerNombresDeÁmbito: ámbito
 finclase
 

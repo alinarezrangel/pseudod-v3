@@ -5,11 +5,42 @@ utilizar bepd/x/puerto/conPosición como PuertoConPos
 
 utilizar tokens como Tokens
 
+[DOCUMENTA
+@brief{Tokenizador de PseudoD.}
+
+Puede leer tokens de un puerto. No posee capacidad de almacenar ni
+avanzar/retroceder, así que practicamente es como un "puerto" de tokens.
+DOCUMENTA]
 clase Tokenizador
+    [DOCUMENTA
+    @brief{Inicializa el tokenizador.}
+
+    @param{puerto} debe ser un @pd{PuertoConPos#PuertoConPosiciónTextual}.
+    DOCUMENTA]
     metodo inicializar: puerto
 
+    [DOCUMENTA
+    @brief{Lee un token que no sea un comentario del puerto y lo devuelve.}
+
+    Alias de @code{#siguienteToken}.
+    DOCUMENTA]
     metodo tokenizarSiguiente
+
+    [DOCUMENTA
+    @brief{Lee un token del puerto y lo devuelve.}
+
+    Ignora cualquier cantidad de espacios en blanco al principio. Si antes de
+    poder comenzar a leer un token se leer @pd{Puerto#EOF}, devuelve
+    @pd{Puerto#EOF}.
+    DOCUMENTA]
     metodo siguienteLexema
+
+    [DOCUMENTA
+    @brief{Lee un token que no sea un comentario y lo devuelve.}
+
+    Similar a @code{#siguienteLexema}, pero cualquier cantidad de comentarios
+    leídos al principio son ignorados.
+    DOCUMENTA]
     metodo siguienteToken
 finclase
 
@@ -19,24 +50,51 @@ metodo Tokenizador#inicializar: puerto
     fijar yo#puerto a puerto
 finmetodo
 
+[DOCUMENTA
+@brief{Determina si @pd{car} (un carácter) es un separador de palabras.}
+
+Por ejemplo, la letra @code{a} no es un separador de palabras porque el
+identificador @code{holaMundo} es válido, si @code{a} fuese un separador,
+@code{holaMundo} sería tokenizado como @code{hol}, @code{a}, @code{Mundo}.
+DOCUMENTA]
 funcion EsFinDePalabra: car
     devolver (Contiene: «{}():#.%[],"», car) || (Contiene: {«»}, car)
 finfuncion
 
 [ " ]
 
+[DOCUMENTA
+@brief{Si @pd{car} es un espacio en blanco.}
+DOCUMENTA]
 funcion EsEspacioEnBlanco: car
     devolver (car = { }) || (car = {~%}#formatear)
 finfuncion
 
+[DOCUMENTA
+@brief{Si @pd{car} es un carácter válido para un operador.}
+DOCUMENTA]
 funcion EsOperador: car
     devolver (Contiene: {<>=+-*/!|^&~}, car)
 finfuncion
 
+[DOCUMENTA
+@brief{Si @pd{car} es un símbolo especial.}
+
+Por ejemplo, los paréntesis son especiales, ya que deben tokenizarse como
+palabras clave incluso si no están rodeados de espacios en blanco.
+DOCUMENTA]
 funcion EsSímbolo: car
     devolver Contiene: {():#.%,&}, car
 finfuncion
 
+[DOCUMENTA
+@brief{Lee una palabra del puerto.}
+
+@param{acc} debe ser lo que ya se leyó de la palabra, o el texto vacío.
+
+Deja de leer cuando se encuentra un carácter que es el fin de la palabra, como
+los espacios en blanco o algún carácter que pasa @pd{EsFinDePalabra}.
+DOCUMENTA]
 procedimiento LeerPalabra: acc, puerto
     variables car, palabra
     fijar palabra a acc
@@ -62,6 +120,18 @@ procedimiento LeerPalabra: acc, puerto
     devolver palabra
 finprocedimiento
 
+[ Un patrón común en estos procedimientos de ayuda es pedir tres parámetros:
+  posIni, tx y puerto. puerto es el puerto del cual se leerán los
+  carácteres. posIni es la posición de donde se comenzo la lectura, esto es
+  necesario para generar áreas textuales correctas. tx es el texto que ya se
+  había leído antes de llamar al procedimiento.
+
+  Podría parecer innecesario, pero es la manera más fácil de estructurar el
+  tokenizador: lee uno o más carácteres, has un "dispatch" para saber cual de
+  estos procedimientos llamar, etc. Los carácteres leídos antes de llamar a
+  estos procedimientos son pasados como el texto "tx", mientras que la posición
+  textual del principio como posIni. ]
+
 procedimiento LeerLiteralNumérica: posIni, tx, puerto
     variables texto, posFin, area
     fijar texto a LeerPalabra: tx, puerto
@@ -86,6 +156,12 @@ procedimiento LeerIdentificador: posIni, tx, puerto
     devolver Tokens#TokenIdentificador#crear: area, texto
 finprocedimiento
 
+[DOCUMENTA
+@brief{Lee un token del puerto.}
+
+No ignora espacios en blanco. Es la verdadera implementación de
+@pd{Tokenizador#siguienteLexema}.
+DOCUMENTA]
 procedimiento LeerLexema: puerto
     variables car, posIni
     fijar posIni a puerto#posiciónActual
@@ -204,6 +280,13 @@ metodo Tokenizador#tokenizarSiguiente
     devolver yo#siguienteToken
 finmetodo
 
+[DOCUMENTA
+@brief{Muestra la tokenización de un texto.}
+
+@pd{txt} debe ser un @pd{Texto}. Será convertido a un puerto y
+tokenizado. Todos los tokens leídos serán escritos a la salida estándar. Este
+procedimiento es principalmente para depuración.
+DOCUMENTA]
 procedimiento MostrarTokenizadoDeTexto: txt
     variable tknz
     fijar tknz a

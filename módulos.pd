@@ -5,10 +5,46 @@ utilizar bepd/x/sexpr como SExpr
 utilizar ámbito como Ámbito
 
 
+[DOCUMENTA
+@brief{Configuración de la base de datos.}
+
+La configuración determina como y donde se buscan los módulos. Por ejemplo, si
+las rutas para buscar son @code{/ruta/1} y @code{/ruta/2} entonces los módulos
+serán buscados como @code{/ruta/1/ejemplo.pd} y
+@code{/ruta/2/ejemplo.pd}. Similarmente la configuración también controla las
+extensiones aceptadas y su prioridad (es posible que una configuración le de
+prioridad a la extensión @code{.pd3} por ejemplo, de forma que si
+@code{ejemplo.pd} y @code{ejemplo.pd3} exísten en un mismo directorio
+@code{ejemplo.pd3} será siempre importado.
+DOCUMENTA]
 clase ConfiguraciónGlobal
+    [DOCUMENTA
+    @brief{Devuelve la configuración predeterminada.}
+
+    Si @pd{usarVariablesDeEntorno} es @pd{VERDADERO}, las variables de entorno
+    son leídas para extraer algunos valores (esta opción aún no está
+    implementada).
+    DOCUMENTA]
     metodo estatico predeterminado: usarVariablesDeEntorno
 
+    [DOCUMENTA
+    @brief{Las rutas donde se deberían buscar los módulos.}
+
+    Un arreglo de textos que son rutas a directorios en los que los módulos
+    deberían ser buscados. Este arreglo esta en órden: los primeros valores
+    deberían ser buscados primero.
+
+    Los valores no incluyen una barra @code{/} al final.
+    DOCUMENTA]
     metodo rutasDondeBuscar
+
+    [DOCUMENTA
+    @brief{Las extensiones de archivo a probar.}
+
+    Un arreglo de textos con las extensiones de archivo a probar (excluyendo el
+    @code{.} al inicio). Tal como @pd{rutasDondeBuscar}, el órden del arreglo
+    indica que extensiones deberían tener prioridad.
+    DOCUMENTA]
     metodo extensionesAProbar
 finclase
 
@@ -41,13 +77,53 @@ metodo estatico ConfiguraciónGlobal#predeterminado
 finmetodo
 
 
+[DOCUMENTA
+@brief{Identifica de manera única a un módulo.}
+
+Contiene la ruta al archivo, el nombre del módulo y su extensión. En conjunto
+estos datos identifican de manera única a un módulo incluso si otros con el
+mismo nombre existen en el sistema.
+
+Tanto la ruta como el nombre y la extensión son textos.
+DOCUMENTA]
 clase LlaveDeMódulo
+    [DOCUMENTA
+    @brief{Ruta al módulo.}
+
+    Indica el directorio principal. No es necesariamente el directorio que
+    contiene el archivo, ya que si se importa un módulo @code{hola/mundo}
+    entonces la ruta solo indica donde encontrar @code{hola}.
+    DOCUMENTA]
     metodo ruta
+
+    [DOCUMENTA
+    @brief{Nombre del módulo.}
+
+    Es básicamente el nombre con el que se importó.
+    DOCUMENTA]
     metodo nombre
+
+    [DOCUMENTA
+    @brief{Extensión del archivo del módulo.}
+    DOCUMENTA]
     metodo extensión
 
+    [DOCUMENTA
+    @brief{Nombre del archivo del módulo.}
+
+    Junta @pd{ruta}, @pd{nombre} y @pd{extensión} (con una barra @code{/} y un
+    punto @code{.}) para obtener la ruta completa al archivo del módulo.
+    DOCUMENTA]
     metodo nombreCompletoDelArchivo
 
+    [DOCUMENTA
+    @brief{Inicializa la llave con los valores dados.}
+    DOCUMENTA]
+    metodo inicializar: ruta, nombre, ext
+
+    [DOCUMENTA
+    @brief{Devuelve una representación de la llave como texto.}
+    DOCUMENTA]
     metodo comoTexto
 finclase
 
@@ -68,6 +144,16 @@ metodo LlaveDeMódulo#comoTexto
 finmetodo
 
 
+[DOCUMENTA
+@brief{Busca un módulo por su nombre.}
+
+@pd{conf} debe ser una @pd{ConfiguraciónGlobal}, cada ruta y extensión será
+probada buscando un archivo (o secuencia de directorios conteniendo un archivo)
+llamado @pd{nombre}, que debe ser el nombre del módulo (como un texto).
+
+Devuelve la llave del módulo si se encontró, o @pd{NULO} si no se encontró el
+módulo.
+DOCUMENTA]
 procedimiento BuscarMódulo: conf, nombre
     variables rutaEnc, nombreEnc, extEnc
     LlamarConEC: procedimiento: esc
@@ -89,13 +175,45 @@ procedimiento BuscarMódulo: conf, nombre
 finprocedimiento
 
 
+[DOCUMENTA
+@brief{Un módulo.}
+
+Contiene la llave que lo identifica, junto a la lista de nombres que exporta y
+el resultado de compilarlo.
+DOCUMENTA]
 clase Módulo
+    [DOCUMENTA
+    @brief{La llave que identifica a este módulo.}
+    DOCUMENTA]
     metodo llave
+
+    [DOCUMENTA
+    @brief{Alias de @pd{llave#ruta}.}
+    DOCUMENTA]
     metodo ruta
+
+    [DOCUMENTA
+    @brief{Alias de @pd{llave#nombre}.}
+    DOCUMENTA]
     metodo nombre
+
+    [DOCUMENTA
+    @brief{Nombres exportados por este módulo.}
+
+    Es un @pd{Ámbito#Ámbito}.
+    DOCUMENTA]
     metodo exporta
+
+    [DOCUMENTA
+    @brief{Resultado de compilar el archivo.}
+
+    Es un texto, su contenido depende del backend actual.
+    DOCUMENTA]
     metodo compilado
 
+    [DOCUMENTA
+    @brief{Representación simple del módulo como texto.}
+    DOCUMENTA]
     metodo comoTexto
 finclase
 
@@ -114,18 +232,73 @@ metodo Módulo#comoTexto
 finmetodo
 
 
+[DOCUMENTA
+@brief{La base de datos de módulos.}
+
+Almacena todos los módulos compilados hasta ahora, y administra la
+configuración que se debe usar para buscar más módulos.
+
+Aunque es posible distinguir dos módulos con el mismo nombre por sus llaves, la
+base de datos requiere que todos los módulos en ella tengan nombres distíntos.
+DOCUMENTA]
 clase BaseDeDatos
+    [DOCUMENTA
+    @brief{Crea una base de datos con una configuración.}
+
+    Esta base de datos no contiene ningún módulo, y utilizará la configuración
+    @pd{conf}.
+    DOCUMENTA]
     metodo estatico conConfiguración: conf
 
+    [DOCUMENTA
+    @brief{Obtiene la configuración que esta base de datos utiliza.}
+    DOCUMENTA]
     metodo configuración
 
+    [DOCUMENTA
+    @brief{Busca un módulo por su llave.}
+
+    Si la base de datos no contiene a un módulo con esta llave, devuelve
+    @pd{NULO}.
+    DOCUMENTA]
     metodo buscarMóduloPorLlave: llaveDeMódulo
+
+    [DOCUMENTA
+    @brief{Busca un módulo por su nombre.}
+
+    Si la base de datos no contiene a un módulo con este nombre, devuelve
+    @pd{NULO}.
+    DOCUMENTA]
     metodo buscarMóduloPorNombre: nombre
+
+    [DOCUMENTA
+    @brief{Agrega un módulo a la base de datos.}
+
+    El módulo no debe haber sido agregado antes.
+    DOCUMENTA]
     metodo agregarMódulo: módulo
 
+    [DOCUMENTA
+    @brief{Itera sobre cada módulo.}
+
+    Llama a @pd{proc} con cada módulo en la base de datos.
+    DOCUMENTA]
     metodo paraCadaMódulo: proc
 
+    [DOCUMENTA
+    @brief{Serializa la base de datos.}
+
+    @pd{puerto} debe ser un puerto de escritura. Guarda toda la base de datos
+    como una expresión S.
+    DOCUMENTA]
     metodo guardarMódulos: puerto
+
+    [DOCUMENTA
+    @brief{Deserializa la base de datos.}
+
+    @pd{puerto} debe ser un puerto de lectura. Lee toda la base de datos desde
+    una expresión S.
+    DOCUMENTA]
     metodo cargarMódulos: puerto
 finclase
 
@@ -268,6 +441,21 @@ metodo BaseDeDatos#cargarMódulos: puerto
 finmetodo
 
 
+[DOCUMENTA
+@brief{Trata de buscar un módulo en todo el sistema por su nombre.}
+
+Este procedimiento trata de encontrar un módulo, llamando a:
+
+@itemlist(
+@item{@pd{compilar} con la llave, si el módulo existe en el sistema pero no esta
+en la base de datos.}
+@item{@pd{encontrado} con el módulo, si el módulo existe en la base de datos.}
+@item{@pd{error} sin argumentos, si el módulo no fue encontrado.}
+)
+
+Devuelve el resultado de llamar a alguno de @pd{compilar}, @pd{encontrado} o
+@pd{error}.
+DOCUMENTA]
 procedimiento ResolverMóduloPorNombre: db, nombre, compilar, encontrado, error
     variables enc, llave, mod, conf
     fijar conf a db#configuración

@@ -9,6 +9,9 @@ utilizar tokenizador como Tokenizador
 utilizar combinadores como Comb
 utilizar ast como AST
 
+[ Por conveniencia, este módulo define algunos "aliases" simples para los
+  combinadores. ]
+
 funcion kw: K  [ => TokenPalabraClave ]
     devolver Comb#PalabraClave: K
 finfuncion
@@ -126,6 +129,14 @@ funcion eof
     devolver Comb#Token: &pred, &genMensjError
 finfuncion
 
+[DOCUMENTA
+@brief{Devuelve un area textual que incluye a @pd{inicio} y a @pd{final}.}
+
+@pd{inicio} y @pd{final} pueden ser tokens o nodos. El area textual devuelta va
+desde el inicio de @pd{inicio} hasta el final de @pd{final}. @pd{inicio} y
+@pd{final} pueden ser de tipos distíntos (por ejemplo, uno un token y el otro
+un nodo).
+DOCUMENTA]
 funcion AreaTotal: inicio, final
     variables areaInicio, areaFinal
     si EsInstancia: inicio, Tokens#Token
@@ -141,6 +152,15 @@ funcion AreaTotal: inicio, final
     devolver Tokens#AreaTextual#crear: areaInicio#posiciónInicial, areaFinal#posiciónFinal
 finfuncion
 
+[DOCUMENTA
+@brief{La tabla de precedencia de operadores.}
+
+Un arreglo ordenado por prioridad (mayor prioridad al principio, menor al
+final).
+
+Cada elemento es un segundo arreglo con los textos que son los
+operadores. Todos los elementos de estos arreglos tienen la misma prioridad.
+DOCUMENTA]
 variable TABLA_DE_PRECEDENCIA
 fijar TABLA_DE_PRECEDENCIA a
     (Arreglo#crearCon:
@@ -150,13 +170,26 @@ fijar TABLA_DE_PRECEDENCIA a
         (Arreglo#crearCon: {&&}, {||})
         )
 
+[DOCUMENTA
+@brief{Todos los operadores del lenguaje.}
+
+Un arreglo con todos los operadores (como textos).
+DOCUMENTA]
 variable OPERADORES
 fijar OPERADORES a Aplanar: TABLA_DE_PRECEDENCIA
 
+[DOCUMENTA
+@brief{Determina si @pd{obj} es un @pd{Tokens#TokenOperador}.}
+DOCUMENTA]
 funcion EsOperador: obj
     devolver EsInstancia: obj, Tokens#TokenOperador
 finfuncion
 
+[DOCUMENTA
+@brief{Devuelve la precedencia de un @pd{Tokens#TokenOperador}.}
+
+Mientras más grande el número devuelto, mayor es la precedencia.
+DOCUMENTA]
 funcion PrecedenciaDe: tokenOperador
     variable precedenciaInversa
     fijar precedenciaInversa a 0
@@ -168,6 +201,13 @@ funcion PrecedenciaDe: tokenOperador
     devolver (TABLA_DE_PRECEDENCIA#longitud - 1) - precedenciaInversa
 finfuncion
 
+[DOCUMENTA
+@brief{Resuelve la precedencia de una expresión.}
+
+@pd{seq} es un arreglo de nodos y @pd{Tokens#TokenOperador} de la forma
+@code{nodo, op, nodo, op ....}. Estos son agrupados en distíntos
+@pd{AST#NodoOperador} de acuerdo a su precedencia.
+DOCUMENTA]
 funcion ShuntingYard: seq
     devolver Algoritmos#ShuntingYard: seq, funcion: A, op, B
         devolver clonar AST#NodoOperador#crear con
@@ -995,6 +1035,12 @@ fijar grPrograma a
         finfuncion,
         (seq: (rep0': grInstrucción), eof)
 
+[DOCUMENTA
+@brief{Muestra un tokenizado.}
+
+@pd{tks} es una instancia de @pd{Tokens#Tokens}. Cada token disponible es leído
+y escrito.
+DOCUMENTA]
 procedimiento MostrarTokenizado: tks
     variable T
     fijar T a tks#leerToken
@@ -1004,6 +1050,13 @@ procedimiento MostrarTokenizado: tks
     finmientras
 finprocedimiento
 
+[DOCUMENTA
+@brief{Muestra el tokenizado de un texto.}
+
+Como @pd{MostrarTokenizado}, pero primero convierte @pd{txt} a un
+@pd{Tokens#Tokens} (convirtiendolo primero de texto a puerto, luego a un puerto
+con posición y por último a un @pd{Tokens#Tokens}).
+DOCUMENTA]
 procedimiento MostrarTokenizadoDeTexto: txt
     variable tks, tknz
     fijar tknz a
@@ -1014,6 +1067,12 @@ procedimiento MostrarTokenizadoDeTexto: txt
     MostrarTokenizado: tks
 finprocedimiento
 
+[DOCUMENTA
+@brief{Muestra el parseado de @pd{tks}.}
+
+Trata de parsear @pd{tks} utilizando el combinador @pd{gr} tantas veces como
+sea posible, escribiendo el resultado.
+DOCUMENTA]
 procedimiento MostrarParseado: tks, gr
     variable X
     fijar X a gr#parsear: tks
@@ -1025,6 +1084,12 @@ procedimiento MostrarParseado: tks, gr
     Escribir: X
 finprocedimiento
 
+[DOCUMENTA
+@brief{Muestra el parseado de un texto.}
+
+Como @pd{MostrarParseado}, pero convierte el texto @pd{txt} a un
+@pd{Tokens#Tokens}.
+DOCUMENTA]
 procedimiento MostrarParseadoDeTexto: txt, gr
     variable tks, tknz
     fijar tknz a
@@ -1035,6 +1100,12 @@ procedimiento MostrarParseadoDeTexto: txt, gr
     MostrarParseado: tks, gr
 finprocedimiento
 
+[DOCUMENTA
+@brief{Obtiene el traceback de un error.}
+
+Devuelve un texto, que es el traceback legible por personas del error. Este
+traceback lista todas las causas, sus mensajes y sus lugares.
+DOCUMENTA]
 funcion ErrorComoTraceback: error
     variables acc, prim
     fijar acc a {}
@@ -1059,6 +1130,15 @@ funcion ErrorComoTraceback: error
     devolver {Error:~%}#formatear#concatenar: acc
 finfuncion
 
+[DOCUMENTA
+@brief{Crea un AST.}
+
+Parsea @pd{textoOPuerto}. Si es un texto es convertido a un puerto y luego a un
+puerto con posición. Acepta tanto un puerto normal como un puerto con posición.
+
+Devuelve el @pd{AST#NodoPrograma} del programa parseado. Si hay un error de
+parseo escribe a la salida estándar el traceback y lanza una excepción.
+DOCUMENTA]
 procedimiento CrearAST: textoOPuerto
     variables tks, tknz, pt
     si EsInstancia: textoOPuerto, Texto
@@ -1066,9 +1146,10 @@ procedimiento CrearAST: textoOPuerto
     sino
         fijar pt a textoOPuerto
     finsi
-    fijar tknz a
-        Tokenizador#Tokenizador#crear:
-            (PuertoConPos#PuertoConPosiciónTextual#crear: pt)
+    si no EsInstancia: pt, PuertoConPos#PuertoConPosiciónTextual
+        fijar pt a PuertoConPos#PuertoConPosiciónTextual#crear: pt
+    finsi
+    fijar tknz a Tokenizador#Tokenizador#crear: pt
     fijar tks a Comb#Tokens#desdeTokenizador: tknz
 
     variables nodo

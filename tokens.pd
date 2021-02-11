@@ -1,11 +1,31 @@
 utilizar bepd/builtins
 utilizar bepd/x/puerto/conPosición como PuertoConPos
 
-clase AreaTextual
-    atributos posiciónInicial, posiciónFinal
+[DOCUMENTA
+@brief{Área dentro de un archivo.}
 
+Representa un área dentro de un archivo, delimitada por dos posiciones
+textuales (véase @pd{PuertoConPos#PosiciónTextual}).
+DOCUMENTA]
+clase AreaTextual
+    [DOCUMENTA
+    @brief{Posición inicial del área (inclusíva).}
+    DOCUMENTA]
+    atributo posiciónInicial
+
+    [DOCUMENTA
+    @brief{Posición final del área (inclusíva).}
+    DOCUMENTA]
+    atributo posiciónFinal
+
+    [DOCUMENTA
+    @brief{Inicializa el área con las dos posiciones que la definen.}
+    DOCUMENTA]
     metodo inicializar: posInicial, posFinal
 
+    [DOCUMENTA
+    @brief{Devuelve una representación sencilla del área como texto.}
+    DOCUMENTA]
     metodo comoTexto
 finclase
 
@@ -18,12 +38,47 @@ metodo AreaTextual#comoTexto
     devolver {(desde ~t hasta ~t)}#formatear: yo#posiciónInicial, yo#posiciónFinal
 finmetodo
 
-clase Token
-    atributos areaDelToken, texto
+[DOCUMENTA
+@brief{Un token del código fuente.}
 
+Es la unidad léxica minima.
+DOCUMENTA]
+clase Token
+    [DOCUMENTA
+    @brief{Area textual que contiene a este token.}
+
+    No incluye espacios en blanco ni carácteres adicionales: únicamente al
+    token.
+    DOCUMENTA]
+    atributo areaDelToken
+
+    [DOCUMENTA
+    @brief{Texto del token.}
+
+    El valor textual del token. Generalmente es el token tal como fue leído. En
+    el caso de @pd{TokenTexto} y @pd{TokenComentario} son el contenido del
+    texto y comentario.
+    DOCUMENTA]
+    atributo texto
+
+    [DOCUMENTA
+    @brief{Inicializa el token en el area textual y desde el texto leído.}
+
+    No deberías construir instancias de @pd{Token} directamente, en cambio
+    deberías usar sus distíntas clases bases.
+    DOCUMENTA]
     metodo inicializar: area, texto
 
+    [DOCUMENTA
+    @brief{Alias de @code{#texto}.}
+    DOCUMENTA]
     metodo comoTexto
+
+    [DOCUMENTA
+    @brief{Otra representación textual.}
+
+    Solo muestra el tipo del token y su texto contenido.
+    DOCUMENTA]
     metodo comoTextoBonito
 finclase
 
@@ -40,6 +95,12 @@ metodo Token#comoTextoBonito
     devolver {un token general [~t]}#formatear: yo#texto
 finmetodo
 
+[DOCUMENTA
+@brief{Un identificador.}
+
+Representa un identificador o nombre en el código. Su valor @code{#texto} es el
+identificador mismo.
+DOCUMENTA]
 clase TokenIdentificador hereda Token
     metodo comoTextoBonito
 finclase
@@ -48,9 +109,29 @@ metodo TokenIdentificador#comoTextoBonito
     devolver {un identificador [~t]}#formatear: yo#texto
 finmetodo
 
+[DOCUMENTA
+@brief{Palabra clave en el programa.}
+DOCUMENTA]
 clase TokenPalabraClave hereda Token
+    [DOCUMENTA
+    @brief{La palabra clave normalizada.}
+
+    Nota: Aún no está implementado en el tokenizador, por ahora,
+    @pd{palabraClave} y @pd{texto} siempre son iguales.
+
+    Este atributo contiene la palabra clave normalizada: por ejemplo, tanto
+    @code{adquirir} como @code{variable} y @code{variables} son guardadas como
+    @pd{"variable"}. De esta forma el parser y posibles herramientas pueden ser
+    simplificadas.
+    DOCUMENTA]
     atributo palabraClave
 
+    [DOCUMENTA
+    @brief{Inicializa el token.}
+
+    @param{palabra} debe ser la palabra clave normalizada, mientras que
+    @param{texto} es la palabra clave tal como se leyó.
+    DOCUMENTA]
     metodo inicializar: area, texto, palabra
 
     metodo comoTextoBonito
@@ -65,6 +146,12 @@ metodo TokenPalabraClave#comoTextoBonito
     devolver {una palabra clave [~t]}#formatear: yo#texto
 finmetodo
 
+[DOCUMENTA
+@brief{Todas las palabras clave del lenguaje.}
+
+Arreglo de texto que contiene todas las palabras clave. Símbolos especiales
+como @code{(} y @code{)} también son incluidos.
+DOCUMENTA]
 variable PALABRAS_CLAVE
 fijar PALABRAS_CLAVE a
     (Arreglo#crearCon:
@@ -83,9 +170,25 @@ fijar PALABRAS_CLAVE a
 
 [ " ]
 
+[DOCUMENTA
+@brief{Token de literales numéricas.}
+DOCUMENTA]
 clase TokenNumero hereda Token
+    [DOCUMENTA
+    @brief{Número contenido.}
+
+    Es una instancia de @pd{Numero}.
+    DOCUMENTA]
     atributo valor
 
+    [DOCUMENTA
+    @brief{Inicializa el token numérico.}
+
+    @param{valor} debe ser el valor del token, como un @pd{Numero}. El motivo
+    por el cual se pasa aquí en vez de simplemente parsear @pd{texto} es que de
+    esta forma el tokenizador puede parsear el número al mismo tiempo que lo
+    lee.
+    DOCUMENTA]
     metodo inicializar: area, texto, valor
 
     metodo comoTextoBonito
@@ -100,7 +203,21 @@ metodo TokenNumero#comoTextoBonito
     devolver {un número ~t}#formatear: yo#texto
 finmetodo
 
+[DOCUMENTA
+@brief{Token de los operadores.}
+
+Todos los operadores del lenguaje (excluyendo los que son palabras clave) son
+instancias de este token.
+DOCUMENTA]
 clase TokenOperador hereda Token
+    [DOCUMENTA
+    @brief{Alias de @code{#texto}.}
+
+    Cuando quieras acceder al operador contenido, es recomendable utilizar este
+    método. De esta forma, si en un futuro se agregan más sintaxis para los
+    operadores, este método siempre devolverá el valor correcto (mientras que
+    @code{#texto} podría cambiar).
+    DOCUMENTA]
     metodo op
 
     metodo comoTextoBonito
@@ -114,6 +231,12 @@ metodo TokenOperador#comoTextoBonito
     devolver {un operador [~t]}#formatear: yo#texto
 finmetodo
 
+[DOCUMENTA
+@brief{Una literal de texto.}
+
+Su atributo @pd{Token#texto} contiene todo el contenido del texto (excluyendo
+las comillas/llaves).
+DOCUMENTA]
 clase TokenTexto hereda Token
     metodo comoTextoBonito
 finclase
@@ -122,6 +245,12 @@ metodo TokenTexto#comoTextoBonito
     devolver {un texto [~t]}#formatear: yo#texto
 finmetodo
 
+[DOCUMENTA
+@brief{Un comentario.}
+
+Contiene el contenido del comentario (excluyendo los corchetes) en su atributo
+@pd{Token#texto}.
+DOCUMENTA]
 clase TokenComentario hereda Token
     metodo comoTextoBonito
 finclase

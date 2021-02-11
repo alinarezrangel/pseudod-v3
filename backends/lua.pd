@@ -31,6 +31,13 @@ utilizar compilador como Compilador
 variable PSEUDOD_IMPL
 fijar PSEUDOD_IMPL a {Lua Bootstrap}
 
+[DOCUMENTA
+@brief{Escapa un texto a Lua válido.}
+
+@pd{texto} es una instancia de @pd{Texto}. Escapa todos los carácteres
+especiales de @pd{texto} y lo envuelve en comillas, de forma que el texto
+devuelto es una literal textual (string) válida para Lua.
+DOCUMENTA]
 funcion EscaparParaLua: texto
     variable res
     fijar res a {"} [ " ]
@@ -52,9 +59,38 @@ funcion EscaparParaLua: texto
     devolver res#concatenar: {"} [ " ]
 finfuncion
 
+[ Por limitaciones de Lua, no se pueden tener más de 200 variables locales en
+  cualquier ámbito de Lua. Lamentablemente son necesarias más de 200 variables
+  locales para compilar PseudoD. La solución que utilizé es que en vez de crear
+  variables locales, creo una sola llamada "_s" que es un "scope" (runtime.lua
+  contiene la implementación en la función "M.scope"). Cada variable de PseudoD
+  es un campo de la forma "_" + binding en la tabla "_s". Por ejemplo, la
+  variable con el binding 5 está en "_s._5". ]
+
+[DOCUMENTA
+@brief{Obtiene el identificador en Lua de un nombre.}
+
+@pd{id} debe ser un nodo identificador.
+DOCUMENTA]
 funcion IdentificadorDe: id
     devolver {_s._}#concatenar: (RN#NombreResueltoDe: id)#comoTexto
 finfuncion
+
+[ Tal como en resoluciónDeNombres.pd, una subclase de CN#CaminaNodos es
+  utilizada para compilar el código. La clase "CompiladorSimpleALua" es solo un
+  detalle de implementación y nunca se debería usar fuera de este módulo.
+
+  Los métodos "visitarXYZ" siempre devuelven el código Lua compilado como un
+  texto. De forma que "caminante#visitar: ast" devuelve todo el programa Lua
+  asumiendo que "ast" es un NodoPrograma y "caminante" una instancia de
+  CompiladorSimpleALua.
+
+  El compilado devuelto solo incluye al módulo. En la práctica estos compilados
+  no son ejecutados directamente sino que son envueltos en funciones de lua
+  para que queden de la forma "function() ...COMPILADO... end" y estas
+  funciones son registradas con el runtime para que "utilizar" pueda resolver
+  los nombres. Más abajo hay un comentario que explica todos los conceptos del
+  runtime. También míra el método "compilarTodo". ]
 
 clase CompiladorSimpleALua hereda CN#CaminaNodos
     metodo crearSubámbitoDesdeNodo: nodo
@@ -72,10 +108,25 @@ atributos CompiladorSimpleALua#_ámbito, [ Ámbito actual ]
           CompiladorSimpleALua#_moddb, [ Base de datos de módulos ]
           CompiladorSimpleALua#_compilador [ `CompiladorALua` que esta compilando ]
 
+[DOCUMENTA
+@brief{Crea un @pd{CompiladorSimpleALua} que es un subámbito del actual.}
+
+Representa el ámbito de @pd{nodo}. Es un subámbito del actual.
+DOCUMENTA]
 metodo CompiladorSimpleALua#crearSubámbitoDesdeNodo: nodo
     devolver yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídos}
 finmetodo
 
+[DOCUMENTA
+@brief{Crea un subámbito desde un nodo.}
+
+@pd{nodo} es el nodo cuyo ámbito será usado. @pd{llave} es el nombre del
+metadato que será leído. Este parámetro es configurable ya que los
+condicionales "si" tienen dos llaves "nombresDefinídosSiVerdadero" y
+"nombresDefinídosSiFalso" en vez de "nombresDefinídos" (que es el común).
+
+Devuelve el subámbito (otra instancia de @pd{CompiladorSimpleALua}).
+DOCUMENTA]
 metodo CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, llave
     devolver CompiladorSimpleALua#crear:
                  yo#_moddb,
@@ -89,6 +140,78 @@ metodo CompiladorSimpleALua#inicializar: moddb, ámbito, compilador
     fijar yo#_compilador a compilador
 finmetodo
 
+[
+
+El Runtime y la estructura del compilador:
+
+- En tiempo de ejecución, números, textos, funciones, booles y el valor nulo
+  tienen la representación en Lua que esperarías: números pasan a ser "number"
+  (Lua 5.4 garantiza números tanto enteros como reales, tal como
+  PseudoD). Booles pasan a ser "true" y "false". Nulo pasa a ser
+  "nil". Funciones y procedimientos pasan a ser "functions".
+
+- Como ya fue explicado antes, las variables locales pasan a ser campos en una
+  tabla "_s".
+
+- Enviar un mensaje a un objeto se realiza con la operación
+  "rt.enviarMensaje". Esta automaticamente detecta el tipo del receptor y
+  implementa algunos métodos sobre funciones, textos, etc. Enviar un mensaje
+  donde el número de argumentos no se conoce sino hasta el tiempo de ejecución
+  (por ejemplo, en "Sumar: 1, 2, ...x, ...y") se realiza con
+  "rt.enviarMensajeV".
+
+- Los espacios de nombres son implementados con "rt.ns". Al final de cada
+  módulo, "rt.ns" es llamado con todos los nombres definídos (y algunos datos
+  más) y este devuelve el espacio de nombres.
+
+- Los arreglos son creados con "rt.arreglo", "rt.mkarreglo" y demás.
+
+- Llamar a "rt.enviarMensaje" con los parámetros apropiados y escapando todo no
+  es trivial, así que el método "enviarMensaje: objeto, mensaje, argumentos" se
+  encarga de esto. Este automáticamente compila "argumentos" (que debe ser una
+  lista de nodos de expresión), se encarga de los nodos variadic opcionales en
+  "argumentos", llama automaticamente a "rt.enviarMensaje" o
+  "rt.enviarMensajeV" y escapa el mensaje a enviar. "objeto" es el objeto al
+  que se le enviará un mensaje. Nota que aunque los "argumentos" sean visitados
+  (es decir, compilados), "objeto" no lo es, ese parámetro ya debe ser un texto
+  que represente una expresión de Lua válida.
+
+- El código generado siempre tiene puntos-y-comas separando las instrucciones.
+
+- Un patrón muy común es el de crear un arreglo de texto llamado "cods" (para
+  "códigos") e irlo llenando de textos para luego devolver "Unir: cods,
+  {;~%}#formatear".
+
+- Al compilar un NodoPrograma, el espacio de nombres es devuelto (con "return")
+  desde el chunk de lua. "CompiladorALua#compilarTodo" contiene la
+  implementación pero en realidad luego de compilar todos los módulos, sus
+  compilados son envueltos en otras funciones de forma que cada módulo termina
+  de la forma:
+
+      rt.modulos.("./ruta/completa/al/módulo.pd") = function()
+         ...TODO EL COMPILADO...
+      end
+
+   (reemplaza ".(XYZ)" por corchetes, recuerda que no se pueden poner corchetes
+   en comentarios en PseudoD).
+
+   De esta forma, el espacio de nombres devuelto por el compilado de un
+   NodoPrograma termina siendo el "return" de la función asignada a la tabla
+   "rt.modulos". Esto es debido a que este backend no compila cada módulo a un
+   archivo de Lua distínto, sino que los compila todos a un único archivo
+   enorme. Para esto "runtime.lua" también incluye una implementación sencilla
+   de un sistema de módulos similar al de lua, solo que en vez de tener los
+   módulos en archivos son funciones en "rt.modulos" y en vez de usar "require"
+   usas "rt.importar" (o "rt.import", son aliases).
+
+Creo que todo esto es lo necesario para entender este backend. A parte de esto,
+no es muy complicado, más que todo un monton de llamadas a "formatear" para
+concatenar textos.
+
+]
+
+[ Este método es llamado al inicio de cada ámbito. Inicializa variables
+  importantes del runtime (como "_s"). ]
 metodo CompiladorSimpleALua#iniciar
     variables res, padre
     fijar res a Arreglo#vacio
@@ -292,6 +415,24 @@ clase ComparaciónDeBuiltin
     atributos tipoIgualdad, rhs
 finclase
 
+[DOCUMENTA
+@brief{Trata de separar una comparación de un builtin con una literal en sus
+partes.}
+
+@pd{nodo} es un @pd{AST#NodoExpresion}. @pd{rnBuiltin} debe ser el binding del
+builtin que se quiere saber si compara.
+
+Si nodo corresponde al AST generado para expresiones de la forma
+@pd{BUILTIN = LIT}, @pd{son iguales BUILTIN y LIT} o
+@pd{son diferentes BUILTIN y LIT}, donde @pd{BUILTIN} es el builtin
+identificado por @pd{rnBuiltin} y @pd{LIT} es cualquier literal textual o
+numérica. devuelve una instancia de @pd{ComparaciónDeBuiltin} donde
+@pd{tipoIgualdad} es uno de los valores de la enumeración @pd{AST#TipoIgualdad}
+y @pd{rhs} es el valor de la literal (un @pd{Texto} si era una literal textual
+o un @pd{Numero} si era una literal numérica).
+
+Si @pd{nodo} no tiene ninguno de esos patrones, devuelve @pd{FALSO}.
+DOCUMENTA]
 funcion SepararComparaciónDeBuiltin: nodo, rnBuiltin
     variables lhs, rhs, op
     si EsInstancia: nodo, AST#NodoOperador
@@ -502,6 +643,22 @@ metodo CompiladorSimpleALua#visitarTextoLiteral: nodo
     devolver EscaparParaLua: nodo#valor
 finmetodo
 
+[DOCUMENTA
+@brief{Compila un envío de un mensaje.}
+
+@params(
+@defparam(objeto){Un texto que es una expresión Lua válida. El mensaje será
+enviado a el objeto resultante.}
+
+@defparam(mensaje){Un texto, el mensaje a enviar. Será escapado con
+@pd{EscaparParaLua}.}
+
+@defparam(argumentos){Una lista de NodoExpresion que puede contener varios
+NodoVariadic (o ninguno).}
+)
+
+@devuelve{Una llamada adecuada a "rt.enviarMensaje" o "rt.enviarMensajeV".}
+DOCUMENTA]
 metodo CompiladorSimpleALua#enviarMensaje: objeto, mensaje, argumentos
     variables args, argsComoTexto, funciónParaEnviarMensaje
 
@@ -651,6 +808,23 @@ metodo CompiladorSimpleALua#visitarVariadic: nodo
     Inalcanzable
 finmetodo
 
+[DOCUMENTA
+@brief{Compila un AST a Lua.}
+
+@params(
+@defparam(moddb){La base de datos de módulos a utilizar.}
+
+@defparam(ast){El @pd{AST#NodoPrograma} a compilar.}
+
+@defparam(ámbito){El ámbito global como fue devuelto por
+@pd{RN#ResolverNombres}.}
+
+@defparam(compilador){La instancia de @pd{CompiladorALua} que esta compilando
+el programa.}
+)
+
+@devuelve{Un texto que es el código lua compilado.}
+DOCUMENTA]
 funcion CompilarALua: moddb, ast, ámbito, compilador
     variables comp, ini, builtins
     fijar comp a CompiladorSimpleALua#crear: moddb, ámbito, compilador
@@ -659,11 +833,33 @@ funcion CompilarALua: moddb, ast, ámbito, compilador
     devolver {local rt = require "backends.lua.runtime";~%~t~%~t~%~t}#formatear: ini, builtins, (comp#visitar: ast)
 finfuncion
 
+[DOCUMENTA
+@brief{El backend a Lua.}
+DOCUMENTA]
 clase CompiladorALua hereda Compilador#CompiladorBase
+    [DOCUMENTA
+    @brief{Inicializa la instancia del backend.}
+
+    @pd{db} es la base de datos de módulos a usar.
+    DOCUMENTA]
     metodo inicializar: db
+
     metodo compilarAST: ast, ámbito
     metodo importarMódulo: nombreDelMódulo
     metodo inyectarNombresEnÁmbito: ámbito
+
+    [DOCUMENTA
+    @brief{Compila todos los módulos.}
+
+    Toma todos los módulos de la base de datos de módulos y los une en un solo
+    programa en lua que contiene todo el programa, listo para ser ejecutado.
+
+    @pd{llavePrincipal} es la llave del módulo que será importado
+    automaticamente al inicio del programa en Lua. Este módulo básicamente será
+    el "principal".
+
+    Devuelve el programa compilado como un texto.
+    DOCUMENTA]
     metodo compilarTodo: llavePrincipal
 finclase
 

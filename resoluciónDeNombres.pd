@@ -4,6 +4,9 @@ utilizar ámbito como Ámbito
 utilizar ast como AST
 utilizar caminaNodos como CN
 
+[DOCUMENTA
+@brief{Tipo de @pd{LLAVE_RESOLUCIÓN_DE_NOMBRES}.}
+DOCUMENTA]
 clase LlaveResoluciónDeNombres
     metodo comoTexto
 finclase
@@ -12,25 +15,56 @@ metodo LlaveResoluciónDeNombres#comoTexto
     devolver {<LLAVE_RESOLUCIÓN_DE_NOMBRES>}
 finmetodo
 
+[DOCUMENTA
+@brief{Llave para los metadados del pase de resolución de nombres.}
+
+Todos los metadatos agregados a los nodos del AST por este pase utilizan esta
+llave.
+DOCUMENTA]
 variable LLAVE_RESOLUCIÓN_DE_NOMBRES
 fijar LLAVE_RESOLUCIÓN_DE_NOMBRES a LlaveResoluciónDeNombres#crear
 
+[ Este contador global es utilizado por GenerarIdDeNombre para asegurarse de
+  siempre devolver un nombre único. ]
 variable GID_NUM
 fijar GID_NUM a 0
 
+[DOCUMENTA
+@brief{Devuelve un número único.}
+
+Devuelve un binding único que puede usarse en un ámbito o como nombre resuelto.
+DOCUMENTA]
 procedimiento GenerarIdDeNombre
     fijar GID_NUM a GID_NUM + 1
     devolver GID_NUM
 finprocedimiento
 
+[DOCUMENTA
+@brief{Fija el nombre resuelto de un nodo.}
+
+Fija el metadato @code{nombreResuelto} del nodo a @pd{id}.
+DOCUMENTA]
 procedimiento FijarNombreResuelto: nodo, id
     nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResuelto}, id
 finprocedimiento
 
+[DOCUMENTA
+@brief{Obtiene el nombre resuelto de un nodo.}
+
+Obtiene y devuelve el valor del metadato @code{nombreResuelto} del nodo.
+DOCUMENTA]
 funcion NombreResueltoDe: id
     devolver id#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResuelto}
 finfuncion
 
+[ Esta clase es solo un "ayudante", no debería usarse fuera de este módulo y es
+  un detalle de la implementación. Para ver la lista de metadatos que esta
+  clase pone en los nodos, véase el procedimiento ResolverNombres.
+
+  Los distíntos métodos "visitarXYZ" modifican los metadatos de los nodos y no
+  devuelven nada. Esto es de forma que llamar "caminante#visitar: ast" resuelve
+  todos los nombres del AST, asumiendo que "ast" es un NodoPrograma y
+  "caminante" una instancia de "ResoluciónDeNombresCNImpl". ]
 clase ResoluciónDeNombresCNImpl hereda CN#CaminaNodos
     metodo inicializar
 
@@ -43,11 +77,27 @@ atributo ResoluciónDeNombresCNImpl#_nombres, [ Ámbito actual ]
          ResoluciónDeNombresCNImpl#_resolverMóduloProc
          [ <-- Procedimiento para resolver módulos (`utilizar`) ]
 
+[ Algunos detalles adicionales de #_porResolver:
+
+  - Es un arreglo de procedimientos sin parámetros que serán llamados al final
+    de cada ámbito. No es "heredado" cuando se crea un subámbito. ]
+
 metodo ResoluciónDeNombresCNImpl#inicializar
     fijar yo#_nombres a Ámbito#Ámbito#vacío
     fijar yo#_porResolver a Arreglo#vacio
+
+    [ Nota como este método no inicializa todos los atributos,
+      _resolverMóduloProc debe ser fijado manualmente por cualquiera que creó
+      la instancia de ResoluciónDeNombresCNImpl. ]
 finmetodo
 
+[DOCUMENTA
+@brief{Crea un subámbito.}
+
+El subámbito es otra instancia cuyo @code{#_nombres#ámbitoPadre} apunta al
+@code{#_nombres} de este. Además el @code{#_resolverMóduloProc} del subámbito
+tiene el valor correcto.
+DOCUMENTA]
 metodo ResoluciónDeNombresCNImpl#crearSubámbito
     variable sub
     fijar sub a ResoluciónDeNombresCNImpl#crear
@@ -325,6 +375,8 @@ metodo ResoluciónDeNombresCNImpl#visitarVariadic: nodo
     Inalcanzable
 finmetodo
 
+[ Este método es siempre llamado al final de cada ámbito. "llave" es el nombre
+  del metadato donde se guardará el ámbito ("nombresDefinídos" si es NULO). ]
 metodo ResoluciónDeNombresCNImpl#finalizar: nodo, llave
     ParaCadaElemento: yo#_porResolver, procedimiento: callback
         %callback
@@ -398,6 +450,63 @@ metodo ResoluciónDeNombresCNImpl#resolverParámetros: parámetros
     finprocedimiento
 finmetodo
 
+[DOCUMENTA
+@brief{Resuelve} todos los nombres del AST.
+
+Los nodos son anotados con metadatos de la siguiente forma:
+
+@itemlist(
+@item{@pd{AST#NodoIdentificador} es anotado con @code{nombreResuelto}, que
+contiene el binding de esa variable. También son anotados con
+@code{esAutoejecutable}, un boole que indica si la variable es o no
+autoejecutable.}
+
+@item{Los nodos @pd{AST#NodoMientras}, @pd{AST#NodoFunción},
+@pd{AST#NodoPrograma} @pd{AST#NodoMétodo} y @pd{AST#NodoFunciónAnónima} tienen
+un metadato @code{nombresDefinídos} que contiene el espacio de nombres del
+ámbito que representan.}
+
+@item{El nodo @pd{AST#NodoSi} contiene dos metadatos,
+@code{nombresDefinídosSiVerdadero} y @code{nombresDefinídosSiFalso}. Estos
+contienen los ámbitos de cada rama del condicional.}
+
+@item{@pd{AST#NodoFunción}, @pd{AST#NodoFunciónAnónima} y @pd{AST#NodoMétodo}
+tienen un @code{nombresDefinídosSinParámetros} que contiene el mismo ámbito de
+la función/procedimiento/método pero sin tomar en cuenta los parámetros.}
+
+@item{Los @pd{AST#NodoUtilizar} que no tienen un espacio de nombres ni una
+lista de nombres a importar tienen un metadato
+@code{nombresImportadosResueltos} que contiene un @pd{Diccionario} que mapea el
+nombre de todas las variables importadas a sus bindings.}
+)
+
+Algunas notas especiales son:
+
+@itemlist(
+@item{En @pd{AST#NodoLlamarProcedimiento} el procedimiento siendo llamado
+tendrá siempre un metadato @code{esAutoejecutable}. Tienes que tener esto en
+cuenta al compilar el nodo.}
+@item{Los @pd{AST#NodoDeclaraciónDeMétodoEnClase} no son visitados por la
+implementación ya que no son utilizados actualmente.}
+)
+
+@pd{resolverMódulo} es un procedimiento que se llamará con el nombre del módulo
+a importar como un texto y espera una instancia de @pd{Módulo} como valor
+devuelto. Es utilizado para resolver @pd{utilizar}.
+
+@pd{inyectarNombres} es llamado al principio en el ámbito principal (de la
+forma @pd{%inyectarNombres: ámbito}). Este procedimiento puede ser utilizado
+para "inyectar" variables globales o builtins.
+
+@pd{removerNombres} es llamado al final de la resolución con el ámbito
+principal (tal como @pd{inyectarNombres}). Puede ser utilizado para eliminar
+nombres que nunca deberían ser exportados (el backend de lua lo utiliza para no
+exportar builtins, por ejemplo).
+
+@devuelve{El ámbito principal del programa, el mismo que será asignado a
+@pd{AST#NodoPrograma}.}
+
+DOCUMENTA]
 procedimiento ResolverNombres: ast, resolverMódulo, inyectarNombres, removerNombres
     variable cn
     fijar cn a ResoluciónDeNombresCNImpl#crear
@@ -411,6 +520,11 @@ procedimiento ResolverNombres: ast, resolverMódulo, inyectarNombres, removerNom
     devolver cn#_nombres
 finprocedimiento
 
+[DOCUMENTA
+@brief{Obtiene el metadato @code{nombresDefinídos}.}
+
+Generalmente contiene un ámbito con todos los nombres del ámbito de un nodo.
+DOCUMENTA]
 funcion ObtenerNombresDefinídos: nodo
     devolver nodo#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídos}
 finfuncion

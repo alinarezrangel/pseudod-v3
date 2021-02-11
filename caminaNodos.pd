@@ -1,7 +1,27 @@
 utilizar bepd/builtins
 utilizar ast como AST
 
+[DOCUMENTA
+@brief{Realiza "dispatch" sobre un nodo.}
+
+Hereda a esta clase para poder realizar operaciones complejas sobre ASTs
+escribiendo únicamente los métodos que necesites. La implementación
+predeterminada no hace nada.
+
+Debido a la naturaleza de esta clase, no deberías heredarla en clases públicas
+de tu API. Esta clase solo exíste porque PseudoD aún no soporta "pattern
+matching" y será eliminada eventualmente. Considerala un detalle de tu
+implementación de cualquier operación compleja que estes programando.
+DOCUMENTA]
 clase CaminaNodos
+    [DOCUMENTA
+    @brief{Visita un nodo.}
+
+    Visitar a un nodo llama al método con el nombre apropiado. Por ejemplo,
+    visitar un @pd{AST#NodoSi} llamará al método @code{#visitarSi} con el
+    nodo. Cualquier valor que este método devuelva será también devuelto por
+    @pd{visitar}.
+    DOCUMENTA]
     metodo visitar: nodo
 
     metodo visitarPrograma: nodo
@@ -146,7 +166,7 @@ metodo CaminaNodos#visitar: nodo
 
     [ Nunca se llega hasta aquí. ]
     Escribir: ({#visitar no implementado para ~t}#formatear: (TipoDe: nodo))
-    necesitas FALSO
+    Inalcanzable
 finmetodo
 
 metodo CaminaNodos#visitarPrograma: nodo finmetodo

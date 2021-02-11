@@ -1,7 +1,30 @@
 local M = {}
 
+-- Es muy importante entender la representación de los objetos de PseudoD en
+-- Lua. `backends/lua.pd` ya habló un poco al respecto, básicamente:
+--
+-- * Textos, números, booleanos y nulo pasan a ser strings, numbers, true/false
+--   y nil (en pocas palabras, tienen la representación obvia).
+--
+-- * Procedimientos y funciones son "functions".
+--
+-- * Los objetos son tablas devueltas por "M.objeto()". La función indica todos
+--   los campos pero los más importantes son: `__pd_object` (siempre `true`)
+--   utilizado para distinguir objetos de tablas normales. `attrs` es una tabla
+--   secuencial con los atributos del objeto y `methods` es una tabla que
+--   contiene los métodos del objeto.
+
+-- Es importante mantener esta variable igual a la del mismo nombre en
+-- "backends/lua.pd".
 local PSEUDOD_IMPL = "Lua Bootstrap"
 
+-- Función de utilidad sencilla. Convierte un iterador (como los de
+-- for...in...). `iter` es la función que será llamada (por ejemplo, ipairs o
+-- pairs) mientras que los demás parámetros serán pasados como argumentos. De
+-- esta forma, para convertir a función el iterador `ipairs` sobre una tabla
+-- `X`, sería `itertofunc(ipairs, tbl)`. Devuelve una función que itera y
+-- devuelve los valores cada vez que es llamada. Para terminar la iteración
+-- devuelve nil.
 local function itertofunc(iter, ...)
    local iterfunc, state, ctrl, closing = iter(...)
    local function ended()
@@ -16,6 +39,8 @@ local function itertofunc(iter, ...)
    return nextiter, ended
 end
 
+-- Un pretty printer sencillo. `indent` y `recur` son solo para la
+-- implementación recursiva y no deberían ser usados.
 local function prettyprint(val, indent, recur)
    indent = indent or 0
    local ind = string.rep("  ", indent)
@@ -36,6 +61,10 @@ end
 
 M.prettyprint = prettyprint
 
+-- Formatea objetos de PseudoD.
+--
+-- Es la implementación del método "formatear" de "Texto". `fmt` es el string a
+-- formatear, `...` son todos los objetos.
 function M.pdformat(fmt, ...)
    --[[
       Sintáxis de formatos de PseudoD:
@@ -129,6 +158,14 @@ function M.strtopdformat(str)
    return res
 end
 
+-- Crea un nuevo objeto.
+--
+-- Los únicos métodos del objeto son los predeterminados (`operador_=`,
+-- `igualA` y `clonar`).
+--
+-- Incluso si el objeto provee métodos con esos nombres, puedes acceder a las
+-- implementaciones predeterminadas con los métodos en Lua `:clone()` y
+-- `:equalTo(other)`.
 function M.objeto()
    local obj = {
       __pd_object = true,
@@ -237,6 +274,17 @@ function M.objeto()
    return obj
 end
 
+-- El tipo de un objeto en PseudoD.
+--
+-- Devuelve un string tal como `type`. Los strings devueltos son:
+--
+-- - `numero` para números.
+-- - `texto` para strings.
+-- - `boole` para true y false.
+-- - `procedimiento` para funciones.
+-- - `nulo` para nil.
+-- - `objeto` para cualquier objeto creado con `M.objeto()`.
+-- - Falla con un error para cualquier otro valor.
 function M.pdtypeof(val)
    local t = type(val)
    if t == "table" and val.__pd_object then
@@ -256,6 +304,8 @@ function M.pdtypeof(val)
    end
 end
 
+-- Como hacer un `assert` con `pdtypeof`, pero tiene un buen mensaje de error
+-- de forma predeterminada.
 function M.pdasserttype(val, typ, msg)
    if msg then
       assert(M.pdtypeof(val) == typ, msg)
@@ -264,6 +314,18 @@ function M.pdasserttype(val, typ, msg)
    end
 end
 
+-- Ya que no podemos definir métodos en los tipos de lua, para simular esto el
+-- runtime utiliza este patrón de una "tabla dispatch". Es una tabla
+-- (generalmente con el nombre "METODOS_(tipo)") que contiene los métodos para
+-- un tipo dato. Cuando se envía un mensaje a estos tipos, en vez de llamar a
+-- "obj.methods[...](...)" llama a `METODOS_...[...](...)`.
+
+-- Función de utilidad, declara métodos de comparación en una tabla de
+-- dispatch. Los métodos y operadores para "menor que", "mayor que", "menor o
+-- igual a", "mayor o igual a" e "igual a" son definídos.
+--
+-- Todos funcionan llamando a un método `comparar` que devuelve alguno de los
+-- strings `"eq"`, `"lt"` o `"gt"`.
 local function makeComparer(tbl)
    local eqf = function(self, other)
       return M.enviarMensaje(self, "comparar", other) == "eq"
@@ -294,6 +356,8 @@ local function makeComparer(tbl)
    tbl["mayorOIgualA"] = gef
 end
 
+-- Agrega un método `comparar` a una tabla dispatch que utiliza los operadores
+-- de lua `<`, `==` y `>`.
 local function primitiveCompare(tbl)
    tbl["comparar"] = function(self, other)
       if self == other then
@@ -308,12 +372,18 @@ local function primitiveCompare(tbl)
    end
 end
 
+-- Los tipos primitivos de Lua no requieren que sus métodos "clonar" realizen
+-- una copia completa. Esta función hace el método "clonar" en una table
+-- dispatch solo devuelva el objeto sin cambios.
 local function primitiveClone(tbl)
    tbl["clonar"] = function(self)
       return self
    end
 end
 
+-- `op` tiene que ser un operador de Lua como un string. Devuelve una función
+-- de dos parámetros que aplica ese operador. Por ejemplo, `makePrimBinop("+")`
+-- devuelve una función que suma sus dos argumentos.
 local function makePrimBinop(op)
    if op == "+" then
       return function(self, other)
@@ -523,6 +593,10 @@ local METODOS_PROC = {
 }
 primitiveClone(METODOS_PROC)
 
+-- Devuelve una función que, dada una instancia, un mensaje y demás argumentos,
+-- hace el dispatch al método apropiado de la tabla dispatch
+-- `methodstbl`. `clsname` es el nombre de la clase que la tabla representa y
+-- es usado al mostrar mensajes de error.
 local function makeDispatcher(methodstbl, clsname)
    return function(self, message, ...)
       if methodstbl[message] == nil then
@@ -539,6 +613,8 @@ local enviarMensajeTexto = makeDispatcher(METODOS_TEXTO, "Texto")
 local enviarMensajeBoole = makeDispatcher(METODOS_BOOLE, "Boole")
 local enviarMensajeProc = makeDispatcher(METODOS_PROC, "Procedimiento")
 
+-- Envía un mensaje a un objeto. Es posiblemente la función más importante del
+-- runtime.
 function M.enviarMensaje(obj, mensaje, ...)
    local typ = M.pdtypeof(obj)
    if typ == "numero" then
@@ -556,6 +632,17 @@ function M.enviarMensaje(obj, mensaje, ...)
    end
 end
 
+-- Versión "variadic" de `M.enviarMensaje`.
+--
+-- `...` no son los argumentos del método. En cambio pueden ser objetos o una
+-- tabla con el campo `__pd_var` fijado a `true`. Si son objetos entonces son
+-- recorridos como si fuesen arreglos y sus elementos son parte de los
+-- argumentos. Si son en cambio la tabla con `__pd_var`, cada elemento de la
+-- tabla (desde 1 hasta el indicado por su campo `n`) es utilizado como parte
+-- de los argumentos.
+--
+-- Por ejemplo, `M.enviarMensajeV(X, "Y", A, { 1, 2, __pd_var=true, n=2, }, B)`
+-- corresponde al código PseudoD `X#Y: ...A, 1, 2, ...B`.
 function M.enviarMensajeV(obj, mensaje, ...)
    local partes = table.pack(...)
    local args = { n = 0 }
@@ -585,6 +672,12 @@ end
 function M.nl()
    print()
 end
+
+-- Los arreglos son como objetos normales, solo que además del campo
+-- `__pd_object` tienen uno llamado `__pd_arreglo`. De esta forma es posible
+-- distinguirlos desde Lua. Además, su `attrs[ARREGLO_ATTRS_IDX]` no es un
+-- objeto PseudoD sino una tabla normal de Lua (con un campo `n`) con los
+-- elementos del arreglo.
 
 local ARREGLO_ATTRS_IDX = 1
 M.ARREGLO_ATTRS_IDX = ARREGLO_ATTRS_IDX
@@ -686,6 +779,8 @@ local METODOS_ARREGLO = {
    end,
 }
 
+-- Como `prettyprint` pero devuelve un string en vez de escribirlo y todo está
+-- en una única línea.
 function pp(tbl)
    if type(tbl) == "string" then
       return ("%q"):format(tbl)
@@ -701,6 +796,8 @@ function pp(tbl)
    return r
 end
 
+-- Contruye un arreglo desde una tabla. `vals` debe ser una tabla con un campo
+-- `n` como las producidas por `table.pack`.
 function M.mkarreglo(vals)
    local arr = M.objeto()
    local valsIdx = arr:newAttribute()
@@ -713,6 +810,8 @@ function M.mkarreglo(vals)
    return arr
 end
 
+-- `M.arreglo(A, B, C)` crea un arreglo que contiene los valores `A`, `B` y
+-- `C`. nils en los argumentos son guardados.
 function M.arreglo(...)
    local pk = table.pack(...)
    local reidxpk = { n = pk.n }
@@ -722,6 +821,10 @@ function M.arreglo(...)
    return M.mkarreglo(reidxpk)
 end
 
+-- Como `ipairs` pero para arreglos.
+--
+-- Esta función también sirve con cualquier objeto de PseudoD que implementen
+-- una interfáz parecida a los arreglos (como por ejemplo, los textos).
 function M.arregloipairs(arr)
    return function(arr, idx)
       idx = idx + 1
@@ -733,6 +836,11 @@ function M.arregloipairs(arr)
    end, arr, -1
 end
 
+-- Como `table.unpack` pero para arreglos y no soporta los parámetros
+-- adicionales.
+--
+-- Esta función también sirve con cualquier objeto de PseudoD que implementen
+-- una interfáz parecida a los arreglos (como por ejemplo, los textos).
 function M.arreglounpack(arr)
    local tbl = {}
    for i, x in M.arregloipairs(arr) do
@@ -741,6 +849,11 @@ function M.arreglounpack(arr)
    return table.unpack(tbl, 0, M.enviarMensaje(arr, "longitud") - 1)
 end
 
+-- Como `M.arreglounpack` pero requiere que su parámetro sea un arreglo creado
+-- con `M.arreglo` o `M.mkarreglo`, no cualquier objeto.
+--
+-- Esta limitación lo hace más eficiente, pero no debería ser usado en código
+-- genérico.
 function M.fastarreglounpack(arr)
    assert(type(arr) == "table")
    assert(arr.__pd_object and arr.__pd_arreglo)
@@ -748,6 +861,15 @@ function M.fastarreglounpack(arr)
    return table.unpack(t, 0, t.n)
 end
 
+-- Crea un espacio de nombres.
+--
+-- `tbl` es una tabla que mapea los nombres del espacio de nombres a subtablas,
+-- cada una de la forma `{ value = OBJ, autoexecutable = BOOL }` donde `OBJ` es
+-- el objeto que será exportado y `BOOL` determina si ese nombre es
+-- autoejecutable o no.
+--
+-- Los espacios de nombres poseen un campo (en Lua) `__pd_ns=true` que puedes
+-- usar para detectarlos.
 function M.ns(tbl)
    local ns = M.objeto()
    local tblIdx = ns:newAttribute()
@@ -782,6 +904,29 @@ end
 
 M.clases = {}
 
+-- Crea una clase.
+--
+-- No deberías usar esta función directamente, en cambio, envíale el mensaje
+-- "subclase" a la clase "Objeto" (`M.clases.Objeto`).
+--
+-- Para facilitar la detección de clases desde lua, todas tienen un campo
+-- `__pd_cls=true`.
+--
+-- Las clases son objetos con 4 atributos importantes, el índice de estos en
+-- `Cls.attrs` puede ser accedido por los atributos en Lua:
+--
+-- * `Cls.atributosDeInstanciaIdx`: Un entero que indica el número de atributos
+--   de las instancias de la clase.
+--
+-- * `Cls.metodosDeInstanciaIdx`: Un arreglo de arreglos de dos elementos,
+--   donde cada elemento es de la forma `M.arreglo(nombre, valor)`: `nombre` es
+--   un texto que es el nombre del método, mientras que `valor` es cualquier
+--   objeto "llamable" que es la implementación del método.
+--
+-- * `Cls.claseBaseIdx`: La clase base, o nil si no tiene (solo `Objeto` no
+--    tiene clase base).
+--
+-- * `Cls.nombreIdx`: El nombre de la clase; un texto.
 function M.mkclase()
    local Cls = M.objeto()
    Cls.atributosDeInstanciaIdx = Cls:addAttribute("atributosDeInstancia")
@@ -1047,6 +1192,10 @@ Texto.methods["crear"] = function(self) return "" end
 
 M.clases.Texto = Texto
 
+-- Todos los objetos de la tabla "builtins" son importados automaticamente al
+-- iniciar un módulo. No basta, sin embargo, agregar un objeto aquí para que
+-- este disponible: también es necesario modificar la lista de builtins en el
+-- backend.
 M.builtins = {
    Objeto = M.clases.Objeto,
    Boole = M.clases.Boole,
@@ -1062,6 +1211,8 @@ M.builtins = {
    FALSO = false,
    NULO = nil,
 
+   -- Este será llenado posteriormente en "pseudod.lua" con todos los
+   -- argumentos del CLI.
    __Argv = M.arreglo(),
    __Impl = PSEUDOD_IMPL,
 }
@@ -1177,6 +1328,17 @@ function M.builtins.__LeerCaracter()
    return io.read(1) or -1
 end
 
+-- Sistema de módulos:
+--
+-- Debido a que los módulos no son compilados a archivos separados no es
+-- posible utilizar "require" (en teoría si es posible usarlo mientras se
+-- manipule directamente "package.loaded" y "package.searchers"), así que esta
+-- función implementa un sistema similar.
+--
+-- `M.modulos` contiene funciones por cada módulo. Esto es de forma que
+-- `M.modulos[RUTA]()` devuelve un espacio de nombres luego de ejecutar el
+-- módulo en la ruta `RUTA`. `M.modcache` es un cache de estos espacios de
+-- nombres, para no ejecutar los módulos más de una vez.
 M.modulos = {}
 M.modcache = {}
 
@@ -1194,10 +1356,27 @@ function M.importar(ruta)
    error(("No se encontró el módulo %q"):format(ruta))
 end
 
+-- `M.import` es un alias de `M.importar`.
 M.import = M.importar
 
+-- Un ámbito.
+--
+-- Como lua limita las variables locales a 200, para eliminar esta restricción,
+-- objetos de este tipo son creados.
+--
+-- Un scope actúa como una tabla. Para crear una variable con nombre `foo` en
+-- un scope `x`, llama `M.scopenewname(x, "foo")`. Luego de esto `x.foo` va a
+-- leer la variable y `x.foo = Y` va a fijarla. Si no se creó una variable en
+-- un ámbito, estas operaciones actúan en el ámbito "padre" de este (el
+-- parámetro `upper`, que puede ser nil para indicar que no hay un ámbito
+-- superior). De esta forma, leer y escribir variables en un scope actúa de
+-- manera similar a los ámbitos léxicos de Lua o PseudoD.
 function M.scope(upper)
    local realscope = {}
+   -- `null` es usado para distinguir una variable que exíste pero debe leerse
+   -- como "nil" (tiene valor null) y una que no existe (tiene valor nil). Al
+   -- leer y escribir variables en el scope, `null` es automáticamente
+   -- convertido a y desde nil.
    local null = {}
    local meta = {}
 
@@ -1248,6 +1427,12 @@ function M.scopenewname(scope, name)
    getmetatable(scope).newname(name)
 end
 
+-- Función de utilidad para clonar objetos.
+--
+-- `fields` es una tabla que será recorrida con `pairs`, cada llave debe ser un
+-- string y cada valor un objeto. Esta función primero clona `obj` (llamando a
+-- su método `clonar`) y luego llama `clon#fijar_KEY: VALUE` para cada par de
+-- `fields`.
 function M.clonar(obj, fields)
    local cl = M.enviarMensaje(obj, "clonar")
    for k, v in pairs(fields) do
@@ -1256,6 +1441,14 @@ function M.clonar(obj, fields)
    return cl
 end
 
+-- Convierte un "file mode" a una tabla.
+--
+-- El primer dígito de `mode` (que debe ser un entero) es 1 si el archivo será
+-- abierto para escribir o 0 si es para leer.
+--
+-- El segundo dígito es 1 si el archivo es binario, 0 si textual.
+--
+-- El tercer dígito es 1 si el archivo debería ser truncado, 0 si no.
 local function parseFileMode(mode)
    local function getdigit(num)
       return num % 10, num / 10
@@ -1284,6 +1477,10 @@ local function parseFileMode(mode)
    return res
 end
 
+-- Convierte una tabla como la devuelta por `parseFileMode` a un string que
+-- puede ser utilizado con `open`.
+--
+-- Actualmente el "bit" de truncar no está implementado.
 local function fileModeToString(modeTbl)
    local mode
    if modeTbl.read and not modeTbl.write then
@@ -1306,6 +1503,8 @@ local function fileModeToString(modeTbl)
    return mode
 end
 
+-- Devuelve un objeto de archivo. `path` es la ruta del archivo y `mode` el
+-- entero que indica el modo en el que se abrirá.
 function M.abrirArchivo(path, mode)
    local modeStr = fileModeToString(parseFileMode(mode))
    local file = M.objeto()

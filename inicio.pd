@@ -12,11 +12,25 @@ utilizar backends/lua como LuaBack
 utilizar módulos como Módulos
 
 
-variables MENSAJE_DE_AYUDA, VERSIÓN, NOMBRE_IMPLEMENTACIÓN, RUTA_BEPD_PREDETERMINADA
+[DOCUMENTA
+@brief{Es la versión de PseudoD que este compilador implementa.}
+DOCUMENTA]
+variable VERSIÓN
 fijar VERSIÓN a {3.0.0-alpha.1}
+
+[DOCUMENTA
+@brief{Es el nombre (legible por humanos) de esta implementación.}
+DOCUMENTA]
+variable NOMBRE_IMPLEMENTACIÓN
 fijar NOMBRE_IMPLEMENTACIÓN a {PseudoD (bootstrap)}
+
+[DOCUMENTA
+@brief{Es la ruta de la BEPD que se usará si no se especifíca otra.}
+DOCUMENTA]
+variable RUTA_BEPD_PREDETERMINADA
 fijar RUTA_BEPD_PREDETERMINADA a {/opt/pseudod/bepd/bepd/}
 
+variable MENSAJE_DE_AYUDA
 fijar MENSAJE_DE_AYUDA a {PseudoD versión ~t
 Uso:  pseudod OPCIONES... (<archivo> | -c <programa>) [-b <ruta>]
       pseudod OPCIONES... [-i]
@@ -66,23 +80,139 @@ Los siguientes parámetros pueden ser inspeccionados:
  -I rutas-bib  : Escribe las rutas a las bibliotecas. Una por línea.
 }#formatear: VERSIÓN, RUTA_BEPD_PREDETERMINADA
 
+[DOCUMENTA
+@brief{Determina si se debe mostrar la versión en el CLI.}
+
+Luego de parsear las opciones del CLI, una variable de este tipo determina la
+acción a realizar con respecto a la versión de esta implementación.
+
+@enum(
+@defenum(VERSIÓN_Y_NOMBRE){Se debe mostrar la versión de PseudoD implementada
+y el nombre de la implementación.}
+@defenum(SOLO_VERSIÓN){Solo muestra la versión de PseudoD implementada.}
+@defenum(NO){No muestres ni la versión ni el nombre.}
+)
+DOCUMENTA]
 variable MostrarVersión
 fijar MostrarVersión a Enum: {MostrarVersión}, {VERSIÓN_Y_NOMBRE}, {SOLO_VERSIÓN}, {NO}
 
-clase ContextoDeCLI
-    atributos archivoAEjecutar,
-              programaAEjecutar,
-              mostrarAyuda,
-              mostrarVersión,
-              rutaDeLaBEPD,
-              interactivo,
-              archivoDeSalida,
-              mostrarMensajes,
-              guardaBaseDeDatos,
-              cargaBasesDeDatos
+[DOCUMENTA
+@brief{Contexto de las opciones del CLI.}
 
+A medida que se parsean las opciones del CLI, una instancia de esta clase se va
+llenando de los datos que se extrajeron. Luego, dependiendo de sus atributos es
+posible saber que acciones realizar.
+DOCUMENTA]
+clase ContextoDeCLI
+    [DOCUMENTA
+    @brief{Nombre del archivo a ejecutar o compilar.}
+
+    Un @pd{Texto}, debe ser compilado o ejecutado después de ejecutar
+    @pd{programaAEjecutar}. Si no fue especificado un archivo, tiene el
+    valor de @pd{NULO}.
+    DOCUMENTA]
+    atributo archivoAEjecutar
+
+    [DOCUMENTA
+    @brief{Programa a ejecutar.}
+
+    Un @pd{Texto} que debe ser evaluado (interpretado). Esto tiene que suceder
+    antes de compilar o ejecutar @pd{archivoAEjecutar}. Si no fue especificado
+    un texto a ejecutar tiene el valor de @pd{NULO}.
+    DOCUMENTA]
+    atributo programaAEjecutar
+
+    [DOCUMENTA
+    @brief{@pd{Boole} que indica si se debería mostrar la ayuda.}
+
+    Si es @pd{VERDADERO} también se deberá terminar el programa luego de
+    mostrar la ayuda (sin ejecutar, leer ni compilar nada).
+    DOCUMENTA]
+    atributo mostrarAyuda
+
+    [DOCUMENTA
+    @brief{Si se debe mostrar la versión.}
+
+    Instancia de @pd{MostrarVersión} que indica que versión/nombre se debe
+    mostrar. Tal como con @pd{mostrarAyuda}, si tiene cualquier valor excepto
+    @pd{MostrarVersión#NO} entonces también se debe terminar el programa antes
+    de leer, ejecutar o compilar cualquier cosa.
+    DOCUMENTA]
+    atributo mostrarVersión
+
+    [DOCUMENTA
+    @brief{Ruta a la BEPD.}
+
+    Un @pd{Texto} que indica la ruta a la BEPD que se debería usar. Si no fue
+    especificada en el CLI, toma el valor de @pd{NULO} (y se debería
+    interpretar como si fuera @pd{RUTA_BEPD_PREDETERMINADA}).
+    DOCUMENTA]
+    atributo rutaDeLaBEPD
+
+    [DOCUMENTA
+    @brief{Indica si se debería iniciar el REPL.}
+
+    Un @pd{Boole}: @pd{VERDADERO} indica que el REPL se debería iniciar,
+    @pd{FALSO} que no. De iniciarse el REPL deberá hacerse después de compilar,
+    ejecutar y cargar cualquier archivo o base de datos.
+    DOCUMENTA]
+    atributo interactivo
+
+    [DOCUMENTA
+    @brief{Archivo en el que se guardará el compilado.}
+
+    @pd{Texto} o @pd{NULO} que indica a donde se guardará el resultado de
+    compilar @pd{nombreDelArchivo}. Su valor no importa si
+    @pd{nombreDelArchivo} es @pd{NULO}. Si es @pd{NULO} pero
+    @pd{nombreDelArchivo} no lo es, el resultado de la compilación será escrito
+    a la salida estándar.
+    DOCUMENTA]
+    atributo archivoDeSalida
+
+    [DOCUMENTA
+    @brief{Si se deben mostrar mesajes adicionales.}
+
+    Véase @pd{ContextoDeCLI#mostrarMensaje}.
+    DOCUMENTA]
+    atributo mostrarMensajes
+
+    [DOCUMENTA
+    @brief{A donde se deberá guardar la base de datos de módulos.}
+
+    Luego de compilar, si este atributo no es @pd{NULO}, la base de datos de
+    módulos será serializada en el archivo especificado.
+    DOCUMENTA]
+    atributo guardaBaseDeDatos
+
+    [DOCUMENTA
+    @brief{Que bases de datos de módulos se deben cargar.}
+
+    Un @pd{Arreglo} de @pd{Texto}s (posiblemente vacío): Antes de compilar o
+    ejecutar cualquier cosa, cada archivo en este arreglo es deserializado como
+    una base de datos de módulos y cada DB es cargada en orden (aunque este
+    detalle no importa ya que el orden de carga de bases de datos es
+    irrelevante).
+    DOCUMENTA]
+    atributo cargaBasesDeDatos
+
+    [DOCUMENTA
+    @brief{Devuelve este contexto como un texto.}
+    DOCUMENTA]
     metodo comoTexto
 
+    [DOCUMENTA
+    @brief{Muestra un mensaje.}
+
+    Actúa como un sistema sencillo de @italic{logging}: Si @pd{mostrarMensajes}
+    es @pd{VERDADERO}, @pd{texto} será escrito a la salida estándar. De otra
+    forma está llamada al método será ignorada.
+
+    Mensajes de información y depuración del compilador/intérprete deberían
+    siempre utilizar este método en vez de @pd{Escribir} directamente, pero las
+    advertencias y errores no. Esto es debido a que las advertencias y errores
+    siempre deberían ser mostradas, irrelevantemente de si el usuario indico
+    que no se mostraran mensajes adicionales.
+    DOCUMENTA]
     metodo mostrarMensaje: texto
 finclase
 
@@ -109,6 +239,12 @@ metodo ContextoDeCLI#mostrarMensaje: texto
     finsi
 finmetodo
 
+[DOCUMENTA
+@brief{Convierte un texto del CLI a un nombre de archivo.}
+
+Tiene en cuenta casos especiales como que @code{-} debería ser interpretado
+como la entrada estándar.
+DOCUMENTA]
 funcion ObtenerArchivoDesdeCLI: argumentoDelCLI
     si argumentoDelCLI = {-}
         devolver {/dev/stdin}
@@ -117,6 +253,22 @@ funcion ObtenerArchivoDesdeCLI: argumentoDelCLI
     finsi
 finfuncion
 
+[DOCUMENTA
+@brief{Parsea una sola opción del CLI.}
+
+@pd{arg} es la opción a parsear (un @pd{Texto}) mientras que @pd{resto} es el
+(posiblemente vacío) arreglo de textos que son las opciones que quedan en el
+CLI sin parsear.
+
+Devuelve un número indicando la cantidad de opciones de @pd{resto} que deberían
+ser ignoradas: por ejemplo, si @pd{texto} es @pd{Arreglo#crearCon: "A", "B",
+"C"} y este procedimiento devuelve @pd{0}, entonces la siguiente opción es
+@pd{"A"}, mientras que si devuelve @pd{1} la siguiente opción en ser parseada
+deberá ser @pd{"B"}.
+
+@pd{ctx} es el @pd{ContextoDeCLI} cuyos atributos serán llenados con los
+valores extraídos de las opciones.
+DOCUMENTA]
 procedimiento ParsearOpción: ctx, arg, resto
     si Contiene: (Arreglo#crearCon: {-h}, {--help}, {-a}, {--ayuda}, {-?}), arg
         fijar ctx#mostrarAyuda a VERDADERO
@@ -173,6 +325,19 @@ procedimiento ParsearOpción: ctx, arg, resto
     devolver NULO
 finprocedimiento
 
+[DOCUMENTA
+@brief{Parsea las opciones posicionales.}
+
+Algunas opciones del CLI no son especificadas por "switches" como
+@code{--salida} o @code{-i}, sino que quedan luego de parsear todas las
+opciones válidas. Este es el caso, por ejemplo, con el nombre del archivo a
+ejecutar/compilar.
+
+@params(
+@defparam(ctx){@pd{ContextoDeCLI} a usar.}
+@defparam(posicionales){Arreglo con los argumentos del CLI que quedan.}
+)
+DOCUMENTA]
 procedimiento ParsearPosicionales: ctx, posicionales
     necesitas posicionales#longitud =< 1
     si posicionales#longitud = 1
@@ -180,6 +345,30 @@ procedimiento ParsearPosicionales: ctx, posicionales
     finsi
 finprocedimiento
 
+[DOCUMENTA
+@brief{Parsea el CLI.}
+
+La sintáxis de las opciones aceptadas por el parser es:
+
+@itemlist( @item{Opciones cortas: un signo "menos" @code{-} seguido de una sola
+letra.  Pueden o no aceptar argumentos adicionales. Actualmente no es posible
+"encadenar" varias de estas opciones como en otros CLIs (por ejemplo,
+@code{-ijk} en vez de @code{-i -j -k})}
+@item{Opciones largas: dos signos "menos" @code|{--}| seguidos del nombre
+completo de la opción (que nunca contiene @code{=}). Pueden tener 0 o más
+argumentos. Actualmente no se puede utilizar @code{=} para separar la opción de
+su valor, siempre tienen que ser argumentos separados.}
+@item{Argumentos posicionales: argumentos que no son precedidos por ningúna
+opción son tratados como posicionales.}
+@item{Finalizador de opciones: @code{--} por sí mismo termina de parsear
+opciones: todos los argumentos luego de @code{--} son tratados como
+posicionales incluso si comienzan con @code{-}.}
+@item{Archivos especiales: Cada vez que se espera un archivo @code{-} puede ser
+usado para indicar que se debe utilizar la entrada estándar.}
+)
+
+@devuelve{Un @pd{ContextoDeCLI} con todos los atributos especificados en el CLI.}
+DOCUMENTA]
 procedimiento ParsearCLI: cli
     variables ctx, i, posicionales
     fijar ctx a ContextoDeCLI#crear
@@ -208,6 +397,13 @@ procedimiento ParsearCLI: cli
     devolver ctx
 finprocedimiento
 
+[DOCUMENTA
+@brief{Convierte un nombre de archivo a una llave de módulo.}
+
+Una ruta como @code{hola/mundo.pd} es transformada en una llave como
+@pd{Módulos#LlaveDeMódulo#crear: ".", "hola/mundo", "pd"}. La ruta al módulo
+siempre es @code{.}.
+DOCUMENTA]
 funcion LlaveDeMóduloDesdeArchivoDelCLI: archivo
     variables archivoSinExtensión, extensión, partes
     fijar partes a Partir: archivo, {.}
@@ -216,6 +412,12 @@ funcion LlaveDeMóduloDesdeArchivoDelCLI: archivo
     devolver Módulos#LlaveDeMódulo#crear: {.}, archivoSinExtensión, extensión
 finfuncion
 
+[DOCUMENTA
+@brief{Compila un programa.}
+
+Con el contexto del CLI @pd{ctx}, compila @pd{programa} (que debe ser un
+texto).
+DOCUMENTA]
 procedimiento Compilar: ctx, programa
     ctx#mostrarMensaje: {-- Inicio}
     variables comp, db, conf, llave, módulo, compilado
@@ -261,10 +463,21 @@ procedimiento Compilar: ctx, programa
     finsi
 finprocedimiento
 
+[DOCUMENTA
+@brief{Compila un archivo.}
+
+Llama a @pd{Compilar} con el contenido del archivo @pd{nombreDelArchivo} como
+programa.
+DOCUMENTA]
 procedimiento CompilarArchivo: ctx, nombreDelArchivo
     Compilar: ctx, (Archivos#LeerArchivo: nombreDelArchivo)
 finprocedimiento
 
+[DOCUMENTA
+@brief{Inicia el REPL.}
+
+Actualmente no está implementado.
+DOCUMENTA]
 procedimiento IniciarREPL: ctx
     ctx#mostrarMensaje: {-- REPL del compilador}
     ctx#mostrarMensaje: {-- TODO}
@@ -280,6 +493,12 @@ variable Adios
 }
 finprocedimiento
 
+[DOCUMENTA
+@brief{Ejecuta el contexto del CLI.}
+
+El punto principal del compilador, llama a @pd{Compilar}, @pd{CompilarArchivo}
+o @pd{IniciarREPL} dependiendo de las opciones del CLI.
+DOCUMENTA]
 procedimiento Inicio: ctxcli
     si (EsNulo: ctxcli#archivoAEjecutar) && (EsNulo: ctxcli#programaAEjecutar)
         fijar ctxcli#interactivo a VERDADERO

@@ -1,15 +1,52 @@
 utilizar bepd/builtins
 utilizar bepd/x/enum
 
-clase Nodo
-    atributos areaTextual, metadatos
+[DOCUMENTA
+@brief{Un nodo del AST.}
 
+Los nodos contienen, de manera especial, uno o más @italic{metadados}. Los
+metadatos son diccionarios que los pases del compilador pueden utilizar para lo
+que quieran. Para evitar colisiones, todas las operaciones en metadados piden
+una @italic{"clase"}. La clase debe ser única por cada pase e idealmente
+debería compararse como igual solo con sigo misma.
+DOCUMENTA]
+clase Nodo
+    atributo areaTextual
+    atributo metadatos
+
+    [DOCUMENTA
+    @brief{Inicializa el nodo.}
+
+    No deberías construir esta clase directamente, en cambio, crea las
+    subclases.
+    DOCUMENTA]
     metodo inicializar
 
+    [DOCUMENTA
+    @brief{Devuelve la representación textual de los metadatos.}
+    DOCUMENTA]
     metodo metadatosComoTexto
 
+    [DOCUMENTA
+    @brief{Fija un metadato a un valor.}
+
+    Tal como con la clase @pd{Diccionario}, si la llave no exíste entonces es
+    creada.
+
+    @param{klase} es la clase que representa al pase.
+    DOCUMENTA]
     metodo fijarMetadato: klase, llave, valor
+
+    [DOCUMENTA
+    @brief{Obtiene un metadado del nodo.}
+
+    @param{klase} es la clase que representa al pase.
+    DOCUMENTA]
     metodo obtenerMetadato: klase, llave
+
+    [DOCUMENTA
+    @brief{Determina si laa clase contiene el metadato especificado.}
+    DOCUMENTA]
     metodo contieneMetadato: klase, llave
 finclase
 
@@ -41,6 +78,24 @@ metodo Nodo#contieneMetadato: klase, llave
     finsi
 finmetodo
 
+[DOCUMENTA
+@brief{Nodo especial que representa un "variadic".}
+
+Su atributo @pd{interno} contiene un segundo nodo. Los tipos válidos para este
+atributo depende del nodo que contenga al variadic.
+
+Los nodos variadic son usados en dos partes distíntas:
+
+@itemlist(
+@item{Al declarar funciones/métodos/procedimientos: @pd{funcion EscribirTabulado: ...valores},
+@pd{...valores} es un @italic{parámetro variadic}. Estos siempre son
+representados como un @pd{NodoVariadic} cuyo @code{#interno} es siempre
+un @pd{NodoIdentificador}.}
+@item{Al llamar a una función/metodo/procedimiento: @pd{EscribirTabulado: 1, 2, ...otros},
+@pd{...otros} es un @italic{argumento variadic}. Estos son representados
+como un @pd{NodoVariadic} con un @pd{NodoExpresion} dentro.}
+)
+DOCUMENTA]
 clase NodoVariadic hereda Nodo
     atributo interno
     metodo comoTexto
@@ -50,9 +105,18 @@ metodo NodoVariadic#comoTexto
     devolver {(NodoVariadic: ~t en ~t con ~t)}#formatear: yo#interno, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Clase base para todos los nodos que son instrucciones.}
+DOCUMENTA]
 clase NodoInstrucción hereda Nodo
 finclase
 
+[DOCUMENTA
+@brief{Nodo principal de un programa.}
+
+Todas las instrucciones y expresiones principales de un programa están en este
+nodo, dentro del arreglo @pd{instrucciones}.
+DOCUMENTA]
 clase NodoPrograma hereda NodoInstrucción
     atributo instrucciones
     metodo comoTexto
@@ -62,6 +126,12 @@ metodo NodoPrograma#comoTexto
     devolver {(NodoPrograma: ~t en ~t con ~t)}#formatear: yo#instrucciones, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Declara una o más variables.}
+
+El atributo @pd{nombres} contiene un arreglo de @pd{NodoIdentificador}, que son
+los nombres de las variables a crear.
+DOCUMENTA]
 clase NodoVariable hereda NodoInstrucción
     atributo nombres
     metodo comoTexto
@@ -71,6 +141,19 @@ metodo NodoVariable#comoTexto
     devolver {(NodoVariable: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Fija un objetivo a un valor.}
+
+El atributo @pd{objetivo} contiene la @italic{cosa} a fijar. Puede ser un
+@pd{NodoIdentificador}, en cuyo caso se debe fijar esa variable al resultado de
+evaluar el atributo @pd{valor} que es un @pd{NodoExpresion}.
+
+También puede ser un @pd{NodoEnviarMensaje}, eso corresponde con la sintáxis
+@pd{fijar A#b a C}. Si ese es el caso, entonces se debe convertir a
+@pd{A#fijar_b: C}. Esto también aplica a objetivos más compicados mientras
+@pd{objetivo} sea un @pd{NodoEnviarMensaje}: @pd{fijar (A + B * C)#a#b#c a 12}
+es igual a @pd{(A + B * C)#a#b#fijar_c: 12}.
+DOCUMENTA]
 clase NodoFijar hereda NodoInstrucción
     atributos objetivo, valor
     metodo comoTexto
@@ -80,6 +163,11 @@ metodo NodoFijar#comoTexto
     devolver {(NodoFijar: ~t a ~t en ~t con ~t)}#formatear: yo#objetivo, yo#valor, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Escribe un valor.}
+
+@pd{valor} debe ser un @pd{NodoExpresion}.
+DOCUMENTA]
 clase NodoEscribir hereda NodoInstrucción
     atributo valor
     metodo comoTexto
@@ -89,6 +177,9 @@ metodo NodoEscribir#comoTexto
     devolver {(NodoEscribir: ~t en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Corresponde a la instrucción @pd{nl}.}
+DOCUMENTA]
 clase NodoNl hereda NodoInstrucción
     metodo comoTexto
 finclase
@@ -97,6 +188,15 @@ metodo NodoNl#comoTexto
     devolver {(NodoNl en ~t con ~t)}#formatear: yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Declara uno o más atributos dentro de una clase.}
+
+Los @pd{NodoClase} pueden contener declaraciónes de atributos y métodos. Este
+nodo representa una de esas declaraciones de uno o más atributos.
+
+@pd{nombres} es un arreglo de @pd{NodoIdentificador}, que contiene los
+atributos a crear.
+DOCUMENTA]
 clase NodoDeclaraciónDeAtributosEnClase hereda NodoInstrucción
     atributos nombres
 
@@ -107,6 +207,17 @@ metodo NodoDeclaraciónDeAtributosEnClase#comoTexto
     devolver {(NodoDeclaraciónDeAtributosEnClase: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Declara un método dentro de una clase.}
+
+@pd{esEstático} es un @pd{Boole} indicando si el método es estático o no.
+
+@pd{nombre} es el nombre del método, un @pd{NodoIdentificador}.
+
+@pd{parámetros} es un arreglo de @pd{NodoIdentificador}, opcionalmente, el
+último elemento puede ser un parámetro variadic (un @pd{NodoVariadic} que
+contiene un @pd{NodoIdentificador}).
+DOCUMENTA]
 clase NodoDeclaraciónDeMétodoEnClase hereda NodoInstrucción
     atributos esEstático, nombre, parámetros
 
@@ -117,6 +228,34 @@ metodo NodoDeclaraciónDeMétodoEnClase#comoTexto
     devolver {(NodoDeclaraciónDeMétodoEnClase: esEstático = ~t, nombre = ~t, params = ~t en ~t con ~t)}#formatear: yo#esEstático, yo#nombre, yo#parámetros, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Una declaración de clase.}
+
+Corresponde con la sintáxis:
+
+@codeblock|{
+clase NOMBRE hereda BASE extiende CLASE implementa CLASE
+    atributos A, B, C
+    metodo A: A, B
+    metodo B: A, B
+finclase
+}|
+
+@pd{nombre} es el @pd{NodoIdentificador} que contiene el nombre de la clase.
+
+@pd{claseBase} es la clase especificada en @pd{hereda}, o @pd{NULO} si la clase
+no tiene ninguna cláusula @pd{hereda}. Es un @pd{NodoExpresion}.
+
+@pd{extiendeClases} es un arreglo de @pd{NodoExpresion} que son todas las
+clases especificadas con @pd{extiende}.
+
+@pd{implementaClases} también es un arreglo de @pd{NodoExpresion} con todas las
+clases que esta implementa.
+
+@pd{declaraciones} es un arreglo de @pd{NodoDeclaraciónDeAtributosEnClase}
+(para cada declaración de atributos) o de @pd{NodoDeclaraciónDeMétodoEnClase}
+(para cada declaración de un método).
+DOCUMENTA]
 clase NodoClase hereda NodoInstrucción
     atributos nombre, claseBase, extiendeClases, implementaClases, declaraciones
 
@@ -128,6 +267,9 @@ metodo NodoClase#comoTexto
         yo#nombre, yo#claseBase, yo#extiendeClases, yo#implementaClases, yo#declaraciones, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{No implementado aún.}
+DOCUMENTA]
 clase NodoImplementa hereda NodoInstrucción
     atributos nombre, definiciones
 
@@ -138,6 +280,9 @@ metodo NodoImplementa#comoTexto
     devolver {(NodoImplementa: ~t con ~t en ~t con ~t)}#formatear: yo#nombre, yo#definiciones, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{No implementado aún.}
+DOCUMENTA]
 clase NodoDefineAtributosEnClase hereda NodoInstrucción
     atributo nombres
 
@@ -148,6 +293,9 @@ metodo NodoDefineAtributosEnClase#comoTexto
     devolver {(NodoDefineAtributosEnClase: ~t en ~t con ~t)}#formatear: yo#nombres, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{No implementado aún.}
+DOCUMENTA]
 clase NodoDefineMétodoEnClase hereda NodoInstrucción
     atributos nombre, esEstático, parámetros, cuerpo
 
@@ -158,6 +306,18 @@ metodo NodoDefineMétodoEnClase#comoTexto
     devolver {(NodoDefineMétodoEnClase: nombre = ~t, esEstático = ~t, params = ~t, cuerpo = ~t en ~t con ~t)}#formatear: yo#nombre, yo#esEstático, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Una función o procedimiento.}
+
+@pd{nombre} es un @pd{NodoIdentificador}, el nombre de la función.
+
+@pd{parámetros} es un arreglo de @pd{NodoIdentificador}, opcionalmente el
+último elemento puede ser un parámetro variadic (un @pd{NodoVariadic} que
+contiene un @pd{NodoIdentificador}).
+
+@pd{cuerpo} es el cuerpo de la función. Un arreglo de @pd{NodoInstrucción}.
+
+DOCUMENTA]
 clase NodoFunción hereda NodoInstrucción
     atributos nombre, parámetros, cuerpo
 
@@ -168,6 +328,11 @@ metodo NodoFunción#comoTexto
     devolver {(NodoFunción: nombre = ~t, params = ~t, cuerpo = ~t en ~t con ~t)}#formatear: yo#nombre, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Nodo para la palabra clave @pd{necesitas}.}
+
+@pd{expresión} es un @pd{NodoExpresion} que será evaluado.
+DOCUMENTA]
 clase NodoNecesitas hereda NodoInstrucción
     atributo expresión
 
@@ -178,6 +343,11 @@ metodo NodoNecesitas#comoTexto
     devolver {(NodoNecesitas: ~t en ~t con ~t)}#formatear: yo#expresión, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Nodo para devolver un valor.}
+
+@pd{expresión} es un @pd{NodoExpresion}.
+DOCUMENTA]
 clase NodoDevolver hereda NodoInstrucción
     atributo expresión
 
@@ -188,6 +358,11 @@ metodo NodoDevolver#comoTexto
     devolver {(NodoDevolver: ~t en ~t con ~t)}#formatear: yo#expresión, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Condicional si.}
+
+@pd{condicional} es un @pd{NodoExpresion}. @pd{siVerdadero} y @pd{siFalso} son arreglos de @pd{NodoInstrucción}.
+DOCUMENTA]
 clase NodoSi hereda NodoInstrucción
     atributos condicional, siVerdadero, siFalso
 
@@ -198,6 +373,11 @@ metodo NodoSi#comoTexto
     devolver {(NodoSi: ~t entonces ~t si no ~t en ~t con ~t)}#formatear: yo#condicional, yo#siVerdadero, yo#siFalso, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Bucle mientras.}
+
+@pd{condicional} es un @pd{NodoExpresion}. @pd{cuerpo} es un arreglo de instrucciones.
+DOCUMENTA]
 clase NodoMientras hereda NodoInstrucción
     atributos condicional, cuerpo
 
@@ -208,6 +388,29 @@ metodo NodoMientras#comoTexto
     devolver {(NodoMientras: ~t hacer ~t en ~t con ~t)}#formatear: yo#condicional, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Define un método fuera de una clase.}
+
+Corresponde a la sintáxis:
+
+@codeblock|{
+metodo CLASE#METODO: PARAMS
+    CUERPO
+finmetodo
+}|
+
+@pd{deClase} es el @pd{NodoIdentificador} el cual es la clase a la cual el
+método pertenece.
+
+@pd{esEstático} indica si el método es estático o no (es un @pd{Boole}).
+
+@pd{nombre} es el @pd{NodoIdentificador} que es el nombre del método.
+
+@pd{parámetros} tiene el mismo formato que los parámetros de un
+@pd{NodoFunción}.
+
+@pd{cuerpo} es un arreglo de instrucciones.
+DOCUMENTA]
 clase NodoMétodo hereda NodoInstrucción
     atributos deClase, esEstático, nombre, parámetros, cuerpo
 
@@ -218,6 +421,21 @@ metodo NodoMétodo#comoTexto
     devolver {(NodoMétodo: de ~t es estático = ~t nombre = ~t pide ~t es ~t en ~t con ~t)}#formatear: yo#deClase, yo#esEstático, yo#nombre, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Declara atributos de una clase fuera de la declaración de clase.}
+
+Corresponde a:
+
+@codeblock|{
+atributos CLASE#ATTR1, CLASE#ATTR2
+}|
+
+@pd{deClase} es el @pd{NodoIdentificador} de la clase a la que este atributo
+pertenece.
+
+@pd{nombres} es el arreglo de @pd{NodoIdentificador} que son los nombres de los
+atributos.
+DOCUMENTA]
 clase NodoAtributos hereda NodoInstrucción
     atributos deClase, nombres
 
@@ -228,6 +446,29 @@ metodo NodoAtributos#comoTexto
     devolver {(NodoAtributos: de ~t nombres = ~t en ~t con ~t)}#formatear: yo#deClase, yo#nombres, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Importa otro módulo.}
+
+Corresponde a la sintáxis:
+
+@codeblock|{
+utilizar MODULO (NOMBRE1, NOMBRE2 como NOMBRE3, NOMBRE4) como ESPACIO
+}|
+
+@pd{módulo} es un @pd{NodoTextoLiteral} o un @pd{NodoIdentificador} y es el
+módulo a importar.
+
+@pd{espacioDeNombres} es @pd{NULO} o un @pd{NodoIdentificador} y es el espacio
+de nombres en el que se deberá importar el módulo.
+
+@pd{nombresEspecíficos} es el más complicado: Si no se especifico ningún nombre
+específico a importar, es @pd{NULO}. De lo contrario es un arreglo. Cada
+elemento del arreglo es un @pd{NodoIdentificador} (en el caso en el que un
+identificador solo se importa) o un arreglo de dos elementos (ámbos
+@pd{NodoIdentificador}) en el caso en el que se renombra un identificador; el
+primer elemento es el nombre como está en el módulo y el segundo elemento es el
+nombre con el cual debería ser importado.
+DOCUMENTA]
 clase NodoUtilizar hereda NodoInstrucción
     atributos módulo, espacioDeNombres, nombresEspecíficos
 
@@ -238,9 +479,17 @@ metodo NodoUtilizar#comoTexto
     devolver {(NodoUtilizar: ~t como ~t solo ~t en ~t con ~t)}#formatear: yo#módulo, yo#espacioDeNombres, yo#nombresEspecíficos, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Clase base para todos los nodos que son expresiones}
+DOCUMENTA]
 clase NodoExpresion hereda Nodo
 finclase
 
+[DOCUMENTA
+@brief{Un identificador.}
+
+@pd{nombre} es un texto que es el nombre del identificador.
+DOCUMENTA]
 clase NodoIdentificador hereda NodoExpresion
     atributo nombre
     metodo comoTexto
@@ -250,6 +499,11 @@ metodo NodoIdentificador#comoTexto
     devolver {(NodoIdentificador: [~t] en ~t con ~t)}#formatear: yo#nombre, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Literal numérica.}
+
+@pd{valor} es un @pd{Numero} y es el valor numérico de la literal.
+DOCUMENTA]
 clase NodoNumeroLiteral hereda NodoExpresion
     atributo valor
     metodo comoTexto
@@ -259,6 +513,11 @@ metodo NodoNumeroLiteral#comoTexto
     devolver {(NodoNumeroLiteral: ~t en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Una literal textual.}
+
+@pd{valor} es un @pd{Texto} y es el valor de la literal.
+DOCUMENTA]
 clase NodoTextoLiteral hereda NodoExpresion
     atributo valor
     metodo comoTexto
@@ -268,6 +527,19 @@ metodo NodoTextoLiteral#comoTexto
     devolver {(NodoTextoLiteral: [~t] en ~t con ~t)}#formatear: yo#valor, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Llama un procedimiento o función.}
+
+El AST no tiene una representación para llamar a un procedimiento sin
+argumentos. Esto se determina al momento de resolver los nombres.
+
+La sintáxis @pd{A: B, C, D} corresponde con este módulo.
+
+@pd{proc} es un @pd{NodoIdentificador}, el procedimiento o función a llamar.
+
+@pd{argumentos} es un arreglo de @pd{NodoExpresion} y de @pd{NodoVariadic}
+donde el @pd{NodoVariadic} envuelve otro @pd{NodoExpresion}.
+DOCUMENTA]
 clase NodoLlamarProcedimiento hereda NodoExpresion
     atributos proc, argumentos
     metodo comoTexto
@@ -277,6 +549,14 @@ metodo NodoLlamarProcedimiento#comoTexto
     devolver {(NodoLlamarProcedimiento: ~t con ~t en ~t con ~t)}#formatear: yo#proc, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Envia un mensaje a un objeto.}
+
+Corresponde a @pd{OBJETO#MENSAJE: ARGUMENTOS}.
+
+@pd{objeto} es un @pd{NodoExpresion}. @pd{mensaje} es un @pd{Texto}.
+@pd{argumentos} tiene el mismo formato que en @pd{NodoLlamarProcedimiento}.
+DOCUMENTA]
 clase NodoEnviarMensaje hereda NodoExpresion
     atributos objeto, mensaje, argumentos
     metodo comoTexto
@@ -286,6 +566,11 @@ metodo NodoEnviarMensaje#comoTexto
     devolver {(NodoEnviarMensaje: enviar ~t a ~t con ~t en ~t con ~t)}#formatear: yo#mensaje, yo#objeto, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Un operador.}
+
+@pd{lhs} y @pd{rhs} son @pd{NodoExpresion}. @pd{op} es un @pd{TokenOperador}.
+DOCUMENTA]
 clase NodoOperador hereda NodoExpresion
     atributos lhs, op, rhs
     metodo comoTexto
@@ -295,6 +580,14 @@ metodo NodoOperador#comoTexto
     devolver {(NodoOperador: ~t ~t ~t en ~t con ~t)}#formatear: yo#lhs, yo#op, yo#rhs, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{No llama a una variable.}
+
+@pd{base} es un @pd{NodoIdentificador}. @pd{mensajes} es un arreglo de
+textos (posiblemente vacío).
+
+Corresponde a la sintáxis @pd{&Variable} y @pd{&(Objeto#mensaje1#mensaje2)}.
+DOCUMENTA]
 clase NodoNoLlamar hereda NodoExpresion
     atributos base, mensajes
     metodo comoTexto
@@ -304,6 +597,14 @@ metodo NodoNoLlamar#comoTexto
     devolver {(NodoNoLlamar: ~t con ~t en ~t con ~t)}#formatear: yo#base, yo#mensajes, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Nodo de autoejecutar una variable.}
+
+Corresponde con las sintáxis @pd{%VAR} y @pd{%VAR: A, B, C}.
+
+@pd{expr} es un @pd{NodoExpresion} que será llamado. @pd{argumentos} tiene el
+mismo formato que en @pd{NodoLlamarProcedimiento}.
+DOCUMENTA]
 clase NodoAutoejecutar hereda NodoExpresion
     atributos expr, argumentos
     metodo comoTexto
@@ -313,6 +614,17 @@ metodo NodoAutoejecutar#comoTexto
     devolver {(NodoAutoejecutar: ~t con ~t en ~t con ~t)}#formatear: yo#expr, yo#argumentos, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Una función anónima.}
+
+@pd{esMétodo} es un boole indicando si la función/procedimiento fue declarada
+con la palabra clave @pd{metodo} (en cuyo caso debe tener una variable
+@pd{yo}).
+
+@pd{parámetros} tiene el mismo formato que en @pd{NodoFunción}.
+
+@pd{cuerpo} es un arreglo de instrucciones.
+DOCUMENTA]
 clase NodoFunciónAnónima hereda NodoExpresion
     atributos esMétodo, parámetros, cuerpo
 
@@ -323,9 +635,24 @@ metodo NodoFunciónAnónima#comoTexto
     devolver {(NodoFunciónAnónima: (esMétodo: ~t): ~t es ~t en ~t con ~t)}#formatear: yo#esMétodo, yo#parámetros, yo#cuerpo, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Tipo de igualdad de @pd{NodoSonIguales}.}
+
+@enum(
+@defenum(IGUALES){Los valores se comparan por igualdad.}
+@defenum(DIFERENTES){Los valores se comparan por desigualdad.}
+)
+DOCUMENTA]
 variable TipoIgualdad
 fijar TipoIgualdad a Enum: {TipoIgualdad}, {IGUALES}, {DIFERENTES}
 
+[DOCUMENTA
+@brief{Compara dos expresiones por igualdad.}
+
+@pd{tipoIgualdad} es un @pd{TipoIgualdad} indicando el tipo de igualdad.
+
+@pd{lhs} y @pd{rhs} son @pd{NodoExpresion}.
+DOCUMENTA]
 clase NodoSonIguales hereda NodoExpresion
     atributos lhs, rhs, tipoIgualdad
 
@@ -336,6 +663,13 @@ metodo NodoSonIguales#comoTexto
     devolver {(NodoSonIguales: ~t es ~t a ~t en ~t con ~t)}#formatear: yo#lhs, yo#tipoIgualdad, yo#rhs, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Obtén una referencia a una variable.}
+
+Aún no está implementado.
+
+@pd{nombre} es un @pd{NodoIdentificador}.
+DOCUMENTA]
 clase NodoReferenciar hereda NodoExpresion
     atributo nombre
 
@@ -346,6 +680,11 @@ metodo NodoReferenciar#comoTexto
     devolver {(NodoReferenciar: ~t en ~t con ~t)}#formatear: yo#nombre, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Nodo de la expresión @pd{no}.}
+
+@pd{expresión} es un @pd{NodoExpresion}.
+DOCUMENTA]
 clase NodoNo hereda NodoExpresion
     atributo expresión
 
@@ -356,6 +695,15 @@ metodo NodoNo#comoTexto
     devolver {(NodoNo: ~t en ~t con ~t)}#formatear: yo#expresión, yo#areaTextual, yo#metadatosComoTexto
 finmetodo
 
+[DOCUMENTA
+@brief{Nodo clonar.}
+
+@pd{expresiónAClonar} es un @pd{NodoExpresion}.
+
+@pd{campos} es un arreglo de arreglos de longitud 2, donde el primer valor es
+un texto (el nombre del campo) y el segundo valor un @pd{NodoExpresion} (el
+nuevo valor del campo).
+DOCUMENTA]
 clase NodoClonar hereda NodoExpresion
     atributos expresiónAClonar, campos
 

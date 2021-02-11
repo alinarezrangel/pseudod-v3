@@ -1,8 +1,39 @@
 utilizar bepd/builtins
 
-clase DatosDeVariable
-    atributos binding, esAutoejecutable
+[DOCUMENTA
+@brief{Los datos de una variable en un ámbito.}
 
+Véase la documentación de @pd{Ámbito} para más información.
+DOCUMENTA]
+clase DatosDeVariable
+    [DOCUMENTA
+    @brief{El binding de una variable.}
+
+    El binding es un identificador único que todas las variables tienen. Es el
+    verdadero identificador de las variables en tiempo de ejecución.
+
+    Es un entero.
+    DOCUMENTA]
+    atributo binding
+
+    [DOCUMENTA
+    @brief{Si la variable es autoejecutable.}
+
+    Las variables autoejecutables son llamadas (con @code{#\llamar\}) cuando
+    son referidas por su nombre.
+
+    Es un boole.
+    DOCUMENTA]
+    atributo esAutoejecutable
+
+    [DOCUMENTA
+    @brief{Inicializa los datos con los valores dados.}
+    DOCUMENTA]
+    metodo inicializar: binding, esAutoejecutable
+
+    [DOCUMENTA
+    @brief{Devuelve una representación textual simple de los datos.}
+    DOCUMENTA]
     metodo comoTexto
 finclase
 
@@ -15,31 +46,199 @@ metodo DatosDeVariable#comoTexto
     devolver {(DatosDeVariable#crear: ~t, ~t)}#formatear: yo#binding, yo#esAutoejecutable
 finmetodo
 
+[DOCUMENTA
+@brief{Ámbito léxico.}
+
+Cada instancia de @pd{Ámbito} representa un ámbito léxico en el programa,
+conteniendo las variables, sus bindings y si son autoejecutables.
+
+Un detalle muy importante es que las variables y sus bindings son almacenadas
+de manera separada. Esto es así para permitir "shadowing", es decir, en el
+siguiente ejemplo:
+
+@codeblock|{
+variable Hola
+funcion Foo
+    devolver Hola
+finfuncion
+variable Hola
+fijar Hola a 5
+Escribir: Foo
+}|
+
+Debería escribir @code{NULO}, no @code{5}. Esto es porque a pesar de que ambas
+variables tienen el mismo nombre, tienen bindings distíntos.
+
+Nota: El ejemplo anterior no es PseudoD válido. El lenguaje especifica que el
+shadowing no se puede realizar de esta manera. Actualmente la única manera de
+hacer "shadowing" es con la instrucción @pd{utilizar}. Además, incluso si fuese
+posible ocultar una variable anteriormente declarada de esta forma, un bug en
+el backend de Lua también hace que las variables dentro de procedimientos
+siempre se resuelvan a su última declaración, no a la que era visible cuando
+fue declarada.
+DOCUMENTA]
 clase Ámbito
+    [DOCUMENTA
+    @brief{Crea y devuelve un ámbito vacío.}
+
+    Este ámbito no contiene ningún nombre ni binding, tampoco tiene un ámbito
+    padre.
+    DOCUMENTA]
     metodo estatico vacío
+
+    [DOCUMENTA
+    @brief{Crea un ámbito desde un arreglo.}
+
+    El arreglo debe tener un número par de elementos. Cada elemento en la
+    posición @pd{i} del arreglo es el nombre de la variable a crear, mientras
+    que el elemento justo después debe ser la instancia de @pd{DatosDeVariable}
+    para la variable.
+
+    Por ejemplo, el arreglo:
+
+    @ejemplo|{
+    Arreglo#crearCon:
+        "Hola", (DatosDevariable#crear: 1, FALSO),
+        "Mundo", (DatosDevariable#crear: 2, FALSO)
+    }|
+
+    Creará un ámbito con las variables @pd{"Hola"} y @pd{"Mundo"}.
+
+    El ámbito creado no tiene ámbito padre.
+    DOCUMENTA]
     metodo estatico desdeArreglo: lst
+
+    [DOCUMENTA
+    @brief{Crea un ámbito desde una secuencia de valores.}
+
+    Equivalente a @pd{Ámbito#desdeArreglo: vals}.
+    DOCUMENTA]
     metodo estatico conValores: ...vals
 
+    [DOCUMENTA
+    @brief{El ámbito padre de este.}
+
+    Todos los ámbitos léxicos pueden tener un ámbito padre. Si este ámbito no
+    tiene un ámbito padre entonces @pd{ámbitoPadre} es @pd{NULO}. Pero si tiene
+    un ámbito padre, operaciones como obtener una variable o modificarla serán
+    aplicadas al padre de manera recursiva.
+
+    Por ejemplo, si este ámbito posee un ámbito padre y se trata de obtener el
+    valor de la variable @code{Hola} pero este ámbito no contiene una variable
+    @code{Hola}, entonces @code{Hola} será buscada en @pd{ámbitoPadre}, si
+    @pd{ámbitoPadre} no lo contiene, entonces en su padre y así sucesivamente.
+    DOCUMENTA]
     atributo ámbitoPadre
 
+    [DOCUMENTA
+    @brief{Inicializa el ámbito.}
+
+    El ámbito no tiene un ámbito padre y está vacío.
+    DOCUMENTA]
     metodo inicializar
 
+    [DOCUMENTA
+    @brief{Agrega un nombre al ámbito.}
+
+    Agrega @pd{nombre} al ámbito. @pd{valor} será el binding de @pd{nombre}. La
+    variable no es autoejecutable.
+    DOCUMENTA]
     metodo agregar: nombre, valor
+
+    [DOCUMENTA
+    @brief{Marca una variable como autoejecutable.}
+
+    Si este ámbito no contiene al nombre, prueba con su ámbito padre
+    recursivamente.
+    DOCUMENTA]
     metodo marcarComoAutoejecutable: nombre
+
+    [DOCUMENTA
+    @brief{Elimina una variable.}
+
+    Quita @pd{nombre} y su @pd{DatosDeVariable} del ámbito. Su binding aún es
+    guardado.
+    DOCUMENTA]
     metodo eliminarNombre: nombre
+
+    [DOCUMENTA
+    @brief{Elimina una variable y su binding.}
+    DOCUMENTA]
     metodo eliminarNombreYBinding: nombre
+
+    [DOCUMENTA
+    @brief{Obtiene el binding de una variable.}
+
+    @pd{nombre} es el nombre de la variable que aún debe existír en el ámbito.
+
+    Si este ámbito no contiene al nombre, prueba con su ámbito padre
+    recursivamente.
+    DOCUMENTA]
     metodo obtenerBinding: nombre
+
+    [DOCUMENTA
+    @brief{Determina si una variable es autoejecutable.}
+
+    Si este ámbito no contiene al nombre, prueba con su ámbito padre
+    recursivamente.
+    DOCUMENTA]
     metodo esAutoejecutable: nombre
+
+    [DOCUMENTA
+    @brief{Determina si este ámbito contiene a una variable.}
+
+    Si este ámbito no contiene al nombre, prueba con su ámbito padre
+    recursivamente.
+    DOCUMENTA]
     metodo contiene: nombre
 
+    [DOCUMENTA
+    @brief{Crea un subámbito.}
+
+    Devuelve un ámbito vacío cuyo @pd{ámbitoPadre} es igual a este ámbito.
+    DOCUMENTA]
     metodo crearSubámbito
 
+    [DOCUMENTA
+    @brief{Devuelve una representación simple del ámbito como texto.}
+    DOCUMENTA]
     metodo comoTexto
 
+    [DOCUMENTA
+    @brief{Itera sobre cada binding del ámbito con un nombre.}
+
+    Llama a @pd{proc} con dos argumentos: el nombre de una variable y el
+    binding de dicha. Solo es llamado sobre variables que exísten en el ámbito
+    (bindings sin variables asociadas no son tomados en cuenta).
+
+    Tal como @pd{paraCadaVariable}, no itera sobre el @pd{ámbitoPadre}.
+    DOCUMENTA]
     metodo paraCadaBinding: proc
+
+    [DOCUMENTA
+    @brief{Itera sobre cada variable.}
+
+    @pd{proc} es llamado por cada variable del ámbito con dos argumentos: el
+    nombre de la variable y el @pd{DatosDeVariable} de dicha.
+
+    No itera sobre el @pd{ámbitoPadre}.
+    DOCUMENTA]
     metodo paraCadaVariable: proc
 
+    [DOCUMENTA
+    @brief{Todos los bindings del ámbito.}
+
+    Devuelve un arreglo con todos los bindings de este ámbito, incluyendo los
+    de variables borradas y los bindings de @pd{ámbitoPadre}.
+    DOCUMENTA]
     metodo todosLosBindings
+
+    [DOCUMENTA
+    @brief{Todos los bindings locales del ámbito.}
+
+    Como @pd{todosLosBindings}, pero no incluye los bindings del
+    @pd{ámbitoPadre}.
+    DOCUMENTA]
     metodo todosLosBindingsLocales
 finclase
 
@@ -59,7 +258,7 @@ finmetodo
 metodo estatico Ámbito#conValores: ...vals
     variable inst
     fijar inst a yo#crear
-    fijar inst#_mapeo a __EnviarMensaje: Diccionario, {desdeArreglo}, vals
+    fijar inst#_mapeo a __EnviarMensaje: Diccionario, {desdePares}, vals
     devolver inst
 finmetodo
 
