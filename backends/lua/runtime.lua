@@ -1585,6 +1585,18 @@ function M.abrirArchivo(path, mode)
    return file
 end
 
+-- Reinicia el estado del runtime y ejecuta dinámicamente `code` con `load`.
+function M.resetandload(code)
+   local chunk, errmsg = load(code, "<interpreted code from resetandload>")
+   if not chunk then
+      error("No se pudo cargar el código pasado a resetandload: " .. errmsg)
+   end
+   M.modulos = {}
+   M.modcache = {}
+   M.builtins.__Argv = M.arreglo()
+   return chunk()
+end
+
 -- Utilizado como variable temporal por el compilador.
 M.ans_rt = nil
 

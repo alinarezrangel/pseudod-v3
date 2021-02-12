@@ -132,6 +132,69 @@ end}, arr, proc
 finprocedimiento
 
 [DOCUMENTA
+@brief{Llama a un procedimiento con cada número en un rango.}
+
+Cuenta desde @pd{desde} (inclusivo) hasta @pd{hasta} (exclusivo) con
+incrementos de 1. Llama a @pd{proc} con cada número obtenido de esta forma.
+
+El siguiente ejemplo escribe la suma de todos los números enteros entre 0 y 99:
+
+@ejemplo|{
+variable acc
+fijar acc a 0
+ParaCadaNúmero: 0, 100, procedimiento: i
+    fijar acc a acc + i
+finprocedimiento
+Escribir: acc
+}|
+DOCUMENTA]
+procedimiento ParaCadaNúmero: desde, hasta, proc
+    devolver ParaCadaNúmeroConPaso: desde, hasta, 1, proc
+finprocedimiento
+
+[DOCUMENTA
+@brief{Llama a un procedimiento con cada número en un rango (con un paso
+fijo).}
+
+Como @pd{ParaCadaNúmero}, pero los incrementos son de @pd{paso} en vez de por
+1.
+
+Por ejemplo, la suma de todos los números enteros pares entre 0 y 99 (ambos
+inclusivos) es:
+
+@ejemplo|{
+variable acc
+fijar acc a 0
+ParaCadaNúmeroConPaso: 0, 100, 2, procedimiento: i
+    fijar acc a acc + i
+finprocedimiento
+Escribir: acc
+}|
+DOCUMENTA]
+procedimiento ParaCadaNúmeroConPaso: desde, hasta, paso, proc
+    si __Impl = {Lua Bootstrap}
+        devolver __Lua: {function(from, to, step, proc)
+if type(proc) == "function" then
+    for i = from, (to - 1), step do
+        proc(i)
+    end
+else
+    for i = from, (to - 1), step do
+        rt.enviarMensaje(proc, "llamar", i)
+    end
+end
+end}, desde, hasta, paso, proc
+    sino
+        variable i
+        fijar i a desde
+        mientras i < hasta
+            %proc: i
+            fijar i a i + paso
+        finmientras
+    finsi
+finprocedimiento
+
+[DOCUMENTA
 @brief{Aplica un procedimiento a cada elemento de un arreglo.}
 
 Llama a @param{proc} con cada elemento de @param{arr} y el índice de dicho en el

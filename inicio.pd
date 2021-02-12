@@ -60,6 +60,8 @@ Opciones:
                                       compilar en <archivo>
  --cargar-db <archivo>              : Carga la base de datos <archivo> antes de
                                       compilar.
+ --escribir-salida                  : Escribe la salida de compilación a la
+                                      salida estándar.
 
 Si la opción `-b` no es especificada, la ruta a la BEPD se extráe de:
 
@@ -196,6 +198,14 @@ clase ContextoDeCLI
     atributo cargaBasesDeDatos
 
     [DOCUMENTA
+    @brief{Si debería escribir el compilado a la salida estándar.}
+
+    Si es @pd{VERDADERO}, el resultado de compilar el programa es escrito a la
+    salida estándar (además de ser escrito a @pd{archivoDeSalida}).
+    DOCUMENTA]
+    atributo escribirCompilado
+
+    [DOCUMENTA
     @brief{Devuelve este contexto como un texto.}
     DOCUMENTA]
     metodo comoTexto
@@ -227,10 +237,11 @@ metodo ContextoDeCLI#inicializar
     fijar yo#mostrarMensajes a VERDADERO
     fijar yo#guardaBaseDeDatos a NULO
     fijar yo#cargaBasesDeDatos a Arreglo#vacio
+    fijar yo#escribirCompilado a FALSO
 finmetodo
 
 metodo ContextoDeCLI#comoTexto
-    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t, guardaBaseDeDatos ~t, cargaBasesDeDatos ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo, yo#archivoDeSalida, yo#mostrarMensajes, yo#guardaBaseDeDatos, yo#cargaBasesDeDatos
+    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t, guardaBaseDeDatos ~t, cargaBasesDeDatos ~t, escribirCompilado ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo, yo#archivoDeSalida, yo#mostrarMensajes, yo#guardaBaseDeDatos, yo#cargaBasesDeDatos, yo#escribirCompilado
 finmetodo
 
 metodo ContextoDeCLI#mostrarMensaje: texto
@@ -321,6 +332,10 @@ procedimiento ParsearOpción: ctx, arg, resto
         necesitas resto#longitud > 0
         ctx#cargaBasesDeDatos#agregarAlFinal: (ObtenerArchivoDesdeCLI: (resto#en: 0))
         devolver 1
+    finsi
+    si arg = {--escribir-salida}
+        fijar ctx#escribirCompilado a VERDADERO
+        devolver 0
     finsi
     devolver NULO
 finprocedimiento
@@ -447,12 +462,6 @@ procedimiento Compilar: ctx, programa
 
     ctx#mostrarMensaje: {-- Final...}
     fijar compilado a comp#compilarTodo: llave
-    si no EsNulo: ctx#archivoDeSalida
-        ctx#mostrarMensaje: ({-- Guardando en ~t}#formatear: ctx#archivoDeSalida)
-        Archivos#EscribirArchivo: ctx#archivoDeSalida, (compilado#concatenar: {~%}#formatear)
-    sino
-        Escribir: compilado
-    finsi
 
     si no EsNulo: ctx#guardaBaseDeDatos
         ctx#mostrarMensaje: ({-- Guardando base de datos en ~t}#formatear: ctx#guardaBaseDeDatos)
@@ -460,6 +469,20 @@ procedimiento Compilar: ctx, programa
         fijar arch a PDA#PuertoDeArchivoDeEscritura#abrir: ctx#guardaBaseDeDatos
         db#guardarMódulos: arch
         arch#cerrar
+    finsi
+
+    si no EsNulo: ctx#archivoDeSalida
+        ctx#mostrarMensaje: ({-- Guardando en ~t}#formatear: ctx#archivoDeSalida)
+        Archivos#EscribirArchivo: ctx#archivoDeSalida, (compilado#concatenar: {~%}#formatear)
+    finsi
+
+    si ctx#escribirCompilado
+        Escribir: compilado
+    finsi
+
+    si (EsNulo: ctx#archivoDeSalida) && (no ctx#escribirCompilado)
+        [ Tiene que llamarse en "tail-position" ]
+        devolver EvaluarPrograma: compilado
     finsi
 finprocedimiento
 
@@ -474,23 +497,32 @@ procedimiento CompilarArchivo: ctx, nombreDelArchivo
 finprocedimiento
 
 [DOCUMENTA
+@brief{Evalúa un programa en lua.}
+
+@pd{compilado} debe ser un texto que es el programa en Lua a
+evaluar. Básicamente le pasa @pd{compilado} a @code{load}. Nada del programa
+actual debería ejecutarse después de esta función ya que reinicia el estado del
+runtime.
+
+Técnicamente hablando devuelve el valor devuelto por el chunk principal de Lua
+ejecutado, pero de nuevo, como no se debería ejecutar nada después de este
+procedimiento el valor devuelto no importa.
+DOCUMENTA]
+procedimiento EvaluarPrograma: compilado
+     si __Impl = {Lua Bootstrap}
+         devolver __Lua: {rt.resetandload}, compilado
+     sino
+         __FallarConMensaje: {No es posible evaluar código en la implementación en C++}
+     finsi
+finprocedimiento
+
+[DOCUMENTA
 @brief{Inicia el REPL.}
 
 Actualmente no está implementado.
 DOCUMENTA]
 procedimiento IniciarREPL: ctx
-    ctx#mostrarMensaje: {-- REPL del compilador}
-    ctx#mostrarMensaje: {-- TODO}
-    Compilar: ctx, {
-
-
-funcion Hola: A devolver A * 2 finfuncion
-variable Mundo
-fijar Mundo a funcion: A devolver A * 2 finfuncion
-variable Adios
-
-
-}
+    NoImplementado
 finprocedimiento
 
 [DOCUMENTA
