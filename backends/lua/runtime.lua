@@ -1325,7 +1325,12 @@ function M.builtins.__Capturar(proc)
 end
 
 function M.builtins.__LeerCaracter()
-   return io.read(1) or -1
+   local r = io.read(1)
+   if not r then
+      return -1
+   else
+      return string.byte(r)
+   end
 end
 
 -- Sistema de módulos:

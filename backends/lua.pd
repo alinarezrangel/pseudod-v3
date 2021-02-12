@@ -903,7 +903,7 @@ metodo CompiladorALua#inicializar: db
             {__Lua}, {Aplicar}, {ProcedimientoVarargs}, {TipoDe},
             {__EnviarMensaje}, {__FallarConMensaje}, {__ClonarObjeto},
             {__CompararObjeto}, {__AbrirArchivo}, {__ByteATexto},
-            {__TextoAByte}, {__ByteEof}, {__Capturar}
+            {__TextoAByte}, {__ByteEof}, {__Capturar}, {__LeerCaracter}
 finmetodo
 
 metodo CompiladorALua#compilarAST: ast, ámbito

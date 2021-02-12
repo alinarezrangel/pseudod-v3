@@ -920,3 +920,39 @@ procedimiento EliminarElementoEnÍndice: arr, idx
     fijar elementosDespués a PedazoDeArreglo: arr, (idx + 1), -1
     devolver Concatenar: elementosAntes, elementosDespués
 finprocedimiento
+
+[DOCUMENTA
+@brief{Lee una línea de la entrada estándar.}
+
+Devuelve el texto leído.
+DOCUMENTA]
+procedimiento LeerLínea
+    variables acc, byte
+    fijar acc a {}
+    fijar byte a __LeerCaracter
+    mientras VERDADERO
+        si byte = __ByteEof
+            devolver acc
+        finsi
+        si (__ByteATexto: byte) = {~%}#formatear
+            devolver acc
+        finsi
+        fijar acc a acc#concatenar: (__ByteATexto: byte)
+        fijar byte a __LeerCaracter
+    finmientras
+finprocedimiento
+
+[DOCUMENTA
+@brief{Lee una línea y la convierte a un número.}
+
+Lee la línea con @pd{LeerLínea}.
+DOCUMENTA]
+procedimiento LeerNúmero
+    variable lin
+    fijar lin a LeerLínea
+    si EsNúmeroEntero: lin
+        devolver lin#comoNumeroEntero
+    sino
+        devolver lin#comoNumeroReal
+    finsi
+finprocedimiento

@@ -33,6 +33,13 @@ $(STAGE1)/inicio.sdb: $(STAGE1)/inicio.lua $(COMPILER_FILES)
 $(STAGE1)/inicio.lua: $(STAGE0)/inicio.lua $(COMPILER_FILES)
 	$(LUA) $(STAGE0)/pseudod.lua inicio.pd --salida $(STAGE1)/inicio.lua --guardar-db $(STAGE1)/inicio.sdb
 
+shift_stages: stage1
+	mv $(STAGE1)/inicio.lua $(STAGE0)/inicio.lua
+	mv $(STAGE1)/inicio.sdb $(STAGE0)/inicio.sdb
+
+force_update_stage0:
+	touch $(STAGE0)/inicio.lua $(STAGE0)/inicio.sdb
+
 tests: test_interpreter test_stage0 test_stage1
 
 test_interpreter:
