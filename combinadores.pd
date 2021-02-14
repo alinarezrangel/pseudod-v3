@@ -236,7 +236,7 @@ clase Error
 finclase
 
 metodo estatico Error#conMensaje: mensaje
-    devolver yo#crear: mensaje, (PuertoConPos#PosiciónTextual#crear: {<desconocido>}, 1, 0), NULO
+    devolver yo#crear: mensaje, (PuertoConPos#PosiciónTextual#crear: {<desconocido>}, 1, 0, 0), NULO
 finmetodo
 
 metodo estatico Error#conMensajeYLugar: mensaje, lugar
@@ -250,7 +250,7 @@ finmetodo
 metodo estatico Error#enToken: mensaje, token
     variable pos
     si token = Puerto#EOF
-        fijar pos a PuertoConPos#PosiciónTextual#crear: {<desconocido>}, 1, 0
+        fijar pos a PuertoConPos#PosiciónTextual#crear: {<desconocido>}, 1, 0, 0
     sino
         fijar pos a token#areaDelToken#posiciónInicial
     finsi
@@ -260,7 +260,7 @@ finmetodo
 metodo estatico Error#enTokenConCausa: mensaje, token, causa
     variable pos
     si token = Puerto#EOF
-        fijar pos a PuertoConPos#PosiciónTextual#crear: {<desconocido>}, 1, 0
+        fijar pos a PuertoConPos#PosiciónTextual#crear: {<desconocido>}, 1, 0, 0
     sino
         fijar pos a token#areaDelToken#posiciónInicial
     finsi

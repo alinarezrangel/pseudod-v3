@@ -1023,7 +1023,7 @@ fijar grPrograma a
             fijar cuerpo a res#en: 0
             si res#longitud = 0
                 variable pos
-                fijar pos a (PuertoConPos#PosiciónTextual#crear: {}, 1, 0)
+                fijar pos a (PuertoConPos#PosiciónTextual#crear: {<desconocido>}, 1, 0, 0)
                 fijar area a Tokens#AreaTextual#crear: pos, pos
             sino
                 fijar area a AreaTotal: (cuerpo#en: 0), (ÚltimoElemento: cuerpo)

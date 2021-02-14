@@ -25,6 +25,14 @@ clase PosiciónTextual
     atributo columna
 
     [DOCUMENTA
+    @brief{Offset de la posición desde el inicio del archivo.}
+
+    Indica el número de bytes desde el inicio del archivo que tienes que
+    avanzar para llegar a esta posición.
+    DOCUMENTA]
+    atributo offset
+
+    [DOCUMENTA
     @brief{Inicializa la posición textual.}
     DOCUMENTA]
     metodo inicializar: nombreDelArchivo, línea, columna
@@ -35,14 +43,15 @@ clase PosiciónTextual
     metodo comoTexto
 finclase
 
-metodo PosiciónTextual#inicializar: nombreDelArchivo, línea, columna
+metodo PosiciónTextual#inicializar: nombreDelArchivo, línea, columna, offset
     fijar yo#nombreDelArchivo a nombreDelArchivo
     fijar yo#línea a línea
     fijar yo#columna a columna
+    fijar yo#offset a offset
 finmetodo
 
 metodo PosiciónTextual#comoTexto
-    devolver {«~t:~t:~t»}#formatear: yo#nombreDelArchivo, yo#línea, yo#columna
+    devolver {«~t:~t:~t @ ~t»}#formatear: yo#nombreDelArchivo, yo#línea, yo#columna, yo#offset
 finmetodo
 
 [DOCUMENTA
@@ -69,7 +78,7 @@ atributos
 
 metodo PuertoConPosiciónTextual#inicializar: puerto
     fijar yo#puerto a puerto
-    fijar yo#posiciónActual a PosiciónTextual#crear: {}, 1, 0
+    fijar yo#posiciónActual a PosiciónTextual#crear: {}, 1, 0, 0
     fijar yo#posiciónAnterior a clonar yo#posiciónActual con finclonar
 finmetodo
 
@@ -78,6 +87,7 @@ metodo PuertoConPosiciónTextual#leerCarácter
     fijar c a yo#puerto#leerCarácter
     fijar yo#posiciónAnterior a clonar yo#posiciónActual con finclonar
     fijar np a clonar yo#posiciónActual con finclonar
+    fijar np#offset a np#offset + 1
     si c = {~%}#formatear
         fijar np#línea a yo#posiciónActual#línea + 1
         fijar np#columna a 0

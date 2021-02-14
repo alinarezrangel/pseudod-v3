@@ -1582,6 +1582,10 @@ function M.abrirArchivo(path, mode)
    file.methods["modo"] = function(self)
       return mode
    end
+   file.methods["__leerTodo"] = function(self)
+      assert(self:getfile() ~= nil)
+      return self:getfile():read("a")
+   end
    return file
 end
 
