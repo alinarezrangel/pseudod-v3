@@ -1,0 +1,10 @@
+[ Escribe las tablas de multiplicar ]
+
+[ El módulo bepd/builtins contiene el procedimiento `ParaCadaNúmero` ]
+utilizar bepd/builtins
+
+ParaCadaNúmero: 1, 10, procedimiento: X
+    ParaCadaNúmero: 1, 10, procedimiento: Y
+        Escribir: ({~t * ~t = ~t}#formatear: X, Y, (X * Y))
+    finprocedimiento
+finprocedimiento

@@ -1,0 +1,42 @@
+[ Muestra las tablas de multiplicar, pero mejor formateadas ]
+
+utilizar bepd/builtins
+utilizar bepd/utilidades/texto
+
+variables NÚMEROS_HASTA
+fijar NÚMEROS_HASTA a 9
+
+[ Lo siguiente que necesitaremos es una forma de escribir "campos" de ancho
+  fijo, como si estuviesemos en una hoja de cálculos: ]
+funcion ComoTextoFijo: valor, ancho
+    [ La conversión realizada es similar al formato ~t de formatear. ]
+    variable txt
+    fijar txt a valor#comoTexto
+    si txt#longitud > ancho
+        devolver (txt#subTexto: 0, (ancho - 3))#concatenar: {...}
+    sino
+        devolver (RepetirTexto: { }, (ancho - txt#longitud))#concatenar: txt
+    finsi
+finfuncion
+
+funcion LíneasDeTabla: número
+    variable líneas
+    fijar líneas a Arreglo#vacio
+    ParaCadaNúmero: 1, (NÚMEROS_HASTA + 1), procedimiento: X
+        líneas#agregarAlFinal: ({~t * ~t = ~t}#formatear: (ComoTextoFijo: número, 2), (ComoTextoFijo: X, 2), (ComoTextoFijo: (X * número), 3))
+    finprocedimiento
+    devolver líneas
+finfuncion
+
+variables tablas
+fijar tablas a Arreglo#vacio
+ParaCadaNúmero: 1, (NÚMEROS_HASTA + 1), procedimiento: X
+    tablas#agregarAlFinal: (LíneasDeTabla: X)
+finprocedimiento
+ParaCadaNúmero: 0, NÚMEROS_HASTA, procedimiento: i
+    ParaCadaElemento: tablas, procedimiento: tabla
+        escribir (tabla#en: i)
+        escribir { | }
+    finprocedimiento
+    nl
+finprocedimiento

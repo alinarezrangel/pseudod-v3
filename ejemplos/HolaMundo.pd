@@ -1,0 +1,6 @@
+[ ¡Hola Mundo! ]
+[ Los comentarios son delimitados por corchetes ]
+[ Los textos pueden ser con llaves {}, comillas "" y comillas angulares «». ]
+
+escribir {¡Hola Mundo!}  [ "escribir" escribe el texto dado ]
+nl  [ "nl" escribe un fin de línea ]

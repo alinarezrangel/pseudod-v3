@@ -1,0 +1,11 @@
+[ Ejemplo de utilizar un condicional "si". ]
+
+[ El módulo bepd/builtins contiene el procedimiento `LeerNúmero` ]
+utilizar bepd/builtins
+
+Escribir: {¿Cuanto es 2 + 2?}
+si LeerNúmero = 4
+    Escribir: {¡Correcto!}
+sino
+    Escribir: {No, es 4}
+finsi
