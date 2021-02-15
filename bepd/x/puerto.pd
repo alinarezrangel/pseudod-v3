@@ -255,7 +255,7 @@ finprocedimiento
 [DOCUMENTA
 @brief{Lee de @pd{puerto} hasta que se encuentre el texto @pd{hasta}.}
 
-@devuelve{El texto leído. Incluye @pd{hasta}.}
+@devuelve{El texto leído. No incluye @pd{hasta}.}
 DOCUMENTA]
 procedimiento LeerHasta: puerto, hasta
     variable res

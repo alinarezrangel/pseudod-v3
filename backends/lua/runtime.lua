@@ -797,7 +797,7 @@ function pp(tbl)
 end
 
 -- Contruye un arreglo desde una tabla. `vals` debe ser una tabla con un campo
--- `n` como las producidas por `table.pack`.
+-- `n` como las producidas por `table.pack` pero indexada desde 0.
 function M.mkarreglo(vals)
    local arr = M.objeto()
    local valsIdx = arr:newAttribute()

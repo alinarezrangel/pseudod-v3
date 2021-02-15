@@ -174,20 +174,42 @@ procedimiento ParsearLista: puerto
 finprocedimiento
 
 procedimiento ParsearTexto: puerto
-    funcion TerminaConBarra: t
-        si t#longitud = 0
-            devolver FALSO
-        sino
-            devolver (t#en: (t#longitud - 1)) = {\}
-        finsi
-    finfuncion
     variable texto
-    fijar texto a (Puerto#LeerHasta: puerto, {~q}#formatear)
-    mientras TerminaConBarra: texto
-        fijar texto a texto#concatenar: {~q}#formatear
-        fijar texto a texto#concatenar: (Puerto#LeerHasta: puerto, {~q}#formatear)
+    fijar texto a {}
+    mientras VERDADERO
+        variable car
+        fijar car a puerto#leerCarácter
+        si car = Puerto#EOF
+            __FallarConMensaje: {eof inesperado leyendo texto de expresión S}
+        finsi
+        si car = {~q}#formatear
+            devolver texto
+        finsi
+        si car = {\}
+            variables esc, ins
+            fijar esc a puerto#leerCarácter
+            si esc = {n}
+                fijar ins a {~%}#formatear
+            finsi
+            si esc = {t}
+                [ Nota: el siguiente tabulador tiene que ser literal ]
+                fijar ins a {	}
+            finsi
+            si esc = {~q}#formatear
+                fijar ins a {~q}#formatear
+            finsi
+            si esc = {\}
+                fijar ins a {\}#formatear
+            finsi
+            si EsNulo: ins
+                __FallarConMensaje: ({Secuencia de escape (\~t) inválida}#formatear: esc)
+            finsi
+            fijar texto a texto#concatenar: ins
+        sino
+            fijar texto a texto#concatenar: car
+        finsi
     finmientras
-    devolver DesescaparTexto: texto
+    Inalcanzable
 finprocedimiento
 
 [DOCUMENTA
