@@ -1,0 +1,215 @@
+[ Programa que genera archivos TAGS, como ctags y etags. ]
+
+utilizar bepd/builtins
+utilizar bepd/utilidades/texto
+utilizar bepd/x/sistemaDeArchivos/archivo como Archivos
+utilizar bepd/x/sexpr como SExpr
+utilizar bepd/x/puerto como Puerto
+utilizar caminaNodos como CN
+utilizar parser como Parser
+
+
+clase Tag
+    atributos definición, etiqueta, numLínea, offset
+
+    metodo comoTexto
+    metodo comoLíneaDeEtags
+finclase
+
+metodo Tag#inicializar: definición, etiqueta, numLínea, offset
+    fijar yo#definición a definición
+    fijar yo#etiqueta a etiqueta
+    fijar yo#numLínea a numLínea
+    fijar yo#offset a offset
+finmetodo
+
+metodo Tag#comoTexto
+    devolver {(Tag: ~t en la línea ~t @ ~t [~t])}#formatear: yo#etiqueta, yo#numLínea, yo#offset, yo#definición
+finmetodo
+
+metodo Tag#comoLíneaDeEtags
+    funcion Par: K, V
+        devolver Arreglo#crearCon: (SExpr#Símbolo#desdeTexto: K), V
+    finfuncion
+    devolver Arreglo#crearCon:
+        (SExpr#Símbolo#desdeTexto: {tag}),
+        (Par: {definition}, yo#definición),
+        (Par: {tag}, yo#etiqueta),
+        (Par: {line-number}, yo#numLínea),
+        (Par: {byte-offset}, yo#offset)
+finmetodo
+
+
+clase ExtraeDeclrs hereda CN#CaminaNodos
+    atributo declaraciones  [ <-- Todos los Tags del programa ]
+finclase
+
+metodo ExtraeDeclrs#inicializar
+    fijar yo#declaraciones a Arreglo#vacio
+finmetodo
+
+metodo ExtraeDeclrs#visitarPrograma: nodo
+    ParaCadaElemento: nodo#instrucciones, procedimiento: nodo
+        yo#visitar: nodo
+    finprocedimiento
+finmetodo
+
+metodo ExtraeDeclrs#visitarVariable: nodo
+    variable textoDeDefinición
+    fijar textoDeDefinición a
+        {variables }#concatenar:
+        (Unir: (Mapear: nodo#nombres,
+                        funcion: var devolver var#nombre finfuncion),
+               {, })
+    ParaCadaElemento: nodo#nombres, procedimiento: var
+        variables nombre, linenum, byteoff
+        fijar linenum a var#areaTextual#posiciónInicial#línea
+        fijar byteoff a var#areaTextual#posiciónInicial#offset
+        fijar nombre a var#nombre
+        yo#declaraciones#agregarAlFinal: (Tag#crear: textoDeDefinición, nombre, linenum, byteoff)
+    finprocedimiento
+finmetodo
+
+metodo ExtraeDeclrs#visitarFunción: nodo
+    variables textoDeDefinición, nombre, linenum, byteoff
+    fijar textoDeDefinición a {funcion }#concatenar: nodo#nombre#nombre
+    fijar nombre a nodo#nombre#nombre
+    fijar linenum a nodo#nombre#areaTextual#posiciónInicial#línea
+    fijar byteoff a nodo#nombre#areaTextual#posiciónInicial#offset
+    yo#declaraciones#agregarAlFinal: (Tag#crear: textoDeDefinición, nombre, linenum, byteoff)
+finmetodo
+
+metodo ExtraeDeclrs#visitarClase: nodo
+    variables textoDeDefinición, nombre, linenum, byteoff
+    fijar textoDeDefinición a {clase }#concatenar: nodo#nombre#nombre
+    fijar nombre a nodo#nombre#nombre
+    fijar linenum a nodo#nombre#areaTextual#posiciónInicial#línea
+    fijar byteoff a nodo#nombre#areaTextual#posiciónInicial#offset
+    yo#declaraciones#agregarAlFinal: (Tag#crear: textoDeDefinición, nombre, linenum, byteoff)
+finmetodo
+
+metodo ExtraeDeclrs#visitarMétodo: nodo
+    variables textoDeDefinición, nombre, linenum, byteoff
+    fijar textoDeDefinición a {método ~t#~t}#formatear: nodo#deClase#nombre, nodo#nombre#nombre
+    fijar nombre a nodo#nombre#nombre
+    fijar linenum a nodo#nombre#areaTextual#posiciónInicial#línea
+    fijar byteoff a nodo#nombre#areaTextual#posiciónInicial#offset
+    yo#declaraciones#agregarAlFinal: (Tag#crear: textoDeDefinición, nombre, linenum, byteoff)
+finmetodo
+
+metodo ExtraeDeclrs#visitarAtributos: nodo
+    variable textoDeDefinición
+    fijar textoDeDefinición a
+        {atributos }#concatenar:
+        (Unir: (Mapear: nodo#nombres,
+                        funcion: var devolver nodo#deClase#nombre#concatenar: var#nombre finfuncion),
+               {, })
+    ParaCadaElemento: nodo#nombres, procedimiento: var
+        variables nombre, linenum, byteoff
+        fijar linenum a var#areaTextual#posiciónInicial#línea
+        fijar byteoff a var#areaTextual#posiciónInicial#offset
+        fijar nombre a var#nombre
+        yo#declaraciones#agregarAlFinal: (Tag#crear: textoDeDefinición, nombre, linenum, byteoff)
+    finprocedimiento
+finmetodo
+
+
+funcion GenerarArchivoEtags: nombreDelArchivo, tags
+    funcion Par: K, V
+        devolver Arreglo#crearCon: (SExpr#Símbolo#desdeTexto: K), V
+    finfuncion
+    funcion Par': K, V
+        devolver ArregloConFinal: (SExpr#Símbolo#desdeTexto: K), V
+    finfuncion
+    variables dato, puerto
+    fijar puerto a Puerto#PuertoParaTexto
+    fijar dato a
+        Arreglo#crearCon:
+            (SExpr#Símbolo#desdeTexto: {tags}),
+            (Par: {nombre-del-archivo}, nombreDelArchivo),
+            (Par': {tags}, (Mapear: tags, funcion: tag devolver tag#comoLíneaDeEtags finfuncion))
+    SExpr#DesparsearDato: puerto, dato
+    devolver puerto#texto
+finfuncion
+
+
+procedimiento Inicio: archivosDeEntrada, nombreDelArchivoTags
+    variable contenido
+    fijar contenido a Arreglo#vacio
+    ParaCadaElemento: archivosDeEntrada, procedimiento: archivoDeEntrada
+        variables ast, extractor, tags
+        Escribir: ({Leyendo ~t}#formatear: archivoDeEntrada)
+        fijar ast a Parser#CrearAST: (Archivos#LeerArchivo: archivoDeEntrada)
+        fijar extractor a ExtraeDeclrs#crear
+        extractor#visitar: ast
+        fijar tags a GenerarArchivoEtags: archivoDeEntrada, extractor#declaraciones
+        Escribir: ({Terminó con ~t}#formatear: archivoDeEntrada)
+        contenido#agregarAlFinal: tags
+    finprocedimiento
+    Escribir: ({Escribiendo ~t}#formatear: nombreDelArchivoTags)
+    Archivos#EscribirArchivo: nombreDelArchivoTags, ((Unir: contenido, {~%}#formatear)#concatenar: {~%}#formatear)
+finprocedimiento
+
+
+variable MENSAJE_DE_AYUDA
+fijar MENSAJE_DE_AYUDA a {"tags" para PseudoD
+
+Uso:
+    tags [-i <archivo>] [-o <archivo tag>] <archivo> ...
+    tags -h
+
+Opciones:
+ <archivo> ...         : Los archivos a procesar.
+ -o <archivo tag>      : Archivo tag a escribir. Si no se especifica, se
+                         creará un archivo llamado "PDTAGS".
+ -i <archivo>          : Incluye el archivo tags <archivo> en el archivo
+                         generado.
+ -h                    : Muestra esta ayuda.
+
+El archivo tags devuelto tiene el formato PDTAGS, véase `docs/pdtags.md` de la
+documentación oficial de PseudoD para más información.
+}
+
+variables archivosAIncluir, archivoTagsAEscribir, archivosDeEntrada
+fijar archivosAIncluir a Arreglo#vacio
+fijar archivoTagsAEscribir a {PDTAGS}
+fijar archivosDeEntrada a Arreglo#vacio
+
+variables i, noOpt
+fijar noOpt a FALSO
+fijar i a 0
+LlamarConEC: procedimiento: Salir
+    mientras i < __Argv#longitud
+        variable el
+        fijar el a __Argv#en: i
+        LlamarConEC: procedimiento: ec
+            si noOpt
+                archivosDeEntrada#agregarAlFinal: el
+            sino
+                si el = {-h}
+                    escribir MENSAJE_DE_AYUDA
+                    nl
+                    %Salir
+                finsi
+                si el = {-i}
+                    fijar i a i + 1
+                    necesitas i < __Argv#longitud
+                    archivosAIncluir#agregarAlFinal: (__Argv#en: i)
+                    %ec: NULO
+                finsi
+                si el = {-o}
+                    fijar i a i + 1
+                    necesitas i < __Argv#longitud
+                    fijar archivoTagsAEscribir a __Argv#en: i
+                    %ec: NULO
+                finsi
+                fijar noOpt a VERDADERO
+                archivosDeEntrada#agregarAlFinal: el
+            finsi
+        finprocedimiento
+        fijar i a i + 1
+    finmientras
+
+    Escribir: ({~t  ~t}#formatear: archivosDeEntrada, archivoTagsAEscribir)
+    Inicio: archivosDeEntrada, archivoTagsAEscribir
+finprocedimiento
