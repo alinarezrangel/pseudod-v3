@@ -1,0 +1,17 @@
+{
+    "nombre": "Expr as Stmt",
+    "espera": "éxito",
+    "salida contiene": "ABC\n"
+}
+====================
+escribir {A}
+1
+2
+3 + 4
+escribir {B}
+{hola}
+(1 - 2)
+3 * 4 / (6)
+escribir {C}
+1(2)
+nl

@@ -242,10 +242,8 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarPrograma: nodo
     variables instrs, ámbito
-    fijar instrs a Arreglo#vacio
-    ParaCadaElemento: nodo#instrucciones, procedimiento: instr
-        instrs#agregarAlFinal: ((yo#visitar: instr)#concatenar: {;})
-    finprocedimiento
+    fijar instrs a Arreglo#crearCon:
+        (yo#compilarInstrucciones: nodo#instrucciones)
     fijar ámbito a RN#ObtenerNombresDefinídos: nodo
     instrs#agregarAlFinal: {return rt.ns({}#formatear
     ámbito#paraCadaVariable: procedimiento: nombre, dv
@@ -382,10 +380,7 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetro
         cods#agregarAlFinal: ({~t = rt.arreglo(...)}#formatear: (IdentificadorDe: variadic#interno))
     finsi
 
-    ParaCadaElemento: cuerpo, procedimiento: stmt
-        cods#agregarAlFinal: ((yo#visitar: stmt)#concatenar: {;})
-    finprocedimiento
-
+    cods#agregarAlFinal: (yo#compilarInstrucciones: cuerpo)
     cods#agregarAlFinal: {end}
 
     devolver Unir: cods, {~%}#formatear
@@ -489,9 +484,7 @@ metodo CompiladorSimpleALua#visitarSi: nodo
 
     procedimiento CompilarBloque: nodos, sub
         cods#agregarAlFinal: sub#iniciar
-        ParaCadaElemento: nodos, procedimiento: stmt
-            cods#agregarAlFinal: ((sub#visitar: stmt)#concatenar: {;})
-        finprocedimiento
+        cods#agregarAlFinal: (yo#compilarInstrucciones: nodos)
     finprocedimiento
 
     [ Si se compara directamente __Impl con una literal de texto igual a
@@ -535,9 +528,7 @@ metodo CompiladorSimpleALua#visitarMientras: nodo
     cods#agregarAlFinal: ({while ~t do}#formatear: (yo#visitar: nodo#condicional))
 
     cods#agregarAlFinal: subyo#iniciar
-    ParaCadaElemento: nodo#cuerpo, procedimiento: stmt
-        cods#agregarAlFinal: ((subyo#visitar: stmt)#concatenar: {;})
-    finprocedimiento
+    cods#agregarAlFinal: (yo#compilarInstrucciones: nodo#cuerpo)
 
     cods#agregarAlFinal: {end}
 
@@ -806,6 +797,29 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarVariadic: nodo
     Inalcanzable
+finmetodo
+
+[DOCUMENTA
+@brief{Compila un arreglo de nodos.}
+
+@pd{nodos} es un arreglo de nodos, cada uno siendo una instrucción a compilar.
+
+El motivo por el que este método exíste es porque en Lua no todas las
+expresiones pueden usarse como instrucciones, este método captura expresiones
+en @pd{nodos} y las transforma a instrucciones equivalentes que Lua acepta.
+
+@devuelve{Un texto: los nodos compilados.}
+DOCUMENTA]
+metodo CompiladorSimpleALua#compilarInstrucciones: nodos
+    variable cods
+    fijar cods a Mapear: nodos, funcion: nodo
+        si EsInstancia: nodo, AST#NodoExpresion
+            devolver {rt._ = (~t)}#formatear: (yo#visitar: nodo)
+        sino
+            devolver yo#visitar: nodo
+        finsi
+    finfuncion
+    devolver (Unir: cods, {;~%}#formatear)#concatenar: {;}
 finmetodo
 
 [DOCUMENTA

@@ -1603,5 +1603,6 @@ end
 
 -- Utilizado como variable temporal por el compilador.
 M.ans_rt = nil
+M._ = nil
 
 return M
