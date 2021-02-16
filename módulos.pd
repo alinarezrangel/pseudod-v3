@@ -2,6 +2,7 @@ utilizar bepd/builtins
 utilizar bepd/x/enum
 utilizar bepd/x/sistemaDeArchivos/archivo como Archivo
 utilizar bepd/x/sexpr como SExpr
+utilizar bepd/x/entorno como Entorno
 utilizar ámbito como Ámbito
 
 
@@ -22,8 +23,15 @@ clase ConfiguraciónGlobal
     @brief{Devuelve la configuración predeterminada.}
 
     Si @pd{usarVariablesDeEntorno} es @pd{VERDADERO}, las variables de entorno
-    son leídas para extraer algunos valores (esta opción aún no está
-    implementada).
+    son leídas para extraer algunos valores.
+
+    Las variables de entorno leídas son (en órden):
+
+    @itemlist(
+    @item{@code{RUTA_PSEUDOD}}
+    @item{@code{RUTA_PSEUDOD_BEPD}}
+    @item{@code{RUTA_PSEUDOD_LIBS}}
+    )
     DOCUMENTA]
     metodo estatico predeterminado: usarVariablesDeEntorno
 
@@ -63,12 +71,29 @@ metodo ConfiguraciónGlobal#extensionesAProbar
     devolver yo#extensiones
 finmetodo
 
-metodo estatico ConfiguraciónGlobal#predeterminado
+metodo estatico ConfiguraciónGlobal#predeterminado: usarVariablesDeEntorno
+    variable rutas
+    fijar rutas a Arreglo#vacio
+    si usarVariablesDeEntorno
+        necesitas Entorno#SoportaVariablesDeEntorno
+        procedimiento DesdeVariable: nombre
+            variable ruta
+            fijar ruta a Entorno#ObtenerVariableDeEntorno: nombre
+            si no EsNulo: ruta
+                rutas#agregarAlFinal: ruta
+            finsi
+        finprocedimiento
+        DesdeVariable: {RUTA_PSEUDOD}
+        DesdeVariable: {RUTA_PSEUDOD_BEPD}
+        DesdeVariable: {RUTA_PSEUDOD_LIBS}
+    finsi
     devolver yo#crear:
-        (Arreglo#crearCon:
-            {.},
-            {/opt/pseudod/lib/pseudod/v3},
-            {/opt/pseudod/lib/pseudod/v3/r0}),
+        (Concatenar:
+            (Arreglo#crearCon: {.}),
+            rutas,
+            (Arreglo#crearCon:
+                {/opt/pseudod/lib/pseudod/v3},
+                {/opt/pseudod/lib/pseudod/v3/r0})),
         (Arreglo#crearCon:
             {pd},
             {psd},

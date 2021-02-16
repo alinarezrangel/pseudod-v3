@@ -11235,6 +11235,217 @@ return rt.ns({
   ["DesparsearDato"] = { value = _s._2818, autoexecutable = true },
 });
 end;
+rt.modulos["./bepd/x/entorno.pd"] = function()
+local rt = require "backends.lua.runtime";
+local _s = rt.scope()
+rt.scopenewname(_s, "_1");
+rt.scopenewname(_s, "_2");
+rt.scopenewname(_s, "_3");
+rt.scopenewname(_s, "_4");
+rt.scopenewname(_s, "_5");
+rt.scopenewname(_s, "_6");
+rt.scopenewname(_s, "_7");
+rt.scopenewname(_s, "_8");
+rt.scopenewname(_s, "_9");
+rt.scopenewname(_s, "_10");
+rt.scopenewname(_s, "_11");
+rt.scopenewname(_s, "_12");
+rt.scopenewname(_s, "_13");
+rt.scopenewname(_s, "_14");
+rt.scopenewname(_s, "_15");
+rt.scopenewname(_s, "_16");
+rt.scopenewname(_s, "_17");
+rt.scopenewname(_s, "_18");
+rt.scopenewname(_s, "_19");
+rt.scopenewname(_s, "_20");
+rt.scopenewname(_s, "_21");
+rt.scopenewname(_s, "_22");
+rt.scopenewname(_s, "_23");
+rt.scopenewname(_s, "_24");
+rt.scopenewname(_s, "_25");
+rt.scopenewname(_s, "_26");
+rt.scopenewname(_s, "_27");
+rt.scopenewname(_s, "_28");
+rt.scopenewname(_s, "_2840");
+rt.scopenewname(_s, "_2841");
+rt.scopenewname(_s, "_2842");
+rt.scopenewname(_s, "_2843");
+rt.scopenewname(_s, "_2844");
+rt.scopenewname(_s, "_2845");
+rt.scopenewname(_s, "_2846");
+rt.scopenewname(_s, "_2847");
+rt.scopenewname(_s, "_2848");
+rt.scopenewname(_s, "_2849");
+rt.scopenewname(_s, "_2850");
+rt.scopenewname(_s, "_2851");
+rt.scopenewname(_s, "_2852");
+rt.scopenewname(_s, "_2853");
+rt.scopenewname(_s, "_2854");
+rt.scopenewname(_s, "_2855");
+rt.scopenewname(_s, "_2856");
+rt.scopenewname(_s, "_2857");
+rt.scopenewname(_s, "_2858");
+rt.scopenewname(_s, "_2859");
+rt.scopenewname(_s, "_2860");
+rt.scopenewname(_s, "_2861");
+rt.scopenewname(_s, "_2862");
+rt.scopenewname(_s, "_2863");
+rt.scopenewname(_s, "_2864");
+rt.scopenewname(_s, "_2865");
+rt.scopenewname(_s, "_2866");
+rt.scopenewname(_s, "_2867");
+rt.scopenewname(_s, "_2868");
+rt.scopenewname(_s, "_2869");
+rt.scopenewname(_s, "_2870");
+rt.scopenewname(_s, "_2871");
+rt.scopenewname(_s, "_2872");
+rt.scopenewname(_s, "_2873");
+rt.scopenewname(_s, "_2874");
+rt.scopenewname(_s, "_2875");
+rt.scopenewname(_s, "_2876");
+rt.scopenewname(_s, "_2877");
+rt.scopenewname(_s, "_2878");
+rt.scopenewname(_s, "_2879");
+rt.scopenewname(_s, "_2880");
+rt.scopenewname(_s, "_2881");
+rt.scopenewname(_s, "_2882");
+rt.scopenewname(_s, "_2883");
+rt.scopenewname(_s, "_2884");
+_s._1 = rt.builtins["Objeto"];
+_s._2 = rt.builtins["VERDADERO"];
+_s._3 = rt.builtins["FALSO"];
+_s._4 = rt.builtins["NULO"];
+_s._5 = rt.builtins["Aplicar"];
+_s._6 = rt.builtins["ProcedimientoVarargs"];
+_s._7 = rt.builtins["TipoDe"];
+_s._8 = rt.builtins["__EnviarMensaje"];
+_s._9 = rt.builtins["__FallarConMensaje"];
+_s._10 = rt.builtins["__ClonarObjeto"];
+_s._11 = rt.builtins["__CompararObjeto"];
+_s._12 = rt.builtins["__AbrirArchivo"];
+_s._13 = rt.builtins["__ByteATexto"];
+_s._14 = rt.builtins["__TextoAByte"];
+_s._15 = rt.builtins["__ByteEof"];
+_s._16 = rt.builtins["__Capturar"];
+_s._17 = rt.builtins["__Argv"];
+_s._18 = rt.builtins["__LeerCaracter"];
+_s._19 = rt.builtins["__Impl"];
+_s._20 = rt.builtins["Boole"];
+_s._21 = rt.builtins["Numero"];
+_s._22 = rt.builtins["Arreglo"];
+_s._23 = rt.builtins["Procedimiento"];
+_s._24 = rt.builtins["Texto"];
+_s._25 = rt.builtins["EspacioDeNombres"];
+_s._26 = rt.builtins["Referencia"];
+_s._27 = rt.builtins["TipoNulo"];
+_s._28 = rt.builtins["__Lua"];
+rt.ans_ns = rt.import("./bepd/builtins.pd")
+;do
+  _s._2840 = rt.ans_ns:at("EsSubclase");
+  _s._2841 = rt.ans_ns:at("EsInstancia");
+  _s._2842 = rt.ans_ns:at("Escribir");
+  _s._2843 = rt.ans_ns:at("Contiene");
+  _s._2844 = rt.ans_ns:at("ParaCadaElemento");
+  _s._2845 = rt.ans_ns:at("ParaCadaNúmero");
+  _s._2846 = rt.ans_ns:at("ParaCadaNúmeroConPaso");
+  _s._2847 = rt.ans_ns:at("ParaCadaElementoConÍndice");
+  _s._2848 = rt.ans_ns:at("Identidad");
+  _s._2849 = rt.ans_ns:at("Reducir");
+  _s._2850 = rt.ans_ns:at("Mapear");
+  _s._2851 = rt.ans_ns:at("Todos");
+  _s._2852 = rt.ans_ns:at("Algún");
+  _s._2853 = rt.ans_ns:at("DígitoAEntero");
+  _s._2854 = rt.ans_ns:at("Elevar");
+  _s._2855 = rt.ans_ns:at("ConvertirAEntero");
+  _s._2856 = rt.ans_ns:at("EsNúmeroEntero");
+  _s._2857 = rt.ans_ns:at("Concatenar");
+  _s._2858 = rt.ans_ns:at("ArregloConFinal");
+  _s._2859 = rt.ans_ns:at("Aplicar'");
+  _s._2860 = rt.ans_ns:at("Aplicar'i");
+  _s._2861 = rt.ans_ns:at("Resto");
+  _s._2862 = rt.ans_ns:at("Abs");
+  _s._2863 = rt.ans_ns:at("Mod");
+  _s._2864 = rt.ans_ns:at("EsPar");
+  _s._2865 = rt.ans_ns:at("EsImpar");
+  _s._2866 = rt.ans_ns:at("Aplanar");
+  _s._2867 = rt.ans_ns:at("AplanarTodo");
+  _s._2868 = rt.ans_ns:at("PedazoDeArreglo");
+  _s._2869 = rt.ans_ns:at("ÚltimoElemento");
+  _s._2870 = rt.ans_ns:at("EsNulo");
+  _s._2871 = rt.ans_ns:at("Max");
+  _s._2872 = rt.ans_ns:at("Min");
+  _s._2873 = rt.ans_ns:at("NoImplementado");
+  _s._2874 = rt.ans_ns:at("MétodoAbstracto");
+  _s._2875 = rt.ans_ns:at("Inalcanzable");
+  _s._2876 = rt.ans_ns:at("LlamarConEC");
+  _s._2877 = rt.ans_ns:at("EliminarElementoEnÍndice");
+  _s._2878 = rt.ans_ns:at("LeerLínea");
+  _s._2879 = rt.ans_ns:at("LeerNúmero");
+  _s._2880 = rt.ans_ns:at("Diccionario");
+  _s._2881 = rt.ans_ns:at("Resultado");
+  _s._2882 = rt.ans_ns:at("Pila");
+end;
+_s._2883 = (function()
+local _s = rt.scope(_s)
+;
+do return rt.enviarMensaje(_s._19, "operador_=", "Lua Bootstrap"); end;;
+end);;
+_s._2884 = (function(_2885)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2885"); _s._2885 = _2885;
+;do;
+local _s = rt.scope(_s)
+do return ((os.getenv)(_s._2885)); end;;
+;end;;
+end);;
+return rt.ns({
+  ["EsSubclase"] = { value = _s._2840, autoexecutable = true },
+  ["EsInstancia"] = { value = _s._2841, autoexecutable = true },
+  ["Escribir"] = { value = _s._2842, autoexecutable = true },
+  ["Contiene"] = { value = _s._2843, autoexecutable = true },
+  ["ParaCadaElemento"] = { value = _s._2844, autoexecutable = true },
+  ["ParaCadaNúmero"] = { value = _s._2845, autoexecutable = true },
+  ["ParaCadaNúmeroConPaso"] = { value = _s._2846, autoexecutable = true },
+  ["ParaCadaElementoConÍndice"] = { value = _s._2847, autoexecutable = true },
+  ["Identidad"] = { value = _s._2848, autoexecutable = true },
+  ["Reducir"] = { value = _s._2849, autoexecutable = true },
+  ["Mapear"] = { value = _s._2850, autoexecutable = true },
+  ["Todos"] = { value = _s._2851, autoexecutable = true },
+  ["Algún"] = { value = _s._2852, autoexecutable = true },
+  ["DígitoAEntero"] = { value = _s._2853, autoexecutable = true },
+  ["Elevar"] = { value = _s._2854, autoexecutable = true },
+  ["ConvertirAEntero"] = { value = _s._2855, autoexecutable = true },
+  ["EsNúmeroEntero"] = { value = _s._2856, autoexecutable = true },
+  ["Concatenar"] = { value = _s._2857, autoexecutable = true },
+  ["ArregloConFinal"] = { value = _s._2858, autoexecutable = true },
+  ["Aplicar'"] = { value = _s._2859, autoexecutable = true },
+  ["Aplicar'i"] = { value = _s._2860, autoexecutable = true },
+  ["Resto"] = { value = _s._2861, autoexecutable = true },
+  ["Abs"] = { value = _s._2862, autoexecutable = true },
+  ["Mod"] = { value = _s._2863, autoexecutable = true },
+  ["EsPar"] = { value = _s._2864, autoexecutable = true },
+  ["EsImpar"] = { value = _s._2865, autoexecutable = true },
+  ["Aplanar"] = { value = _s._2866, autoexecutable = true },
+  ["AplanarTodo"] = { value = _s._2867, autoexecutable = true },
+  ["PedazoDeArreglo"] = { value = _s._2868, autoexecutable = true },
+  ["ÚltimoElemento"] = { value = _s._2869, autoexecutable = true },
+  ["EsNulo"] = { value = _s._2870, autoexecutable = true },
+  ["Max"] = { value = _s._2871, autoexecutable = true },
+  ["Min"] = { value = _s._2872, autoexecutable = true },
+  ["NoImplementado"] = { value = _s._2873, autoexecutable = true },
+  ["MétodoAbstracto"] = { value = _s._2874, autoexecutable = true },
+  ["Inalcanzable"] = { value = _s._2875, autoexecutable = true },
+  ["LlamarConEC"] = { value = _s._2876, autoexecutable = true },
+  ["EliminarElementoEnÍndice"] = { value = _s._2877, autoexecutable = true },
+  ["LeerLínea"] = { value = _s._2878, autoexecutable = true },
+  ["LeerNúmero"] = { value = _s._2879, autoexecutable = true },
+  ["Diccionario"] = { value = _s._2880, autoexecutable = false },
+  ["Resultado"] = { value = _s._2881, autoexecutable = false },
+  ["Pila"] = { value = _s._2882, autoexecutable = false },
+  ["SoportaVariablesDeEntorno"] = { value = _s._2883, autoexecutable = true },
+  ["ObtenerVariableDeEntorno"] = { value = _s._2884, autoexecutable = true },
+});
+end;
 rt.modulos["./módulos.pd"] = function()
 local rt = require "backends.lua.runtime";
 local _s = rt.scope()
@@ -11355,13 +11566,14 @@ rt.scopenewname(_s, "_2730");
 rt.scopenewname(_s, "_2731");
 rt.scopenewname(_s, "_2732");
 rt.scopenewname(_s, "_2839");
-rt.scopenewname(_s, "_2840");
-rt.scopenewname(_s, "_2841");
-rt.scopenewname(_s, "_2848");
-rt.scopenewname(_s, "_2855");
-rt.scopenewname(_s, "_2858");
-rt.scopenewname(_s, "_2862");
-rt.scopenewname(_s, "_2879");
+rt.scopenewname(_s, "_2886");
+rt.scopenewname(_s, "_2887");
+rt.scopenewname(_s, "_2888");
+rt.scopenewname(_s, "_2896");
+rt.scopenewname(_s, "_2903");
+rt.scopenewname(_s, "_2906");
+rt.scopenewname(_s, "_2910");
+rt.scopenewname(_s, "_2927");
 _s._1 = rt.builtins["Objeto"];
 _s._2 = rt.builtins["VERDADERO"];
 _s._3 = rt.builtins["FALSO"];
@@ -11491,372 +11703,404 @@ rt.ans_ns = rt.import("./bepd/x/sexpr.pd")
 ;do
 end
 ;_s._2839 = rt.ans_ns;;
+rt.ans_ns = rt.import("./bepd/x/entorno.pd")
+;do
+end
+;_s._2886 = rt.ans_ns;;
 rt.ans_ns = rt.import("./ámbito.pd")
 ;do
 end
-;_s._2840 = rt.ans_ns;;
-_s._2841 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
-rt.enviarMensaje(_s._2841, "fijar_nombre", "ConfiguraciónGlobal");;
-rt.enviarMensaje(_s._2841, "agregarAtributo", "rutas");
-rt.enviarMensaje(_s._2841, "agregarAtributo", "extensiones");;
-rt.enviarMensaje(_s._2841, "agregarMetodo", "inicializar", function(_2844, _2842, _2843)
+;_s._2887 = rt.ans_ns;;
+_s._2888 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
+rt.enviarMensaje(_s._2888, "fijar_nombre", "ConfiguraciónGlobal");;
+rt.enviarMensaje(_s._2888, "agregarAtributo", "rutas");
+rt.enviarMensaje(_s._2888, "agregarAtributo", "extensiones");;
+rt.enviarMensaje(_s._2888, "agregarMetodo", "inicializar", function(_2891, _2889, _2890)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2842"); _s._2842 = _2842;
-rt.scopenewname(_s, "_2843"); _s._2843 = _2843
-;rt.scopenewname(_s, "_2844"); _s._2844 = _2844;
-rt.enviarMensaje(_s._2844, "fijar_rutas", _s._2842);
-rt.enviarMensaje(_s._2844, "fijar_extensiones", _s._2843);
+rt.scopenewname(_s, "_2889"); _s._2889 = _2889;
+rt.scopenewname(_s, "_2890"); _s._2890 = _2890
+;rt.scopenewname(_s, "_2891"); _s._2891 = _2891;
+rt.enviarMensaje(_s._2891, "fijar_rutas", _s._2889);
+rt.enviarMensaje(_s._2891, "fijar_extensiones", _s._2890);
 end);;
-rt.enviarMensaje(_s._2841, "agregarMetodo", "rutasDondeBuscar", function(_2845)
+rt.enviarMensaje(_s._2888, "agregarMetodo", "rutasDondeBuscar", function(_2892)
 local _s = rt.scope(_s)
 
-;rt.scopenewname(_s, "_2845"); _s._2845 = _2845;
-do return rt.enviarMensajeV(_s._2845, "rutas"); end;;
+;rt.scopenewname(_s, "_2892"); _s._2892 = _2892;
+do return rt.enviarMensajeV(_s._2892, "rutas"); end;;
 end);;
-rt.enviarMensaje(_s._2841, "agregarMetodo", "extensionesAProbar", function(_2846)
+rt.enviarMensaje(_s._2888, "agregarMetodo", "extensionesAProbar", function(_2893)
 local _s = rt.scope(_s)
 
-;rt.scopenewname(_s, "_2846"); _s._2846 = _2846;
-do return rt.enviarMensajeV(_s._2846, "extensiones"); end;;
+;rt.scopenewname(_s, "_2893"); _s._2893 = _2893;
+do return rt.enviarMensajeV(_s._2893, "extensiones"); end;;
 end);;
-(_s._2841).methods["predeterminado"] = function(_2847)
+(_s._2888).methods["predeterminado"] = function(_2895, _2894)
 local _s = rt.scope(_s)
-
-;rt.scopenewname(_s, "_2847"); _s._2847 = _2847;
-do return rt.enviarMensaje(_s._2847, "crear", rt.enviarMensaje(_s._22, "crearCon", ".", "/opt/pseudod/lib/pseudod/v3", "/opt/pseudod/lib/pseudod/v3/r0"), rt.enviarMensaje(_s._22, "crearCon", "pd", "psd", "pseudo", "pseudod")); end;;
-end;
-_s._2848 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
-rt.enviarMensaje(_s._2848, "fijar_nombre", "LlaveDeMódulo");;
-rt.enviarMensaje(_s._2848, "agregarAtributo", "ruta");
-rt.enviarMensaje(_s._2848, "agregarAtributo", "nombre");
-rt.enviarMensaje(_s._2848, "agregarAtributo", "extensión");;
-rt.enviarMensaje(_s._2848, "agregarMetodo", "inicializar", function(_2852, _2849, _2850, _2851)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2849"); _s._2849 = _2849;
-rt.scopenewname(_s, "_2850"); _s._2850 = _2850;
-rt.scopenewname(_s, "_2851"); _s._2851 = _2851
-;rt.scopenewname(_s, "_2852"); _s._2852 = _2852;
-rt.enviarMensaje(_s._2852, "fijar_ruta", _s._2849);
-rt.enviarMensaje(_s._2852, "fijar_nombre", _s._2850);
-rt.enviarMensaje(_s._2852, "fijar_extensión", _s._2851);
-end);;
-rt.enviarMensaje(_s._2848, "agregarMetodo", "nombreCompletoDelArchivo", function(_2853)
-local _s = rt.scope(_s)
-
-;rt.scopenewname(_s, "_2853"); _s._2853 = _2853;
-do return rt.enviarMensaje("~t/~t.~t", "formatear", rt.enviarMensajeV(_s._2853, "ruta"), rt.enviarMensajeV(_s._2853, "nombre"), rt.enviarMensajeV(_s._2853, "extensión")); end;;
-end);;
-rt.enviarMensaje(_s._2848, "agregarMetodo", "comoTexto", function(_2854)
-local _s = rt.scope(_s)
-
-;rt.scopenewname(_s, "_2854"); _s._2854 = _2854;
-do return rt.enviarMensaje("(LlaveDeMódulo: ~t)", "formatear", rt.enviarMensajeV(_s._2854, "nombreCompletoDelArchivo")); end;;
-end);;
-_s._2855 = (function(_2856, _2857)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2885");
-rt.scopenewname(_s, "_2886");
-rt.scopenewname(_s, "_2887");
-rt.scopenewname(_s, "_2856"); _s._2856 = _2856;
-rt.scopenewname(_s, "_2857"); _s._2857 = _2857;
+rt.scopenewname(_s, "_2933");
+rt.scopenewname(_s, "_2894"); _s._2894 = _2894
+;rt.scopenewname(_s, "_2895"); _s._2895 = _2895;
 ;
-rt._ = (rt.enviarMensaje(_s._2724, "llamar", function(_2888)
+_s._2933 = (rt.enviarMensajeV(_s._22, "vacio"));;
+if _s._2894 then
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2888"); _s._2888 = _2888;
-rt._ = (rt.enviarMensaje(_s._2692, "llamar", rt.enviarMensajeV(_s._2856, "rutasDondeBuscar"), function(_2892)
+rt.scopenewname(_s, "_2934");
+assert(rt.enviarMensajeV(_s._2886, "SoportaVariablesDeEntorno"));;
+_s._2934 = (function(_2935)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2892"); _s._2892 = _2892;
-rt._ = (rt.enviarMensaje(_s._2692, "llamar", rt.enviarMensajeV(_s._2856, "extensionesAProbar"), function(_2896)
+rt.scopenewname(_s, "_2936");
+rt.scopenewname(_s, "_2935"); _s._2935 = _2935;
+;
+_s._2936 = (rt.enviarMensaje(_s._2886, "ObtenerVariableDeEntorno", _s._2935));;
+if not rt.enviarMensaje(_s._2718, "llamar", _s._2936) then
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2896"); _s._2896 = _2896;
-if rt.enviarMensaje(_s._2732, "Existe", rt.enviarMensaje("~t/~t.~t", "formatear", _s._2892, _s._2857, _s._2896)) then
-local _s = rt.scope(_s)
-_s._2885 = (_s._2892);;
-_s._2886 = (_s._2857);;
-_s._2887 = (_s._2896);;
-rt._ = (rt.enviarMensaje(_s._2888, "llamar", _s._4));
+rt._ = (rt.enviarMensaje(_s._2933, "agregarAlFinal", _s._2936));
 else
 local _s = rt.scope(_s)
 ;
 end;
-end));
-end));
-end));
-if rt.enviarMensaje(rt.enviarMensaje(_s._2718, "llamar", _s._2885), "operador_||", rt.enviarMensaje(rt.enviarMensaje(_s._2718, "llamar", _s._2886), "operador_||", rt.enviarMensaje(_s._2718, "llamar", _s._2887))) then
-local _s = rt.scope(_s)
-do return _s._4; end;;
+end);;
+rt._ = (rt.enviarMensaje(_s._2934, "llamar", "RUTA_PSEUDOD"));
+rt._ = (rt.enviarMensaje(_s._2934, "llamar", "RUTA_PSEUDOD_BEPD"));
+rt._ = (rt.enviarMensaje(_s._2934, "llamar", "RUTA_PSEUDOD_LIBS"));
 else
 local _s = rt.scope(_s)
 ;
 end;
-do return rt.enviarMensaje(_s._2848, "crear", _s._2885, _s._2886, _s._2887); end;;
-end);;
-_s._2858 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
-rt.enviarMensaje(_s._2858, "fijar_nombre", "Módulo");;
-rt.enviarMensaje(_s._2858, "agregarAtributo", "llave");
-rt.enviarMensaje(_s._2858, "agregarAtributo", "exporta");
-rt.enviarMensaje(_s._2858, "agregarAtributo", "compilado");;
-rt.enviarMensaje(_s._2858, "agregarMetodo", "ruta", function(_2859)
-local _s = rt.scope(_s)
-
-;rt.scopenewname(_s, "_2859"); _s._2859 = _2859;
-do return rt.enviarMensajeV(rt.enviarMensajeV(_s._2859, "llave"), "ruta"); end;;
-end);;
-rt.enviarMensaje(_s._2858, "agregarMetodo", "nombre", function(_2860)
-local _s = rt.scope(_s)
-
-;rt.scopenewname(_s, "_2860"); _s._2860 = _2860;
-do return rt.enviarMensajeV(rt.enviarMensajeV(_s._2860, "llave"), "nombre"); end;;
-end);;
-rt.enviarMensaje(_s._2858, "agregarMetodo", "comoTexto", function(_2861)
-local _s = rt.scope(_s)
-
-;rt.scopenewname(_s, "_2861"); _s._2861 = _2861;
-do return rt.enviarMensaje("(Módulo: llave = ~t, exporta = ~t, compilado = ~t)", "formatear", rt.enviarMensajeV(_s._2861, "llave"), rt.enviarMensajeV(_s._2861, "exporta"), rt.enviarMensajeV(_s._2861, "compilado")); end;;
-end);;
-_s._2862 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
-rt.enviarMensaje(_s._2862, "fijar_nombre", "BaseDeDatos");;
-rt.enviarMensaje(_s._2862, "agregarAtributo", "módulos");
-rt.enviarMensaje(_s._2862, "agregarAtributo", "configuración");;
-(_s._2862).methods["conConfiguración"] = function(_2864, _2863)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2863"); _s._2863 = _2863
-;rt.scopenewname(_s, "_2864"); _s._2864 = _2864;
-do return rt.enviarMensaje(_s._2864, "crear", _s._2863); end;;
+do return rt.enviarMensaje(_s._2895, "crear", rt.enviarMensaje(_s._2705, "llamar", rt.enviarMensaje(_s._22, "crearCon", "."), _s._2933, rt.enviarMensaje(_s._22, "crearCon", "/opt/pseudod/lib/pseudod/v3", "/opt/pseudod/lib/pseudod/v3/r0")), rt.enviarMensaje(_s._22, "crearCon", "pd", "psd", "pseudo", "pseudod")); end;;
 end;
-rt.enviarMensaje(_s._2862, "agregarMetodo", "inicializar", function(_2866, _2865)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2865"); _s._2865 = _2865
-;rt.scopenewname(_s, "_2866"); _s._2866 = _2866;
-rt.enviarMensaje(_s._2866, "fijar_configuración", _s._2865);
-rt.enviarMensaje(_s._2866, "fijar_módulos", rt.enviarMensajeV(_s._2728, "vacío"));
-end);;
-rt.enviarMensaje(_s._2862, "agregarMetodo", "buscarMóduloPorLlave", function(_2868, _2867)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2867"); _s._2867 = _2867
-;rt.scopenewname(_s, "_2868"); _s._2868 = _2868;
-do return rt.enviarMensaje(_s._2868, "buscarMóduloPorNombre", rt.enviarMensajeV(_s._2867, "nombre")); end;;
-end);;
-rt.enviarMensaje(_s._2862, "agregarMetodo", "buscarMóduloPorNombre", function(_2870, _2869)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2869"); _s._2869 = _2869
-;rt.scopenewname(_s, "_2870"); _s._2870 = _2870;
-if rt.enviarMensaje(rt.enviarMensajeV(_s._2870, "módulos"), "contiene", _s._2869) then
-local _s = rt.scope(_s)
-do return rt.enviarMensaje(rt.enviarMensajeV(_s._2870, "módulos"), "en", _s._2869); end;;
-else
-local _s = rt.scope(_s)
-do return _s._4; end;;
-end;
-end);;
-rt.enviarMensaje(_s._2862, "agregarMetodo", "agregarMódulo", function(_2872, _2871)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2871"); _s._2871 = _2871
-;rt.scopenewname(_s, "_2872"); _s._2872 = _2872;
-rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._2872, "módulos"), "fijarEn", rt.enviarMensajeV(_s._2871, "nombre"), _s._2871));
-end);;
-rt.enviarMensaje(_s._2862, "agregarMetodo", "paraCadaMódulo", function(_2874, _2873)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2873"); _s._2873 = _2873
-;rt.scopenewname(_s, "_2874"); _s._2874 = _2874;
-rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._2874, "módulos"), "paraCadaPar", function(_2897, _2898)
+_s._2896 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
+rt.enviarMensaje(_s._2896, "fijar_nombre", "LlaveDeMódulo");;
+rt.enviarMensaje(_s._2896, "agregarAtributo", "ruta");
+rt.enviarMensaje(_s._2896, "agregarAtributo", "nombre");
+rt.enviarMensaje(_s._2896, "agregarAtributo", "extensión");;
+rt.enviarMensaje(_s._2896, "agregarMetodo", "inicializar", function(_2900, _2897, _2898, _2899)
 local _s = rt.scope(_s)
 rt.scopenewname(_s, "_2897"); _s._2897 = _2897;
 rt.scopenewname(_s, "_2898"); _s._2898 = _2898;
-rt._ = (rt.enviarMensaje(_s._2873, "llamar", _s._2898));
-end));
+rt.scopenewname(_s, "_2899"); _s._2899 = _2899
+;rt.scopenewname(_s, "_2900"); _s._2900 = _2900;
+rt.enviarMensaje(_s._2900, "fijar_ruta", _s._2897);
+rt.enviarMensaje(_s._2900, "fijar_nombre", _s._2898);
+rt.enviarMensaje(_s._2900, "fijar_extensión", _s._2899);
 end);;
-rt.enviarMensaje(_s._2862, "agregarMetodo", "guardarMódulos", function(_2876, _2875)
+rt.enviarMensaje(_s._2896, "agregarMetodo", "nombreCompletoDelArchivo", function(_2901)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2899");
-rt.scopenewname(_s, "_2901");
-rt.scopenewname(_s, "_2903");
-rt.scopenewname(_s, "_2905");
-rt.scopenewname(_s, "_2875"); _s._2875 = _2875
-;rt.scopenewname(_s, "_2876"); _s._2876 = _2876;
-_s._2899 = (function(...)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2900");
-_s._2900 = rt.arreglo(...)
-do return _s._2900; end;;
+
+;rt.scopenewname(_s, "_2901"); _s._2901 = _2901;
+do return rt.enviarMensaje("~t/~t.~t", "formatear", rt.enviarMensajeV(_s._2901, "ruta"), rt.enviarMensajeV(_s._2901, "nombre"), rt.enviarMensajeV(_s._2901, "extensión")); end;;
 end);;
-_s._2901 = (function(_2902)
+rt.enviarMensaje(_s._2896, "agregarMetodo", "comoTexto", function(_2902)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2902"); _s._2902 = _2902;
-do return rt.enviarMensaje(rt.enviarMensajeV(_s._2839, "Símbolo"), "desdeTexto", _s._2902); end;;
+
+;rt.scopenewname(_s, "_2902"); _s._2902 = _2902;
+do return rt.enviarMensaje("(LlaveDeMódulo: ~t)", "formatear", rt.enviarMensajeV(_s._2902, "nombreCompletoDelArchivo")); end;;
 end);;
-_s._2903 = (function(_2904)
+_s._2903 = (function(_2904, _2905)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2907");
-rt.scopenewname(_s, "_2915");
-rt.scopenewname(_s, "_2904"); _s._2904 = _2904;
-;
-_s._2915 = (rt.enviarMensajeV(_s._22, "vacio"));;
-rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._2876, "módulos"), "paraCadaValor", function(_2916)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2916"); _s._2916 = _2916;
-rt._ = (rt.enviarMensaje(_s._2915, "agregarAlFinal", rt.enviarMensaje(_s._2904, "llamar", _s._2916)));
-end));
-do return _s._2915; end;;
-end);;
-;
-_s._2905 = (rt.enviarMensaje(_s._2899, "llamar", rt.enviarMensaje(_s._2901, "llamar", "base-de-datos"), rt.enviarMensaje(_s._2706, "llamar", rt.enviarMensaje(_s._2901, "llamar", "modulos"), rt.enviarMensaje(_s._2903, "llamar", function(_2906)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2906"); _s._2906 = _2906;
-do return rt.enviarMensaje(_s._2899, "llamar", rt.enviarMensaje(_s._2899, "llamar", rt.enviarMensaje(_s._2901, "llamar", "nombre"), rt.enviarMensajeV(_s._2906, "nombre")), rt.enviarMensaje(_s._2899, "llamar", rt.enviarMensaje(_s._2901, "llamar", "ruta"), rt.enviarMensajeV(_s._2906, "ruta")), rt.enviarMensaje(_s._2899, "llamar", rt.enviarMensaje(_s._2901, "llamar", "extension"), rt.enviarMensajeV(rt.enviarMensajeV(_s._2906, "llave"), "extensión")), rt.enviarMensaje(_s._2706, "llamar", rt.enviarMensaje(_s._2901, "llamar", "exporta"), rt.enviarMensajeV(function()
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2920");
-rt.scopenewname(_s, "_2926");
-;
-;
-_s._2926 = (rt.enviarMensajeV(_s._22, "vacio"));;
-rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._2906, "exporta"), "paraCadaVariable", function(_2927, _2928)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2927"); _s._2927 = _2927;
-rt.scopenewname(_s, "_2928"); _s._2928 = _2928;
-rt._ = (rt.enviarMensaje(_s._2926, "agregarAlFinal", rt.enviarMensaje(_s._2899, "llamar", _s._2927, rt.enviarMensajeV(_s._2928, "esAutoejecutable"))));
-end));
-do return _s._2926; end;;
-end, "llamar")), rt.enviarMensaje(_s._2899, "llamar", rt.enviarMensaje(_s._2901, "llamar", "compilado"), rt.enviarMensajeV(_s._2906, "compilado"))); end;;
-end))));;
-rt._ = (rt.enviarMensaje(_s._2839, "DesparsearDato", _s._2875, _s._2905));
-end);;
-rt.enviarMensaje(_s._2862, "agregarMetodo", "cargarMódulos", function(_2878, _2877)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2929");
-rt.scopenewname(_s, "_2931");
-rt.scopenewname(_s, "_2934");
-rt.scopenewname(_s, "_2936");
 rt.scopenewname(_s, "_2937");
 rt.scopenewname(_s, "_2938");
-rt.scopenewname(_s, "_2877"); _s._2877 = _2877
-;rt.scopenewname(_s, "_2878"); _s._2878 = _2878;
-_s._2929 = (function(_2930)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2940");
-rt.scopenewname(_s, "_2948");
-rt.scopenewname(_s, "_2930"); _s._2930 = _2930;
-assert(rt.enviarMensaje(_s._2689, "llamar", _s._2930, _s._22));;
+rt.scopenewname(_s, "_2939");
+rt.scopenewname(_s, "_2904"); _s._2904 = _2904;
+rt.scopenewname(_s, "_2905"); _s._2905 = _2905;
 ;
-_s._2948 = (rt.enviarMensajeV(_s._2728, "vacío"));;
-rt._ = (rt.enviarMensaje(_s._2692, "llamar", _s._2930, function(_2949)
+rt._ = (rt.enviarMensaje(_s._2724, "llamar", function(_2940)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2949"); _s._2949 = _2949;
-assert(rt.enviarMensaje(_s._2689, "llamar", _s._2949, _s._22));;
-if rt.enviarMensaje(rt.enviarMensajeV(_s._2949, "longitud"), "operador_=", 2) then
+rt.scopenewname(_s, "_2940"); _s._2940 = _2940;
+rt._ = (rt.enviarMensaje(_s._2692, "llamar", rt.enviarMensajeV(_s._2904, "rutasDondeBuscar"), function(_2944)
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._2948, "fijarEn", rt.enviarMensaje(_s._2949, "en", 0), rt.enviarMensaje(_s._2949, "en", 1)));
+rt.scopenewname(_s, "_2944"); _s._2944 = _2944;
+rt._ = (rt.enviarMensaje(_s._2692, "llamar", rt.enviarMensajeV(_s._2904, "extensionesAProbar"), function(_2948)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2948"); _s._2948 = _2948;
+if rt.enviarMensaje(_s._2732, "Existe", rt.enviarMensaje("~t/~t.~t", "formatear", _s._2944, _s._2905, _s._2948)) then
+local _s = rt.scope(_s)
+_s._2937 = (_s._2944);;
+_s._2938 = (_s._2905);;
+_s._2939 = (_s._2948);;
+rt._ = (rt.enviarMensaje(_s._2940, "llamar", _s._4));
 else
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._2948, "fijarEn", rt.enviarMensaje(_s._2949, "en", 0), rt.enviarMensaje(_s._2716, "llamar", _s._2949, 1, -1)));
+;
 end;
 end));
-do return _s._2948; end;;
-end);;
-_s._2931 = (function(_2932, _2933)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2942");
-rt.scopenewname(_s, "_2950");
-rt.scopenewname(_s, "_2932"); _s._2932 = _2932;
-rt.scopenewname(_s, "_2933"); _s._2933 = _2933;
-assert(rt.enviarMensaje(_s._2689, "llamar", _s._2932, _s._22));;
-;
-_s._2950 = (rt.enviarMensajeV(_s._2728, "vacío"));;
-rt._ = (rt.enviarMensaje(_s._2695, "llamar", _s._2932, function(_2951, _2952)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2951"); _s._2951 = _2951;
-rt.scopenewname(_s, "_2952"); _s._2952 = _2952;
-if rt.enviarMensaje(_s._2933, "operador_&&", rt.enviarMensaje(_s._2952, "operador_=", 0)) then
+end));
+end));
+if rt.enviarMensaje(rt.enviarMensaje(_s._2718, "llamar", _s._2937), "operador_||", rt.enviarMensaje(rt.enviarMensaje(_s._2718, "llamar", _s._2938), "operador_||", rt.enviarMensaje(_s._2718, "llamar", _s._2939))) then
 local _s = rt.scope(_s)
 do return _s._4; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-assert(rt.enviarMensaje(_s._2689, "llamar", _s._2951, _s._22));;
-assert(rt.enviarMensaje(_s._2689, "llamar", rt.enviarMensaje(_s._2951, "en", 0), rt.enviarMensajeV(_s._2839, "Símbolo")));;
-rt._ = (rt.enviarMensaje(_s._2950, "fijarEn", rt.enviarMensajeV(rt.enviarMensaje(_s._2951, "en", 0), "comoTexto"), rt.enviarMensaje(_s._2716, "llamar", _s._2951, 1, -1)));
+do return rt.enviarMensaje(_s._2896, "crear", _s._2937, _s._2938, _s._2939); end;;
+end);;
+_s._2906 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
+rt.enviarMensaje(_s._2906, "fijar_nombre", "Módulo");;
+rt.enviarMensaje(_s._2906, "agregarAtributo", "llave");
+rt.enviarMensaje(_s._2906, "agregarAtributo", "exporta");
+rt.enviarMensaje(_s._2906, "agregarAtributo", "compilado");;
+rt.enviarMensaje(_s._2906, "agregarMetodo", "ruta", function(_2907)
+local _s = rt.scope(_s)
+
+;rt.scopenewname(_s, "_2907"); _s._2907 = _2907;
+do return rt.enviarMensajeV(rt.enviarMensajeV(_s._2907, "llave"), "ruta"); end;;
+end);;
+rt.enviarMensaje(_s._2906, "agregarMetodo", "nombre", function(_2908)
+local _s = rt.scope(_s)
+
+;rt.scopenewname(_s, "_2908"); _s._2908 = _2908;
+do return rt.enviarMensajeV(rt.enviarMensajeV(_s._2908, "llave"), "nombre"); end;;
+end);;
+rt.enviarMensaje(_s._2906, "agregarMetodo", "comoTexto", function(_2909)
+local _s = rt.scope(_s)
+
+;rt.scopenewname(_s, "_2909"); _s._2909 = _2909;
+do return rt.enviarMensaje("(Módulo: llave = ~t, exporta = ~t, compilado = ~t)", "formatear", rt.enviarMensajeV(_s._2909, "llave"), rt.enviarMensajeV(_s._2909, "exporta"), rt.enviarMensajeV(_s._2909, "compilado")); end;;
+end);;
+_s._2910 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
+rt.enviarMensaje(_s._2910, "fijar_nombre", "BaseDeDatos");;
+rt.enviarMensaje(_s._2910, "agregarAtributo", "módulos");
+rt.enviarMensaje(_s._2910, "agregarAtributo", "configuración");;
+(_s._2910).methods["conConfiguración"] = function(_2912, _2911)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2911"); _s._2911 = _2911
+;rt.scopenewname(_s, "_2912"); _s._2912 = _2912;
+do return rt.enviarMensaje(_s._2912, "crear", _s._2911); end;;
+end;
+rt.enviarMensaje(_s._2910, "agregarMetodo", "inicializar", function(_2914, _2913)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2913"); _s._2913 = _2913
+;rt.scopenewname(_s, "_2914"); _s._2914 = _2914;
+rt.enviarMensaje(_s._2914, "fijar_configuración", _s._2913);
+rt.enviarMensaje(_s._2914, "fijar_módulos", rt.enviarMensajeV(_s._2728, "vacío"));
+end);;
+rt.enviarMensaje(_s._2910, "agregarMetodo", "buscarMóduloPorLlave", function(_2916, _2915)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2915"); _s._2915 = _2915
+;rt.scopenewname(_s, "_2916"); _s._2916 = _2916;
+do return rt.enviarMensaje(_s._2916, "buscarMóduloPorNombre", rt.enviarMensajeV(_s._2915, "nombre")); end;;
+end);;
+rt.enviarMensaje(_s._2910, "agregarMetodo", "buscarMóduloPorNombre", function(_2918, _2917)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2917"); _s._2917 = _2917
+;rt.scopenewname(_s, "_2918"); _s._2918 = _2918;
+if rt.enviarMensaje(rt.enviarMensajeV(_s._2918, "módulos"), "contiene", _s._2917) then
+local _s = rt.scope(_s)
+do return rt.enviarMensaje(rt.enviarMensajeV(_s._2918, "módulos"), "en", _s._2917); end;;
+else
+local _s = rt.scope(_s)
+do return _s._4; end;;
+end;
+end);;
+rt.enviarMensaje(_s._2910, "agregarMetodo", "agregarMódulo", function(_2920, _2919)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2919"); _s._2919 = _2919
+;rt.scopenewname(_s, "_2920"); _s._2920 = _2920;
+rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._2920, "módulos"), "fijarEn", rt.enviarMensajeV(_s._2919, "nombre"), _s._2919));
+end);;
+rt.enviarMensaje(_s._2910, "agregarMetodo", "paraCadaMódulo", function(_2922, _2921)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2921"); _s._2921 = _2921
+;rt.scopenewname(_s, "_2922"); _s._2922 = _2922;
+rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._2922, "módulos"), "paraCadaPar", function(_2949, _2950)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2949"); _s._2949 = _2949;
+rt.scopenewname(_s, "_2950"); _s._2950 = _2950;
+rt._ = (rt.enviarMensaje(_s._2921, "llamar", _s._2950));
 end));
-do return _s._2950; end;;
 end);;
-_s._2934 = (function(_2935)
+rt.enviarMensaje(_s._2910, "agregarMetodo", "guardarMódulos", function(_2924, _2923)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2935"); _s._2935 = _2935;
-do return rt.enviarMensaje(rt.enviarMensajeV(_s._2839, "Símbolo"), "desdeTexto", _s._2935); end;;
-end);;
-;
-_s._2936 = (rt.enviarMensaje(_s._2839, "ParsearDato", _s._2877));;
-assert(rt.enviarMensaje(_s._2689, "llamar", _s._2936, _s._22));;
-assert(rt.enviarMensaje(rt.enviarMensaje(_s._2936, "en", 0), "operador_=", rt.enviarMensaje(_s._2934, "llamar", "base-de-datos")));;
-_s._2937 = (rt.enviarMensaje(_s._2931, "llamar", _s._2936, _s._2));;
-_s._2938 = (rt.enviarMensaje(_s._2937, "en", "modulos"));;
-rt._ = (rt.enviarMensaje(_s._2692, "llamar", _s._2938, function(_2939)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2945");
-rt.scopenewname(_s, "_2946");
+rt.scopenewname(_s, "_2951");
 rt.scopenewname(_s, "_2953");
-rt.scopenewname(_s, "_2954");
-rt.scopenewname(_s, "_2939"); _s._2939 = _2939;
-;
-_s._2953 = (rt.enviarMensaje(_s._2929, "llamar", _s._2939));;
-if rt.enviarMensaje(rt.enviarMensajeV(_s._2878, "módulos"), "contiene", rt.enviarMensaje(_s._2953, "en", rt.enviarMensaje(_s._2934, "llamar", "nombre"))) then
+rt.scopenewname(_s, "_2955");
+rt.scopenewname(_s, "_2957");
+rt.scopenewname(_s, "_2923"); _s._2923 = _2923
+;rt.scopenewname(_s, "_2924"); _s._2924 = _2924;
+_s._2951 = (function(...)
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._9, "llamar", rt.enviarMensaje("El módulo ~t ya exíste", "formatear", rt.enviarMensaje(_s._2939, "en", rt.enviarMensaje(_s._2934, "llamar", "nombre")))));
+rt.scopenewname(_s, "_2952");
+_s._2952 = rt.arreglo(...)
+do return _s._2952; end;;
+end);;
+_s._2953 = (function(_2954)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2954"); _s._2954 = _2954;
+do return rt.enviarMensaje(rt.enviarMensajeV(_s._2839, "Símbolo"), "desdeTexto", _s._2954); end;;
+end);;
+_s._2955 = (function(_2956)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2959");
+rt.scopenewname(_s, "_2967");
+rt.scopenewname(_s, "_2956"); _s._2956 = _2956;
+;
+_s._2967 = (rt.enviarMensajeV(_s._22, "vacio"));;
+rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._2924, "módulos"), "paraCadaValor", function(_2968)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2968"); _s._2968 = _2968;
+rt._ = (rt.enviarMensaje(_s._2967, "agregarAlFinal", rt.enviarMensaje(_s._2956, "llamar", _s._2968)));
+end));
+do return _s._2967; end;;
+end);;
+;
+_s._2957 = (rt.enviarMensaje(_s._2951, "llamar", rt.enviarMensaje(_s._2953, "llamar", "base-de-datos"), rt.enviarMensaje(_s._2706, "llamar", rt.enviarMensaje(_s._2953, "llamar", "modulos"), rt.enviarMensaje(_s._2955, "llamar", function(_2958)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2958"); _s._2958 = _2958;
+do return rt.enviarMensaje(_s._2951, "llamar", rt.enviarMensaje(_s._2951, "llamar", rt.enviarMensaje(_s._2953, "llamar", "nombre"), rt.enviarMensajeV(_s._2958, "nombre")), rt.enviarMensaje(_s._2951, "llamar", rt.enviarMensaje(_s._2953, "llamar", "ruta"), rt.enviarMensajeV(_s._2958, "ruta")), rt.enviarMensaje(_s._2951, "llamar", rt.enviarMensaje(_s._2953, "llamar", "extension"), rt.enviarMensajeV(rt.enviarMensajeV(_s._2958, "llave"), "extensión")), rt.enviarMensaje(_s._2706, "llamar", rt.enviarMensaje(_s._2953, "llamar", "exporta"), rt.enviarMensajeV(function()
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2972");
+rt.scopenewname(_s, "_2978");
+;
+;
+_s._2978 = (rt.enviarMensajeV(_s._22, "vacio"));;
+rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._2958, "exporta"), "paraCadaVariable", function(_2979, _2980)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2979"); _s._2979 = _2979;
+rt.scopenewname(_s, "_2980"); _s._2980 = _2980;
+rt._ = (rt.enviarMensaje(_s._2978, "agregarAlFinal", rt.enviarMensaje(_s._2951, "llamar", _s._2979, rt.enviarMensajeV(_s._2980, "esAutoejecutable"))));
+end));
+do return _s._2978; end;;
+end, "llamar")), rt.enviarMensaje(_s._2951, "llamar", rt.enviarMensaje(_s._2953, "llamar", "compilado"), rt.enviarMensajeV(_s._2958, "compilado"))); end;;
+end))));;
+rt._ = (rt.enviarMensaje(_s._2839, "DesparsearDato", _s._2923, _s._2957));
+end);;
+rt.enviarMensaje(_s._2910, "agregarMetodo", "cargarMódulos", function(_2926, _2925)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2981");
+rt.scopenewname(_s, "_2983");
+rt.scopenewname(_s, "_2986");
+rt.scopenewname(_s, "_2988");
+rt.scopenewname(_s, "_2989");
+rt.scopenewname(_s, "_2990");
+rt.scopenewname(_s, "_2925"); _s._2925 = _2925
+;rt.scopenewname(_s, "_2926"); _s._2926 = _2926;
+_s._2981 = (function(_2982)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2992");
+rt.scopenewname(_s, "_3000");
+rt.scopenewname(_s, "_2982"); _s._2982 = _2982;
+assert(rt.enviarMensaje(_s._2689, "llamar", _s._2982, _s._22));;
+;
+_s._3000 = (rt.enviarMensajeV(_s._2728, "vacío"));;
+rt._ = (rt.enviarMensaje(_s._2692, "llamar", _s._2982, function(_3001)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3001"); _s._3001 = _3001;
+assert(rt.enviarMensaje(_s._2689, "llamar", _s._3001, _s._22));;
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3001, "longitud"), "operador_=", 2) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3000, "fijarEn", rt.enviarMensaje(_s._3001, "en", 0), rt.enviarMensaje(_s._3001, "en", 1)));
+else
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3000, "fijarEn", rt.enviarMensaje(_s._3001, "en", 0), rt.enviarMensaje(_s._2716, "llamar", _s._3001, 1, -1)));
+end;
+end));
+do return _s._3000; end;;
+end);;
+_s._2983 = (function(_2984, _2985)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_2994");
+rt.scopenewname(_s, "_3002");
+rt.scopenewname(_s, "_2984"); _s._2984 = _2984;
+rt.scopenewname(_s, "_2985"); _s._2985 = _2985;
+assert(rt.enviarMensaje(_s._2689, "llamar", _s._2984, _s._22));;
+;
+_s._3002 = (rt.enviarMensajeV(_s._2728, "vacío"));;
+rt._ = (rt.enviarMensaje(_s._2695, "llamar", _s._2984, function(_3003, _3004)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3003"); _s._3003 = _3003;
+rt.scopenewname(_s, "_3004"); _s._3004 = _3004;
+if rt.enviarMensaje(_s._2985, "operador_&&", rt.enviarMensaje(_s._3004, "operador_=", 0)) then
+local _s = rt.scope(_s)
+do return _s._4; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-_s._2954 = (rt.enviarMensajeV(rt.enviarMensajeV(_s._2840, "Ámbito"), "crear"));;
-rt._ = (rt.enviarMensaje(_s._2692, "llamar", rt.enviarMensaje(_s._2953, "en", rt.enviarMensaje(_s._2934, "llamar", "exporta")), function(_2955)
+assert(rt.enviarMensaje(_s._2689, "llamar", _s._3003, _s._22));;
+assert(rt.enviarMensaje(_s._2689, "llamar", rt.enviarMensaje(_s._3003, "en", 0), rt.enviarMensajeV(_s._2839, "Símbolo")));;
+rt._ = (rt.enviarMensaje(_s._3002, "fijarEn", rt.enviarMensajeV(rt.enviarMensaje(_s._3003, "en", 0), "comoTexto"), rt.enviarMensaje(_s._2716, "llamar", _s._3003, 1, -1)));
+end));
+do return _s._3002; end;;
+end);;
+_s._2986 = (function(_2987)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2955"); _s._2955 = _2955;
-rt._ = (rt.enviarMensaje(_s._2954, "agregar", rt.enviarMensaje(_s._2955, "en", 0), _s._4));
-if rt.enviarMensaje(_s._2955, "en", 1) then
+rt.scopenewname(_s, "_2987"); _s._2987 = _2987;
+do return rt.enviarMensaje(rt.enviarMensajeV(_s._2839, "Símbolo"), "desdeTexto", _s._2987); end;;
+end);;
+;
+_s._2988 = (rt.enviarMensaje(_s._2839, "ParsearDato", _s._2925));;
+assert(rt.enviarMensaje(_s._2689, "llamar", _s._2988, _s._22));;
+assert(rt.enviarMensaje(rt.enviarMensaje(_s._2988, "en", 0), "operador_=", rt.enviarMensaje(_s._2986, "llamar", "base-de-datos")));;
+_s._2989 = (rt.enviarMensaje(_s._2983, "llamar", _s._2988, _s._2));;
+_s._2990 = (rt.enviarMensaje(_s._2989, "en", "modulos"));;
+rt._ = (rt.enviarMensaje(_s._2692, "llamar", _s._2990, function(_2991)
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._2954, "marcarComoAutoejecutable", rt.enviarMensaje(_s._2955, "en", 0)));
+rt.scopenewname(_s, "_2997");
+rt.scopenewname(_s, "_2998");
+rt.scopenewname(_s, "_3005");
+rt.scopenewname(_s, "_3006");
+rt.scopenewname(_s, "_2991"); _s._2991 = _2991;
+;
+_s._3005 = (rt.enviarMensaje(_s._2981, "llamar", _s._2991));;
+if rt.enviarMensaje(rt.enviarMensajeV(_s._2926, "módulos"), "contiene", rt.enviarMensaje(_s._3005, "en", rt.enviarMensaje(_s._2986, "llamar", "nombre"))) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._9, "llamar", rt.enviarMensaje("El módulo ~t ya exíste", "formatear", rt.enviarMensaje(_s._2991, "en", rt.enviarMensaje(_s._2986, "llamar", "nombre")))));
+else
+local _s = rt.scope(_s)
+;
+end;
+_s._3006 = (rt.enviarMensajeV(rt.enviarMensajeV(_s._2887, "Ámbito"), "crear"));;
+rt._ = (rt.enviarMensaje(_s._2692, "llamar", rt.enviarMensaje(_s._3005, "en", rt.enviarMensaje(_s._2986, "llamar", "exporta")), function(_3007)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3007"); _s._3007 = _3007;
+rt._ = (rt.enviarMensaje(_s._3006, "agregar", rt.enviarMensaje(_s._3007, "en", 0), _s._4));
+if rt.enviarMensaje(_s._3007, "en", 1) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3006, "marcarComoAutoejecutable", rt.enviarMensaje(_s._3007, "en", 0)));
 else
 local _s = rt.scope(_s)
 ;
 end;
 end));
-rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._2878, "módulos"), "fijarEn", rt.enviarMensaje(_s._2953, "en", rt.enviarMensaje(_s._2934, "llamar", "nombre")), rt.clonar(rt.enviarMensajeV(_s._2858, "_crear"), {["llave"] = rt.enviarMensaje(_s._2848, "crear", rt.enviarMensaje(_s._2953, "en", rt.enviarMensaje(_s._2934, "llamar", "ruta")), rt.enviarMensaje(_s._2953, "en", rt.enviarMensaje(_s._2934, "llamar", "nombre")), rt.enviarMensaje(_s._2953, "en", rt.enviarMensaje(_s._2934, "llamar", "extension"))), ["exporta"] = _s._2954, ["compilado"] = rt.enviarMensaje(_s._2953, "en", rt.enviarMensaje(_s._2934, "llamar", "compilado"))})));
+rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._2926, "módulos"), "fijarEn", rt.enviarMensaje(_s._3005, "en", rt.enviarMensaje(_s._2986, "llamar", "nombre")), rt.clonar(rt.enviarMensajeV(_s._2906, "_crear"), {["llave"] = rt.enviarMensaje(_s._2896, "crear", rt.enviarMensaje(_s._3005, "en", rt.enviarMensaje(_s._2986, "llamar", "ruta")), rt.enviarMensaje(_s._3005, "en", rt.enviarMensaje(_s._2986, "llamar", "nombre")), rt.enviarMensaje(_s._3005, "en", rt.enviarMensaje(_s._2986, "llamar", "extension"))), ["exporta"] = _s._3006, ["compilado"] = rt.enviarMensaje(_s._3005, "en", rt.enviarMensaje(_s._2986, "llamar", "compilado"))})));
 end));
 end);;
-_s._2879 = (function(_2880, _2881, _2882, _2883, _2884)
+_s._2927 = (function(_2928, _2929, _2930, _2931, _2932)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2956");
-rt.scopenewname(_s, "_2957");
-rt.scopenewname(_s, "_2958");
-rt.scopenewname(_s, "_2959");
-rt.scopenewname(_s, "_2880"); _s._2880 = _2880;
-rt.scopenewname(_s, "_2881"); _s._2881 = _2881;
-rt.scopenewname(_s, "_2882"); _s._2882 = _2882;
-rt.scopenewname(_s, "_2883"); _s._2883 = _2883;
-rt.scopenewname(_s, "_2884"); _s._2884 = _2884;
+rt.scopenewname(_s, "_3008");
+rt.scopenewname(_s, "_3009");
+rt.scopenewname(_s, "_3010");
+rt.scopenewname(_s, "_3011");
+rt.scopenewname(_s, "_2928"); _s._2928 = _2928;
+rt.scopenewname(_s, "_2929"); _s._2929 = _2929;
+rt.scopenewname(_s, "_2930"); _s._2930 = _2930;
+rt.scopenewname(_s, "_2931"); _s._2931 = _2931;
+rt.scopenewname(_s, "_2932"); _s._2932 = _2932;
 ;
-_s._2959 = (rt.enviarMensajeV(_s._2880, "configuración"));;
-_s._2956 = (rt.enviarMensaje(_s._2880, "buscarMóduloPorNombre", _s._2881));;
-if rt.enviarMensaje(_s._2718, "llamar", _s._2956) then
+_s._3011 = (rt.enviarMensajeV(_s._2928, "configuración"));;
+_s._3008 = (rt.enviarMensaje(_s._2928, "buscarMóduloPorNombre", _s._2929));;
+if rt.enviarMensaje(_s._2718, "llamar", _s._3008) then
 local _s = rt.scope(_s)
-_s._2957 = (rt.enviarMensaje(_s._2855, "llamar", _s._2959, _s._2881));;
-if rt.enviarMensaje(_s._2718, "llamar", _s._2957) then
+_s._3009 = (rt.enviarMensaje(_s._2903, "llamar", _s._3011, _s._2929));;
+if rt.enviarMensaje(_s._2718, "llamar", _s._3009) then
 local _s = rt.scope(_s)
-do return rt.enviarMensajeV(_s._2884, "llamar"); end;;
+do return rt.enviarMensajeV(_s._2932, "llamar"); end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-_s._2956 = (rt.enviarMensaje(_s._2880, "buscarMóduloPorLlave", _s._2957));;
-if rt.enviarMensaje(_s._2718, "llamar", _s._2956) then
+_s._3008 = (rt.enviarMensaje(_s._2928, "buscarMóduloPorLlave", _s._3009));;
+if rt.enviarMensaje(_s._2718, "llamar", _s._3008) then
 local _s = rt.scope(_s)
-do return rt.enviarMensaje(_s._2882, "llamar", _s._2957); end;;
+do return rt.enviarMensaje(_s._2930, "llamar", _s._3009); end;;
 else
 local _s = rt.scope(_s)
-do return rt.enviarMensaje(_s._2883, "llamar", _s._2956); end;;
+do return rt.enviarMensaje(_s._2931, "llamar", _s._3008); end;;
 end;
 else
 local _s = rt.scope(_s)
-do return rt.enviarMensaje(_s._2883, "llamar", _s._2956); end;;
+do return rt.enviarMensaje(_s._2931, "llamar", _s._3008); end;;
 end;
 end);;
 return rt.ns({
@@ -11906,13 +12150,14 @@ return rt.ns({
   ["Enum"] = { value = _s._2731, autoexecutable = true },
   ["Archivo"] = { value = _s._2732, autoexecutable = false },
   ["SExpr"] = { value = _s._2839, autoexecutable = false },
-  ["Ámbito"] = { value = _s._2840, autoexecutable = false },
-  ["ConfiguraciónGlobal"] = { value = _s._2841, autoexecutable = false },
-  ["LlaveDeMódulo"] = { value = _s._2848, autoexecutable = false },
-  ["BuscarMódulo"] = { value = _s._2855, autoexecutable = true },
-  ["Módulo"] = { value = _s._2858, autoexecutable = false },
-  ["BaseDeDatos"] = { value = _s._2862, autoexecutable = false },
-  ["ResolverMóduloPorNombre"] = { value = _s._2879, autoexecutable = true },
+  ["Entorno"] = { value = _s._2886, autoexecutable = false },
+  ["Ámbito"] = { value = _s._2887, autoexecutable = false },
+  ["ConfiguraciónGlobal"] = { value = _s._2888, autoexecutable = false },
+  ["LlaveDeMódulo"] = { value = _s._2896, autoexecutable = false },
+  ["BuscarMódulo"] = { value = _s._2903, autoexecutable = true },
+  ["Módulo"] = { value = _s._2906, autoexecutable = false },
+  ["BaseDeDatos"] = { value = _s._2910, autoexecutable = false },
+  ["ResolverMóduloPorNombre"] = { value = _s._2927, autoexecutable = true },
 });
 end;
 rt.modulos["./compilador.pd"] = function()
@@ -11992,8 +12237,8 @@ rt.scopenewname(_s, "_2236");
 rt.scopenewname(_s, "_2237");
 rt.scopenewname(_s, "_2238");
 rt.scopenewname(_s, "_2644");
-rt.scopenewname(_s, "_2960");
-rt.scopenewname(_s, "_2961");
+rt.scopenewname(_s, "_3012");
+rt.scopenewname(_s, "_3013");
 _s._1 = rt.builtins["Objeto"];
 _s._2 = rt.builtins["VERDADERO"];
 _s._3 = rt.builtins["FALSO"];
@@ -12083,71 +12328,71 @@ end
 rt.ans_ns = rt.import("./módulos.pd")
 ;do
 end
-;_s._2960 = rt.ans_ns;;
-_s._2961 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
-rt.enviarMensaje(_s._2961, "fijar_nombre", "CompiladorBase");
-rt.enviarMensaje(_s._2961, "agregarAtributo", "baseDeDatos");;;
-rt.enviarMensaje(_s._2961, "agregarMetodo", "compilarAST", function(_2964, _2962, _2963)
+;_s._3012 = rt.ans_ns;;
+_s._3013 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
+rt.enviarMensaje(_s._3013, "fijar_nombre", "CompiladorBase");
+rt.enviarMensaje(_s._3013, "agregarAtributo", "baseDeDatos");;;
+rt.enviarMensaje(_s._3013, "agregarMetodo", "compilarAST", function(_3016, _3014, _3015)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2962"); _s._2962 = _2962;
-rt.scopenewname(_s, "_2963"); _s._2963 = _2963
-;rt.scopenewname(_s, "_2964"); _s._2964 = _2964;
+rt.scopenewname(_s, "_3014"); _s._3014 = _3014;
+rt.scopenewname(_s, "_3015"); _s._3015 = _3015
+;rt.scopenewname(_s, "_3016"); _s._3016 = _3016;
 rt._ = (rt.enviarMensajeV(_s._2228, "llamar"));
 end);;
-rt.enviarMensaje(_s._2961, "agregarMetodo", "importarMódulo", function(_2966, _2965)
+rt.enviarMensaje(_s._3013, "agregarMetodo", "importarMódulo", function(_3018, _3017)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2965"); _s._2965 = _2965
-;rt.scopenewname(_s, "_2966"); _s._2966 = _2966;
+rt.scopenewname(_s, "_3017"); _s._3017 = _3017
+;rt.scopenewname(_s, "_3018"); _s._3018 = _3018;
 rt._ = (rt.enviarMensajeV(_s._2228, "llamar"));
 end);;
-rt.enviarMensaje(_s._2961, "agregarMetodo", "inyectarNombresEnÁmbito", function(_2968, _2967)
+rt.enviarMensaje(_s._3013, "agregarMetodo", "inyectarNombresEnÁmbito", function(_3020, _3019)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2967"); _s._2967 = _2967
-;rt.scopenewname(_s, "_2968"); _s._2968 = _2968;
+rt.scopenewname(_s, "_3019"); _s._3019 = _3019
+;rt.scopenewname(_s, "_3020"); _s._3020 = _3020;
 rt._ = (rt.enviarMensajeV(_s._2228, "llamar"));
 end);;
-rt.enviarMensaje(_s._2961, "agregarMetodo", "removerNombresDeÁmbito", function(_2970, _2969)
+rt.enviarMensaje(_s._3013, "agregarMetodo", "removerNombresDeÁmbito", function(_3022, _3021)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2969"); _s._2969 = _2969
-;rt.scopenewname(_s, "_2970"); _s._2970 = _2970;
+rt.scopenewname(_s, "_3021"); _s._3021 = _3021
+;rt.scopenewname(_s, "_3022"); _s._3022 = _3022;
 rt._ = (rt.enviarMensajeV(_s._2228, "llamar"));
 end);;
-rt.enviarMensaje(_s._2961, "agregarMetodo", "compilarPuerto", function(_2973, _2971, _2972)
+rt.enviarMensaje(_s._3013, "agregarMetodo", "compilarPuerto", function(_3025, _3023, _3024)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2977");
-rt.scopenewname(_s, "_2978");
-rt.scopenewname(_s, "_2979");
-rt.scopenewname(_s, "_2971"); _s._2971 = _2971;
-rt.scopenewname(_s, "_2972"); _s._2972 = _2972
-;rt.scopenewname(_s, "_2973"); _s._2973 = _2973;
+rt.scopenewname(_s, "_3029");
+rt.scopenewname(_s, "_3030");
+rt.scopenewname(_s, "_3031");
+rt.scopenewname(_s, "_3023"); _s._3023 = _3023;
+rt.scopenewname(_s, "_3024"); _s._3024 = _3024
+;rt.scopenewname(_s, "_3025"); _s._3025 = _3025;
 ;
-rt._ = (rt.enviarMensaje(_s._2196, "llamar", rt.enviarMensaje("---- Parsear: ~t", "formatear", _s._2971)));
-_s._2977 = (rt.enviarMensaje(_s._2238, "CrearAST", _s._2972));;
-rt._ = (rt.enviarMensaje(_s._2196, "llamar", rt.enviarMensaje("---- RN: ~t", "formatear", _s._2971)));
-_s._2978 = (rt.enviarMensaje(_s._2644, "ResolverNombres", _s._2977, function(_2980)
+rt._ = (rt.enviarMensaje(_s._2196, "llamar", rt.enviarMensaje("---- Parsear: ~t", "formatear", _s._3023)));
+_s._3029 = (rt.enviarMensaje(_s._2238, "CrearAST", _s._3024));;
+rt._ = (rt.enviarMensaje(_s._2196, "llamar", rt.enviarMensaje("---- RN: ~t", "formatear", _s._3023)));
+_s._3030 = (rt.enviarMensaje(_s._2644, "ResolverNombres", _s._3029, function(_3032)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2980"); _s._2980 = _2980;
-do return rt.enviarMensaje(_s._2973, "importarMódulo", _s._2980); end;;
-end, function(_2981)
+rt.scopenewname(_s, "_3032"); _s._3032 = _3032;
+do return rt.enviarMensaje(_s._3025, "importarMódulo", _s._3032); end;;
+end, function(_3033)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2981"); _s._2981 = _2981;
-rt._ = (rt.enviarMensaje(_s._2973, "inyectarNombresEnÁmbito", _s._2981));
-end, function(_2982)
+rt.scopenewname(_s, "_3033"); _s._3033 = _3033;
+rt._ = (rt.enviarMensaje(_s._3025, "inyectarNombresEnÁmbito", _s._3033));
+end, function(_3034)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2982"); _s._2982 = _2982;
-rt._ = (rt.enviarMensaje(_s._2973, "removerNombresDeÁmbito", _s._2982));
+rt.scopenewname(_s, "_3034"); _s._3034 = _3034;
+rt._ = (rt.enviarMensaje(_s._3025, "removerNombresDeÁmbito", _s._3034));
 end));;
-rt._ = (rt.enviarMensaje(_s._2196, "llamar", rt.enviarMensaje("---- Compilar: ~t", "formatear", _s._2971)));
-_s._2979 = (rt.enviarMensaje(_s._2973, "compilarAST", _s._2977, _s._2978));;
-rt._ = (rt.enviarMensaje(_s._2196, "llamar", rt.enviarMensaje("---- Mod: ~t", "formatear", _s._2971)));
-do return rt.clonar(rt.enviarMensajeV(rt.enviarMensajeV(_s._2960, "Módulo"), "_crear"), {["llave"] = _s._2971, ["exporta"] = _s._2978, ["compilado"] = _s._2979}); end;;
+rt._ = (rt.enviarMensaje(_s._2196, "llamar", rt.enviarMensaje("---- Compilar: ~t", "formatear", _s._3023)));
+_s._3031 = (rt.enviarMensaje(_s._3025, "compilarAST", _s._3029, _s._3030));;
+rt._ = (rt.enviarMensaje(_s._2196, "llamar", rt.enviarMensaje("---- Mod: ~t", "formatear", _s._3023)));
+do return rt.clonar(rt.enviarMensajeV(rt.enviarMensajeV(_s._3012, "Módulo"), "_crear"), {["llave"] = _s._3023, ["exporta"] = _s._3030, ["compilado"] = _s._3031}); end;;
 end);;
-rt.enviarMensaje(_s._2961, "agregarMetodo", "compilarTexto", function(_2976, _2974, _2975)
+rt.enviarMensaje(_s._3013, "agregarMetodo", "compilarTexto", function(_3028, _3026, _3027)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_2974"); _s._2974 = _2974;
-rt.scopenewname(_s, "_2975"); _s._2975 = _2975
-;rt.scopenewname(_s, "_2976"); _s._2976 = _2976;
-do return rt.enviarMensaje(_s._2976, "compilarPuerto", _s._2974, rt.enviarMensaje(_s._2237, "TextoComoPuerto", _s._2975)); end;;
+rt.scopenewname(_s, "_3026"); _s._3026 = _3026;
+rt.scopenewname(_s, "_3027"); _s._3027 = _3027
+;rt.scopenewname(_s, "_3028"); _s._3028 = _3028;
+do return rt.enviarMensaje(_s._3028, "compilarPuerto", _s._3026, rt.enviarMensaje(_s._2237, "TextoComoPuerto", _s._3027)); end;;
 end);;
 return rt.ns({
   ["EsSubclase"] = { value = _s._2194, autoexecutable = true },
@@ -12196,8 +12441,8 @@ return rt.ns({
   ["Puerto"] = { value = _s._2237, autoexecutable = false },
   ["Parser"] = { value = _s._2238, autoexecutable = false },
   ["RN"] = { value = _s._2644, autoexecutable = false },
-  ["Módulos"] = { value = _s._2960, autoexecutable = false },
-  ["CompiladorBase"] = { value = _s._2961, autoexecutable = false },
+  ["Módulos"] = { value = _s._3012, autoexecutable = false },
+  ["CompiladorBase"] = { value = _s._3013, autoexecutable = false },
 });
 end;
 rt.modulos["./backends/lua.pd"] = function()
@@ -12231,58 +12476,6 @@ rt.scopenewname(_s, "_25");
 rt.scopenewname(_s, "_26");
 rt.scopenewname(_s, "_27");
 rt.scopenewname(_s, "_28");
-rt.scopenewname(_s, "_2985");
-rt.scopenewname(_s, "_2986");
-rt.scopenewname(_s, "_2987");
-rt.scopenewname(_s, "_2988");
-rt.scopenewname(_s, "_2989");
-rt.scopenewname(_s, "_2990");
-rt.scopenewname(_s, "_2991");
-rt.scopenewname(_s, "_2992");
-rt.scopenewname(_s, "_2993");
-rt.scopenewname(_s, "_2994");
-rt.scopenewname(_s, "_2995");
-rt.scopenewname(_s, "_2996");
-rt.scopenewname(_s, "_2997");
-rt.scopenewname(_s, "_2998");
-rt.scopenewname(_s, "_2999");
-rt.scopenewname(_s, "_3000");
-rt.scopenewname(_s, "_3001");
-rt.scopenewname(_s, "_3002");
-rt.scopenewname(_s, "_3003");
-rt.scopenewname(_s, "_3004");
-rt.scopenewname(_s, "_3005");
-rt.scopenewname(_s, "_3006");
-rt.scopenewname(_s, "_3007");
-rt.scopenewname(_s, "_3008");
-rt.scopenewname(_s, "_3009");
-rt.scopenewname(_s, "_3010");
-rt.scopenewname(_s, "_3011");
-rt.scopenewname(_s, "_3012");
-rt.scopenewname(_s, "_3013");
-rt.scopenewname(_s, "_3014");
-rt.scopenewname(_s, "_3015");
-rt.scopenewname(_s, "_3016");
-rt.scopenewname(_s, "_3017");
-rt.scopenewname(_s, "_3018");
-rt.scopenewname(_s, "_3019");
-rt.scopenewname(_s, "_3020");
-rt.scopenewname(_s, "_3021");
-rt.scopenewname(_s, "_3022");
-rt.scopenewname(_s, "_3023");
-rt.scopenewname(_s, "_3024");
-rt.scopenewname(_s, "_3025");
-rt.scopenewname(_s, "_3026");
-rt.scopenewname(_s, "_3027");
-rt.scopenewname(_s, "_3028");
-rt.scopenewname(_s, "_3029");
-rt.scopenewname(_s, "_3030");
-rt.scopenewname(_s, "_3031");
-rt.scopenewname(_s, "_3032");
-rt.scopenewname(_s, "_3033");
-rt.scopenewname(_s, "_3034");
-rt.scopenewname(_s, "_3035");
-rt.scopenewname(_s, "_3036");
 rt.scopenewname(_s, "_3037");
 rt.scopenewname(_s, "_3038");
 rt.scopenewname(_s, "_3039");
@@ -12329,12 +12522,64 @@ rt.scopenewname(_s, "_3079");
 rt.scopenewname(_s, "_3080");
 rt.scopenewname(_s, "_3081");
 rt.scopenewname(_s, "_3082");
+rt.scopenewname(_s, "_3083");
 rt.scopenewname(_s, "_3084");
+rt.scopenewname(_s, "_3085");
 rt.scopenewname(_s, "_3086");
+rt.scopenewname(_s, "_3087");
+rt.scopenewname(_s, "_3088");
+rt.scopenewname(_s, "_3089");
+rt.scopenewname(_s, "_3090");
+rt.scopenewname(_s, "_3091");
+rt.scopenewname(_s, "_3092");
+rt.scopenewname(_s, "_3093");
+rt.scopenewname(_s, "_3094");
+rt.scopenewname(_s, "_3095");
+rt.scopenewname(_s, "_3096");
+rt.scopenewname(_s, "_3097");
+rt.scopenewname(_s, "_3098");
+rt.scopenewname(_s, "_3099");
+rt.scopenewname(_s, "_3100");
+rt.scopenewname(_s, "_3101");
+rt.scopenewname(_s, "_3102");
+rt.scopenewname(_s, "_3103");
+rt.scopenewname(_s, "_3104");
+rt.scopenewname(_s, "_3105");
+rt.scopenewname(_s, "_3106");
+rt.scopenewname(_s, "_3107");
+rt.scopenewname(_s, "_3108");
+rt.scopenewname(_s, "_3109");
+rt.scopenewname(_s, "_3110");
+rt.scopenewname(_s, "_3111");
+rt.scopenewname(_s, "_3112");
+rt.scopenewname(_s, "_3113");
+rt.scopenewname(_s, "_3114");
+rt.scopenewname(_s, "_3115");
+rt.scopenewname(_s, "_3116");
+rt.scopenewname(_s, "_3117");
+rt.scopenewname(_s, "_3118");
+rt.scopenewname(_s, "_3119");
+rt.scopenewname(_s, "_3120");
+rt.scopenewname(_s, "_3121");
+rt.scopenewname(_s, "_3122");
+rt.scopenewname(_s, "_3123");
+rt.scopenewname(_s, "_3124");
+rt.scopenewname(_s, "_3125");
+rt.scopenewname(_s, "_3126");
+rt.scopenewname(_s, "_3127");
+rt.scopenewname(_s, "_3128");
+rt.scopenewname(_s, "_3129");
+rt.scopenewname(_s, "_3130");
+rt.scopenewname(_s, "_3131");
+rt.scopenewname(_s, "_3132");
 rt.scopenewname(_s, "_3133");
 rt.scopenewname(_s, "_3134");
-rt.scopenewname(_s, "_3183");
-rt.scopenewname(_s, "_3188");
+rt.scopenewname(_s, "_3136");
+rt.scopenewname(_s, "_3138");
+rt.scopenewname(_s, "_3185");
+rt.scopenewname(_s, "_3186");
+rt.scopenewname(_s, "_3235");
+rt.scopenewname(_s, "_3240");
 _s._1 = rt.builtins["Objeto"];
 _s._2 = rt.builtins["VERDADERO"];
 _s._3 = rt.builtins["FALSO"];
@@ -12365,802 +12610,802 @@ _s._27 = rt.builtins["TipoNulo"];
 _s._28 = rt.builtins["__Lua"];
 rt.ans_ns = rt.import("./bepd/builtins.pd")
 ;do
-  _s._2985 = rt.ans_ns:at("EsSubclase");
-  _s._2986 = rt.ans_ns:at("EsInstancia");
-  _s._2987 = rt.ans_ns:at("Escribir");
-  _s._2988 = rt.ans_ns:at("Contiene");
-  _s._2989 = rt.ans_ns:at("ParaCadaElemento");
-  _s._2990 = rt.ans_ns:at("ParaCadaNúmero");
-  _s._2991 = rt.ans_ns:at("ParaCadaNúmeroConPaso");
-  _s._2992 = rt.ans_ns:at("ParaCadaElementoConÍndice");
-  _s._2993 = rt.ans_ns:at("Identidad");
-  _s._2994 = rt.ans_ns:at("Reducir");
-  _s._2995 = rt.ans_ns:at("Mapear");
-  _s._2996 = rt.ans_ns:at("Todos");
-  _s._2997 = rt.ans_ns:at("Algún");
-  _s._2998 = rt.ans_ns:at("DígitoAEntero");
-  _s._2999 = rt.ans_ns:at("Elevar");
-  _s._3000 = rt.ans_ns:at("ConvertirAEntero");
-  _s._3001 = rt.ans_ns:at("EsNúmeroEntero");
-  _s._3002 = rt.ans_ns:at("Concatenar");
-  _s._3003 = rt.ans_ns:at("ArregloConFinal");
-  _s._3004 = rt.ans_ns:at("Aplicar'");
-  _s._3005 = rt.ans_ns:at("Aplicar'i");
-  _s._3006 = rt.ans_ns:at("Resto");
-  _s._3007 = rt.ans_ns:at("Abs");
-  _s._3008 = rt.ans_ns:at("Mod");
-  _s._3009 = rt.ans_ns:at("EsPar");
-  _s._3010 = rt.ans_ns:at("EsImpar");
-  _s._3011 = rt.ans_ns:at("Aplanar");
-  _s._3012 = rt.ans_ns:at("AplanarTodo");
-  _s._3013 = rt.ans_ns:at("PedazoDeArreglo");
-  _s._3014 = rt.ans_ns:at("ÚltimoElemento");
-  _s._3015 = rt.ans_ns:at("EsNulo");
-  _s._3016 = rt.ans_ns:at("Max");
-  _s._3017 = rt.ans_ns:at("Min");
-  _s._3018 = rt.ans_ns:at("NoImplementado");
-  _s._3019 = rt.ans_ns:at("MétodoAbstracto");
-  _s._3020 = rt.ans_ns:at("Inalcanzable");
-  _s._3021 = rt.ans_ns:at("LlamarConEC");
-  _s._3022 = rt.ans_ns:at("EliminarElementoEnÍndice");
-  _s._3023 = rt.ans_ns:at("LeerLínea");
-  _s._3024 = rt.ans_ns:at("LeerNúmero");
-  _s._3025 = rt.ans_ns:at("Diccionario");
-  _s._3026 = rt.ans_ns:at("Resultado");
-  _s._3027 = rt.ans_ns:at("Pila");
+  _s._3037 = rt.ans_ns:at("EsSubclase");
+  _s._3038 = rt.ans_ns:at("EsInstancia");
+  _s._3039 = rt.ans_ns:at("Escribir");
+  _s._3040 = rt.ans_ns:at("Contiene");
+  _s._3041 = rt.ans_ns:at("ParaCadaElemento");
+  _s._3042 = rt.ans_ns:at("ParaCadaNúmero");
+  _s._3043 = rt.ans_ns:at("ParaCadaNúmeroConPaso");
+  _s._3044 = rt.ans_ns:at("ParaCadaElementoConÍndice");
+  _s._3045 = rt.ans_ns:at("Identidad");
+  _s._3046 = rt.ans_ns:at("Reducir");
+  _s._3047 = rt.ans_ns:at("Mapear");
+  _s._3048 = rt.ans_ns:at("Todos");
+  _s._3049 = rt.ans_ns:at("Algún");
+  _s._3050 = rt.ans_ns:at("DígitoAEntero");
+  _s._3051 = rt.ans_ns:at("Elevar");
+  _s._3052 = rt.ans_ns:at("ConvertirAEntero");
+  _s._3053 = rt.ans_ns:at("EsNúmeroEntero");
+  _s._3054 = rt.ans_ns:at("Concatenar");
+  _s._3055 = rt.ans_ns:at("ArregloConFinal");
+  _s._3056 = rt.ans_ns:at("Aplicar'");
+  _s._3057 = rt.ans_ns:at("Aplicar'i");
+  _s._3058 = rt.ans_ns:at("Resto");
+  _s._3059 = rt.ans_ns:at("Abs");
+  _s._3060 = rt.ans_ns:at("Mod");
+  _s._3061 = rt.ans_ns:at("EsPar");
+  _s._3062 = rt.ans_ns:at("EsImpar");
+  _s._3063 = rt.ans_ns:at("Aplanar");
+  _s._3064 = rt.ans_ns:at("AplanarTodo");
+  _s._3065 = rt.ans_ns:at("PedazoDeArreglo");
+  _s._3066 = rt.ans_ns:at("ÚltimoElemento");
+  _s._3067 = rt.ans_ns:at("EsNulo");
+  _s._3068 = rt.ans_ns:at("Max");
+  _s._3069 = rt.ans_ns:at("Min");
+  _s._3070 = rt.ans_ns:at("NoImplementado");
+  _s._3071 = rt.ans_ns:at("MétodoAbstracto");
+  _s._3072 = rt.ans_ns:at("Inalcanzable");
+  _s._3073 = rt.ans_ns:at("LlamarConEC");
+  _s._3074 = rt.ans_ns:at("EliminarElementoEnÍndice");
+  _s._3075 = rt.ans_ns:at("LeerLínea");
+  _s._3076 = rt.ans_ns:at("LeerNúmero");
+  _s._3077 = rt.ans_ns:at("Diccionario");
+  _s._3078 = rt.ans_ns:at("Resultado");
+  _s._3079 = rt.ans_ns:at("Pila");
 end;
 rt.ans_ns = rt.import("./bepd/utilidades/texto.pd")
 ;do
-  _s._3028 = rt.ans_ns:at("EsSubclase");
-  _s._3029 = rt.ans_ns:at("EsInstancia");
-  _s._3030 = rt.ans_ns:at("Escribir");
-  _s._3031 = rt.ans_ns:at("Contiene");
-  _s._3032 = rt.ans_ns:at("ParaCadaElemento");
-  _s._3033 = rt.ans_ns:at("ParaCadaNúmero");
-  _s._3034 = rt.ans_ns:at("ParaCadaNúmeroConPaso");
-  _s._3035 = rt.ans_ns:at("ParaCadaElementoConÍndice");
-  _s._3036 = rt.ans_ns:at("Identidad");
-  _s._3037 = rt.ans_ns:at("Reducir");
-  _s._3038 = rt.ans_ns:at("Mapear");
-  _s._3039 = rt.ans_ns:at("Todos");
-  _s._3040 = rt.ans_ns:at("Algún");
-  _s._3041 = rt.ans_ns:at("DígitoAEntero");
-  _s._3042 = rt.ans_ns:at("Elevar");
-  _s._3043 = rt.ans_ns:at("ConvertirAEntero");
-  _s._3044 = rt.ans_ns:at("EsNúmeroEntero");
-  _s._3045 = rt.ans_ns:at("Concatenar");
-  _s._3046 = rt.ans_ns:at("ArregloConFinal");
-  _s._3047 = rt.ans_ns:at("Aplicar'");
-  _s._3048 = rt.ans_ns:at("Aplicar'i");
-  _s._3049 = rt.ans_ns:at("Resto");
-  _s._3050 = rt.ans_ns:at("Abs");
-  _s._3051 = rt.ans_ns:at("Mod");
-  _s._3052 = rt.ans_ns:at("EsPar");
-  _s._3053 = rt.ans_ns:at("EsImpar");
-  _s._3054 = rt.ans_ns:at("Aplanar");
-  _s._3055 = rt.ans_ns:at("AplanarTodo");
-  _s._3056 = rt.ans_ns:at("PedazoDeArreglo");
-  _s._3057 = rt.ans_ns:at("ÚltimoElemento");
-  _s._3058 = rt.ans_ns:at("EsNulo");
-  _s._3059 = rt.ans_ns:at("Max");
-  _s._3060 = rt.ans_ns:at("Min");
-  _s._3061 = rt.ans_ns:at("NoImplementado");
-  _s._3062 = rt.ans_ns:at("MétodoAbstracto");
-  _s._3063 = rt.ans_ns:at("Inalcanzable");
-  _s._3064 = rt.ans_ns:at("LlamarConEC");
-  _s._3065 = rt.ans_ns:at("EliminarElementoEnÍndice");
-  _s._3066 = rt.ans_ns:at("LeerLínea");
-  _s._3067 = rt.ans_ns:at("LeerNúmero");
-  _s._3068 = rt.ans_ns:at("TextoContiene");
-  _s._3069 = rt.ans_ns:at("Partir'");
-  _s._3070 = rt.ans_ns:at("Partir");
-  _s._3071 = rt.ans_ns:at("PartirComoPerl");
-  _s._3072 = rt.ans_ns:at("PartirSinVacíos");
-  _s._3073 = rt.ans_ns:at("Unir");
-  _s._3074 = rt.ans_ns:at("RepetirTexto");
+  _s._3080 = rt.ans_ns:at("EsSubclase");
+  _s._3081 = rt.ans_ns:at("EsInstancia");
+  _s._3082 = rt.ans_ns:at("Escribir");
+  _s._3083 = rt.ans_ns:at("Contiene");
+  _s._3084 = rt.ans_ns:at("ParaCadaElemento");
+  _s._3085 = rt.ans_ns:at("ParaCadaNúmero");
+  _s._3086 = rt.ans_ns:at("ParaCadaNúmeroConPaso");
+  _s._3087 = rt.ans_ns:at("ParaCadaElementoConÍndice");
+  _s._3088 = rt.ans_ns:at("Identidad");
+  _s._3089 = rt.ans_ns:at("Reducir");
+  _s._3090 = rt.ans_ns:at("Mapear");
+  _s._3091 = rt.ans_ns:at("Todos");
+  _s._3092 = rt.ans_ns:at("Algún");
+  _s._3093 = rt.ans_ns:at("DígitoAEntero");
+  _s._3094 = rt.ans_ns:at("Elevar");
+  _s._3095 = rt.ans_ns:at("ConvertirAEntero");
+  _s._3096 = rt.ans_ns:at("EsNúmeroEntero");
+  _s._3097 = rt.ans_ns:at("Concatenar");
+  _s._3098 = rt.ans_ns:at("ArregloConFinal");
+  _s._3099 = rt.ans_ns:at("Aplicar'");
+  _s._3100 = rt.ans_ns:at("Aplicar'i");
+  _s._3101 = rt.ans_ns:at("Resto");
+  _s._3102 = rt.ans_ns:at("Abs");
+  _s._3103 = rt.ans_ns:at("Mod");
+  _s._3104 = rt.ans_ns:at("EsPar");
+  _s._3105 = rt.ans_ns:at("EsImpar");
+  _s._3106 = rt.ans_ns:at("Aplanar");
+  _s._3107 = rt.ans_ns:at("AplanarTodo");
+  _s._3108 = rt.ans_ns:at("PedazoDeArreglo");
+  _s._3109 = rt.ans_ns:at("ÚltimoElemento");
+  _s._3110 = rt.ans_ns:at("EsNulo");
+  _s._3111 = rt.ans_ns:at("Max");
+  _s._3112 = rt.ans_ns:at("Min");
+  _s._3113 = rt.ans_ns:at("NoImplementado");
+  _s._3114 = rt.ans_ns:at("MétodoAbstracto");
+  _s._3115 = rt.ans_ns:at("Inalcanzable");
+  _s._3116 = rt.ans_ns:at("LlamarConEC");
+  _s._3117 = rt.ans_ns:at("EliminarElementoEnÍndice");
+  _s._3118 = rt.ans_ns:at("LeerLínea");
+  _s._3119 = rt.ans_ns:at("LeerNúmero");
+  _s._3120 = rt.ans_ns:at("TextoContiene");
+  _s._3121 = rt.ans_ns:at("Partir'");
+  _s._3122 = rt.ans_ns:at("Partir");
+  _s._3123 = rt.ans_ns:at("PartirComoPerl");
+  _s._3124 = rt.ans_ns:at("PartirSinVacíos");
+  _s._3125 = rt.ans_ns:at("Unir");
+  _s._3126 = rt.ans_ns:at("RepetirTexto");
 end;
 rt.ans_ns = rt.import("./bepd/x/sistemaDeArchivos/archivo.pd")
 ;do
 end
-;_s._3075 = rt.ans_ns;;
+;_s._3127 = rt.ans_ns;;
 rt.ans_ns = rt.import("./ast.pd")
 ;do
 end
-;_s._3076 = rt.ans_ns;;
+;_s._3128 = rt.ans_ns;;
 rt.ans_ns = rt.import("./caminaNodos.pd")
 ;do
 end
-;_s._3077 = rt.ans_ns;;
+;_s._3129 = rt.ans_ns;;
 rt.ans_ns = rt.import("./resoluciónDeNombres.pd")
 ;do
 end
-;_s._3078 = rt.ans_ns;;
+;_s._3130 = rt.ans_ns;;
 rt.ans_ns = rt.import("./módulos.pd")
 ;do
 end
-;_s._3079 = rt.ans_ns;;
+;_s._3131 = rt.ans_ns;;
 rt.ans_ns = rt.import("./compilador.pd")
 ;do
 end
-;_s._3080 = rt.ans_ns;;
+;_s._3132 = rt.ans_ns;;
 ;
-_s._3081 = ("Lua Bootstrap");;
-_s._3082 = (function(_3083)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3202");
-rt.scopenewname(_s, "_3083"); _s._3083 = _3083;
-;
-_s._3202 = ("\"");;
-rt._ = (rt.enviarMensaje(_s._3032, "llamar", _s._3083, function(_3203)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3203"); _s._3203 = _3203;
-if rt.enviarMensaje(_s._3203, "operador_=", "\"") then
-local _s = rt.scope(_s)
-_s._3202 = (rt.enviarMensaje(_s._3202, "concatenar", "\\\""));;
-else
-local _s = rt.scope(_s)
-if rt.enviarMensaje(_s._3203, "operador_=", rt.enviarMensajeV("~%", "formatear")) then
-local _s = rt.scope(_s)
-_s._3202 = (rt.enviarMensaje(_s._3202, "concatenar", "\\n"));;
-else
-local _s = rt.scope(_s)
-if rt.enviarMensaje(_s._3203, "operador_=", "\\") then
-local _s = rt.scope(_s)
-_s._3202 = (rt.enviarMensaje(_s._3202, "concatenar", "\\\\"));;
-else
-local _s = rt.scope(_s)
-_s._3202 = (rt.enviarMensaje(_s._3202, "concatenar", _s._3203));;
-end;
-end;
-end;
-end));
-do return rt.enviarMensaje(_s._3202, "concatenar", "\""); end;;
-end);;
-_s._3084 = (function(_3085)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3085"); _s._3085 = _3085;
-do return rt.enviarMensaje("_s._", "concatenar", rt.enviarMensajeV(rt.enviarMensaje(_s._3078, "NombreResueltoDe", _s._3085), "comoTexto")); end;;
-end);;
-_s._3086 = (rt.enviarMensajeV((rt.enviarMensajeV(_s._3077, "CaminaNodos")), "subclase"));
-rt.enviarMensaje(_s._3086, "fijar_nombre", "CompiladorSimpleALua");;
-rt.enviarMensaje(_s._3086, "agregarAtributo", "_ámbito");
-rt.enviarMensaje(_s._3086, "agregarAtributo", "_moddb");
-rt.enviarMensaje(_s._3086, "agregarAtributo", "_compilador");;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "crearSubámbitoDesdeNodo", function(_3088, _3087)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3087"); _s._3087 = _3087
-;rt.scopenewname(_s, "_3088"); _s._3088 = _3088;
-do return rt.enviarMensaje(_s._3088, "crearSubámbitoDesdeNombreEnNodo", _s._3087, "nombresDefinídos"); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "crearSubámbitoDesdeNombreEnNodo", function(_3091, _3089, _3090)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3089"); _s._3089 = _3089;
-rt.scopenewname(_s, "_3090"); _s._3090 = _3090
-;rt.scopenewname(_s, "_3091"); _s._3091 = _3091;
-do return rt.enviarMensaje(_s._3086, "crear", rt.enviarMensajeV(_s._3091, "_moddb"), rt.enviarMensaje(_s._3089, "obtenerMetadato", rt.enviarMensajeV(_s._3078, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), _s._3090), rt.enviarMensajeV(_s._3091, "_compilador")); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "inicializar", function(_3095, _3092, _3093, _3094)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3092"); _s._3092 = _3092;
-rt.scopenewname(_s, "_3093"); _s._3093 = _3093;
-rt.scopenewname(_s, "_3094"); _s._3094 = _3094
-;rt.scopenewname(_s, "_3095"); _s._3095 = _3095;
-rt.enviarMensaje(_s._3095, "fijar__ámbito", _s._3093);
-rt.enviarMensaje(_s._3095, "fijar__moddb", _s._3092);
-rt.enviarMensaje(_s._3095, "fijar__compilador", _s._3094);
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "iniciar", function(_3096)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3204");
-rt.scopenewname(_s, "_3205");
-
-;rt.scopenewname(_s, "_3096"); _s._3096 = _3096;
-;
-_s._3204 = (rt.enviarMensajeV(_s._22, "vacio"));;
-if not rt.enviarMensaje(_s._3058, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3096, "_ámbito"), "ámbitoPadre")) then
-local _s = rt.scope(_s)
-_s._3205 = ("_s");;
-else
-local _s = rt.scope(_s)
-_s._3205 = ("");;
-end;
-rt._ = (rt.enviarMensaje(_s._3204, "agregarAlFinal", rt.enviarMensaje("local _s = rt.scope(~t)", "formatear", _s._3205)));
-rt._ = (rt.enviarMensaje(_s._3032, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3096, "_ámbito"), "todosLosBindingsLocales"), function(_3206)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3206"); _s._3206 = _3206;
-rt._ = (rt.enviarMensaje(_s._3204, "agregarAlFinal", rt.enviarMensaje("rt.scopenewname(_s, \"_~t\");", "formatear", _s._3206)));
-end));
-do return rt.enviarMensaje(_s._3073, "llamar", _s._3204, rt.enviarMensajeV("~%", "formatear")); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "registrarBuiltins", function(_3097)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3207");
-
-;rt.scopenewname(_s, "_3097"); _s._3097 = _3097;
-;
-_s._3207 = (rt.enviarMensajeV(_s._22, "vacio"));;
-rt._ = (rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3097, "_compilador"), "_builtins"), "paraCadaPar", function(_3208, _3209)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3208"); _s._3208 = _3208;
-rt.scopenewname(_s, "_3209"); _s._3209 = _3209;
-rt._ = (rt.enviarMensaje(_s._3207, "agregarAlFinal", rt.enviarMensaje("_s._~t = rt.builtins[~t];", "formatear", _s._3209, rt.enviarMensaje(_s._3082, "llamar", _s._3208))));
-end));
-do return rt.enviarMensaje(_s._3073, "llamar", _s._3207, rt.enviarMensajeV("~%", "formatear")); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "esBuiltin", function(_3100, _3098, _3099)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3098"); _s._3098 = _3098;
-rt.scopenewname(_s, "_3099"); _s._3099 = _3099
-;rt.scopenewname(_s, "_3100"); _s._3100 = _3100;
-do return rt.enviarMensaje(rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3100, "_compilador"), "_builtins"), "en", _s._3098), "operador_=", _s._3099); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarPrograma", function(_3102, _3101)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3210");
-rt.scopenewname(_s, "_3211");
-rt.scopenewname(_s, "_3101"); _s._3101 = _3101
-;rt.scopenewname(_s, "_3102"); _s._3102 = _3102;
-;
-_s._3210 = (rt.enviarMensaje(_s._22, "crearCon", rt.enviarMensaje(_s._3102, "compilarInstrucciones", rt.enviarMensajeV(_s._3101, "instrucciones"))));;
-_s._3211 = (rt.enviarMensaje(_s._3078, "ObtenerNombresDefinídos", _s._3101));;
-rt._ = (rt.enviarMensaje(_s._3210, "agregarAlFinal", rt.enviarMensajeV("return rt.ns({", "formatear")));
-rt._ = (rt.enviarMensaje(_s._3211, "paraCadaVariable", function(_3212, _3213)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3212"); _s._3212 = _3212;
-rt.scopenewname(_s, "_3213"); _s._3213 = _3213;
-rt._ = (rt.enviarMensaje(_s._3210, "agregarAlFinal", rt.enviarMensaje("  [~t] = { value = _s._~t, autoexecutable = ~t ~e,", "formatear", rt.enviarMensaje(_s._3082, "llamar", _s._3212), rt.enviarMensajeV(_s._3213, "binding"), rt.enviarMensaje(rt.enviarMensajeV(_s._3213, "esAutoejecutable"), "escojer", "true", "false"))));
-end));
-rt._ = (rt.enviarMensaje(_s._3210, "agregarAlFinal", rt.enviarMensajeV("~e);", "formatear")));
-do return rt.enviarMensaje(_s._3073, "llamar", _s._3210, rt.enviarMensajeV("~%", "formatear")); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarVariable", function(_3104, _3103)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3103"); _s._3103 = _3103
-;rt.scopenewname(_s, "_3104"); _s._3104 = _3104;
-do return ""; end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarFijar", function(_3106, _3105)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3105"); _s._3105 = _3105
-;rt.scopenewname(_s, "_3106"); _s._3106 = _3106;
-if rt.enviarMensaje(_s._3029, "llamar", rt.enviarMensajeV(_s._3105, "objetivo"), rt.enviarMensajeV(_s._3076, "NodoIdentificador")) then
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3214");
-rt.scopenewname(_s, "_3215");
-;
-_s._3214 = (rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3105, "objetivo")));;
-_s._3215 = (rt.enviarMensaje(_s._3106, "visitar", rt.enviarMensajeV(_s._3105, "valor")));;
-do return rt.enviarMensaje("~t = (~t);", "formatear", _s._3214, _s._3215); end;;
-else
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3216");
-rt.scopenewname(_s, "_3217");
-assert(rt.enviarMensaje(_s._3029, "llamar", rt.enviarMensajeV(_s._3105, "objetivo"), rt.enviarMensajeV(_s._3076, "NodoEnviarMensaje")));;
-assert(rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(rt.enviarMensajeV(_s._3105, "objetivo"), "argumentos"), "longitud"), "operador_=", 0));;
-;
-_s._3216 = (rt.enviarMensaje(_s._3106, "visitar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3105, "objetivo"), "objeto")));;
-_s._3217 = (rt.enviarMensaje("fijar_", "concatenar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3105, "objetivo"), "mensaje")));;
-do return rt.enviarMensaje(_s._3106, "enviarMensaje", _s._3216, _s._3217, rt.enviarMensaje(_s._22, "crearCon", rt.enviarMensajeV(_s._3105, "valor"))); end;;
-end;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarEscribir", function(_3108, _3107)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3107"); _s._3107 = _3107
-;rt.scopenewname(_s, "_3108"); _s._3108 = _3108;
-do return rt.enviarMensaje("rt.escribir(~t);", "formatear", rt.enviarMensaje(_s._3108, "visitar", rt.enviarMensajeV(_s._3107, "valor"))); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarNl", function(_3110, _3109)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3109"); _s._3109 = _3109
-;rt.scopenewname(_s, "_3110"); _s._3110 = _3110;
-do return "rt.nl();"; end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarClase", function(_3112, _3111)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3218");
-rt.scopenewname(_s, "_3219");
-rt.scopenewname(_s, "_3220");
-rt.scopenewname(_s, "_3111"); _s._3111 = _3111
-;rt.scopenewname(_s, "_3112"); _s._3112 = _3112;
-;
-_s._3219 = (rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3111, "nombre")));;
-_s._3218 = (rt.enviarMensajeV(_s._22, "vacio"));;
-if not rt.enviarMensaje(_s._3058, "llamar", rt.enviarMensajeV(_s._3111, "claseBase")) then
-local _s = rt.scope(_s)
-_s._3220 = (rt.enviarMensaje(_s._3112, "visitar", rt.enviarMensajeV(_s._3111, "claseBase")));;
-else
-local _s = rt.scope(_s)
-_s._3220 = ("rt.clases.Objeto");;
-end;
-rt._ = (rt.enviarMensaje(_s._3218, "agregarAlFinal", rt.enviarMensaje("~t = (~t);", "formatear", _s._3219, rt.enviarMensaje(_s._3112, "enviarMensaje", rt.enviarMensaje("(~t)", "formatear", _s._3220), "subclase", rt.enviarMensajeV(_s._22, "vacio")))));
-rt._ = (rt.enviarMensaje(_s._3218, "agregarAlFinal", rt.enviarMensaje("rt.enviarMensaje(~t, \"fijar_nombre\", ~t);", "formatear", _s._3219, rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3111, "nombre"), "nombre")))));
-rt._ = (rt.enviarMensaje(_s._3032, "llamar", rt.enviarMensajeV(_s._3111, "declaraciones"), function(_3221)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3221"); _s._3221 = _3221;
-if rt.enviarMensaje(_s._3029, "llamar", _s._3221, rt.enviarMensajeV(_s._3076, "NodoDeclaraciónDeAtributosEnClase")) then
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3218, "agregarAlFinal", rt.enviarMensaje(rt.enviarMensaje(_s._3112, "visitar", rt.clonar(rt.enviarMensajeV(rt.enviarMensajeV(_s._3076, "NodoAtributos"), "crear"), {["areaTextual"] = rt.enviarMensajeV(_s._3221, "areaTextual"), ["deClase"] = rt.enviarMensajeV(_s._3111, "nombre"), ["nombres"] = rt.enviarMensajeV(_s._3221, "nombres")})), "concatenar", ";")));
-else
-local _s = rt.scope(_s)
-;
-end;
-end));
-do return rt.enviarMensaje(_s._3073, "llamar", _s._3218, rt.enviarMensajeV("~%", "formatear")); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarDeclaraciónDeAtributosEnClase", function(_3114, _3113)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3113"); _s._3113 = _3113
-;rt.scopenewname(_s, "_3114"); _s._3114 = _3114;
-rt._ = (rt.enviarMensajeV(_s._3063, "llamar"));
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarDeclaraciónDeMétodoEnClase", function(_3116, _3115)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3115"); _s._3115 = _3115
-;rt.scopenewname(_s, "_3116"); _s._3116 = _3116;
-rt._ = (rt.enviarMensajeV(_s._3063, "llamar"));
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarImplementa", function(_3118, _3117)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3117"); _s._3117 = _3117
-;rt.scopenewname(_s, "_3118"); _s._3118 = _3118;
-rt._ = (rt.enviarMensajeV(_s._3061, "llamar"));
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarDefineAtributosEnClase", function(_3120, _3119)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3119"); _s._3119 = _3119
-;rt.scopenewname(_s, "_3120"); _s._3120 = _3120;
-rt._ = (rt.enviarMensajeV(_s._3061, "llamar"));
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarDefineMétodoEnClase", function(_3122, _3121)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3121"); _s._3121 = _3121
-;rt.scopenewname(_s, "_3122"); _s._3122 = _3122;
-rt._ = (rt.enviarMensajeV(_s._3061, "llamar"));
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "expresiónDeFunción", function(_3126, _3123, _3124, _3125)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3222");
-rt.scopenewname(_s, "_3223");
-rt.scopenewname(_s, "_3224");
-rt.scopenewname(_s, "_3225");
-rt.scopenewname(_s, "_3226");
-rt.scopenewname(_s, "_3227");
-rt.scopenewname(_s, "_3229");
-rt.scopenewname(_s, "_3123"); _s._3123 = _3123;
-rt.scopenewname(_s, "_3124"); _s._3124 = _3124;
-rt.scopenewname(_s, "_3125"); _s._3125 = _3125
-;rt.scopenewname(_s, "_3126"); _s._3126 = _3126;
-;
-_s._3222 = (rt.enviarMensajeV(_s._22, "vacio"));;
-_s._3224 = (_s._4);;
-_s._3227 = (function(_3228)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3228"); _s._3228 = _3228;
-if rt.enviarMensaje(_s._3029, "llamar", _s._3228, rt.enviarMensajeV(_s._3076, "NodoIdentificador")) then
-local _s = rt.scope(_s)
-do return rt.enviarMensaje("_~t", "formatear", rt.enviarMensaje(_s._3078, "NombreResueltoDe", _s._3228)); end;;
-else
-local _s = rt.scope(_s)
-_s._3224 = (_s._3228);;
-do return "..."; end;;
-end;
-end);;
-_s._3223 = (rt.enviarMensaje(_s._3073, "llamar", rt.enviarMensaje(_s._3038, "llamar", _s._3124, _s._3227), ", "));;
-if not rt.enviarMensaje(_s._3058, "llamar", _s._3123) then
-local _s = rt.scope(_s)
-_s._3225 = (rt.enviarMensaje("_~t", "formatear", _s._3123));;
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3124, "longitud"), "operador_>", 0) then
-local _s = rt.scope(_s)
-_s._3223 = (rt.enviarMensaje(", ", "concatenar", _s._3223));;
-else
-local _s = rt.scope(_s)
-;
-end;
-else
-local _s = rt.scope(_s)
-_s._3225 = ("");;
-end;
-_s._3229 = (function(_3230)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3230"); _s._3230 = _3230;
-if rt.enviarMensaje(_s._3029, "llamar", _s._3230, rt.enviarMensajeV(_s._3076, "NodoIdentificador")) then
-local _s = rt.scope(_s)
-do return rt.enviarMensaje("rt.scopenewname(_s, \"_~t\"); ~t = _~t", "formatear", rt.enviarMensaje(_s._3078, "NombreResueltoDe", _s._3230), rt.enviarMensaje(_s._3084, "llamar", _s._3230), rt.enviarMensaje(_s._3078, "NombreResueltoDe", _s._3230)); end;;
-else
-local _s = rt.scope(_s)
-do return rt.enviarMensaje("rt.scopenewname(_s, \"_~t\")", "formatear", rt.enviarMensaje(_s._3078, "NombreResueltoDe", rt.enviarMensajeV(_s._3230, "interno"))); end;;
-end;
-end);;
-_s._3226 = (rt.enviarMensaje(_s._3073, "llamar", rt.enviarMensaje(_s._3038, "llamar", _s._3124, _s._3229), rt.enviarMensajeV(";~%", "formatear")));;
-if not rt.enviarMensaje(_s._3058, "llamar", _s._3123) then
-local _s = rt.scope(_s)
-_s._3226 = (rt.enviarMensaje(_s._3226, "concatenar", rt.enviarMensaje("~%;rt.scopenewname(_s, \"_~t\"); _s._~t = _~t", "formatear", _s._3123, _s._3123, _s._3123)));;
-else
-local _s = rt.scope(_s)
-;
-end;
-rt._ = (rt.enviarMensaje(_s._3222, "agregarAlFinal", rt.enviarMensaje("function(~t~t)", "formatear", _s._3225, _s._3223)));
-rt._ = (rt.enviarMensaje(_s._3222, "agregarAlFinal", rt.enviarMensajeV(_s._3126, "iniciar")));
-rt._ = (rt.enviarMensaje(_s._3222, "agregarAlFinal", rt.enviarMensaje(_s._3226, "concatenar", ";")));
-if not rt.enviarMensaje(_s._3058, "llamar", _s._3224) then
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3222, "agregarAlFinal", rt.enviarMensaje("~t = rt.arreglo(...)", "formatear", rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3224, "interno")))));
-else
-local _s = rt.scope(_s)
-;
-end;
-rt._ = (rt.enviarMensaje(_s._3222, "agregarAlFinal", rt.enviarMensaje(_s._3126, "compilarInstrucciones", _s._3125)));
-rt._ = (rt.enviarMensaje(_s._3222, "agregarAlFinal", "end"));
-do return rt.enviarMensaje(_s._3073, "llamar", _s._3222, rt.enviarMensajeV("~%", "formatear")); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarFunción", function(_3128, _3127)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3231");
-rt.scopenewname(_s, "_3232");
-rt.scopenewname(_s, "_3233");
-rt.scopenewname(_s, "_3127"); _s._3127 = _3127
-;rt.scopenewname(_s, "_3128"); _s._3128 = _3128;
-;
-_s._3233 = (rt.enviarMensaje(_s._3128, "crearSubámbitoDesdeNombreEnNodo", _s._3127, "nombresDefinídosSinParámetros"));;
-_s._3232 = (rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3127, "nombre")));;
-_s._3231 = (rt.enviarMensajeV(_s._22, "vacio"));;
-rt._ = (rt.enviarMensaje(_s._3231, "agregarAlFinal", rt.enviarMensaje("~t = (~t);", "formatear", _s._3232, rt.enviarMensaje(_s._3233, "expresiónDeFunción", _s._4, rt.enviarMensajeV(_s._3127, "parámetros"), rt.enviarMensajeV(_s._3127, "cuerpo")))));
-do return rt.enviarMensaje(_s._3073, "llamar", _s._3231, rt.enviarMensajeV("~%", "formatear")); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarNecesitas", function(_3130, _3129)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3129"); _s._3129 = _3129
-;rt.scopenewname(_s, "_3130"); _s._3130 = _3130;
-do return rt.enviarMensaje("assert(~t);", "formatear", rt.enviarMensaje(_s._3130, "visitar", rt.enviarMensajeV(_s._3129, "expresión"))); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarDevolver", function(_3132, _3131)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3131"); _s._3131 = _3131
-;rt.scopenewname(_s, "_3132"); _s._3132 = _3132;
-do return rt.enviarMensaje("do return ~t; end;", "formatear", rt.enviarMensaje(_s._3132, "visitar", rt.enviarMensajeV(_s._3131, "expresión"))); end;;
-end);;
-_s._3133 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
-rt.enviarMensaje(_s._3133, "fijar_nombre", "ComparaciónDeBuiltin");
-rt.enviarMensaje(_s._3133, "agregarAtributo", "tipoIgualdad");
-rt.enviarMensaje(_s._3133, "agregarAtributo", "rhs");;;
-_s._3134 = (function(_3135, _3136)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3234");
-rt.scopenewname(_s, "_3235");
-rt.scopenewname(_s, "_3236");
-rt.scopenewname(_s, "_3237");
-rt.scopenewname(_s, "_3135"); _s._3135 = _3135;
-rt.scopenewname(_s, "_3136"); _s._3136 = _3136;
-;
-if rt.enviarMensaje(_s._3029, "llamar", _s._3135, rt.enviarMensajeV(_s._3076, "NodoOperador")) then
-local _s = rt.scope(_s)
-_s._3234 = (rt.enviarMensajeV(_s._3135, "lhs"));;
-_s._3235 = (rt.enviarMensajeV(_s._3135, "rhs"));;
-if rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3135, "op"), "texto"), "operador_=", "=") then
-local _s = rt.scope(_s)
-_s._3236 = (rt.enviarMensajeV(rt.enviarMensajeV(_s._3076, "TipoIgualdad"), "IGUALES"));;
-else
-local _s = rt.scope(_s)
-do return _s._3; end;;
-end;
-else
-local _s = rt.scope(_s)
-if rt.enviarMensaje(_s._3029, "llamar", _s._3135, rt.enviarMensajeV(_s._3076, "NodoSonIguales")) then
-local _s = rt.scope(_s)
-_s._3234 = (rt.enviarMensajeV(_s._3135, "lhs"));;
-_s._3235 = (rt.enviarMensajeV(_s._3135, "rhs"));;
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3135, "tipoIgualdad"), "operador_=", rt.enviarMensajeV(rt.enviarMensajeV(_s._3076, "TipoIgualdad"), "IGUALES")) then
-local _s = rt.scope(_s)
-_s._3236 = (rt.enviarMensajeV(rt.enviarMensajeV(_s._3076, "TipoIgualdad"), "IGUALES"));;
-else
-local _s = rt.scope(_s)
-_s._3236 = (rt.enviarMensajeV(rt.enviarMensajeV(_s._3076, "TipoIgualdad"), "DIFERENTES"));;
-end;
-else
-local _s = rt.scope(_s)
-do return _s._3; end;;
-end;
-end;
-if not rt.enviarMensaje(_s._3029, "llamar", _s._3234, rt.enviarMensajeV(_s._3076, "NodoIdentificador")) then
-local _s = rt.scope(_s)
-do return _s._3; end;;
-else
-local _s = rt.scope(_s)
-;
-end;
-if not rt.enviarMensaje(rt.enviarMensaje(_s._3078, "NombreResueltoDe", _s._3234), "operador_=", _s._3136) then
-local _s = rt.scope(_s)
-do return _s._3; end;;
-else
-local _s = rt.scope(_s)
-;
-end;
-;
-if rt.enviarMensaje(_s._3029, "llamar", _s._3235, rt.enviarMensajeV(_s._3076, "NodoTextoLiteral")) then
-local _s = rt.scope(_s)
-_s._3237 = (rt.enviarMensajeV(_s._3235, "valor"));;
-else
-local _s = rt.scope(_s)
-if rt.enviarMensaje(_s._3029, "llamar", _s._3235, rt.enviarMensajeV(_s._3076, "NodoNumeroLiteral")) then
-local _s = rt.scope(_s)
-_s._3237 = (rt.enviarMensajeV(_s._3235, "valor"));;
-else
-local _s = rt.scope(_s)
-do return _s._3; end;;
-end;
-end;
-do return rt.clonar(rt.enviarMensajeV(_s._3133, "crear"), {["tipoIgualdad"] = _s._3236, ["rhs"] = _s._3237}); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarSi", function(_3138, _3137)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3238");
-rt.scopenewname(_s, "_3239");
-rt.scopenewname(_s, "_3240");
-rt.scopenewname(_s, "_3241");
-rt.scopenewname(_s, "_3244");
-rt.scopenewname(_s, "_3137"); _s._3137 = _3137
-;rt.scopenewname(_s, "_3138"); _s._3138 = _3138;
-;
-_s._3238 = (rt.enviarMensajeV(_s._22, "vacio"));;
-_s._3239 = (rt.enviarMensaje(_s._3138, "crearSubámbitoDesdeNombreEnNodo", _s._3137, "nombresDefinídosSiVerdadero"));;
-_s._3240 = (rt.enviarMensaje(_s._3138, "crearSubámbitoDesdeNombreEnNodo", _s._3137, "nombresDefinídosSiFalso"));;
-_s._3241 = (function(_3242, _3243)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3242"); _s._3242 = _3242;
-rt.scopenewname(_s, "_3243"); _s._3243 = _3243;
-rt._ = (rt.enviarMensaje(_s._3238, "agregarAlFinal", rt.enviarMensajeV(_s._3243, "iniciar")));
-rt._ = (rt.enviarMensaje(_s._3238, "agregarAlFinal", rt.enviarMensaje(_s._3138, "compilarInstrucciones", _s._3242)));
-end);;
-;
-_s._3244 = (rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(_s._3137, "condicional"), rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3138, "_compilador"), "_builtins"), "en", "__Impl")));;
-if rt.enviarMensaje(_s._3029, "llamar", _s._3244, _s._3133) then
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3238, "agregarAlFinal", ";do;"));
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3244, "tipoIgualdad"), "operador_=", rt.enviarMensajeV(rt.enviarMensajeV(_s._3076, "TipoIgualdad"), "IGUALES")) then
-local _s = rt.scope(_s)
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3244, "rhs"), "operador_=", _s._3081) then
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3241, "llamar", rt.enviarMensajeV(_s._3137, "siVerdadero"), _s._3239));
-else
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3241, "llamar", rt.enviarMensajeV(_s._3137, "siFalso"), _s._3240));
-end;
-else
-local _s = rt.scope(_s)
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3244, "rhs"), "operador_=", _s._3081) then
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3241, "llamar", rt.enviarMensajeV(_s._3137, "siFalso"), _s._3240));
-else
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3241, "llamar", rt.enviarMensajeV(_s._3137, "siVerdadero"), _s._3239));
-end;
-end;
-rt._ = (rt.enviarMensaje(_s._3238, "agregarAlFinal", ";end;"));
-else
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3238, "agregarAlFinal", rt.enviarMensaje("if ~t then", "formatear", rt.enviarMensaje(_s._3138, "visitar", rt.enviarMensajeV(_s._3137, "condicional")))));
-rt._ = (rt.enviarMensaje(_s._3241, "llamar", rt.enviarMensajeV(_s._3137, "siVerdadero"), _s._3239));
-rt._ = (rt.enviarMensaje(_s._3238, "agregarAlFinal", "else"));
-rt._ = (rt.enviarMensaje(_s._3241, "llamar", rt.enviarMensajeV(_s._3137, "siFalso"), _s._3240));
-rt._ = (rt.enviarMensaje(_s._3238, "agregarAlFinal", "end"));
-end;
-do return rt.enviarMensaje(_s._3073, "llamar", _s._3238, rt.enviarMensajeV("~%", "formatear")); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarMientras", function(_3140, _3139)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3245");
-rt.scopenewname(_s, "_3246");
-rt.scopenewname(_s, "_3139"); _s._3139 = _3139
-;rt.scopenewname(_s, "_3140"); _s._3140 = _3140;
-;
-_s._3246 = (rt.enviarMensaje(_s._3140, "crearSubámbitoDesdeNodo", _s._3139));;
-_s._3245 = (rt.enviarMensajeV(_s._22, "vacio"));;
-rt._ = (rt.enviarMensaje(_s._3245, "agregarAlFinal", rt.enviarMensaje("while ~t do", "formatear", rt.enviarMensaje(_s._3140, "visitar", rt.enviarMensajeV(_s._3139, "condicional")))));
-rt._ = (rt.enviarMensaje(_s._3245, "agregarAlFinal", rt.enviarMensajeV(_s._3246, "iniciar")));
-rt._ = (rt.enviarMensaje(_s._3245, "agregarAlFinal", rt.enviarMensaje(_s._3140, "compilarInstrucciones", rt.enviarMensajeV(_s._3139, "cuerpo"))));
-rt._ = (rt.enviarMensaje(_s._3245, "agregarAlFinal", "end"));
-do return rt.enviarMensaje(_s._3073, "llamar", _s._3245, rt.enviarMensajeV("~%", "formatear")); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarMétodo", function(_3142, _3141)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3247");
-rt.scopenewname(_s, "_3248");
-rt.scopenewname(_s, "_3249");
-rt.scopenewname(_s, "_3250");
-rt.scopenewname(_s, "_3141"); _s._3141 = _3141
-;rt.scopenewname(_s, "_3142"); _s._3142 = _3142;
-;
-_s._3249 = (rt.enviarMensaje(_s._3142, "crearSubámbitoDesdeNombreEnNodo", _s._3141, "nombresDefinídosSinParámetros"));;
-_s._3247 = (rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3141, "deClase")));;
-_s._3248 = (rt.enviarMensaje(_s._3141, "obtenerMetadato", rt.enviarMensajeV(_s._3078, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), "nombreResueltoDeYo"));;
-_s._3250 = (rt.enviarMensaje(_s._3249, "expresiónDeFunción", _s._3248, rt.enviarMensajeV(_s._3141, "parámetros"), rt.enviarMensajeV(_s._3141, "cuerpo")));;
-if rt.enviarMensajeV(_s._3141, "esEstático") then
-local _s = rt.scope(_s)
-do return rt.enviarMensaje("(~t).methods[~t] = ~t", "formatear", _s._3247, rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3141, "nombre"), "nombre")), _s._3250); end;;
-else
-local _s = rt.scope(_s)
-do return rt.enviarMensaje("rt.enviarMensaje(~t, \"agregarMetodo\", ~t, ~t);", "formatear", _s._3247, rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3141, "nombre"), "nombre")), _s._3250); end;;
-end;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarAtributos", function(_3144, _3143)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3251");
-rt.scopenewname(_s, "_3252");
-rt.scopenewname(_s, "_3143"); _s._3143 = _3143
-;rt.scopenewname(_s, "_3144"); _s._3144 = _3144;
-;
-_s._3251 = (rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3143, "deClase")));;
-_s._3252 = (rt.enviarMensajeV(_s._22, "vacio"));;
-rt._ = (rt.enviarMensaje(_s._3032, "llamar", rt.enviarMensajeV(_s._3143, "nombres"), function(_3253)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3253"); _s._3253 = _3253;
-rt._ = (rt.enviarMensaje(_s._3252, "agregarAlFinal", rt.enviarMensaje("rt.enviarMensaje(~t, \"agregarAtributo\", ~t);", "formatear", _s._3251, rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensajeV(_s._3253, "nombre")))));
-end));
-do return rt.enviarMensaje(_s._3073, "llamar", _s._3252, rt.enviarMensajeV("~%", "formatear")); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarUtilizar", function(_3146, _3145)
+_s._3133 = ("Lua Bootstrap");;
+_s._3134 = (function(_3135)
 local _s = rt.scope(_s)
 rt.scopenewname(_s, "_3254");
-rt.scopenewname(_s, "_3255");
+rt.scopenewname(_s, "_3135"); _s._3135 = _3135;
+;
+_s._3254 = ("\"");;
+rt._ = (rt.enviarMensaje(_s._3084, "llamar", _s._3135, function(_3255)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3255"); _s._3255 = _3255;
+if rt.enviarMensaje(_s._3255, "operador_=", "\"") then
+local _s = rt.scope(_s)
+_s._3254 = (rt.enviarMensaje(_s._3254, "concatenar", "\\\""));;
+else
+local _s = rt.scope(_s)
+if rt.enviarMensaje(_s._3255, "operador_=", rt.enviarMensajeV("~%", "formatear")) then
+local _s = rt.scope(_s)
+_s._3254 = (rt.enviarMensaje(_s._3254, "concatenar", "\\n"));;
+else
+local _s = rt.scope(_s)
+if rt.enviarMensaje(_s._3255, "operador_=", "\\") then
+local _s = rt.scope(_s)
+_s._3254 = (rt.enviarMensaje(_s._3254, "concatenar", "\\\\"));;
+else
+local _s = rt.scope(_s)
+_s._3254 = (rt.enviarMensaje(_s._3254, "concatenar", _s._3255));;
+end;
+end;
+end;
+end));
+do return rt.enviarMensaje(_s._3254, "concatenar", "\""); end;;
+end);;
+_s._3136 = (function(_3137)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3137"); _s._3137 = _3137;
+do return rt.enviarMensaje("_s._", "concatenar", rt.enviarMensajeV(rt.enviarMensaje(_s._3130, "NombreResueltoDe", _s._3137), "comoTexto")); end;;
+end);;
+_s._3138 = (rt.enviarMensajeV((rt.enviarMensajeV(_s._3129, "CaminaNodos")), "subclase"));
+rt.enviarMensaje(_s._3138, "fijar_nombre", "CompiladorSimpleALua");;
+rt.enviarMensaje(_s._3138, "agregarAtributo", "_ámbito");
+rt.enviarMensaje(_s._3138, "agregarAtributo", "_moddb");
+rt.enviarMensaje(_s._3138, "agregarAtributo", "_compilador");;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "crearSubámbitoDesdeNodo", function(_3140, _3139)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3139"); _s._3139 = _3139
+;rt.scopenewname(_s, "_3140"); _s._3140 = _3140;
+do return rt.enviarMensaje(_s._3140, "crearSubámbitoDesdeNombreEnNodo", _s._3139, "nombresDefinídos"); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "crearSubámbitoDesdeNombreEnNodo", function(_3143, _3141, _3142)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3141"); _s._3141 = _3141;
+rt.scopenewname(_s, "_3142"); _s._3142 = _3142
+;rt.scopenewname(_s, "_3143"); _s._3143 = _3143;
+do return rt.enviarMensaje(_s._3138, "crear", rt.enviarMensajeV(_s._3143, "_moddb"), rt.enviarMensaje(_s._3141, "obtenerMetadato", rt.enviarMensajeV(_s._3130, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), _s._3142), rt.enviarMensajeV(_s._3143, "_compilador")); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "inicializar", function(_3147, _3144, _3145, _3146)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3144"); _s._3144 = _3144;
+rt.scopenewname(_s, "_3145"); _s._3145 = _3145;
+rt.scopenewname(_s, "_3146"); _s._3146 = _3146
+;rt.scopenewname(_s, "_3147"); _s._3147 = _3147;
+rt.enviarMensaje(_s._3147, "fijar__ámbito", _s._3145);
+rt.enviarMensaje(_s._3147, "fijar__moddb", _s._3144);
+rt.enviarMensaje(_s._3147, "fijar__compilador", _s._3146);
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "iniciar", function(_3148)
+local _s = rt.scope(_s)
 rt.scopenewname(_s, "_3256");
 rt.scopenewname(_s, "_3257");
-rt.scopenewname(_s, "_3261");
-rt.scopenewname(_s, "_3145"); _s._3145 = _3145
-;rt.scopenewname(_s, "_3146"); _s._3146 = _3146;
-;
-if rt.enviarMensaje(_s._3029, "llamar", rt.enviarMensajeV(_s._3145, "módulo"), rt.enviarMensajeV(_s._3076, "NodoIdentificador")) then
-local _s = rt.scope(_s)
-_s._3255 = (rt.enviarMensajeV(rt.enviarMensajeV(_s._3145, "módulo"), "nombre"));;
-else
-local _s = rt.scope(_s)
-_s._3255 = (rt.enviarMensajeV(_s._3145, "módulo"));;
-end;
-_s._3254 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3146, "_compilador"), "importarMódulo", _s._3255));;
-_s._3256 = (rt.enviarMensajeV(_s._3025, "vacío"));;
-if not rt.enviarMensaje(_s._3058, "llamar", rt.enviarMensajeV(_s._3145, "espacioDeNombres")) then
-local _s = rt.scope(_s)
-_s._3257 = (rt.enviarMensaje(_s._3078, "NombreResueltoDe", rt.enviarMensajeV(_s._3145, "espacioDeNombres")));;
-else
-local _s = rt.scope(_s)
-;
-end;
-if not rt.enviarMensaje(_s._3058, "llamar", rt.enviarMensajeV(_s._3145, "nombresEspecíficos")) then
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3032, "llamar", rt.enviarMensajeV(_s._3145, "nombresEspecíficos"), function(_3258)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3259");
-rt.scopenewname(_s, "_3260");
-rt.scopenewname(_s, "_3258"); _s._3258 = _3258;
-;
-if rt.enviarMensaje(_s._3029, "llamar", _s._3258, rt.enviarMensajeV(_s._3076, "NodoIdentificador")) then
-local _s = rt.scope(_s)
-_s._3259 = (_s._3258);;
-_s._3260 = (_s._3258);;
-else
-local _s = rt.scope(_s)
-_s._3259 = (rt.enviarMensaje(_s._3258, "en", 0));;
-_s._3260 = (rt.enviarMensaje(_s._3258, "en", 1));;
-end;
-rt._ = (rt.enviarMensaje(_s._3256, "fijarEn", rt.enviarMensajeV(_s._3259, "nombre"), rt.enviarMensaje(_s._3078, "NombreResueltoDe", _s._3260)));
-end));
-else
-local _s = rt.scope(_s)
-;
-end;
-if rt.enviarMensaje(rt.enviarMensaje(_s._3058, "llamar", rt.enviarMensajeV(_s._3145, "espacioDeNombres")), "operador_&&", rt.enviarMensaje(_s._3058, "llamar", rt.enviarMensajeV(_s._3145, "nombresEspecíficos"))) then
-local _s = rt.scope(_s)
-_s._3256 = (rt.enviarMensaje(_s._3145, "obtenerMetadato", rt.enviarMensajeV(_s._3078, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), "nombresImportadosResueltos"));;
-else
-local _s = rt.scope(_s)
-;
-end;
-;
-_s._3261 = (rt.enviarMensajeV(_s._22, "vacio"));;
-rt._ = (rt.enviarMensaje(_s._3261, "agregarAlFinal", rt.enviarMensaje("rt.ans_ns = rt.import(~t)", "formatear", rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3254, "llave"), "nombreCompletoDelArchivo")))));
-rt._ = (rt.enviarMensaje(_s._3261, "agregarAlFinal", ";do"));
-rt._ = (rt.enviarMensaje(_s._3256, "paraCadaPar", function(_3262, _3263)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3262"); _s._3262 = _3262;
-rt.scopenewname(_s, "_3263"); _s._3263 = _3263;
-rt._ = (rt.enviarMensaje(_s._3261, "agregarAlFinal", rt.enviarMensaje("  _s._~t = rt.ans_ns:at(~t);", "formatear", _s._3263, rt.enviarMensaje(_s._3082, "llamar", _s._3262))));
-end));
-rt._ = (rt.enviarMensaje(_s._3261, "agregarAlFinal", "end"));
-if not rt.enviarMensaje(_s._3058, "llamar", _s._3257) then
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3261, "agregarAlFinal", rt.enviarMensaje(";_s._~t = rt.ans_ns;", "formatear", _s._3257)));
-else
-local _s = rt.scope(_s)
-;
-end;
-do return rt.enviarMensaje(_s._3073, "llamar", _s._3261, rt.enviarMensajeV("~%", "formatear")); end;;
-end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarIdentificador", function(_3148, _3147)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3264");
-rt.scopenewname(_s, "_3265");
-rt.scopenewname(_s, "_3147"); _s._3147 = _3147
+
 ;rt.scopenewname(_s, "_3148"); _s._3148 = _3148;
 ;
-if rt.enviarMensaje(_s._3147, "contieneMetadato", rt.enviarMensajeV(_s._3078, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), "esAutoejecutable") then
+_s._3256 = (rt.enviarMensajeV(_s._22, "vacio"));;
+if not rt.enviarMensaje(_s._3110, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3148, "_ámbito"), "ámbitoPadre")) then
 local _s = rt.scope(_s)
-_s._3264 = (rt.enviarMensaje(_s._3147, "obtenerMetadato", rt.enviarMensajeV(_s._3078, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), "esAutoejecutable"));;
+_s._3257 = ("_s");;
 else
 local _s = rt.scope(_s)
-_s._3264 = (_s._3);;
+_s._3257 = ("");;
 end;
-_s._3265 = (rt.enviarMensaje(_s._3084, "llamar", _s._3147));;
-if _s._3264 then
+rt._ = (rt.enviarMensaje(_s._3256, "agregarAlFinal", rt.enviarMensaje("local _s = rt.scope(~t)", "formatear", _s._3257)));
+rt._ = (rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3148, "_ámbito"), "todosLosBindingsLocales"), function(_3258)
 local _s = rt.scope(_s)
-do return rt.enviarMensaje(_s._3148, "enviarMensaje", _s._3265, "llamar", rt.enviarMensajeV(_s._22, "vacio")); end;;
-else
-local _s = rt.scope(_s)
-do return _s._3265; end;;
-end;
+rt.scopenewname(_s, "_3258"); _s._3258 = _3258;
+rt._ = (rt.enviarMensaje(_s._3256, "agregarAlFinal", rt.enviarMensaje("rt.scopenewname(_s, \"_~t\");", "formatear", _s._3258)));
+end));
+do return rt.enviarMensaje(_s._3125, "llamar", _s._3256, rt.enviarMensajeV("~%", "formatear")); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarNúmeroLiteral", function(_3150, _3149)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "registrarBuiltins", function(_3149)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3149"); _s._3149 = _3149
-;rt.scopenewname(_s, "_3150"); _s._3150 = _3150;
-do return rt.enviarMensajeV(_s._3149, "valor"); end;;
+rt.scopenewname(_s, "_3259");
+
+;rt.scopenewname(_s, "_3149"); _s._3149 = _3149;
+;
+_s._3259 = (rt.enviarMensajeV(_s._22, "vacio"));;
+rt._ = (rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3149, "_compilador"), "_builtins"), "paraCadaPar", function(_3260, _3261)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3260"); _s._3260 = _3260;
+rt.scopenewname(_s, "_3261"); _s._3261 = _3261;
+rt._ = (rt.enviarMensaje(_s._3259, "agregarAlFinal", rt.enviarMensaje("_s._~t = rt.builtins[~t];", "formatear", _s._3261, rt.enviarMensaje(_s._3134, "llamar", _s._3260))));
+end));
+do return rt.enviarMensaje(_s._3125, "llamar", _s._3259, rt.enviarMensajeV("~%", "formatear")); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarTextoLiteral", function(_3152, _3151)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "esBuiltin", function(_3152, _3150, _3151)
 local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3150"); _s._3150 = _3150;
 rt.scopenewname(_s, "_3151"); _s._3151 = _3151
 ;rt.scopenewname(_s, "_3152"); _s._3152 = _3152;
-do return rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensajeV(_s._3151, "valor")); end;;
+do return rt.enviarMensaje(rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3152, "_compilador"), "_builtins"), "en", _s._3150), "operador_=", _s._3151); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "enviarMensaje", function(_3156, _3153, _3154, _3155)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarPrograma", function(_3154, _3153)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3262");
+rt.scopenewname(_s, "_3263");
+rt.scopenewname(_s, "_3153"); _s._3153 = _3153
+;rt.scopenewname(_s, "_3154"); _s._3154 = _3154;
+;
+_s._3262 = (rt.enviarMensaje(_s._22, "crearCon", rt.enviarMensaje(_s._3154, "compilarInstrucciones", rt.enviarMensajeV(_s._3153, "instrucciones"))));;
+_s._3263 = (rt.enviarMensaje(_s._3130, "ObtenerNombresDefinídos", _s._3153));;
+rt._ = (rt.enviarMensaje(_s._3262, "agregarAlFinal", rt.enviarMensajeV("return rt.ns({", "formatear")));
+rt._ = (rt.enviarMensaje(_s._3263, "paraCadaVariable", function(_3264, _3265)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3264"); _s._3264 = _3264;
+rt.scopenewname(_s, "_3265"); _s._3265 = _3265;
+rt._ = (rt.enviarMensaje(_s._3262, "agregarAlFinal", rt.enviarMensaje("  [~t] = { value = _s._~t, autoexecutable = ~t ~e,", "formatear", rt.enviarMensaje(_s._3134, "llamar", _s._3264), rt.enviarMensajeV(_s._3265, "binding"), rt.enviarMensaje(rt.enviarMensajeV(_s._3265, "esAutoejecutable"), "escojer", "true", "false"))));
+end));
+rt._ = (rt.enviarMensaje(_s._3262, "agregarAlFinal", rt.enviarMensajeV("~e);", "formatear")));
+do return rt.enviarMensaje(_s._3125, "llamar", _s._3262, rt.enviarMensajeV("~%", "formatear")); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarVariable", function(_3156, _3155)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3155"); _s._3155 = _3155
+;rt.scopenewname(_s, "_3156"); _s._3156 = _3156;
+do return ""; end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarFijar", function(_3158, _3157)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3157"); _s._3157 = _3157
+;rt.scopenewname(_s, "_3158"); _s._3158 = _3158;
+if rt.enviarMensaje(_s._3081, "llamar", rt.enviarMensajeV(_s._3157, "objetivo"), rt.enviarMensajeV(_s._3128, "NodoIdentificador")) then
 local _s = rt.scope(_s)
 rt.scopenewname(_s, "_3266");
 rt.scopenewname(_s, "_3267");
+;
+_s._3266 = (rt.enviarMensaje(_s._3136, "llamar", rt.enviarMensajeV(_s._3157, "objetivo")));;
+_s._3267 = (rt.enviarMensaje(_s._3158, "visitar", rt.enviarMensajeV(_s._3157, "valor")));;
+do return rt.enviarMensaje("~t = (~t);", "formatear", _s._3266, _s._3267); end;;
+else
+local _s = rt.scope(_s)
 rt.scopenewname(_s, "_3268");
+rt.scopenewname(_s, "_3269");
+assert(rt.enviarMensaje(_s._3081, "llamar", rt.enviarMensajeV(_s._3157, "objetivo"), rt.enviarMensajeV(_s._3128, "NodoEnviarMensaje")));;
+assert(rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(rt.enviarMensajeV(_s._3157, "objetivo"), "argumentos"), "longitud"), "operador_=", 0));;
+;
+_s._3268 = (rt.enviarMensaje(_s._3158, "visitar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3157, "objetivo"), "objeto")));;
+_s._3269 = (rt.enviarMensaje("fijar_", "concatenar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3157, "objetivo"), "mensaje")));;
+do return rt.enviarMensaje(_s._3158, "enviarMensaje", _s._3268, _s._3269, rt.enviarMensaje(_s._22, "crearCon", rt.enviarMensajeV(_s._3157, "valor"))); end;;
+end;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarEscribir", function(_3160, _3159)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3159"); _s._3159 = _3159
+;rt.scopenewname(_s, "_3160"); _s._3160 = _3160;
+do return rt.enviarMensaje("rt.escribir(~t);", "formatear", rt.enviarMensaje(_s._3160, "visitar", rt.enviarMensajeV(_s._3159, "valor"))); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarNl", function(_3162, _3161)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3161"); _s._3161 = _3161
+;rt.scopenewname(_s, "_3162"); _s._3162 = _3162;
+do return "rt.nl();"; end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarClase", function(_3164, _3163)
+local _s = rt.scope(_s)
 rt.scopenewname(_s, "_3270");
-rt.scopenewname(_s, "_3153"); _s._3153 = _3153;
-rt.scopenewname(_s, "_3154"); _s._3154 = _3154;
-rt.scopenewname(_s, "_3155"); _s._3155 = _3155
-;rt.scopenewname(_s, "_3156"); _s._3156 = _3156;
+rt.scopenewname(_s, "_3271");
+rt.scopenewname(_s, "_3272");
+rt.scopenewname(_s, "_3163"); _s._3163 = _3163
+;rt.scopenewname(_s, "_3164"); _s._3164 = _3164;
 ;
-_s._3266 = (rt.enviarMensajeV(_s._22, "vacio"));;
-rt._ = (rt.enviarMensaje(_s._3032, "llamar", _s._3155, function(_3269)
+_s._3271 = (rt.enviarMensaje(_s._3136, "llamar", rt.enviarMensajeV(_s._3163, "nombre")));;
+_s._3270 = (rt.enviarMensajeV(_s._22, "vacio"));;
+if not rt.enviarMensaje(_s._3110, "llamar", rt.enviarMensajeV(_s._3163, "claseBase")) then
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3269"); _s._3269 = _3269;
-if rt.enviarMensaje(_s._3029, "llamar", _s._3269, rt.enviarMensajeV(_s._3076, "NodoVariadic")) then
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3266, "agregarAlFinal", _s._3269));
+_s._3272 = (rt.enviarMensaje(_s._3164, "visitar", rt.enviarMensajeV(_s._3163, "claseBase")));;
 else
 local _s = rt.scope(_s)
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3266, "longitud"), "operador_=", 0) then
+_s._3272 = ("rt.clases.Objeto");;
+end;
+rt._ = (rt.enviarMensaje(_s._3270, "agregarAlFinal", rt.enviarMensaje("~t = (~t);", "formatear", _s._3271, rt.enviarMensaje(_s._3164, "enviarMensaje", rt.enviarMensaje("(~t)", "formatear", _s._3272), "subclase", rt.enviarMensajeV(_s._22, "vacio")))));
+rt._ = (rt.enviarMensaje(_s._3270, "agregarAlFinal", rt.enviarMensaje("rt.enviarMensaje(~t, \"fijar_nombre\", ~t);", "formatear", _s._3271, rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3163, "nombre"), "nombre")))));
+rt._ = (rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3163, "declaraciones"), function(_3273)
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3266, "agregarAlFinal", rt.enviarMensajeV(_s._22, "vacio")));
-else
+rt.scopenewname(_s, "_3273"); _s._3273 = _3273;
+if rt.enviarMensaje(_s._3081, "llamar", _s._3273, rt.enviarMensajeV(_s._3128, "NodoDeclaraciónDeAtributosEnClase")) then
 local _s = rt.scope(_s)
-if rt.enviarMensaje(_s._3029, "llamar", rt.enviarMensaje(_s._3057, "llamar", _s._3266), rt.enviarMensajeV(_s._3076, "NodoVariadic")) then
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3266, "agregarAlFinal", rt.enviarMensajeV(_s._22, "vacio")));
+rt._ = (rt.enviarMensaje(_s._3270, "agregarAlFinal", rt.enviarMensaje(rt.enviarMensaje(_s._3164, "visitar", rt.clonar(rt.enviarMensajeV(rt.enviarMensajeV(_s._3128, "NodoAtributos"), "crear"), {["areaTextual"] = rt.enviarMensajeV(_s._3273, "areaTextual"), ["deClase"] = rt.enviarMensajeV(_s._3163, "nombre"), ["nombres"] = rt.enviarMensajeV(_s._3273, "nombres")})), "concatenar", ";")));
 else
 local _s = rt.scope(_s)
 ;
-end;
-end;
-rt._ = (rt.enviarMensaje(rt.enviarMensaje(_s._3057, "llamar", _s._3266), "agregarAlFinal", _s._3269));
 end;
 end));
-_s._3270 = (function(_3271)
+do return rt.enviarMensaje(_s._3125, "llamar", _s._3270, rt.enviarMensajeV("~%", "formatear")); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarDeclaraciónDeAtributosEnClase", function(_3166, _3165)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3271"); _s._3271 = _3271;
-do return rt.enviarMensaje(_s._3073, "llamar", rt.enviarMensaje(_s._3038, "llamar", _s._3271, function(_3274)
+rt.scopenewname(_s, "_3165"); _s._3165 = _3165
+;rt.scopenewname(_s, "_3166"); _s._3166 = _3166;
+rt._ = (rt.enviarMensajeV(_s._3115, "llamar"));
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarDeclaraciónDeMétodoEnClase", function(_3168, _3167)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3274"); _s._3274 = _3274;
-do return rt.enviarMensaje(_s._3156, "visitar", _s._3274); end;;
+rt.scopenewname(_s, "_3167"); _s._3167 = _3167
+;rt.scopenewname(_s, "_3168"); _s._3168 = _3168;
+rt._ = (rt.enviarMensajeV(_s._3115, "llamar"));
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarImplementa", function(_3170, _3169)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3169"); _s._3169 = _3169
+;rt.scopenewname(_s, "_3170"); _s._3170 = _3170;
+rt._ = (rt.enviarMensajeV(_s._3113, "llamar"));
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarDefineAtributosEnClase", function(_3172, _3171)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3171"); _s._3171 = _3171
+;rt.scopenewname(_s, "_3172"); _s._3172 = _3172;
+rt._ = (rt.enviarMensajeV(_s._3113, "llamar"));
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarDefineMétodoEnClase", function(_3174, _3173)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3173"); _s._3173 = _3173
+;rt.scopenewname(_s, "_3174"); _s._3174 = _3174;
+rt._ = (rt.enviarMensajeV(_s._3113, "llamar"));
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "expresiónDeFunción", function(_3178, _3175, _3176, _3177)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3274");
+rt.scopenewname(_s, "_3275");
+rt.scopenewname(_s, "_3276");
+rt.scopenewname(_s, "_3277");
+rt.scopenewname(_s, "_3278");
+rt.scopenewname(_s, "_3279");
+rt.scopenewname(_s, "_3281");
+rt.scopenewname(_s, "_3175"); _s._3175 = _3175;
+rt.scopenewname(_s, "_3176"); _s._3176 = _3176;
+rt.scopenewname(_s, "_3177"); _s._3177 = _3177
+;rt.scopenewname(_s, "_3178"); _s._3178 = _3178;
+;
+_s._3274 = (rt.enviarMensajeV(_s._22, "vacio"));;
+_s._3276 = (_s._4);;
+_s._3279 = (function(_3280)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3280"); _s._3280 = _3280;
+if rt.enviarMensaje(_s._3081, "llamar", _s._3280, rt.enviarMensajeV(_s._3128, "NodoIdentificador")) then
+local _s = rt.scope(_s)
+do return rt.enviarMensaje("_~t", "formatear", rt.enviarMensaje(_s._3130, "NombreResueltoDe", _s._3280)); end;;
+else
+local _s = rt.scope(_s)
+_s._3276 = (_s._3280);;
+do return "..."; end;;
+end;
+end);;
+_s._3275 = (rt.enviarMensaje(_s._3125, "llamar", rt.enviarMensaje(_s._3090, "llamar", _s._3176, _s._3279), ", "));;
+if not rt.enviarMensaje(_s._3110, "llamar", _s._3175) then
+local _s = rt.scope(_s)
+_s._3277 = (rt.enviarMensaje("_~t", "formatear", _s._3175));;
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3176, "longitud"), "operador_>", 0) then
+local _s = rt.scope(_s)
+_s._3275 = (rt.enviarMensaje(", ", "concatenar", _s._3275));;
+else
+local _s = rt.scope(_s)
+;
+end;
+else
+local _s = rt.scope(_s)
+_s._3277 = ("");;
+end;
+_s._3281 = (function(_3282)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3282"); _s._3282 = _3282;
+if rt.enviarMensaje(_s._3081, "llamar", _s._3282, rt.enviarMensajeV(_s._3128, "NodoIdentificador")) then
+local _s = rt.scope(_s)
+do return rt.enviarMensaje("rt.scopenewname(_s, \"_~t\"); ~t = _~t", "formatear", rt.enviarMensaje(_s._3130, "NombreResueltoDe", _s._3282), rt.enviarMensaje(_s._3136, "llamar", _s._3282), rt.enviarMensaje(_s._3130, "NombreResueltoDe", _s._3282)); end;;
+else
+local _s = rt.scope(_s)
+do return rt.enviarMensaje("rt.scopenewname(_s, \"_~t\")", "formatear", rt.enviarMensaje(_s._3130, "NombreResueltoDe", rt.enviarMensajeV(_s._3282, "interno"))); end;;
+end;
+end);;
+_s._3278 = (rt.enviarMensaje(_s._3125, "llamar", rt.enviarMensaje(_s._3090, "llamar", _s._3176, _s._3281), rt.enviarMensajeV(";~%", "formatear")));;
+if not rt.enviarMensaje(_s._3110, "llamar", _s._3175) then
+local _s = rt.scope(_s)
+_s._3278 = (rt.enviarMensaje(_s._3278, "concatenar", rt.enviarMensaje("~%;rt.scopenewname(_s, \"_~t\"); _s._~t = _~t", "formatear", _s._3175, _s._3175, _s._3175)));;
+else
+local _s = rt.scope(_s)
+;
+end;
+rt._ = (rt.enviarMensaje(_s._3274, "agregarAlFinal", rt.enviarMensaje("function(~t~t)", "formatear", _s._3277, _s._3275)));
+rt._ = (rt.enviarMensaje(_s._3274, "agregarAlFinal", rt.enviarMensajeV(_s._3178, "iniciar")));
+rt._ = (rt.enviarMensaje(_s._3274, "agregarAlFinal", rt.enviarMensaje(_s._3278, "concatenar", ";")));
+if not rt.enviarMensaje(_s._3110, "llamar", _s._3276) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3274, "agregarAlFinal", rt.enviarMensaje("~t = rt.arreglo(...)", "formatear", rt.enviarMensaje(_s._3136, "llamar", rt.enviarMensajeV(_s._3276, "interno")))));
+else
+local _s = rt.scope(_s)
+;
+end;
+rt._ = (rt.enviarMensaje(_s._3274, "agregarAlFinal", rt.enviarMensaje(_s._3178, "compilarInstrucciones", _s._3177)));
+rt._ = (rt.enviarMensaje(_s._3274, "agregarAlFinal", "end"));
+do return rt.enviarMensaje(_s._3125, "llamar", _s._3274, rt.enviarMensajeV("~%", "formatear")); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarFunción", function(_3180, _3179)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3283");
+rt.scopenewname(_s, "_3284");
+rt.scopenewname(_s, "_3285");
+rt.scopenewname(_s, "_3179"); _s._3179 = _3179
+;rt.scopenewname(_s, "_3180"); _s._3180 = _3180;
+;
+_s._3285 = (rt.enviarMensaje(_s._3180, "crearSubámbitoDesdeNombreEnNodo", _s._3179, "nombresDefinídosSinParámetros"));;
+_s._3284 = (rt.enviarMensaje(_s._3136, "llamar", rt.enviarMensajeV(_s._3179, "nombre")));;
+_s._3283 = (rt.enviarMensajeV(_s._22, "vacio"));;
+rt._ = (rt.enviarMensaje(_s._3283, "agregarAlFinal", rt.enviarMensaje("~t = (~t);", "formatear", _s._3284, rt.enviarMensaje(_s._3285, "expresiónDeFunción", _s._4, rt.enviarMensajeV(_s._3179, "parámetros"), rt.enviarMensajeV(_s._3179, "cuerpo")))));
+do return rt.enviarMensaje(_s._3125, "llamar", _s._3283, rt.enviarMensajeV("~%", "formatear")); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarNecesitas", function(_3182, _3181)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3181"); _s._3181 = _3181
+;rt.scopenewname(_s, "_3182"); _s._3182 = _3182;
+do return rt.enviarMensaje("assert(~t);", "formatear", rt.enviarMensaje(_s._3182, "visitar", rt.enviarMensajeV(_s._3181, "expresión"))); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarDevolver", function(_3184, _3183)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3183"); _s._3183 = _3183
+;rt.scopenewname(_s, "_3184"); _s._3184 = _3184;
+do return rt.enviarMensaje("do return ~t; end;", "formatear", rt.enviarMensaje(_s._3184, "visitar", rt.enviarMensajeV(_s._3183, "expresión"))); end;;
+end);;
+_s._3185 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
+rt.enviarMensaje(_s._3185, "fijar_nombre", "ComparaciónDeBuiltin");
+rt.enviarMensaje(_s._3185, "agregarAtributo", "tipoIgualdad");
+rt.enviarMensaje(_s._3185, "agregarAtributo", "rhs");;;
+_s._3186 = (function(_3187, _3188)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3286");
+rt.scopenewname(_s, "_3287");
+rt.scopenewname(_s, "_3288");
+rt.scopenewname(_s, "_3289");
+rt.scopenewname(_s, "_3187"); _s._3187 = _3187;
+rt.scopenewname(_s, "_3188"); _s._3188 = _3188;
+;
+if rt.enviarMensaje(_s._3081, "llamar", _s._3187, rt.enviarMensajeV(_s._3128, "NodoOperador")) then
+local _s = rt.scope(_s)
+_s._3286 = (rt.enviarMensajeV(_s._3187, "lhs"));;
+_s._3287 = (rt.enviarMensajeV(_s._3187, "rhs"));;
+if rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3187, "op"), "texto"), "operador_=", "=") then
+local _s = rt.scope(_s)
+_s._3288 = (rt.enviarMensajeV(rt.enviarMensajeV(_s._3128, "TipoIgualdad"), "IGUALES"));;
+else
+local _s = rt.scope(_s)
+do return _s._3; end;;
+end;
+else
+local _s = rt.scope(_s)
+if rt.enviarMensaje(_s._3081, "llamar", _s._3187, rt.enviarMensajeV(_s._3128, "NodoSonIguales")) then
+local _s = rt.scope(_s)
+_s._3286 = (rt.enviarMensajeV(_s._3187, "lhs"));;
+_s._3287 = (rt.enviarMensajeV(_s._3187, "rhs"));;
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3187, "tipoIgualdad"), "operador_=", rt.enviarMensajeV(rt.enviarMensajeV(_s._3128, "TipoIgualdad"), "IGUALES")) then
+local _s = rt.scope(_s)
+_s._3288 = (rt.enviarMensajeV(rt.enviarMensajeV(_s._3128, "TipoIgualdad"), "IGUALES"));;
+else
+local _s = rt.scope(_s)
+_s._3288 = (rt.enviarMensajeV(rt.enviarMensajeV(_s._3128, "TipoIgualdad"), "DIFERENTES"));;
+end;
+else
+local _s = rt.scope(_s)
+do return _s._3; end;;
+end;
+end;
+if not rt.enviarMensaje(_s._3081, "llamar", _s._3286, rt.enviarMensajeV(_s._3128, "NodoIdentificador")) then
+local _s = rt.scope(_s)
+do return _s._3; end;;
+else
+local _s = rt.scope(_s)
+;
+end;
+if not rt.enviarMensaje(rt.enviarMensaje(_s._3130, "NombreResueltoDe", _s._3286), "operador_=", _s._3188) then
+local _s = rt.scope(_s)
+do return _s._3; end;;
+else
+local _s = rt.scope(_s)
+;
+end;
+;
+if rt.enviarMensaje(_s._3081, "llamar", _s._3287, rt.enviarMensajeV(_s._3128, "NodoTextoLiteral")) then
+local _s = rt.scope(_s)
+_s._3289 = (rt.enviarMensajeV(_s._3287, "valor"));;
+else
+local _s = rt.scope(_s)
+if rt.enviarMensaje(_s._3081, "llamar", _s._3287, rt.enviarMensajeV(_s._3128, "NodoNumeroLiteral")) then
+local _s = rt.scope(_s)
+_s._3289 = (rt.enviarMensajeV(_s._3287, "valor"));;
+else
+local _s = rt.scope(_s)
+do return _s._3; end;;
+end;
+end;
+do return rt.clonar(rt.enviarMensajeV(_s._3185, "crear"), {["tipoIgualdad"] = _s._3288, ["rhs"] = _s._3289}); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarSi", function(_3190, _3189)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3290");
+rt.scopenewname(_s, "_3291");
+rt.scopenewname(_s, "_3292");
+rt.scopenewname(_s, "_3293");
+rt.scopenewname(_s, "_3296");
+rt.scopenewname(_s, "_3189"); _s._3189 = _3189
+;rt.scopenewname(_s, "_3190"); _s._3190 = _3190;
+;
+_s._3290 = (rt.enviarMensajeV(_s._22, "vacio"));;
+_s._3291 = (rt.enviarMensaje(_s._3190, "crearSubámbitoDesdeNombreEnNodo", _s._3189, "nombresDefinídosSiVerdadero"));;
+_s._3292 = (rt.enviarMensaje(_s._3190, "crearSubámbitoDesdeNombreEnNodo", _s._3189, "nombresDefinídosSiFalso"));;
+_s._3293 = (function(_3294, _3295)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3294"); _s._3294 = _3294;
+rt.scopenewname(_s, "_3295"); _s._3295 = _3295;
+rt._ = (rt.enviarMensaje(_s._3290, "agregarAlFinal", rt.enviarMensajeV(_s._3295, "iniciar")));
+rt._ = (rt.enviarMensaje(_s._3290, "agregarAlFinal", rt.enviarMensaje(_s._3190, "compilarInstrucciones", _s._3294)));
+end);;
+;
+_s._3296 = (rt.enviarMensaje(_s._3186, "llamar", rt.enviarMensajeV(_s._3189, "condicional"), rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3190, "_compilador"), "_builtins"), "en", "__Impl")));;
+if rt.enviarMensaje(_s._3081, "llamar", _s._3296, _s._3185) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3290, "agregarAlFinal", ";do;"));
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3296, "tipoIgualdad"), "operador_=", rt.enviarMensajeV(rt.enviarMensajeV(_s._3128, "TipoIgualdad"), "IGUALES")) then
+local _s = rt.scope(_s)
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3296, "rhs"), "operador_=", _s._3133) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3293, "llamar", rt.enviarMensajeV(_s._3189, "siVerdadero"), _s._3291));
+else
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3293, "llamar", rt.enviarMensajeV(_s._3189, "siFalso"), _s._3292));
+end;
+else
+local _s = rt.scope(_s)
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3296, "rhs"), "operador_=", _s._3133) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3293, "llamar", rt.enviarMensajeV(_s._3189, "siFalso"), _s._3292));
+else
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3293, "llamar", rt.enviarMensajeV(_s._3189, "siVerdadero"), _s._3291));
+end;
+end;
+rt._ = (rt.enviarMensaje(_s._3290, "agregarAlFinal", ";end;"));
+else
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3290, "agregarAlFinal", rt.enviarMensaje("if ~t then", "formatear", rt.enviarMensaje(_s._3190, "visitar", rt.enviarMensajeV(_s._3189, "condicional")))));
+rt._ = (rt.enviarMensaje(_s._3293, "llamar", rt.enviarMensajeV(_s._3189, "siVerdadero"), _s._3291));
+rt._ = (rt.enviarMensaje(_s._3290, "agregarAlFinal", "else"));
+rt._ = (rt.enviarMensaje(_s._3293, "llamar", rt.enviarMensajeV(_s._3189, "siFalso"), _s._3292));
+rt._ = (rt.enviarMensaje(_s._3290, "agregarAlFinal", "end"));
+end;
+do return rt.enviarMensaje(_s._3125, "llamar", _s._3290, rt.enviarMensajeV("~%", "formatear")); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarMientras", function(_3192, _3191)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3297");
+rt.scopenewname(_s, "_3298");
+rt.scopenewname(_s, "_3191"); _s._3191 = _3191
+;rt.scopenewname(_s, "_3192"); _s._3192 = _3192;
+;
+_s._3298 = (rt.enviarMensaje(_s._3192, "crearSubámbitoDesdeNodo", _s._3191));;
+_s._3297 = (rt.enviarMensajeV(_s._22, "vacio"));;
+rt._ = (rt.enviarMensaje(_s._3297, "agregarAlFinal", rt.enviarMensaje("while ~t do", "formatear", rt.enviarMensaje(_s._3192, "visitar", rt.enviarMensajeV(_s._3191, "condicional")))));
+rt._ = (rt.enviarMensaje(_s._3297, "agregarAlFinal", rt.enviarMensajeV(_s._3298, "iniciar")));
+rt._ = (rt.enviarMensaje(_s._3297, "agregarAlFinal", rt.enviarMensaje(_s._3192, "compilarInstrucciones", rt.enviarMensajeV(_s._3191, "cuerpo"))));
+rt._ = (rt.enviarMensaje(_s._3297, "agregarAlFinal", "end"));
+do return rt.enviarMensaje(_s._3125, "llamar", _s._3297, rt.enviarMensajeV("~%", "formatear")); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarMétodo", function(_3194, _3193)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3299");
+rt.scopenewname(_s, "_3300");
+rt.scopenewname(_s, "_3301");
+rt.scopenewname(_s, "_3302");
+rt.scopenewname(_s, "_3193"); _s._3193 = _3193
+;rt.scopenewname(_s, "_3194"); _s._3194 = _3194;
+;
+_s._3301 = (rt.enviarMensaje(_s._3194, "crearSubámbitoDesdeNombreEnNodo", _s._3193, "nombresDefinídosSinParámetros"));;
+_s._3299 = (rt.enviarMensaje(_s._3136, "llamar", rt.enviarMensajeV(_s._3193, "deClase")));;
+_s._3300 = (rt.enviarMensaje(_s._3193, "obtenerMetadato", rt.enviarMensajeV(_s._3130, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), "nombreResueltoDeYo"));;
+_s._3302 = (rt.enviarMensaje(_s._3301, "expresiónDeFunción", _s._3300, rt.enviarMensajeV(_s._3193, "parámetros"), rt.enviarMensajeV(_s._3193, "cuerpo")));;
+if rt.enviarMensajeV(_s._3193, "esEstático") then
+local _s = rt.scope(_s)
+do return rt.enviarMensaje("(~t).methods[~t] = ~t", "formatear", _s._3299, rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3193, "nombre"), "nombre")), _s._3302); end;;
+else
+local _s = rt.scope(_s)
+do return rt.enviarMensaje("rt.enviarMensaje(~t, \"agregarMetodo\", ~t, ~t);", "formatear", _s._3299, rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3193, "nombre"), "nombre")), _s._3302); end;;
+end;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarAtributos", function(_3196, _3195)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3303");
+rt.scopenewname(_s, "_3304");
+rt.scopenewname(_s, "_3195"); _s._3195 = _3195
+;rt.scopenewname(_s, "_3196"); _s._3196 = _3196;
+;
+_s._3303 = (rt.enviarMensaje(_s._3136, "llamar", rt.enviarMensajeV(_s._3195, "deClase")));;
+_s._3304 = (rt.enviarMensajeV(_s._22, "vacio"));;
+rt._ = (rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3195, "nombres"), function(_3305)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3305"); _s._3305 = _3305;
+rt._ = (rt.enviarMensaje(_s._3304, "agregarAlFinal", rt.enviarMensaje("rt.enviarMensaje(~t, \"agregarAtributo\", ~t);", "formatear", _s._3303, rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(_s._3305, "nombre")))));
+end));
+do return rt.enviarMensaje(_s._3125, "llamar", _s._3304, rt.enviarMensajeV("~%", "formatear")); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarUtilizar", function(_3198, _3197)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3306");
+rt.scopenewname(_s, "_3307");
+rt.scopenewname(_s, "_3308");
+rt.scopenewname(_s, "_3309");
+rt.scopenewname(_s, "_3313");
+rt.scopenewname(_s, "_3197"); _s._3197 = _3197
+;rt.scopenewname(_s, "_3198"); _s._3198 = _3198;
+;
+if rt.enviarMensaje(_s._3081, "llamar", rt.enviarMensajeV(_s._3197, "módulo"), rt.enviarMensajeV(_s._3128, "NodoIdentificador")) then
+local _s = rt.scope(_s)
+_s._3307 = (rt.enviarMensajeV(rt.enviarMensajeV(_s._3197, "módulo"), "nombre"));;
+else
+local _s = rt.scope(_s)
+_s._3307 = (rt.enviarMensajeV(_s._3197, "módulo"));;
+end;
+_s._3306 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3198, "_compilador"), "importarMódulo", _s._3307));;
+_s._3308 = (rt.enviarMensajeV(_s._3077, "vacío"));;
+if not rt.enviarMensaje(_s._3110, "llamar", rt.enviarMensajeV(_s._3197, "espacioDeNombres")) then
+local _s = rt.scope(_s)
+_s._3309 = (rt.enviarMensaje(_s._3130, "NombreResueltoDe", rt.enviarMensajeV(_s._3197, "espacioDeNombres")));;
+else
+local _s = rt.scope(_s)
+;
+end;
+if not rt.enviarMensaje(_s._3110, "llamar", rt.enviarMensajeV(_s._3197, "nombresEspecíficos")) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3197, "nombresEspecíficos"), function(_3310)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3311");
+rt.scopenewname(_s, "_3312");
+rt.scopenewname(_s, "_3310"); _s._3310 = _3310;
+;
+if rt.enviarMensaje(_s._3081, "llamar", _s._3310, rt.enviarMensajeV(_s._3128, "NodoIdentificador")) then
+local _s = rt.scope(_s)
+_s._3311 = (_s._3310);;
+_s._3312 = (_s._3310);;
+else
+local _s = rt.scope(_s)
+_s._3311 = (rt.enviarMensaje(_s._3310, "en", 0));;
+_s._3312 = (rt.enviarMensaje(_s._3310, "en", 1));;
+end;
+rt._ = (rt.enviarMensaje(_s._3308, "fijarEn", rt.enviarMensajeV(_s._3311, "nombre"), rt.enviarMensaje(_s._3130, "NombreResueltoDe", _s._3312)));
+end));
+else
+local _s = rt.scope(_s)
+;
+end;
+if rt.enviarMensaje(rt.enviarMensaje(_s._3110, "llamar", rt.enviarMensajeV(_s._3197, "espacioDeNombres")), "operador_&&", rt.enviarMensaje(_s._3110, "llamar", rt.enviarMensajeV(_s._3197, "nombresEspecíficos"))) then
+local _s = rt.scope(_s)
+_s._3308 = (rt.enviarMensaje(_s._3197, "obtenerMetadato", rt.enviarMensajeV(_s._3130, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), "nombresImportadosResueltos"));;
+else
+local _s = rt.scope(_s)
+;
+end;
+;
+_s._3313 = (rt.enviarMensajeV(_s._22, "vacio"));;
+rt._ = (rt.enviarMensaje(_s._3313, "agregarAlFinal", rt.enviarMensaje("rt.ans_ns = rt.import(~t)", "formatear", rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3306, "llave"), "nombreCompletoDelArchivo")))));
+rt._ = (rt.enviarMensaje(_s._3313, "agregarAlFinal", ";do"));
+rt._ = (rt.enviarMensaje(_s._3308, "paraCadaPar", function(_3314, _3315)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3314"); _s._3314 = _3314;
+rt.scopenewname(_s, "_3315"); _s._3315 = _3315;
+rt._ = (rt.enviarMensaje(_s._3313, "agregarAlFinal", rt.enviarMensaje("  _s._~t = rt.ans_ns:at(~t);", "formatear", _s._3315, rt.enviarMensaje(_s._3134, "llamar", _s._3314))));
+end));
+rt._ = (rt.enviarMensaje(_s._3313, "agregarAlFinal", "end"));
+if not rt.enviarMensaje(_s._3110, "llamar", _s._3309) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3313, "agregarAlFinal", rt.enviarMensaje(";_s._~t = rt.ans_ns;", "formatear", _s._3309)));
+else
+local _s = rt.scope(_s)
+;
+end;
+do return rt.enviarMensaje(_s._3125, "llamar", _s._3313, rt.enviarMensajeV("~%", "formatear")); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarIdentificador", function(_3200, _3199)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3316");
+rt.scopenewname(_s, "_3317");
+rt.scopenewname(_s, "_3199"); _s._3199 = _3199
+;rt.scopenewname(_s, "_3200"); _s._3200 = _3200;
+;
+if rt.enviarMensaje(_s._3199, "contieneMetadato", rt.enviarMensajeV(_s._3130, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), "esAutoejecutable") then
+local _s = rt.scope(_s)
+_s._3316 = (rt.enviarMensaje(_s._3199, "obtenerMetadato", rt.enviarMensajeV(_s._3130, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), "esAutoejecutable"));;
+else
+local _s = rt.scope(_s)
+_s._3316 = (_s._3);;
+end;
+_s._3317 = (rt.enviarMensaje(_s._3136, "llamar", _s._3199));;
+if _s._3316 then
+local _s = rt.scope(_s)
+do return rt.enviarMensaje(_s._3200, "enviarMensaje", _s._3317, "llamar", rt.enviarMensajeV(_s._22, "vacio")); end;;
+else
+local _s = rt.scope(_s)
+do return _s._3317; end;;
+end;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarNúmeroLiteral", function(_3202, _3201)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3201"); _s._3201 = _3201
+;rt.scopenewname(_s, "_3202"); _s._3202 = _3202;
+do return rt.enviarMensajeV(_s._3201, "valor"); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarTextoLiteral", function(_3204, _3203)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3203"); _s._3203 = _3203
+;rt.scopenewname(_s, "_3204"); _s._3204 = _3204;
+do return rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(_s._3203, "valor")); end;;
+end);;
+rt.enviarMensaje(_s._3138, "agregarMetodo", "enviarMensaje", function(_3208, _3205, _3206, _3207)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3318");
+rt.scopenewname(_s, "_3319");
+rt.scopenewname(_s, "_3320");
+rt.scopenewname(_s, "_3322");
+rt.scopenewname(_s, "_3205"); _s._3205 = _3205;
+rt.scopenewname(_s, "_3206"); _s._3206 = _3206;
+rt.scopenewname(_s, "_3207"); _s._3207 = _3207
+;rt.scopenewname(_s, "_3208"); _s._3208 = _3208;
+;
+_s._3318 = (rt.enviarMensajeV(_s._22, "vacio"));;
+rt._ = (rt.enviarMensaje(_s._3084, "llamar", _s._3207, function(_3321)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3321"); _s._3321 = _3321;
+if rt.enviarMensaje(_s._3081, "llamar", _s._3321, rt.enviarMensajeV(_s._3128, "NodoVariadic")) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3318, "agregarAlFinal", _s._3321));
+else
+local _s = rt.scope(_s)
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3318, "longitud"), "operador_=", 0) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3318, "agregarAlFinal", rt.enviarMensajeV(_s._22, "vacio")));
+else
+local _s = rt.scope(_s)
+if rt.enviarMensaje(_s._3081, "llamar", rt.enviarMensaje(_s._3109, "llamar", _s._3318), rt.enviarMensajeV(_s._3128, "NodoVariadic")) then
+local _s = rt.scope(_s)
+rt._ = (rt.enviarMensaje(_s._3318, "agregarAlFinal", rt.enviarMensajeV(_s._22, "vacio")));
+else
+local _s = rt.scope(_s)
+;
+end;
+end;
+rt._ = (rt.enviarMensaje(rt.enviarMensaje(_s._3109, "llamar", _s._3318), "agregarAlFinal", _s._3321));
+end;
+end));
+_s._3322 = (function(_3323)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3323"); _s._3323 = _3323;
+do return rt.enviarMensaje(_s._3125, "llamar", rt.enviarMensaje(_s._3090, "llamar", _s._3323, function(_3326)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3326"); _s._3326 = _3326;
+do return rt.enviarMensaje(_s._3208, "visitar", _s._3326); end;;
 end), ", "); end;;
 end);;
-_s._3268 = (_s._4);;
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3266, "longitud"), "operador_=", 1) then
+_s._3320 = (_s._4);;
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3318, "longitud"), "operador_=", 1) then
 local _s = rt.scope(_s)
-if rt.enviarMensaje(_s._3029, "llamar", rt.enviarMensaje(_s._3266, "en", 0), _s._22) then
+if rt.enviarMensaje(_s._3081, "llamar", rt.enviarMensaje(_s._3318, "en", 0), _s._22) then
 local _s = rt.scope(_s)
-_s._3267 = (rt.enviarMensaje(_s._3270, "llamar", rt.enviarMensaje(_s._3266, "en", 0)));;
-_s._3268 = ("enviarMensaje");;
+_s._3319 = (rt.enviarMensaje(_s._3322, "llamar", rt.enviarMensaje(_s._3318, "en", 0)));;
+_s._3320 = ("enviarMensaje");;
 else
 local _s = rt.scope(_s)
 ;
@@ -13169,377 +13414,377 @@ else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(_s._3058, "llamar", _s._3268) then
+if rt.enviarMensaje(_s._3110, "llamar", _s._3320) then
 local _s = rt.scope(_s)
-_s._3268 = ("enviarMensajeV");;
-_s._3267 = (rt.enviarMensaje(_s._3073, "llamar", rt.enviarMensaje(_s._3038, "llamar", _s._3266, function(_3272)
+_s._3320 = ("enviarMensajeV");;
+_s._3319 = (rt.enviarMensaje(_s._3125, "llamar", rt.enviarMensaje(_s._3090, "llamar", _s._3318, function(_3324)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3272"); _s._3272 = _3272;
-if rt.enviarMensaje(_s._3029, "llamar", _s._3272, rt.enviarMensajeV(_s._3076, "NodoVariadic")) then
+rt.scopenewname(_s, "_3324"); _s._3324 = _3324;
+if rt.enviarMensaje(_s._3081, "llamar", _s._3324, rt.enviarMensajeV(_s._3128, "NodoVariadic")) then
 local _s = rt.scope(_s)
-do return rt.enviarMensaje(_s._3156, "visitar", rt.enviarMensajeV(_s._3272, "interno")); end;;
+do return rt.enviarMensaje(_s._3208, "visitar", rt.enviarMensajeV(_s._3324, "interno")); end;;
 else
 local _s = rt.scope(_s)
-do return rt.enviarMensaje("{ __pd_var=true, n=~t, ~t ~e", "formatear", rt.enviarMensajeV(_s._3272, "longitud"), rt.enviarMensaje(_s._3270, "llamar", _s._3272)); end;;
+do return rt.enviarMensaje("{ __pd_var=true, n=~t, ~t ~e", "formatear", rt.enviarMensajeV(_s._3324, "longitud"), rt.enviarMensaje(_s._3322, "llamar", _s._3324)); end;;
 end;
 end), ", "));;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3267, "longitud"), "operador_>", 0) then
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3319, "longitud"), "operador_>", 0) then
 local _s = rt.scope(_s)
-_s._3267 = (rt.enviarMensaje(", ", "concatenar", _s._3267));;
+_s._3319 = (rt.enviarMensaje(", ", "concatenar", _s._3319));;
 else
 local _s = rt.scope(_s)
 ;
 end;
-do return rt.enviarMensaje("rt.~t(~t, ~t~t)", "formatear", _s._3268, _s._3153, rt.enviarMensaje(_s._3082, "llamar", _s._3154), _s._3267); end;;
+do return rt.enviarMensaje("rt.~t(~t, ~t~t)", "formatear", _s._3320, _s._3205, rt.enviarMensaje(_s._3134, "llamar", _s._3206), _s._3319); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarLlamarProcedimiento", function(_3158, _3157)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarLlamarProcedimiento", function(_3210, _3209)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3157"); _s._3157 = _3157
-;rt.scopenewname(_s, "_3158"); _s._3158 = _3158;
-if rt.enviarMensaje(_s._3158, "esBuiltin", "__Lua", rt.enviarMensaje(_s._3078, "NombreResueltoDe", rt.enviarMensajeV(_s._3157, "proc"))) then
+rt.scopenewname(_s, "_3209"); _s._3209 = _3209
+;rt.scopenewname(_s, "_3210"); _s._3210 = _3210;
+if rt.enviarMensaje(_s._3210, "esBuiltin", "__Lua", rt.enviarMensaje(_s._3130, "NombreResueltoDe", rt.enviarMensajeV(_s._3209, "proc"))) then
 local _s = rt.scope(_s)
-do return rt.enviarMensaje(_s._3158, "compilarBuiltinLua", _s._3157); end;;
+do return rt.enviarMensaje(_s._3210, "compilarBuiltinLua", _s._3209); end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-do return rt.enviarMensaje(_s._3158, "enviarMensaje", rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3157, "proc")), "llamar", rt.enviarMensajeV(_s._3157, "argumentos")); end;;
+do return rt.enviarMensaje(_s._3210, "enviarMensaje", rt.enviarMensaje(_s._3136, "llamar", rt.enviarMensajeV(_s._3209, "proc")), "llamar", rt.enviarMensajeV(_s._3209, "argumentos")); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "compilarBuiltinLua", function(_3160, _3159)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "compilarBuiltinLua", function(_3212, _3211)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3275");
-rt.scopenewname(_s, "_3276");
-rt.scopenewname(_s, "_3159"); _s._3159 = _3159
-;rt.scopenewname(_s, "_3160"); _s._3160 = _3160;
-assert(rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3159, "argumentos"), "longitud"), "operador_>=", 1));;
+rt.scopenewname(_s, "_3327");
+rt.scopenewname(_s, "_3328");
+rt.scopenewname(_s, "_3211"); _s._3211 = _3211
+;rt.scopenewname(_s, "_3212"); _s._3212 = _3212;
+assert(rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3211, "argumentos"), "longitud"), "operador_>=", 1));;
 ;
-_s._3275 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3159, "argumentos"), "en", 0));;
-assert(rt.enviarMensaje(_s._3029, "llamar", _s._3275, rt.enviarMensajeV(_s._3076, "NodoTextoLiteral")));;
-_s._3276 = (rt.enviarMensaje(_s._3038, "llamar", rt.enviarMensaje(_s._3056, "llamar", rt.enviarMensajeV(_s._3159, "argumentos"), 1, -1), function(_3277)
+_s._3327 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3211, "argumentos"), "en", 0));;
+assert(rt.enviarMensaje(_s._3081, "llamar", _s._3327, rt.enviarMensajeV(_s._3128, "NodoTextoLiteral")));;
+_s._3328 = (rt.enviarMensaje(_s._3090, "llamar", rt.enviarMensaje(_s._3108, "llamar", rt.enviarMensajeV(_s._3211, "argumentos"), 1, -1), function(_3329)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3277"); _s._3277 = _3277;
-if rt.enviarMensaje(_s._3029, "llamar", _s._3277, rt.enviarMensajeV(_s._3076, "NodoVariadic")) then
+rt.scopenewname(_s, "_3329"); _s._3329 = _3329;
+if rt.enviarMensaje(_s._3081, "llamar", _s._3329, rt.enviarMensajeV(_s._3128, "NodoVariadic")) then
 local _s = rt.scope(_s)
 rt._ = (rt.enviarMensaje(_s._9, "llamar", "No se puede pasar un variadic a un builtin"));
 else
 local _s = rt.scope(_s)
 ;
 end;
-do return rt.enviarMensaje(_s._3160, "visitar", _s._3277); end;;
+do return rt.enviarMensaje(_s._3212, "visitar", _s._3329); end;;
 end));;
-do return rt.enviarMensaje("((~t)(~t))", "formatear", rt.enviarMensajeV(_s._3275, "valor"), rt.enviarMensaje(_s._3073, "llamar", _s._3276, ", ")); end;;
+do return rt.enviarMensaje("((~t)(~t))", "formatear", rt.enviarMensajeV(_s._3327, "valor"), rt.enviarMensaje(_s._3125, "llamar", _s._3328, ", ")); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarEnviarMensaje", function(_3162, _3161)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarEnviarMensaje", function(_3214, _3213)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3161"); _s._3161 = _3161
-;rt.scopenewname(_s, "_3162"); _s._3162 = _3162;
-do return rt.enviarMensaje(_s._3162, "enviarMensaje", rt.enviarMensaje(_s._3162, "visitar", rt.enviarMensajeV(_s._3161, "objeto")), rt.enviarMensajeV(_s._3161, "mensaje"), rt.enviarMensajeV(_s._3161, "argumentos")); end;;
+rt.scopenewname(_s, "_3213"); _s._3213 = _3213
+;rt.scopenewname(_s, "_3214"); _s._3214 = _3214;
+do return rt.enviarMensaje(_s._3214, "enviarMensaje", rt.enviarMensaje(_s._3214, "visitar", rt.enviarMensajeV(_s._3213, "objeto")), rt.enviarMensajeV(_s._3213, "mensaje"), rt.enviarMensajeV(_s._3213, "argumentos")); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarOperador", function(_3164, _3163)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarOperador", function(_3216, _3215)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3163"); _s._3163 = _3163
-;rt.scopenewname(_s, "_3164"); _s._3164 = _3164;
-do return rt.enviarMensaje("rt.enviarMensaje(~t, ~t, ~t)", "formatear", rt.enviarMensaje(_s._3164, "visitar", rt.enviarMensajeV(_s._3163, "lhs")), rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensaje("operador_~t", "formatear", rt.enviarMensajeV(rt.enviarMensajeV(_s._3163, "op"), "op"))), rt.enviarMensaje(_s._3164, "visitar", rt.enviarMensajeV(_s._3163, "rhs"))); end;;
+rt.scopenewname(_s, "_3215"); _s._3215 = _3215
+;rt.scopenewname(_s, "_3216"); _s._3216 = _3216;
+do return rt.enviarMensaje("rt.enviarMensaje(~t, ~t, ~t)", "formatear", rt.enviarMensaje(_s._3216, "visitar", rt.enviarMensajeV(_s._3215, "lhs")), rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensaje("operador_~t", "formatear", rt.enviarMensajeV(rt.enviarMensajeV(_s._3215, "op"), "op"))), rt.enviarMensaje(_s._3216, "visitar", rt.enviarMensajeV(_s._3215, "rhs"))); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarNoLlamar", function(_3166, _3165)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarNoLlamar", function(_3218, _3217)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3278");
-rt.scopenewname(_s, "_3165"); _s._3165 = _3165
-;rt.scopenewname(_s, "_3166"); _s._3166 = _3166;
+rt.scopenewname(_s, "_3330");
+rt.scopenewname(_s, "_3217"); _s._3217 = _3217
+;rt.scopenewname(_s, "_3218"); _s._3218 = _3218;
 ;
-if rt.enviarMensaje(_s._3029, "llamar", rt.enviarMensajeV(_s._3165, "base"), rt.enviarMensajeV(_s._3076, "NodoIdentificador")) then
+if rt.enviarMensaje(_s._3081, "llamar", rt.enviarMensajeV(_s._3217, "base"), rt.enviarMensajeV(_s._3128, "NodoIdentificador")) then
 local _s = rt.scope(_s)
-_s._3278 = (rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3165, "base")));;
+_s._3330 = (rt.enviarMensaje(_s._3136, "llamar", rt.enviarMensajeV(_s._3217, "base")));;
 else
 local _s = rt.scope(_s)
-_s._3278 = (rt.enviarMensaje(_s._3166, "visitar", rt.enviarMensajeV(_s._3165, "base")));;
+_s._3330 = (rt.enviarMensaje(_s._3218, "visitar", rt.enviarMensajeV(_s._3217, "base")));;
 end;
-if rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3165, "mensajes"), "longitud"), "operador_>", 0) then
+if rt.enviarMensaje(rt.enviarMensajeV(rt.enviarMensajeV(_s._3217, "mensajes"), "longitud"), "operador_>", 0) then
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3279");
+rt.scopenewname(_s, "_3331");
 ;
-_s._3279 = (rt.enviarMensaje(_s._3037, "llamar", _s._3278, function(_3280, _3281)
+_s._3331 = (rt.enviarMensaje(_s._3089, "llamar", _s._3330, function(_3332, _3333)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3280"); _s._3280 = _3280;
-rt.scopenewname(_s, "_3281"); _s._3281 = _3281;
-do return rt.enviarMensaje("rt.enviarMensaje(~t, ~t)", "formatear", _s._3280, rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensajeV(_s._3281, "texto"))); end;;
-end, rt.enviarMensaje(_s._3056, "llamar", rt.enviarMensajeV(_s._3165, "mensajes"), 0, -2)));;
-_s._3279 = (rt.enviarMensaje("rt.enviarMensaje(~t, ~t, ...)", "formatear", _s._3279, rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensajeV(rt.enviarMensaje(_s._3057, "llamar", rt.enviarMensajeV(_s._3165, "mensajes")), "texto"))));;
-do return rt.enviarMensaje("function(...) return ~t end", "formatear", _s._3279); end;;
+rt.scopenewname(_s, "_3332"); _s._3332 = _3332;
+rt.scopenewname(_s, "_3333"); _s._3333 = _3333;
+do return rt.enviarMensaje("rt.enviarMensaje(~t, ~t)", "formatear", _s._3332, rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(_s._3333, "texto"))); end;;
+end, rt.enviarMensaje(_s._3108, "llamar", rt.enviarMensajeV(_s._3217, "mensajes"), 0, -2)));;
+_s._3331 = (rt.enviarMensaje("rt.enviarMensaje(~t, ~t, ...)", "formatear", _s._3331, rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(rt.enviarMensaje(_s._3109, "llamar", rt.enviarMensajeV(_s._3217, "mensajes")), "texto"))));;
+do return rt.enviarMensaje("function(...) return ~t end", "formatear", _s._3331); end;;
 else
 local _s = rt.scope(_s)
-do return _s._3278; end;;
+do return _s._3330; end;;
 end;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarAutoejecutar", function(_3168, _3167)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarAutoejecutar", function(_3220, _3219)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3167"); _s._3167 = _3167
-;rt.scopenewname(_s, "_3168"); _s._3168 = _3168;
-do return rt.enviarMensaje(_s._3168, "enviarMensaje", rt.enviarMensaje(_s._3168, "visitar", rt.enviarMensajeV(_s._3167, "expr")), "llamar", rt.enviarMensajeV(_s._3167, "argumentos")); end;;
+rt.scopenewname(_s, "_3219"); _s._3219 = _3219
+;rt.scopenewname(_s, "_3220"); _s._3220 = _3220;
+do return rt.enviarMensaje(_s._3220, "enviarMensaje", rt.enviarMensaje(_s._3220, "visitar", rt.enviarMensajeV(_s._3219, "expr")), "llamar", rt.enviarMensajeV(_s._3219, "argumentos")); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarFunciónAnónima", function(_3170, _3169)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarFunciónAnónima", function(_3222, _3221)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3282");
-rt.scopenewname(_s, "_3283");
-rt.scopenewname(_s, "_3169"); _s._3169 = _3169
-;rt.scopenewname(_s, "_3170"); _s._3170 = _3170;
+rt.scopenewname(_s, "_3334");
+rt.scopenewname(_s, "_3335");
+rt.scopenewname(_s, "_3221"); _s._3221 = _3221
+;rt.scopenewname(_s, "_3222"); _s._3222 = _3222;
 ;
-_s._3283 = (rt.enviarMensaje(_s._3170, "crearSubámbitoDesdeNombreEnNodo", _s._3169, "nombresDefinídosSinParámetros"));;
-if rt.enviarMensajeV(_s._3169, "esMétodo") then
+_s._3335 = (rt.enviarMensaje(_s._3222, "crearSubámbitoDesdeNombreEnNodo", _s._3221, "nombresDefinídosSinParámetros"));;
+if rt.enviarMensajeV(_s._3221, "esMétodo") then
 local _s = rt.scope(_s)
-_s._3282 = (rt.enviarMensaje(_s._3169, "obtenerMetadato", rt.enviarMensajeV(_s._3078, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), "nombreResueltoDeYo"));;
+_s._3334 = (rt.enviarMensaje(_s._3221, "obtenerMetadato", rt.enviarMensajeV(_s._3130, "LLAVE_RESOLUCIÓN_DE_NOMBRES"), "nombreResueltoDeYo"));;
 else
 local _s = rt.scope(_s)
-_s._3282 = (_s._4);;
+_s._3334 = (_s._4);;
 end;
-do return rt.enviarMensaje(_s._3283, "expresiónDeFunción", _s._3282, rt.enviarMensajeV(_s._3169, "parámetros"), rt.enviarMensajeV(_s._3169, "cuerpo")); end;;
+do return rt.enviarMensaje(_s._3335, "expresiónDeFunción", _s._3334, rt.enviarMensajeV(_s._3221, "parámetros"), rt.enviarMensajeV(_s._3221, "cuerpo")); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarSonIguales", function(_3172, _3171)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarSonIguales", function(_3224, _3223)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3284");
-rt.scopenewname(_s, "_3171"); _s._3171 = _3171
-;rt.scopenewname(_s, "_3172"); _s._3172 = _3172;
+rt.scopenewname(_s, "_3336");
+rt.scopenewname(_s, "_3223"); _s._3223 = _3223
+;rt.scopenewname(_s, "_3224"); _s._3224 = _3224;
 ;
-_s._3284 = (rt.enviarMensaje(_s._3172, "enviarMensaje", rt.enviarMensaje(_s._3172, "visitar", rt.enviarMensajeV(_s._3171, "lhs")), "igualA", rt.enviarMensaje(_s._22, "crearCon", rt.enviarMensajeV(_s._3171, "rhs"))));;
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3171, "tipoIgualdad"), "operador_=", rt.enviarMensajeV(rt.enviarMensajeV(_s._3076, "TipoIgualdad"), "IGUALES")) then
+_s._3336 = (rt.enviarMensaje(_s._3224, "enviarMensaje", rt.enviarMensaje(_s._3224, "visitar", rt.enviarMensajeV(_s._3223, "lhs")), "igualA", rt.enviarMensaje(_s._22, "crearCon", rt.enviarMensajeV(_s._3223, "rhs"))));;
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3223, "tipoIgualdad"), "operador_=", rt.enviarMensajeV(rt.enviarMensajeV(_s._3128, "TipoIgualdad"), "IGUALES")) then
 local _s = rt.scope(_s)
-do return _s._3284; end;;
+do return _s._3336; end;;
 else
 local _s = rt.scope(_s)
-do return rt.enviarMensaje("not ~t", "formatear", _s._3284); end;;
+do return rt.enviarMensaje("not ~t", "formatear", _s._3336); end;;
 end;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarReferenciar", function(_3174, _3173)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarReferenciar", function(_3226, _3225)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3173"); _s._3173 = _3173
-;rt.scopenewname(_s, "_3174"); _s._3174 = _3174;
-rt._ = (rt.enviarMensajeV(_s._3061, "llamar"));
+rt.scopenewname(_s, "_3225"); _s._3225 = _3225
+;rt.scopenewname(_s, "_3226"); _s._3226 = _3226;
+rt._ = (rt.enviarMensajeV(_s._3113, "llamar"));
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarNo", function(_3176, _3175)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarNo", function(_3228, _3227)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3175"); _s._3175 = _3175
-;rt.scopenewname(_s, "_3176"); _s._3176 = _3176;
-do return rt.enviarMensaje("not ~t", "formatear", rt.enviarMensaje(_s._3176, "visitar", rt.enviarMensajeV(_s._3175, "expresión"))); end;;
+rt.scopenewname(_s, "_3227"); _s._3227 = _3227
+;rt.scopenewname(_s, "_3228"); _s._3228 = _3228;
+do return rt.enviarMensaje("not ~t", "formatear", rt.enviarMensaje(_s._3228, "visitar", rt.enviarMensajeV(_s._3227, "expresión"))); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarClonar", function(_3178, _3177)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarClonar", function(_3230, _3229)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3285");
-rt.scopenewname(_s, "_3177"); _s._3177 = _3177
-;rt.scopenewname(_s, "_3178"); _s._3178 = _3178;
+rt.scopenewname(_s, "_3337");
+rt.scopenewname(_s, "_3229"); _s._3229 = _3229
+;rt.scopenewname(_s, "_3230"); _s._3230 = _3230;
 ;
-_s._3285 = (rt.enviarMensaje("{~t~e", "formatear", rt.enviarMensaje(_s._3073, "llamar", rt.enviarMensaje(_s._3038, "llamar", rt.enviarMensajeV(_s._3177, "campos"), function(_3286)
+_s._3337 = (rt.enviarMensaje("{~t~e", "formatear", rt.enviarMensaje(_s._3125, "llamar", rt.enviarMensaje(_s._3090, "llamar", rt.enviarMensajeV(_s._3229, "campos"), function(_3338)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3286"); _s._3286 = _3286;
-do return rt.enviarMensaje("[~t] = ~t", "formatear", rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensaje(_s._3286, "en", 0)), rt.enviarMensaje(_s._3178, "visitar", rt.enviarMensaje(_s._3286, "en", 1))); end;;
+rt.scopenewname(_s, "_3338"); _s._3338 = _3338;
+do return rt.enviarMensaje("[~t] = ~t", "formatear", rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensaje(_s._3338, "en", 0)), rt.enviarMensaje(_s._3230, "visitar", rt.enviarMensaje(_s._3338, "en", 1))); end;;
 end), ", ")));;
-do return rt.enviarMensaje("rt.clonar(~t, ~t)", "formatear", rt.enviarMensaje(_s._3178, "visitar", rt.enviarMensajeV(_s._3177, "expresiónAClonar")), _s._3285); end;;
+do return rt.enviarMensaje("rt.clonar(~t, ~t)", "formatear", rt.enviarMensaje(_s._3230, "visitar", rt.enviarMensajeV(_s._3229, "expresiónAClonar")), _s._3337); end;;
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "visitarVariadic", function(_3180, _3179)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "visitarVariadic", function(_3232, _3231)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3179"); _s._3179 = _3179
-;rt.scopenewname(_s, "_3180"); _s._3180 = _3180;
-rt._ = (rt.enviarMensajeV(_s._3063, "llamar"));
+rt.scopenewname(_s, "_3231"); _s._3231 = _3231
+;rt.scopenewname(_s, "_3232"); _s._3232 = _3232;
+rt._ = (rt.enviarMensajeV(_s._3115, "llamar"));
 end);;
-rt.enviarMensaje(_s._3086, "agregarMetodo", "compilarInstrucciones", function(_3182, _3181)
+rt.enviarMensaje(_s._3138, "agregarMetodo", "compilarInstrucciones", function(_3234, _3233)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3287");
-rt.scopenewname(_s, "_3181"); _s._3181 = _3181
-;rt.scopenewname(_s, "_3182"); _s._3182 = _3182;
+rt.scopenewname(_s, "_3339");
+rt.scopenewname(_s, "_3233"); _s._3233 = _3233
+;rt.scopenewname(_s, "_3234"); _s._3234 = _3234;
 ;
-_s._3287 = (rt.enviarMensaje(_s._3038, "llamar", _s._3181, function(_3288)
+_s._3339 = (rt.enviarMensaje(_s._3090, "llamar", _s._3233, function(_3340)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3288"); _s._3288 = _3288;
-if rt.enviarMensaje(_s._3029, "llamar", _s._3288, rt.enviarMensajeV(_s._3076, "NodoExpresion")) then
+rt.scopenewname(_s, "_3340"); _s._3340 = _3340;
+if rt.enviarMensaje(_s._3081, "llamar", _s._3340, rt.enviarMensajeV(_s._3128, "NodoExpresion")) then
 local _s = rt.scope(_s)
-do return rt.enviarMensaje("rt._ = (~t)", "formatear", rt.enviarMensaje(_s._3182, "visitar", _s._3288)); end;;
+do return rt.enviarMensaje("rt._ = (~t)", "formatear", rt.enviarMensaje(_s._3234, "visitar", _s._3340)); end;;
 else
 local _s = rt.scope(_s)
-do return rt.enviarMensaje(_s._3182, "visitar", _s._3288); end;;
+do return rt.enviarMensaje(_s._3234, "visitar", _s._3340); end;;
 end;
 end));;
-do return rt.enviarMensaje(rt.enviarMensaje(_s._3073, "llamar", _s._3287, rt.enviarMensajeV(";~%", "formatear")), "concatenar", ";"); end;;
+do return rt.enviarMensaje(rt.enviarMensaje(_s._3125, "llamar", _s._3339, rt.enviarMensajeV(";~%", "formatear")), "concatenar", ";"); end;;
 end);;
-_s._3183 = (function(_3184, _3185, _3186, _3187)
+_s._3235 = (function(_3236, _3237, _3238, _3239)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3289");
-rt.scopenewname(_s, "_3290");
-rt.scopenewname(_s, "_3291");
-rt.scopenewname(_s, "_3184"); _s._3184 = _3184;
-rt.scopenewname(_s, "_3185"); _s._3185 = _3185;
-rt.scopenewname(_s, "_3186"); _s._3186 = _3186;
-rt.scopenewname(_s, "_3187"); _s._3187 = _3187;
+rt.scopenewname(_s, "_3341");
+rt.scopenewname(_s, "_3342");
+rt.scopenewname(_s, "_3343");
+rt.scopenewname(_s, "_3236"); _s._3236 = _3236;
+rt.scopenewname(_s, "_3237"); _s._3237 = _3237;
+rt.scopenewname(_s, "_3238"); _s._3238 = _3238;
+rt.scopenewname(_s, "_3239"); _s._3239 = _3239;
 ;
-_s._3289 = (rt.enviarMensaje(_s._3086, "crear", _s._3184, _s._3186, _s._3187));;
-_s._3290 = (rt.enviarMensajeV(_s._3289, "iniciar"));;
-_s._3291 = (rt.enviarMensajeV(_s._3289, "registrarBuiltins"));;
-do return rt.enviarMensaje("local rt = require \"backends.lua.runtime\";~%~t~%~t~%~t", "formatear", _s._3290, _s._3291, rt.enviarMensaje(_s._3289, "visitar", _s._3185)); end;;
+_s._3341 = (rt.enviarMensaje(_s._3138, "crear", _s._3236, _s._3238, _s._3239));;
+_s._3342 = (rt.enviarMensajeV(_s._3341, "iniciar"));;
+_s._3343 = (rt.enviarMensajeV(_s._3341, "registrarBuiltins"));;
+do return rt.enviarMensaje("local rt = require \"backends.lua.runtime\";~%~t~%~t~%~t", "formatear", _s._3342, _s._3343, rt.enviarMensaje(_s._3341, "visitar", _s._3237)); end;;
 end);;
-_s._3188 = (rt.enviarMensajeV((rt.enviarMensajeV(_s._3080, "CompiladorBase")), "subclase"));
-rt.enviarMensaje(_s._3188, "fijar_nombre", "CompiladorALua");;
-rt.enviarMensaje(_s._3188, "agregarAtributo", "_builtins");
-rt.enviarMensaje(_s._3188, "agregarAtributo", "_builtinsAutoejecutables");;
-rt.enviarMensaje(_s._3188, "agregarMetodo", "inicializar", function(_3190, _3189)
+_s._3240 = (rt.enviarMensajeV((rt.enviarMensajeV(_s._3132, "CompiladorBase")), "subclase"));
+rt.enviarMensaje(_s._3240, "fijar_nombre", "CompiladorALua");;
+rt.enviarMensaje(_s._3240, "agregarAtributo", "_builtins");
+rt.enviarMensaje(_s._3240, "agregarAtributo", "_builtinsAutoejecutables");;
+rt.enviarMensaje(_s._3240, "agregarMetodo", "inicializar", function(_3242, _3241)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3189"); _s._3189 = _3189
-;rt.scopenewname(_s, "_3190"); _s._3190 = _3190;
-rt.enviarMensaje(_s._3190, "fijar_baseDeDatos", _s._3189);
-rt.enviarMensaje(_s._3190, "fijar__builtins", rt.enviarMensaje(_s._3025, "desdePares", "Objeto", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "VERDADERO", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "FALSO", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "NULO", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "Aplicar", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "ProcedimientoVarargs", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "TipoDe", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__EnviarMensaje", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__FallarConMensaje", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__ClonarObjeto", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__CompararObjeto", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__AbrirArchivo", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__ByteATexto", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__TextoAByte", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__ByteEof", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__Capturar", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__Argv", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__LeerCaracter", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__Impl", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "Boole", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "Numero", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "Arreglo", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "Procedimiento", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "Texto", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "EspacioDeNombres", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "Referencia", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "TipoNulo", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre"), "__Lua", rt.enviarMensajeV(_s._3078, "GenerarIdDeNombre")));
-rt.enviarMensaje(_s._3190, "fijar__builtinsAutoejecutables", rt.enviarMensaje(_s._22, "crearCon", "__Lua", "Aplicar", "ProcedimientoVarargs", "TipoDe", "__EnviarMensaje", "__FallarConMensaje", "__ClonarObjeto", "__CompararObjeto", "__AbrirArchivo", "__ByteATexto", "__TextoAByte", "__ByteEof", "__Capturar", "__LeerCaracter"));
+rt.scopenewname(_s, "_3241"); _s._3241 = _3241
+;rt.scopenewname(_s, "_3242"); _s._3242 = _3242;
+rt.enviarMensaje(_s._3242, "fijar_baseDeDatos", _s._3241);
+rt.enviarMensaje(_s._3242, "fijar__builtins", rt.enviarMensaje(_s._3077, "desdePares", "Objeto", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "VERDADERO", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "FALSO", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "NULO", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "Aplicar", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "ProcedimientoVarargs", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "TipoDe", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__EnviarMensaje", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__FallarConMensaje", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__ClonarObjeto", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__CompararObjeto", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__AbrirArchivo", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__ByteATexto", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__TextoAByte", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__ByteEof", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__Capturar", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__Argv", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__LeerCaracter", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__Impl", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "Boole", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "Numero", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "Arreglo", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "Procedimiento", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "Texto", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "EspacioDeNombres", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "Referencia", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "TipoNulo", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre"), "__Lua", rt.enviarMensajeV(_s._3130, "GenerarIdDeNombre")));
+rt.enviarMensaje(_s._3242, "fijar__builtinsAutoejecutables", rt.enviarMensaje(_s._22, "crearCon", "__Lua", "Aplicar", "ProcedimientoVarargs", "TipoDe", "__EnviarMensaje", "__FallarConMensaje", "__ClonarObjeto", "__CompararObjeto", "__AbrirArchivo", "__ByteATexto", "__TextoAByte", "__ByteEof", "__Capturar", "__LeerCaracter"));
 end);;
-rt.enviarMensaje(_s._3188, "agregarMetodo", "compilarAST", function(_3193, _3191, _3192)
+rt.enviarMensaje(_s._3240, "agregarMetodo", "compilarAST", function(_3245, _3243, _3244)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3191"); _s._3191 = _3191;
-rt.scopenewname(_s, "_3192"); _s._3192 = _3192
-;rt.scopenewname(_s, "_3193"); _s._3193 = _3193;
-do return rt.enviarMensaje(_s._3183, "llamar", rt.enviarMensajeV(_s._3193, "baseDeDatos"), _s._3191, _s._3192, _s._3193); end;;
+rt.scopenewname(_s, "_3243"); _s._3243 = _3243;
+rt.scopenewname(_s, "_3244"); _s._3244 = _3244
+;rt.scopenewname(_s, "_3245"); _s._3245 = _3245;
+do return rt.enviarMensaje(_s._3235, "llamar", rt.enviarMensajeV(_s._3245, "baseDeDatos"), _s._3243, _s._3244, _s._3245); end;;
 end);;
-rt.enviarMensaje(_s._3188, "agregarMetodo", "importarMódulo", function(_3195, _3194)
+rt.enviarMensaje(_s._3240, "agregarMetodo", "importarMódulo", function(_3247, _3246)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3292");
-rt.scopenewname(_s, "_3293");
-rt.scopenewname(_s, "_3194"); _s._3194 = _3194
-;rt.scopenewname(_s, "_3195"); _s._3195 = _3195;
+rt.scopenewname(_s, "_3344");
+rt.scopenewname(_s, "_3345");
+rt.scopenewname(_s, "_3246"); _s._3246 = _3246
+;rt.scopenewname(_s, "_3247"); _s._3247 = _3247;
 ;
-_s._3292 = (rt.enviarMensaje(_s._3079, "ResolverMóduloPorNombre", rt.enviarMensajeV(_s._3195, "baseDeDatos"), _s._3194, function(_3294)
+_s._3344 = (rt.enviarMensaje(_s._3131, "ResolverMóduloPorNombre", rt.enviarMensajeV(_s._3247, "baseDeDatos"), _s._3246, function(_3346)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3294"); _s._3294 = _3294;
-do return _s._3294; end;;
-end, function(_3295)
+rt.scopenewname(_s, "_3346"); _s._3346 = _3346;
+do return _s._3346; end;;
+end, function(_3347)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3295"); _s._3295 = _3295;
-do return _s._3295; end;;
+rt.scopenewname(_s, "_3347"); _s._3347 = _3347;
+do return _s._3347; end;;
 end, function()
 local _s = rt.scope(_s)
 ;
-rt._ = (rt.enviarMensaje(_s._9, "llamar", rt.enviarMensaje("Error: no se pudo encontrar el módulo ~t", "formatear", _s._3194)));
+rt._ = (rt.enviarMensaje(_s._9, "llamar", rt.enviarMensaje("Error: no se pudo encontrar el módulo ~t", "formatear", _s._3246)));
 end));;
-rt._ = (rt.enviarMensaje(_s._3030, "llamar", rt.enviarMensaje("--- Buscando: ~t", "formatear", _s._3194)));
-if rt.enviarMensaje(_s._3029, "llamar", _s._3292, rt.enviarMensajeV(_s._3079, "Módulo")) then
+rt._ = (rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensaje("--- Buscando: ~t", "formatear", _s._3246)));
+if rt.enviarMensaje(_s._3081, "llamar", _s._3344, rt.enviarMensajeV(_s._3131, "Módulo")) then
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3030, "llamar", "--- Encontrado"));
-do return _s._3292; end;;
+rt._ = (rt.enviarMensaje(_s._3082, "llamar", "--- Encontrado"));
+do return _s._3344; end;;
 else
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3030, "llamar", "--- No encontrado, compilandolo"));
-_s._3293 = (rt.enviarMensaje(_s._3195, "compilarTexto", _s._3292, rt.enviarMensaje(_s._3075, "LeerArchivo", rt.enviarMensajeV(_s._3292, "nombreCompletoDelArchivo"))));;
-rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._3195, "baseDeDatos"), "agregarMódulo", _s._3293));
-do return _s._3293; end;;
+rt._ = (rt.enviarMensaje(_s._3082, "llamar", "--- No encontrado, compilandolo"));
+_s._3345 = (rt.enviarMensaje(_s._3247, "compilarTexto", _s._3344, rt.enviarMensaje(_s._3127, "LeerArchivo", rt.enviarMensajeV(_s._3344, "nombreCompletoDelArchivo"))));;
+rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._3247, "baseDeDatos"), "agregarMódulo", _s._3345));
+do return _s._3345; end;;
 end;
 end);;
-rt.enviarMensaje(_s._3188, "agregarMetodo", "inyectarNombresEnÁmbito", function(_3197, _3196)
+rt.enviarMensaje(_s._3240, "agregarMetodo", "inyectarNombresEnÁmbito", function(_3249, _3248)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3196"); _s._3196 = _3196
-;rt.scopenewname(_s, "_3197"); _s._3197 = _3197;
-rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._3197, "_builtins"), "paraCadaPar", function(_3296, _3297)
+rt.scopenewname(_s, "_3248"); _s._3248 = _3248
+;rt.scopenewname(_s, "_3249"); _s._3249 = _3249;
+rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._3249, "_builtins"), "paraCadaPar", function(_3348, _3349)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3296"); _s._3296 = _3296;
-rt.scopenewname(_s, "_3297"); _s._3297 = _3297;
-rt._ = (rt.enviarMensaje(_s._3196, "agregar", _s._3296, _s._3297));
+rt.scopenewname(_s, "_3348"); _s._3348 = _3348;
+rt.scopenewname(_s, "_3349"); _s._3349 = _3349;
+rt._ = (rt.enviarMensaje(_s._3248, "agregar", _s._3348, _s._3349));
 end));
-rt._ = (rt.enviarMensaje(_s._3032, "llamar", rt.enviarMensajeV(_s._3197, "_builtinsAutoejecutables"), function(_3298)
+rt._ = (rt.enviarMensaje(_s._3084, "llamar", rt.enviarMensajeV(_s._3249, "_builtinsAutoejecutables"), function(_3350)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3298"); _s._3298 = _3298;
-rt._ = (rt.enviarMensaje(_s._3196, "marcarComoAutoejecutable", _s._3298));
-end));
-end);;
-rt.enviarMensaje(_s._3188, "agregarMetodo", "removerNombresDeÁmbito", function(_3199, _3198)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3198"); _s._3198 = _3198
-;rt.scopenewname(_s, "_3199"); _s._3199 = _3199;
-rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._3199, "_builtins"), "paraCadaPar", function(_3299, _3300)
-local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3299"); _s._3299 = _3299;
-rt.scopenewname(_s, "_3300"); _s._3300 = _3300;
-rt._ = (rt.enviarMensaje(_s._3198, "eliminarNombre", _s._3299));
+rt.scopenewname(_s, "_3350"); _s._3350 = _3350;
+rt._ = (rt.enviarMensaje(_s._3248, "marcarComoAutoejecutable", _s._3350));
 end));
 end);;
-rt.enviarMensaje(_s._3188, "agregarMetodo", "compilarTodo", function(_3201, _3200)
+rt.enviarMensaje(_s._3240, "agregarMetodo", "removerNombresDeÁmbito", function(_3251, _3250)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3301");
-rt.scopenewname(_s, "_3302");
-rt.scopenewname(_s, "_3200"); _s._3200 = _3200
-;rt.scopenewname(_s, "_3201"); _s._3201 = _3201;
+rt.scopenewname(_s, "_3250"); _s._3250 = _3250
+;rt.scopenewname(_s, "_3251"); _s._3251 = _3251;
+rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._3251, "_builtins"), "paraCadaPar", function(_3351, _3352)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3351"); _s._3351 = _3351;
+rt.scopenewname(_s, "_3352"); _s._3352 = _3352;
+rt._ = (rt.enviarMensaje(_s._3250, "eliminarNombre", _s._3351));
+end));
+end);;
+rt.enviarMensaje(_s._3240, "agregarMetodo", "compilarTodo", function(_3253, _3252)
+local _s = rt.scope(_s)
+rt.scopenewname(_s, "_3353");
+rt.scopenewname(_s, "_3354");
+rt.scopenewname(_s, "_3252"); _s._3252 = _3252
+;rt.scopenewname(_s, "_3253"); _s._3253 = _3253;
 ;
-_s._3301 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3201, "baseDeDatos"), "buscarMóduloPorLlave", _s._3200));;
-_s._3302 = (rt.enviarMensajeV(_s._22, "vacio"));;
-rt._ = (rt.enviarMensaje(_s._3302, "agregarAlFinal", "local rt = require \"backends.lua.runtime\";"));
-rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._3201, "baseDeDatos"), "paraCadaMódulo", function(_3303)
+_s._3353 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3253, "baseDeDatos"), "buscarMóduloPorLlave", _s._3252));;
+_s._3354 = (rt.enviarMensajeV(_s._22, "vacio"));;
+rt._ = (rt.enviarMensaje(_s._3354, "agregarAlFinal", "local rt = require \"backends.lua.runtime\";"));
+rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._3253, "baseDeDatos"), "paraCadaMódulo", function(_3355)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3303"); _s._3303 = _3303;
-rt._ = (rt.enviarMensaje(_s._3302, "agregarAlFinal", rt.enviarMensaje("rt.modulos[~t] = function()~%~t~%end;", "formatear", rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3303, "llave"), "nombreCompletoDelArchivo")), rt.enviarMensajeV(_s._3303, "compilado"))));
+rt.scopenewname(_s, "_3355"); _s._3355 = _3355;
+rt._ = (rt.enviarMensaje(_s._3354, "agregarAlFinal", rt.enviarMensaje("rt.modulos[~t] = function()~%~t~%end;", "formatear", rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3355, "llave"), "nombreCompletoDelArchivo")), rt.enviarMensajeV(_s._3355, "compilado"))));
 end));
-rt._ = (rt.enviarMensaje(_s._3302, "agregarAlFinal", rt.enviarMensaje(";rt.importar(~t);", "formatear", rt.enviarMensaje(_s._3082, "llamar", rt.enviarMensajeV(_s._3200, "nombreCompletoDelArchivo")))));
-do return rt.enviarMensaje(_s._3073, "llamar", _s._3302, rt.enviarMensajeV("~%", "formatear")); end;;
+rt._ = (rt.enviarMensaje(_s._3354, "agregarAlFinal", rt.enviarMensaje(";rt.importar(~t);", "formatear", rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(_s._3252, "nombreCompletoDelArchivo")))));
+do return rt.enviarMensaje(_s._3125, "llamar", _s._3354, rt.enviarMensajeV("~%", "formatear")); end;;
 end);;
 return rt.ns({
-  ["EsSubclase"] = { value = _s._3028, autoexecutable = true },
-  ["EsInstancia"] = { value = _s._3029, autoexecutable = true },
-  ["Escribir"] = { value = _s._3030, autoexecutable = true },
-  ["Contiene"] = { value = _s._3031, autoexecutable = true },
-  ["ParaCadaElemento"] = { value = _s._3032, autoexecutable = true },
-  ["ParaCadaNúmero"] = { value = _s._3033, autoexecutable = true },
-  ["ParaCadaNúmeroConPaso"] = { value = _s._3034, autoexecutable = true },
-  ["ParaCadaElementoConÍndice"] = { value = _s._3035, autoexecutable = true },
-  ["Identidad"] = { value = _s._3036, autoexecutable = true },
-  ["Reducir"] = { value = _s._3037, autoexecutable = true },
-  ["Mapear"] = { value = _s._3038, autoexecutable = true },
-  ["Todos"] = { value = _s._3039, autoexecutable = true },
-  ["Algún"] = { value = _s._3040, autoexecutable = true },
-  ["DígitoAEntero"] = { value = _s._3041, autoexecutable = true },
-  ["Elevar"] = { value = _s._3042, autoexecutable = true },
-  ["ConvertirAEntero"] = { value = _s._3043, autoexecutable = true },
-  ["EsNúmeroEntero"] = { value = _s._3044, autoexecutable = true },
-  ["Concatenar"] = { value = _s._3045, autoexecutable = true },
-  ["ArregloConFinal"] = { value = _s._3046, autoexecutable = true },
-  ["Aplicar'"] = { value = _s._3047, autoexecutable = true },
-  ["Aplicar'i"] = { value = _s._3048, autoexecutable = true },
-  ["Resto"] = { value = _s._3049, autoexecutable = true },
-  ["Abs"] = { value = _s._3050, autoexecutable = true },
-  ["Mod"] = { value = _s._3051, autoexecutable = true },
-  ["EsPar"] = { value = _s._3052, autoexecutable = true },
-  ["EsImpar"] = { value = _s._3053, autoexecutable = true },
-  ["Aplanar"] = { value = _s._3054, autoexecutable = true },
-  ["AplanarTodo"] = { value = _s._3055, autoexecutable = true },
-  ["PedazoDeArreglo"] = { value = _s._3056, autoexecutable = true },
-  ["ÚltimoElemento"] = { value = _s._3057, autoexecutable = true },
-  ["EsNulo"] = { value = _s._3058, autoexecutable = true },
-  ["Max"] = { value = _s._3059, autoexecutable = true },
-  ["Min"] = { value = _s._3060, autoexecutable = true },
-  ["NoImplementado"] = { value = _s._3061, autoexecutable = true },
-  ["MétodoAbstracto"] = { value = _s._3062, autoexecutable = true },
-  ["Inalcanzable"] = { value = _s._3063, autoexecutable = true },
-  ["LlamarConEC"] = { value = _s._3064, autoexecutable = true },
-  ["EliminarElementoEnÍndice"] = { value = _s._3065, autoexecutable = true },
-  ["LeerLínea"] = { value = _s._3066, autoexecutable = true },
-  ["LeerNúmero"] = { value = _s._3067, autoexecutable = true },
-  ["Diccionario"] = { value = _s._3025, autoexecutable = false },
-  ["Resultado"] = { value = _s._3026, autoexecutable = false },
-  ["Pila"] = { value = _s._3027, autoexecutable = false },
-  ["TextoContiene"] = { value = _s._3068, autoexecutable = true },
-  ["Partir'"] = { value = _s._3069, autoexecutable = true },
-  ["Partir"] = { value = _s._3070, autoexecutable = true },
-  ["PartirComoPerl"] = { value = _s._3071, autoexecutable = true },
-  ["PartirSinVacíos"] = { value = _s._3072, autoexecutable = true },
-  ["Unir"] = { value = _s._3073, autoexecutable = true },
-  ["RepetirTexto"] = { value = _s._3074, autoexecutable = true },
-  ["Archivos"] = { value = _s._3075, autoexecutable = false },
-  ["AST"] = { value = _s._3076, autoexecutable = false },
-  ["CN"] = { value = _s._3077, autoexecutable = false },
-  ["RN"] = { value = _s._3078, autoexecutable = false },
-  ["Módulos"] = { value = _s._3079, autoexecutable = false },
-  ["Compilador"] = { value = _s._3080, autoexecutable = false },
-  ["PSEUDOD_IMPL"] = { value = _s._3081, autoexecutable = false },
-  ["EscaparParaLua"] = { value = _s._3082, autoexecutable = true },
-  ["IdentificadorDe"] = { value = _s._3084, autoexecutable = true },
-  ["CompiladorSimpleALua"] = { value = _s._3086, autoexecutable = false },
-  ["ComparaciónDeBuiltin"] = { value = _s._3133, autoexecutable = false },
-  ["SepararComparaciónDeBuiltin"] = { value = _s._3134, autoexecutable = true },
-  ["CompilarALua"] = { value = _s._3183, autoexecutable = true },
-  ["CompiladorALua"] = { value = _s._3188, autoexecutable = false },
+  ["EsSubclase"] = { value = _s._3080, autoexecutable = true },
+  ["EsInstancia"] = { value = _s._3081, autoexecutable = true },
+  ["Escribir"] = { value = _s._3082, autoexecutable = true },
+  ["Contiene"] = { value = _s._3083, autoexecutable = true },
+  ["ParaCadaElemento"] = { value = _s._3084, autoexecutable = true },
+  ["ParaCadaNúmero"] = { value = _s._3085, autoexecutable = true },
+  ["ParaCadaNúmeroConPaso"] = { value = _s._3086, autoexecutable = true },
+  ["ParaCadaElementoConÍndice"] = { value = _s._3087, autoexecutable = true },
+  ["Identidad"] = { value = _s._3088, autoexecutable = true },
+  ["Reducir"] = { value = _s._3089, autoexecutable = true },
+  ["Mapear"] = { value = _s._3090, autoexecutable = true },
+  ["Todos"] = { value = _s._3091, autoexecutable = true },
+  ["Algún"] = { value = _s._3092, autoexecutable = true },
+  ["DígitoAEntero"] = { value = _s._3093, autoexecutable = true },
+  ["Elevar"] = { value = _s._3094, autoexecutable = true },
+  ["ConvertirAEntero"] = { value = _s._3095, autoexecutable = true },
+  ["EsNúmeroEntero"] = { value = _s._3096, autoexecutable = true },
+  ["Concatenar"] = { value = _s._3097, autoexecutable = true },
+  ["ArregloConFinal"] = { value = _s._3098, autoexecutable = true },
+  ["Aplicar'"] = { value = _s._3099, autoexecutable = true },
+  ["Aplicar'i"] = { value = _s._3100, autoexecutable = true },
+  ["Resto"] = { value = _s._3101, autoexecutable = true },
+  ["Abs"] = { value = _s._3102, autoexecutable = true },
+  ["Mod"] = { value = _s._3103, autoexecutable = true },
+  ["EsPar"] = { value = _s._3104, autoexecutable = true },
+  ["EsImpar"] = { value = _s._3105, autoexecutable = true },
+  ["Aplanar"] = { value = _s._3106, autoexecutable = true },
+  ["AplanarTodo"] = { value = _s._3107, autoexecutable = true },
+  ["PedazoDeArreglo"] = { value = _s._3108, autoexecutable = true },
+  ["ÚltimoElemento"] = { value = _s._3109, autoexecutable = true },
+  ["EsNulo"] = { value = _s._3110, autoexecutable = true },
+  ["Max"] = { value = _s._3111, autoexecutable = true },
+  ["Min"] = { value = _s._3112, autoexecutable = true },
+  ["NoImplementado"] = { value = _s._3113, autoexecutable = true },
+  ["MétodoAbstracto"] = { value = _s._3114, autoexecutable = true },
+  ["Inalcanzable"] = { value = _s._3115, autoexecutable = true },
+  ["LlamarConEC"] = { value = _s._3116, autoexecutable = true },
+  ["EliminarElementoEnÍndice"] = { value = _s._3117, autoexecutable = true },
+  ["LeerLínea"] = { value = _s._3118, autoexecutable = true },
+  ["LeerNúmero"] = { value = _s._3119, autoexecutable = true },
+  ["Diccionario"] = { value = _s._3077, autoexecutable = false },
+  ["Resultado"] = { value = _s._3078, autoexecutable = false },
+  ["Pila"] = { value = _s._3079, autoexecutable = false },
+  ["TextoContiene"] = { value = _s._3120, autoexecutable = true },
+  ["Partir'"] = { value = _s._3121, autoexecutable = true },
+  ["Partir"] = { value = _s._3122, autoexecutable = true },
+  ["PartirComoPerl"] = { value = _s._3123, autoexecutable = true },
+  ["PartirSinVacíos"] = { value = _s._3124, autoexecutable = true },
+  ["Unir"] = { value = _s._3125, autoexecutable = true },
+  ["RepetirTexto"] = { value = _s._3126, autoexecutable = true },
+  ["Archivos"] = { value = _s._3127, autoexecutable = false },
+  ["AST"] = { value = _s._3128, autoexecutable = false },
+  ["CN"] = { value = _s._3129, autoexecutable = false },
+  ["RN"] = { value = _s._3130, autoexecutable = false },
+  ["Módulos"] = { value = _s._3131, autoexecutable = false },
+  ["Compilador"] = { value = _s._3132, autoexecutable = false },
+  ["PSEUDOD_IMPL"] = { value = _s._3133, autoexecutable = false },
+  ["EscaparParaLua"] = { value = _s._3134, autoexecutable = true },
+  ["IdentificadorDe"] = { value = _s._3136, autoexecutable = true },
+  ["CompiladorSimpleALua"] = { value = _s._3138, autoexecutable = false },
+  ["ComparaciónDeBuiltin"] = { value = _s._3185, autoexecutable = false },
+  ["SepararComparaciónDeBuiltin"] = { value = _s._3186, autoexecutable = true },
+  ["CompilarALua"] = { value = _s._3235, autoexecutable = true },
+  ["CompiladorALua"] = { value = _s._3240, autoexecutable = false },
 });
 end;
 rt.modulos["./inicio.pd"] = function()
@@ -13712,27 +13957,27 @@ rt.scopenewname(_s, "_1015");
 rt.scopenewname(_s, "_1074");
 rt.scopenewname(_s, "_1373");
 rt.scopenewname(_s, "_2193");
-rt.scopenewname(_s, "_2983");
-rt.scopenewname(_s, "_2984");
-rt.scopenewname(_s, "_3304");
-rt.scopenewname(_s, "_3305");
-rt.scopenewname(_s, "_3306");
-rt.scopenewname(_s, "_3307");
-rt.scopenewname(_s, "_3308");
-rt.scopenewname(_s, "_3309");
-rt.scopenewname(_s, "_3310");
-rt.scopenewname(_s, "_3311");
-rt.scopenewname(_s, "_3316");
-rt.scopenewname(_s, "_3318");
-rt.scopenewname(_s, "_3322");
-rt.scopenewname(_s, "_3325");
-rt.scopenewname(_s, "_3327");
-rt.scopenewname(_s, "_3329");
-rt.scopenewname(_s, "_3332");
-rt.scopenewname(_s, "_3335");
-rt.scopenewname(_s, "_3337");
-rt.scopenewname(_s, "_3339");
-rt.scopenewname(_s, "_3341");
+rt.scopenewname(_s, "_3035");
+rt.scopenewname(_s, "_3036");
+rt.scopenewname(_s, "_3356");
+rt.scopenewname(_s, "_3357");
+rt.scopenewname(_s, "_3358");
+rt.scopenewname(_s, "_3359");
+rt.scopenewname(_s, "_3360");
+rt.scopenewname(_s, "_3361");
+rt.scopenewname(_s, "_3362");
+rt.scopenewname(_s, "_3363");
+rt.scopenewname(_s, "_3368");
+rt.scopenewname(_s, "_3370");
+rt.scopenewname(_s, "_3374");
+rt.scopenewname(_s, "_3377");
+rt.scopenewname(_s, "_3379");
+rt.scopenewname(_s, "_3381");
+rt.scopenewname(_s, "_3384");
+rt.scopenewname(_s, "_3387");
+rt.scopenewname(_s, "_3389");
+rt.scopenewname(_s, "_3391");
+rt.scopenewname(_s, "_3393");
 _s._1 = rt.builtins["Objeto"];
 _s._2 = rt.builtins["VERDADERO"];
 _s._3 = rt.builtins["FALSO"];
@@ -13927,190 +14172,190 @@ end
 rt.ans_ns = rt.import("./compilador.pd")
 ;do
 end
-;_s._2983 = rt.ans_ns;;
+;_s._3035 = rt.ans_ns;;
 rt.ans_ns = rt.import("./resoluciónDeNombres.pd")
 ;do
 end
-;_s._2984 = rt.ans_ns;;
+;_s._3036 = rt.ans_ns;;
 rt.ans_ns = rt.import("./backends/lua.pd")
 ;do
 end
-;_s._3304 = rt.ans_ns;;
+;_s._3356 = rt.ans_ns;;
 rt.ans_ns = rt.import("./módulos.pd")
 ;do
 end
-;_s._3305 = rt.ans_ns;;
+;_s._3357 = rt.ans_ns;;
 ;
-_s._3306 = ("3.0.0-alpha.1");;
+_s._3358 = ("3.0.0-alpha.1");;
 ;
-_s._3307 = ("PseudoD (bootstrap)");;
+_s._3359 = ("PseudoD (bootstrap)");;
 ;
-_s._3308 = ("/opt/pseudod/bepd/bepd/");;
+_s._3360 = ("/opt/pseudod/bepd/bepd/");;
 ;
-_s._3309 = (rt.enviarMensaje("PseudoD versión ~t\nUso:  pseudod OPCIONES... (<archivo> | -c <programa>) [-b <ruta>]\n      pseudod OPCIONES... [-i]\n      pseudod (-v | --version)\n      pseudod (-h | --help | -a | --ayuda | -?)\n\nOpciones:\n\n <archivo>                          : Ejecuta el archivo <archivo>.\n -c <programa>                      : Ejecuta <programa> en vez de <archivo>.\n -b <ruta>                          : Fija <ruta> a la ruta a la BEPD.\n -B <ruta>                          : Igual a `-b <ruta>`. Obsoleto, existe\n                                      por compatibilidad.\n -X <experimento>                   : Activa el experimento <experimento>.\n -v | --version                     : Muestra el nombre del intérprete y\n                                      la versión.\n --solo-version                     : Solamente muestra la versión del\n                                      intérprete.\n -h | --help | -a | --ayuda | -?    : Muestra este mensaje de ayuda y termina.\n -i                                 : Inicia el REPL. Equivalente a llamar\n                                      `pseudod` sin <archivo> ni `-c`.\n -o <archivo> | --salida <archivo>  : Escribe el programa compilado a\n                                      <archivo>.\n --sin-mensajes                     : No escribe los mensajes del compilador.\n -l <ruta>                          : Ignorado, existe por compatibilidad.\n --guardar-db <archivo>             : Guarda la base de datos luego de\n                                      compilar en <archivo>\n --cargar-db <archivo>              : Carga la base de datos <archivo> antes de\n                                      compilar.\n --escribir-salida                  : Escribe la salida de compilación a la\n                                      salida estándar.\n\nSi la opción `-b` no es especificada, la ruta a la BEPD se extráe de:\n\n  1. La variable de entorno `$RUTA_PSEUDOD`, o si no exíste:\n  2. La variable de entorno `$RUTA_PSEUDOD_BEPD`, o si no exíste:\n  3. El directorio `~t`.\n\nEl sistema de experimentos te permite probar características experimentales o\nen etapa de prueba. Actualmente están implementados los siguientes\nexperimentos:\n\n -X v3x  : No hace nada.\n -X v3   : Alias de `-X v3x`.\n\nLos siguientes parámetros pueden ser inspeccionados:\n\n -I ruta-bepd  : Escribe la ruta a la BEPD utilizada.\n -I rutas-bib  : Escribe las rutas a las bibliotecas. Una por línea.\n", "formatear", _s._3306, _s._3308));;
+_s._3361 = (rt.enviarMensaje("PseudoD versión ~t\nUso:  pseudod OPCIONES... (<archivo> | -c <programa>) [-b <ruta>]\n      pseudod OPCIONES... [-i]\n      pseudod (-v | --version)\n      pseudod (-h | --help | -a | --ayuda | -?)\n\nOpciones:\n\n <archivo>                          : Ejecuta el archivo <archivo>.\n -c <programa>                      : Ejecuta <programa> en vez de <archivo>.\n -b <ruta>                          : Fija <ruta> a la ruta a la BEPD.\n -B <ruta>                          : Igual a `-b <ruta>`. Obsoleto, existe\n                                      por compatibilidad.\n -X <experimento>                   : Activa el experimento <experimento>.\n -v | --version                     : Muestra el nombre del intérprete y\n                                      la versión.\n --solo-version                     : Solamente muestra la versión del\n                                      intérprete.\n -h | --help | -a | --ayuda | -?    : Muestra este mensaje de ayuda y termina.\n -i                                 : Inicia el REPL. Equivalente a llamar\n                                      `pseudod` sin <archivo> ni `-c`.\n -o <archivo> | --salida <archivo>  : Escribe el programa compilado a\n                                      <archivo>.\n --sin-mensajes                     : No escribe los mensajes del compilador.\n -l <ruta>                          : Ignorado, existe por compatibilidad.\n --guardar-db <archivo>             : Guarda la base de datos luego de\n                                      compilar en <archivo>\n --cargar-db <archivo>              : Carga la base de datos <archivo> antes de\n                                      compilar.\n --escribir-salida                  : Escribe la salida de compilación a la\n                                      salida estándar.\n\nSi la opción `-b` no es especificada, la ruta a la BEPD se extráe de:\n\n  1. La variable de entorno `$RUTA_PSEUDOD`, o si no exíste:\n  2. La variable de entorno `$RUTA_PSEUDOD_BEPD`, o si no exíste:\n  3. El directorio `~t`.\n\nEl sistema de experimentos te permite probar características experimentales o\nen etapa de prueba. Actualmente están implementados los siguientes\nexperimentos:\n\n -X v3x  : No hace nada.\n -X v3   : Alias de `-X v3x`.\n\nLos siguientes parámetros pueden ser inspeccionados:\n\n -I ruta-bepd  : Escribe la ruta a la BEPD utilizada.\n -I rutas-bib  : Escribe las rutas a las bibliotecas. Una por línea.\n", "formatear", _s._3358, _s._3360));;
 ;
-_s._3310 = (rt.enviarMensaje(_s._718, "llamar", "MostrarVersión", "VERSIÓN_Y_NOMBRE", "SOLO_VERSIÓN", "NO"));;
-_s._3311 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
-rt.enviarMensaje(_s._3311, "fijar_nombre", "ContextoDeCLI");
-rt.enviarMensaje(_s._3311, "agregarAtributo", "archivoAEjecutar");;
-rt.enviarMensaje(_s._3311, "agregarAtributo", "programaAEjecutar");;
-rt.enviarMensaje(_s._3311, "agregarAtributo", "mostrarAyuda");;
-rt.enviarMensaje(_s._3311, "agregarAtributo", "mostrarVersión");;
-rt.enviarMensaje(_s._3311, "agregarAtributo", "rutaDeLaBEPD");;
-rt.enviarMensaje(_s._3311, "agregarAtributo", "interactivo");;
-rt.enviarMensaje(_s._3311, "agregarAtributo", "archivoDeSalida");;
-rt.enviarMensaje(_s._3311, "agregarAtributo", "mostrarMensajes");;
-rt.enviarMensaje(_s._3311, "agregarAtributo", "guardaBaseDeDatos");;
-rt.enviarMensaje(_s._3311, "agregarAtributo", "cargaBasesDeDatos");;
-rt.enviarMensaje(_s._3311, "agregarAtributo", "escribirCompilado");;;
-rt.enviarMensaje(_s._3311, "agregarMetodo", "inicializar", function(_3312)
+_s._3362 = (rt.enviarMensaje(_s._718, "llamar", "MostrarVersión", "VERSIÓN_Y_NOMBRE", "SOLO_VERSIÓN", "NO"));;
+_s._3363 = (rt.enviarMensajeV((rt.clases.Objeto), "subclase"));
+rt.enviarMensaje(_s._3363, "fijar_nombre", "ContextoDeCLI");
+rt.enviarMensaje(_s._3363, "agregarAtributo", "archivoAEjecutar");;
+rt.enviarMensaje(_s._3363, "agregarAtributo", "programaAEjecutar");;
+rt.enviarMensaje(_s._3363, "agregarAtributo", "mostrarAyuda");;
+rt.enviarMensaje(_s._3363, "agregarAtributo", "mostrarVersión");;
+rt.enviarMensaje(_s._3363, "agregarAtributo", "rutaDeLaBEPD");;
+rt.enviarMensaje(_s._3363, "agregarAtributo", "interactivo");;
+rt.enviarMensaje(_s._3363, "agregarAtributo", "archivoDeSalida");;
+rt.enviarMensaje(_s._3363, "agregarAtributo", "mostrarMensajes");;
+rt.enviarMensaje(_s._3363, "agregarAtributo", "guardaBaseDeDatos");;
+rt.enviarMensaje(_s._3363, "agregarAtributo", "cargaBasesDeDatos");;
+rt.enviarMensaje(_s._3363, "agregarAtributo", "escribirCompilado");;;
+rt.enviarMensaje(_s._3363, "agregarMetodo", "inicializar", function(_3364)
 local _s = rt.scope(_s)
 
-;rt.scopenewname(_s, "_3312"); _s._3312 = _3312;
-rt.enviarMensaje(_s._3312, "fijar_archivoAEjecutar", _s._4);
-rt.enviarMensaje(_s._3312, "fijar_programaAEjecutar", _s._4);
-rt.enviarMensaje(_s._3312, "fijar_mostrarAyuda", _s._3);
-rt.enviarMensaje(_s._3312, "fijar_mostrarVersión", rt.enviarMensajeV(_s._3310, "NO"));
-rt.enviarMensaje(_s._3312, "fijar_rutaDeLaBEPD", _s._4);
-rt.enviarMensaje(_s._3312, "fijar_interactivo", _s._3);
-rt.enviarMensaje(_s._3312, "fijar_archivoDeSalida", _s._4);
-rt.enviarMensaje(_s._3312, "fijar_mostrarMensajes", _s._2);
-rt.enviarMensaje(_s._3312, "fijar_guardaBaseDeDatos", _s._4);
-rt.enviarMensaje(_s._3312, "fijar_cargaBasesDeDatos", rt.enviarMensajeV(_s._22, "vacio"));
-rt.enviarMensaje(_s._3312, "fijar_escribirCompilado", _s._3);
+;rt.scopenewname(_s, "_3364"); _s._3364 = _3364;
+rt.enviarMensaje(_s._3364, "fijar_archivoAEjecutar", _s._4);
+rt.enviarMensaje(_s._3364, "fijar_programaAEjecutar", _s._4);
+rt.enviarMensaje(_s._3364, "fijar_mostrarAyuda", _s._3);
+rt.enviarMensaje(_s._3364, "fijar_mostrarVersión", rt.enviarMensajeV(_s._3362, "NO"));
+rt.enviarMensaje(_s._3364, "fijar_rutaDeLaBEPD", _s._4);
+rt.enviarMensaje(_s._3364, "fijar_interactivo", _s._3);
+rt.enviarMensaje(_s._3364, "fijar_archivoDeSalida", _s._4);
+rt.enviarMensaje(_s._3364, "fijar_mostrarMensajes", _s._2);
+rt.enviarMensaje(_s._3364, "fijar_guardaBaseDeDatos", _s._4);
+rt.enviarMensaje(_s._3364, "fijar_cargaBasesDeDatos", rt.enviarMensajeV(_s._22, "vacio"));
+rt.enviarMensaje(_s._3364, "fijar_escribirCompilado", _s._3);
 end);;
-rt.enviarMensaje(_s._3311, "agregarMetodo", "comoTexto", function(_3313)
+rt.enviarMensaje(_s._3363, "agregarMetodo", "comoTexto", function(_3365)
 local _s = rt.scope(_s)
 
-;rt.scopenewname(_s, "_3313"); _s._3313 = _3313;
-do return rt.enviarMensaje("(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t, guardaBaseDeDatos ~t, cargaBasesDeDatos ~t, escribirCompilado ~t)", "formatear", rt.enviarMensajeV(_s._3313, "archivoAEjecutar"), rt.enviarMensajeV(_s._3313, "programaAEjecutar"), rt.enviarMensajeV(_s._3313, "mostrarAyuda"), rt.enviarMensajeV(_s._3313, "mostrarVersión"), rt.enviarMensajeV(_s._3313, "rutaDeLaBEPD"), rt.enviarMensajeV(_s._3313, "interactivo"), rt.enviarMensajeV(_s._3313, "archivoDeSalida"), rt.enviarMensajeV(_s._3313, "mostrarMensajes"), rt.enviarMensajeV(_s._3313, "guardaBaseDeDatos"), rt.enviarMensajeV(_s._3313, "cargaBasesDeDatos"), rt.enviarMensajeV(_s._3313, "escribirCompilado")); end;;
+;rt.scopenewname(_s, "_3365"); _s._3365 = _3365;
+do return rt.enviarMensaje("(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t, guardaBaseDeDatos ~t, cargaBasesDeDatos ~t, escribirCompilado ~t)", "formatear", rt.enviarMensajeV(_s._3365, "archivoAEjecutar"), rt.enviarMensajeV(_s._3365, "programaAEjecutar"), rt.enviarMensajeV(_s._3365, "mostrarAyuda"), rt.enviarMensajeV(_s._3365, "mostrarVersión"), rt.enviarMensajeV(_s._3365, "rutaDeLaBEPD"), rt.enviarMensajeV(_s._3365, "interactivo"), rt.enviarMensajeV(_s._3365, "archivoDeSalida"), rt.enviarMensajeV(_s._3365, "mostrarMensajes"), rt.enviarMensajeV(_s._3365, "guardaBaseDeDatos"), rt.enviarMensajeV(_s._3365, "cargaBasesDeDatos"), rt.enviarMensajeV(_s._3365, "escribirCompilado")); end;;
 end);;
-rt.enviarMensaje(_s._3311, "agregarMetodo", "mostrarMensaje", function(_3315, _3314)
+rt.enviarMensaje(_s._3363, "agregarMetodo", "mostrarMensaje", function(_3367, _3366)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3314"); _s._3314 = _3314
-;rt.scopenewname(_s, "_3315"); _s._3315 = _3315;
-if rt.enviarMensajeV(_s._3315, "mostrarMensajes") then
+rt.scopenewname(_s, "_3366"); _s._3366 = _3366
+;rt.scopenewname(_s, "_3367"); _s._3367 = _3367;
+if rt.enviarMensajeV(_s._3367, "mostrarMensajes") then
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._798, "llamar", _s._3314));
+rt._ = (rt.enviarMensaje(_s._798, "llamar", _s._3366));
 else
 local _s = rt.scope(_s)
 ;
 end;
 end);;
-_s._3316 = (function(_3317)
+_s._3368 = (function(_3369)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3317"); _s._3317 = _3317;
-if rt.enviarMensaje(_s._3317, "operador_=", "-") then
+rt.scopenewname(_s, "_3369"); _s._3369 = _3369;
+if rt.enviarMensaje(_s._3369, "operador_=", "-") then
 local _s = rt.scope(_s)
 do return "/dev/stdin"; end;;
 else
 local _s = rt.scope(_s)
-do return _s._3317; end;;
+do return _s._3369; end;;
 end;
 end);;
-_s._3318 = (function(_3319, _3320, _3321)
+_s._3370 = (function(_3371, _3372, _3373)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3319"); _s._3319 = _3319;
-rt.scopenewname(_s, "_3320"); _s._3320 = _3320;
-rt.scopenewname(_s, "_3321"); _s._3321 = _3321;
-if rt.enviarMensaje(_s._799, "llamar", rt.enviarMensaje(_s._22, "crearCon", "-h", "--help", "-a", "--ayuda", "-?"), _s._3320) then
+rt.scopenewname(_s, "_3371"); _s._3371 = _3371;
+rt.scopenewname(_s, "_3372"); _s._3372 = _3372;
+rt.scopenewname(_s, "_3373"); _s._3373 = _3373;
+if rt.enviarMensaje(_s._799, "llamar", rt.enviarMensaje(_s._22, "crearCon", "-h", "--help", "-a", "--ayuda", "-?"), _s._3372) then
 local _s = rt.scope(_s)
-rt.enviarMensaje(_s._3319, "fijar_mostrarAyuda", _s._2);
+rt.enviarMensaje(_s._3371, "fijar_mostrarAyuda", _s._2);
 do return 0; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(_s._799, "llamar", rt.enviarMensaje(_s._22, "crearCon", "-v", "--version"), _s._3320) then
+if rt.enviarMensaje(_s._799, "llamar", rt.enviarMensaje(_s._22, "crearCon", "-v", "--version"), _s._3372) then
 local _s = rt.scope(_s)
-rt.enviarMensaje(_s._3319, "fijar_mostrarVersión", rt.enviarMensajeV(_s._3310, "VERSIÓN_Y_NOMBRE"));
+rt.enviarMensaje(_s._3371, "fijar_mostrarVersión", rt.enviarMensajeV(_s._3362, "VERSIÓN_Y_NOMBRE"));
 do return 0; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(_s._3320, "operador_=", "--solo-version") then
+if rt.enviarMensaje(_s._3372, "operador_=", "--solo-version") then
 local _s = rt.scope(_s)
-rt.enviarMensaje(_s._3319, "fijar_mostrarVersión", rt.enviarMensajeV(_s._3310, "SOLO_VERSIÓN"));
+rt.enviarMensaje(_s._3371, "fijar_mostrarVersión", rt.enviarMensajeV(_s._3362, "SOLO_VERSIÓN"));
 do return 0; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(_s._3320, "operador_=", "-l") then
+if rt.enviarMensaje(_s._3372, "operador_=", "-l") then
 local _s = rt.scope(_s)
 do return 1; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(rt.enviarMensaje(_s._3320, "operador_=", "-b"), "operador_||", rt.enviarMensaje(_s._3320, "operador_=", "-B")) then
+if rt.enviarMensaje(rt.enviarMensaje(_s._3372, "operador_=", "-b"), "operador_||", rt.enviarMensaje(_s._3372, "operador_=", "-B")) then
 local _s = rt.scope(_s)
-assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3321, "longitud"), "operador_>", 0));;
-rt.enviarMensaje(_s._3319, "fijar_rutaDeLaBEPD", rt.enviarMensaje(_s._3316, "llamar", rt.enviarMensaje(_s._3321, "en", 0)));
+assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3373, "longitud"), "operador_>", 0));;
+rt.enviarMensaje(_s._3371, "fijar_rutaDeLaBEPD", rt.enviarMensaje(_s._3368, "llamar", rt.enviarMensaje(_s._3373, "en", 0)));
 do return 1; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(_s._3320, "operador_=", "-i") then
+if rt.enviarMensaje(_s._3372, "operador_=", "-i") then
 local _s = rt.scope(_s)
-rt.enviarMensaje(_s._3319, "fijar_interactivo", _s._2);
+rt.enviarMensaje(_s._3371, "fijar_interactivo", _s._2);
 do return 0; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(_s._3320, "operador_=", "-c") then
+if rt.enviarMensaje(_s._3372, "operador_=", "-c") then
 local _s = rt.scope(_s)
-assert(rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3319, "programaAEjecutar")));;
-assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3321, "longitud"), "operador_>", 0));;
-rt.enviarMensaje(_s._3319, "fijar_programaAEjecutar", rt.enviarMensaje(_s._3321, "en", 0));
+assert(rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3371, "programaAEjecutar")));;
+assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3373, "longitud"), "operador_>", 0));;
+rt.enviarMensaje(_s._3371, "fijar_programaAEjecutar", rt.enviarMensaje(_s._3373, "en", 0));
 do return 1; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(rt.enviarMensaje(_s._3320, "operador_=", "-o"), "operador_||", rt.enviarMensaje(_s._3320, "operador_=", "--salida")) then
+if rt.enviarMensaje(rt.enviarMensaje(_s._3372, "operador_=", "-o"), "operador_||", rt.enviarMensaje(_s._3372, "operador_=", "--salida")) then
 local _s = rt.scope(_s)
-assert(rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3319, "archivoDeSalida")));;
-assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3321, "longitud"), "operador_>", 0));;
-rt.enviarMensaje(_s._3319, "fijar_archivoDeSalida", rt.enviarMensaje(_s._3316, "llamar", rt.enviarMensaje(_s._3321, "en", 0)));
+assert(rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3371, "archivoDeSalida")));;
+assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3373, "longitud"), "operador_>", 0));;
+rt.enviarMensaje(_s._3371, "fijar_archivoDeSalida", rt.enviarMensaje(_s._3368, "llamar", rt.enviarMensaje(_s._3373, "en", 0)));
 do return 1; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(_s._3320, "operador_=", "--sin-mensajes") then
+if rt.enviarMensaje(_s._3372, "operador_=", "--sin-mensajes") then
 local _s = rt.scope(_s)
-rt.enviarMensaje(_s._3319, "fijar_mostrarMensajes", _s._3);
+rt.enviarMensaje(_s._3371, "fijar_mostrarMensajes", _s._3);
 do return 0; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(_s._3320, "operador_=", "--guardar-db") then
+if rt.enviarMensaje(_s._3372, "operador_=", "--guardar-db") then
 local _s = rt.scope(_s)
-assert(rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3319, "guardaBaseDeDatos")));;
-assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3321, "longitud"), "operador_>", 0));;
-rt.enviarMensaje(_s._3319, "fijar_guardaBaseDeDatos", rt.enviarMensaje(_s._3316, "llamar", rt.enviarMensaje(_s._3321, "en", 0)));
+assert(rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3371, "guardaBaseDeDatos")));;
+assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3373, "longitud"), "operador_>", 0));;
+rt.enviarMensaje(_s._3371, "fijar_guardaBaseDeDatos", rt.enviarMensaje(_s._3368, "llamar", rt.enviarMensaje(_s._3373, "en", 0)));
 do return 1; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(_s._3320, "operador_=", "--cargar-db") then
+if rt.enviarMensaje(_s._3372, "operador_=", "--cargar-db") then
 local _s = rt.scope(_s)
-assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3321, "longitud"), "operador_>", 0));;
-rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._3319, "cargaBasesDeDatos"), "agregarAlFinal", rt.enviarMensaje(_s._3316, "llamar", rt.enviarMensaje(_s._3321, "en", 0))));
+assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3373, "longitud"), "operador_>", 0));;
+rt._ = (rt.enviarMensaje(rt.enviarMensajeV(_s._3371, "cargaBasesDeDatos"), "agregarAlFinal", rt.enviarMensaje(_s._3368, "llamar", rt.enviarMensaje(_s._3373, "en", 0))));
 do return 1; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(_s._3320, "operador_=", "--escribir-salida") then
+if rt.enviarMensaje(_s._3372, "operador_=", "--escribir-salida") then
 local _s = rt.scope(_s)
-rt.enviarMensaje(_s._3319, "fijar_escribirCompilado", _s._2);
+rt.enviarMensaje(_s._3371, "fijar_escribirCompilado", _s._2);
 do return 0; end;;
 else
 local _s = rt.scope(_s)
@@ -14118,216 +14363,216 @@ local _s = rt.scope(_s)
 end;
 do return _s._4; end;;
 end);;
-_s._3322 = (function(_3323, _3324)
+_s._3374 = (function(_3375, _3376)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3323"); _s._3323 = _3323;
-rt.scopenewname(_s, "_3324"); _s._3324 = _3324;
-assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3324, "longitud"), "operador_=<", 1));;
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3324, "longitud"), "operador_=", 1) then
+rt.scopenewname(_s, "_3375"); _s._3375 = _3375;
+rt.scopenewname(_s, "_3376"); _s._3376 = _3376;
+assert(rt.enviarMensaje(rt.enviarMensajeV(_s._3376, "longitud"), "operador_=<", 1));;
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3376, "longitud"), "operador_=", 1) then
 local _s = rt.scope(_s)
-rt.enviarMensaje(_s._3323, "fijar_archivoAEjecutar", rt.enviarMensaje(_s._3316, "llamar", rt.enviarMensaje(_s._3324, "en", 0)));
+rt.enviarMensaje(_s._3375, "fijar_archivoAEjecutar", rt.enviarMensaje(_s._3368, "llamar", rt.enviarMensaje(_s._3376, "en", 0)));
 else
 local _s = rt.scope(_s)
 ;
 end;
 end);;
-_s._3325 = (function(_3326)
+_s._3377 = (function(_3378)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3342");
-rt.scopenewname(_s, "_3343");
-rt.scopenewname(_s, "_3344");
-rt.scopenewname(_s, "_3326"); _s._3326 = _3326;
+rt.scopenewname(_s, "_3394");
+rt.scopenewname(_s, "_3395");
+rt.scopenewname(_s, "_3396");
+rt.scopenewname(_s, "_3378"); _s._3378 = _3378;
 ;
-_s._3342 = (rt.enviarMensajeV(_s._3311, "crear"));;
-_s._3343 = (0);;
-_s._3344 = (rt.enviarMensajeV(_s._22, "vacio"));;
-while rt.enviarMensaje(_s._3343, "operador_<", rt.enviarMensajeV(_s._3326, "longitud")) do
+_s._3394 = (rt.enviarMensajeV(_s._3363, "crear"));;
+_s._3395 = (0);;
+_s._3396 = (rt.enviarMensajeV(_s._22, "vacio"));;
+while rt.enviarMensaje(_s._3395, "operador_<", rt.enviarMensajeV(_s._3378, "longitud")) do
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3345");
-rt.scopenewname(_s, "_3346");
+rt.scopenewname(_s, "_3397");
+rt.scopenewname(_s, "_3398");
 ;
-_s._3345 = (rt.enviarMensaje(_s._3326, "en", _s._3343));;
-if rt.enviarMensaje(_s._3345, "operador_=", "--") then
+_s._3397 = (rt.enviarMensaje(_s._3378, "en", _s._3395));;
+if rt.enviarMensaje(_s._3397, "operador_=", "--") then
 local _s = rt.scope(_s)
-_s._3344 = (rt.enviarMensaje(_s._813, "llamar", _s._3344, rt.enviarMensaje(_s._824, "llamar", _s._3326, rt.enviarMensaje(_s._3343, "operador_+", 1), -1)));;
-_s._3343 = (rt.enviarMensajeV(_s._3326, "longitud"));;
+_s._3396 = (rt.enviarMensaje(_s._813, "llamar", _s._3396, rt.enviarMensaje(_s._824, "llamar", _s._3378, rt.enviarMensaje(_s._3395, "operador_+", 1), -1)));;
+_s._3395 = (rt.enviarMensajeV(_s._3378, "longitud"));;
 else
 local _s = rt.scope(_s)
-_s._3346 = (rt.enviarMensaje(_s._3318, "llamar", _s._3342, _s._3345, rt.enviarMensaje(_s._824, "llamar", _s._3326, rt.enviarMensaje(_s._3343, "operador_+", 1), -1)));;
-if rt.enviarMensaje(_s._826, "llamar", _s._3346) then
+_s._3398 = (rt.enviarMensaje(_s._3370, "llamar", _s._3394, _s._3397, rt.enviarMensaje(_s._824, "llamar", _s._3378, rt.enviarMensaje(_s._3395, "operador_+", 1), -1)));;
+if rt.enviarMensaje(_s._826, "llamar", _s._3398) then
 local _s = rt.scope(_s)
-assert(rt.enviarMensaje(rt.enviarMensaje(_s._3345, "operador_=", "-"), "operador_||", not rt.enviarMensaje(rt.enviarMensaje(_s._3345, "en", 0), "operador_=", "-")));;
-rt._ = (rt.enviarMensaje(_s._3344, "agregarAlFinal", _s._3345));
-_s._3343 = (rt.enviarMensaje(_s._3343, "operador_+", 1));;
+assert(rt.enviarMensaje(rt.enviarMensaje(_s._3397, "operador_=", "-"), "operador_||", not rt.enviarMensaje(rt.enviarMensaje(_s._3397, "en", 0), "operador_=", "-")));;
+rt._ = (rt.enviarMensaje(_s._3396, "agregarAlFinal", _s._3397));
+_s._3395 = (rt.enviarMensaje(_s._3395, "operador_+", 1));;
 else
 local _s = rt.scope(_s)
-_s._3343 = (rt.enviarMensaje(_s._3343, "operador_+", rt.enviarMensaje(1, "operador_+", _s._3346)));;
+_s._3395 = (rt.enviarMensaje(_s._3395, "operador_+", rt.enviarMensaje(1, "operador_+", _s._3398)));;
 end;
 end;
 end;
-rt._ = (rt.enviarMensaje(_s._3322, "llamar", _s._3342, _s._3344));
-do return _s._3342; end;;
+rt._ = (rt.enviarMensaje(_s._3374, "llamar", _s._3394, _s._3396));
+do return _s._3394; end;;
 end);;
-_s._3327 = (function(_3328)
+_s._3379 = (function(_3380)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3347");
-rt.scopenewname(_s, "_3348");
-rt.scopenewname(_s, "_3349");
-rt.scopenewname(_s, "_3328"); _s._3328 = _3328;
+rt.scopenewname(_s, "_3399");
+rt.scopenewname(_s, "_3400");
+rt.scopenewname(_s, "_3401");
+rt.scopenewname(_s, "_3380"); _s._3380 = _3380;
 ;
-_s._3349 = (rt.enviarMensaje(_s._838, "llamar", _s._3328, "."));;
-_s._3347 = (rt.enviarMensaje(_s._841, "llamar", rt.enviarMensaje(_s._824, "llamar", _s._3349, 0, -2), "."));;
-_s._3348 = (rt.enviarMensaje(_s._825, "llamar", _s._3349));;
-do return rt.enviarMensaje(rt.enviarMensajeV(_s._3305, "LlaveDeMódulo"), "crear", ".", _s._3347, _s._3348); end;;
+_s._3401 = (rt.enviarMensaje(_s._838, "llamar", _s._3380, "."));;
+_s._3399 = (rt.enviarMensaje(_s._841, "llamar", rt.enviarMensaje(_s._824, "llamar", _s._3401, 0, -2), "."));;
+_s._3400 = (rt.enviarMensaje(_s._825, "llamar", _s._3401));;
+do return rt.enviarMensaje(rt.enviarMensajeV(_s._3357, "LlaveDeMódulo"), "crear", ".", _s._3399, _s._3400); end;;
 end);;
-_s._3329 = (function(_3330, _3331)
+_s._3381 = (function(_3382, _3383)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3350");
-rt.scopenewname(_s, "_3351");
-rt.scopenewname(_s, "_3352");
-rt.scopenewname(_s, "_3353");
-rt.scopenewname(_s, "_3354");
-rt.scopenewname(_s, "_3355");
-rt.scopenewname(_s, "_3330"); _s._3330 = _3330;
-rt.scopenewname(_s, "_3331"); _s._3331 = _3331;
-rt._ = (rt.enviarMensaje(_s._3330, "mostrarMensaje", "-- Inicio"));
+rt.scopenewname(_s, "_3402");
+rt.scopenewname(_s, "_3403");
+rt.scopenewname(_s, "_3404");
+rt.scopenewname(_s, "_3405");
+rt.scopenewname(_s, "_3406");
+rt.scopenewname(_s, "_3407");
+rt.scopenewname(_s, "_3382"); _s._3382 = _3382;
+rt.scopenewname(_s, "_3383"); _s._3383 = _3383;
+rt._ = (rt.enviarMensaje(_s._3382, "mostrarMensaje", "-- Inicio"));
 ;
-rt._ = (rt.enviarMensaje(_s._3330, "mostrarMensaje", "-- Inicializando la base de datos de módulos..."));
-_s._3352 = (rt.enviarMensajeV(rt.enviarMensajeV(_s._3305, "ConfiguraciónGlobal"), "predeterminado"));;
-_s._3351 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3305, "BaseDeDatos"), "conConfiguración", _s._3352));;
-rt._ = (rt.enviarMensaje(_s._800, "llamar", rt.enviarMensajeV(_s._3330, "cargaBasesDeDatos"), function(_3356)
+rt._ = (rt.enviarMensaje(_s._3382, "mostrarMensaje", "-- Inicializando la base de datos de módulos..."));
+_s._3404 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3357, "ConfiguraciónGlobal"), "predeterminado", _s._2));;
+_s._3403 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3357, "BaseDeDatos"), "conConfiguración", _s._3404));;
+rt._ = (rt.enviarMensaje(_s._800, "llamar", rt.enviarMensajeV(_s._3382, "cargaBasesDeDatos"), function(_3408)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3358");
-rt.scopenewname(_s, "_3359");
-rt.scopenewname(_s, "_3356"); _s._3356 = _3356;
-rt._ = (rt.enviarMensaje(_s._3330, "mostrarMensaje", rt.enviarMensaje("Cargando ~t", "formatear", _s._3356)));
+rt.scopenewname(_s, "_3410");
+rt.scopenewname(_s, "_3411");
+rt.scopenewname(_s, "_3408"); _s._3408 = _3408;
+rt._ = (rt.enviarMensaje(_s._3382, "mostrarMensaje", rt.enviarMensaje("Cargando ~t", "formatear", _s._3408)));
 ;
-_s._3359 = (rt.enviarMensaje(rt.enviarMensajeV(_s._1015, "PuertoDeArchivoDeLectura"), "abrir", _s._3356));;
-rt._ = (rt.enviarMensaje(_s._3351, "cargarMódulos", _s._3359));
-rt._ = (rt.enviarMensajeV(_s._3359, "cerrar"));
+_s._3411 = (rt.enviarMensaje(rt.enviarMensajeV(_s._1015, "PuertoDeArchivoDeLectura"), "abrir", _s._3408));;
+rt._ = (rt.enviarMensaje(_s._3403, "cargarMódulos", _s._3411));
+rt._ = (rt.enviarMensajeV(_s._3411, "cerrar"));
 end));
-rt._ = (rt.enviarMensaje(_s._3330, "mostrarMensaje", "-- Inicializando el compilador a Lua"));
-_s._3350 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3304, "CompiladorALua"), "crear", _s._3351));;
-rt._ = (rt.enviarMensaje(_s._3330, "mostrarMensaje", "-- Compilando el programa..."));
-if not rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3330, "archivoAEjecutar")) then
+rt._ = (rt.enviarMensaje(_s._3382, "mostrarMensaje", "-- Inicializando el compilador a Lua"));
+_s._3402 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3356, "CompiladorALua"), "crear", _s._3403));;
+rt._ = (rt.enviarMensaje(_s._3382, "mostrarMensaje", "-- Compilando el programa..."));
+if not rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3382, "archivoAEjecutar")) then
 local _s = rt.scope(_s)
-_s._3353 = (rt.enviarMensaje(_s._3327, "llamar", rt.enviarMensajeV(_s._3330, "archivoAEjecutar")));;
+_s._3405 = (rt.enviarMensaje(_s._3379, "llamar", rt.enviarMensajeV(_s._3382, "archivoAEjecutar")));;
 else
 local _s = rt.scope(_s)
-_s._3353 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3305, "LlaveDeMódulo"), "crear", ".", "<stdin>", "pd"));;
+_s._3405 = (rt.enviarMensaje(rt.enviarMensajeV(_s._3357, "LlaveDeMódulo"), "crear", ".", "<stdin>", "pd"));;
 end;
-_s._3354 = (rt.enviarMensaje(_s._3350, "compilarTexto", _s._3353, _s._3331));;
-rt._ = (rt.enviarMensaje(_s._3351, "agregarMódulo", _s._3354));
-rt._ = (rt.enviarMensaje(_s._3330, "mostrarMensaje", "-- Final..."));
-_s._3355 = (rt.enviarMensaje(_s._3350, "compilarTodo", _s._3353));;
-if not rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3330, "guardaBaseDeDatos")) then
+_s._3406 = (rt.enviarMensaje(_s._3402, "compilarTexto", _s._3405, _s._3383));;
+rt._ = (rt.enviarMensaje(_s._3403, "agregarMódulo", _s._3406));
+rt._ = (rt.enviarMensaje(_s._3382, "mostrarMensaje", "-- Final..."));
+_s._3407 = (rt.enviarMensaje(_s._3402, "compilarTodo", _s._3405));;
+if not rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3382, "guardaBaseDeDatos")) then
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3357");
-rt._ = (rt.enviarMensaje(_s._3330, "mostrarMensaje", rt.enviarMensaje("-- Guardando base de datos en ~t", "formatear", rt.enviarMensajeV(_s._3330, "guardaBaseDeDatos"))));
+rt.scopenewname(_s, "_3409");
+rt._ = (rt.enviarMensaje(_s._3382, "mostrarMensaje", rt.enviarMensaje("-- Guardando base de datos en ~t", "formatear", rt.enviarMensajeV(_s._3382, "guardaBaseDeDatos"))));
 ;
-_s._3357 = (rt.enviarMensaje(rt.enviarMensajeV(_s._1015, "PuertoDeArchivoDeEscritura"), "abrir", rt.enviarMensajeV(_s._3330, "guardaBaseDeDatos")));;
-rt._ = (rt.enviarMensaje(_s._3351, "guardarMódulos", _s._3357));
-rt._ = (rt.enviarMensajeV(_s._3357, "cerrar"));
-else
-local _s = rt.scope(_s)
-;
-end;
-if not rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3330, "archivoDeSalida")) then
-local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3330, "mostrarMensaje", rt.enviarMensaje("-- Guardando en ~t", "formatear", rt.enviarMensajeV(_s._3330, "archivoDeSalida"))));
-rt._ = (rt.enviarMensaje(_s._1074, "EscribirArchivo", rt.enviarMensajeV(_s._3330, "archivoDeSalida"), rt.enviarMensaje(_s._3355, "concatenar", rt.enviarMensajeV("~%", "formatear"))));
+_s._3409 = (rt.enviarMensaje(rt.enviarMensajeV(_s._1015, "PuertoDeArchivoDeEscritura"), "abrir", rt.enviarMensajeV(_s._3382, "guardaBaseDeDatos")));;
+rt._ = (rt.enviarMensaje(_s._3403, "guardarMódulos", _s._3409));
+rt._ = (rt.enviarMensajeV(_s._3409, "cerrar"));
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensajeV(_s._3330, "escribirCompilado") then
+if not rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3382, "archivoDeSalida")) then
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._798, "llamar", _s._3355));
+rt._ = (rt.enviarMensaje(_s._3382, "mostrarMensaje", rt.enviarMensaje("-- Guardando en ~t", "formatear", rt.enviarMensajeV(_s._3382, "archivoDeSalida"))));
+rt._ = (rt.enviarMensaje(_s._1074, "EscribirArchivo", rt.enviarMensajeV(_s._3382, "archivoDeSalida"), rt.enviarMensaje(_s._3407, "concatenar", rt.enviarMensajeV("~%", "formatear"))));
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensaje(rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3330, "archivoDeSalida")), "operador_&&", not rt.enviarMensajeV(_s._3330, "escribirCompilado")) then
+if rt.enviarMensajeV(_s._3382, "escribirCompilado") then
 local _s = rt.scope(_s)
-do return rt.enviarMensaje(_s._3335, "llamar", _s._3355); end;;
+rt._ = (rt.enviarMensaje(_s._798, "llamar", _s._3407));
+else
+local _s = rt.scope(_s)
+;
+end;
+if rt.enviarMensaje(rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3382, "archivoDeSalida")), "operador_&&", not rt.enviarMensajeV(_s._3382, "escribirCompilado")) then
+local _s = rt.scope(_s)
+do return rt.enviarMensaje(_s._3387, "llamar", _s._3407); end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
 end);;
-_s._3332 = (function(_3333, _3334)
+_s._3384 = (function(_3385, _3386)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3333"); _s._3333 = _3333;
-rt.scopenewname(_s, "_3334"); _s._3334 = _3334;
-rt._ = (rt.enviarMensaje(_s._3329, "llamar", _s._3333, rt.enviarMensaje(_s._1074, "LeerArchivo", _s._3334)));
+rt.scopenewname(_s, "_3385"); _s._3385 = _3385;
+rt.scopenewname(_s, "_3386"); _s._3386 = _3386;
+rt._ = (rt.enviarMensaje(_s._3381, "llamar", _s._3385, rt.enviarMensaje(_s._1074, "LeerArchivo", _s._3386)));
 end);;
-_s._3335 = (function(_3336)
+_s._3387 = (function(_3388)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3336"); _s._3336 = _3336;
+rt.scopenewname(_s, "_3388"); _s._3388 = _3388;
 ;do;
 local _s = rt.scope(_s)
-do return ((rt.resetandload)(_s._3336)); end;;
+do return ((rt.resetandload)(_s._3388)); end;;
 ;end;;
 end);;
-_s._3337 = (function(_3338)
+_s._3389 = (function(_3390)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3338"); _s._3338 = _3338;
+rt.scopenewname(_s, "_3390"); _s._3390 = _3390;
 rt._ = (rt.enviarMensajeV(_s._829, "llamar"));
 end);;
-_s._3339 = (function(_3340)
+_s._3391 = (function(_3392)
 local _s = rt.scope(_s)
-rt.scopenewname(_s, "_3340"); _s._3340 = _3340;
-if rt.enviarMensaje(rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3340, "archivoAEjecutar")), "operador_&&", rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3340, "programaAEjecutar"))) then
+rt.scopenewname(_s, "_3392"); _s._3392 = _3392;
+if rt.enviarMensaje(rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3392, "archivoAEjecutar")), "operador_&&", rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3392, "programaAEjecutar"))) then
 local _s = rt.scope(_s)
-rt.enviarMensaje(_s._3340, "fijar_interactivo", _s._2);
+rt.enviarMensaje(_s._3392, "fijar_interactivo", _s._2);
 else
 local _s = rt.scope(_s)
 ;
 end;
-if not rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3340, "archivoAEjecutar")) then
+if not rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3392, "archivoAEjecutar")) then
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3332, "llamar", _s._3340, rt.enviarMensajeV(_s._3340, "archivoAEjecutar")));
+rt._ = (rt.enviarMensaje(_s._3384, "llamar", _s._3392, rt.enviarMensajeV(_s._3392, "archivoAEjecutar")));
 do return _s._4; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if not rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3340, "programaAEjecutar")) then
+if not rt.enviarMensaje(_s._826, "llamar", rt.enviarMensajeV(_s._3392, "programaAEjecutar")) then
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3329, "llamar", _s._3340, rt.enviarMensajeV(_s._3340, "programaAEjecutar")));
+rt._ = (rt.enviarMensaje(_s._3381, "llamar", _s._3392, rt.enviarMensajeV(_s._3392, "programaAEjecutar")));
 do return _s._4; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-if rt.enviarMensajeV(_s._3340, "interactivo") then
+if rt.enviarMensajeV(_s._3392, "interactivo") then
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3337, "llamar", _s._3340));
+rt._ = (rt.enviarMensaje(_s._3389, "llamar", _s._3392));
 do return _s._4; end;;
 else
 local _s = rt.scope(_s)
 ;
 end;
-rt._ = (rt.enviarMensaje(_s._798, "llamar", _s._3340));
+rt._ = (rt.enviarMensaje(_s._798, "llamar", _s._3392));
 end);;
 ;
-_s._3341 = (rt.enviarMensaje(_s._3325, "llamar", _s._17));;
-if rt.enviarMensajeV(_s._3341, "mostrarAyuda") then
+_s._3393 = (rt.enviarMensaje(_s._3377, "llamar", _s._17));;
+if rt.enviarMensajeV(_s._3393, "mostrarAyuda") then
 local _s = rt.scope(_s)
-rt.escribir(_s._3309);;
+rt.escribir(_s._3361);;
 else
 local _s = rt.scope(_s)
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3341, "mostrarVersión"), "operador_=", rt.enviarMensajeV(_s._3310, "VERSIÓN_Y_NOMBRE")) then
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3393, "mostrarVersión"), "operador_=", rt.enviarMensajeV(_s._3362, "VERSIÓN_Y_NOMBRE")) then
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._798, "llamar", rt.enviarMensaje("~t ~t", "formatear", _s._3307, _s._3306)));
+rt._ = (rt.enviarMensaje(_s._798, "llamar", rt.enviarMensaje("~t ~t", "formatear", _s._3359, _s._3358)));
 else
 local _s = rt.scope(_s)
-if rt.enviarMensaje(rt.enviarMensajeV(_s._3341, "mostrarVersión"), "operador_=", rt.enviarMensajeV(_s._3310, "SOLO_VERSIÓN")) then
+if rt.enviarMensaje(rt.enviarMensajeV(_s._3393, "mostrarVersión"), "operador_=", rt.enviarMensajeV(_s._3362, "SOLO_VERSIÓN")) then
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._798, "llamar", _s._3306));
+rt._ = (rt.enviarMensaje(_s._798, "llamar", _s._3358));
 else
 local _s = rt.scope(_s)
-rt._ = (rt.enviarMensaje(_s._3339, "llamar", _s._3341));
+rt._ = (rt.enviarMensaje(_s._3391, "llamar", _s._3393));
 end;
 end;
 end;
@@ -14388,27 +14633,27 @@ return rt.ns({
   ["Archivos"] = { value = _s._1074, autoexecutable = false },
   ["Tokenizador"] = { value = _s._1373, autoexecutable = false },
   ["Parser"] = { value = _s._2193, autoexecutable = false },
-  ["Compilador"] = { value = _s._2983, autoexecutable = false },
-  ["RN"] = { value = _s._2984, autoexecutable = false },
-  ["LuaBack"] = { value = _s._3304, autoexecutable = false },
-  ["Módulos"] = { value = _s._3305, autoexecutable = false },
-  ["VERSIÓN"] = { value = _s._3306, autoexecutable = false },
-  ["NOMBRE_IMPLEMENTACIÓN"] = { value = _s._3307, autoexecutable = false },
-  ["RUTA_BEPD_PREDETERMINADA"] = { value = _s._3308, autoexecutable = false },
-  ["MENSAJE_DE_AYUDA"] = { value = _s._3309, autoexecutable = false },
-  ["MostrarVersión"] = { value = _s._3310, autoexecutable = false },
-  ["ContextoDeCLI"] = { value = _s._3311, autoexecutable = false },
-  ["ObtenerArchivoDesdeCLI"] = { value = _s._3316, autoexecutable = true },
-  ["ParsearOpción"] = { value = _s._3318, autoexecutable = true },
-  ["ParsearPosicionales"] = { value = _s._3322, autoexecutable = true },
-  ["ParsearCLI"] = { value = _s._3325, autoexecutable = true },
-  ["LlaveDeMóduloDesdeArchivoDelCLI"] = { value = _s._3327, autoexecutable = true },
-  ["Compilar"] = { value = _s._3329, autoexecutable = true },
-  ["CompilarArchivo"] = { value = _s._3332, autoexecutable = true },
-  ["EvaluarPrograma"] = { value = _s._3335, autoexecutable = true },
-  ["IniciarREPL"] = { value = _s._3337, autoexecutable = true },
-  ["Inicio"] = { value = _s._3339, autoexecutable = true },
-  ["ctxcli"] = { value = _s._3341, autoexecutable = false },
+  ["Compilador"] = { value = _s._3035, autoexecutable = false },
+  ["RN"] = { value = _s._3036, autoexecutable = false },
+  ["LuaBack"] = { value = _s._3356, autoexecutable = false },
+  ["Módulos"] = { value = _s._3357, autoexecutable = false },
+  ["VERSIÓN"] = { value = _s._3358, autoexecutable = false },
+  ["NOMBRE_IMPLEMENTACIÓN"] = { value = _s._3359, autoexecutable = false },
+  ["RUTA_BEPD_PREDETERMINADA"] = { value = _s._3360, autoexecutable = false },
+  ["MENSAJE_DE_AYUDA"] = { value = _s._3361, autoexecutable = false },
+  ["MostrarVersión"] = { value = _s._3362, autoexecutable = false },
+  ["ContextoDeCLI"] = { value = _s._3363, autoexecutable = false },
+  ["ObtenerArchivoDesdeCLI"] = { value = _s._3368, autoexecutable = true },
+  ["ParsearOpción"] = { value = _s._3370, autoexecutable = true },
+  ["ParsearPosicionales"] = { value = _s._3374, autoexecutable = true },
+  ["ParsearCLI"] = { value = _s._3377, autoexecutable = true },
+  ["LlaveDeMóduloDesdeArchivoDelCLI"] = { value = _s._3379, autoexecutable = true },
+  ["Compilar"] = { value = _s._3381, autoexecutable = true },
+  ["CompilarArchivo"] = { value = _s._3384, autoexecutable = true },
+  ["EvaluarPrograma"] = { value = _s._3387, autoexecutable = true },
+  ["IniciarREPL"] = { value = _s._3389, autoexecutable = true },
+  ["Inicio"] = { value = _s._3391, autoexecutable = true },
+  ["ctxcli"] = { value = _s._3393, autoexecutable = false },
 });
 end;
 ;rt.importar("./inicio.pd");

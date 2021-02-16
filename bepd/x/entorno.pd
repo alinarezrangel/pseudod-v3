@@ -1,0 +1,27 @@
+utilizar bepd/builtins
+
+
+[DOCUMENTA
+@brief{Determina si se pueden leer las variables de entorno.}
+
+No todas las implementaciones de PseudoD pueden leer las variables de
+entorno.
+DOCUMENTA]
+funcion SoportaVariablesDeEntorno
+    devolver __Impl = {Lua Bootstrap}
+finfuncion
+
+
+[DOCUMENTA
+@brief{Obtiene una variable de entorno.}
+
+@pd{nombre} es el nombre de la variable a leer (un texto). Devuelve el valor de
+la variable (siempre es otro texto) o @pd{NULO} si la variable no existe.
+DOCUMENTA]
+procedimiento ObtenerVariableDeEntorno: nombre
+    si __Impl = {Lua Bootstrap}
+        devolver __Lua: {os.getenv}, nombre
+    sino
+        __FallarConMensaje: {No se puede obtener una variable de entorno en el intérprete en C++}
+    finsi
+finprocedimiento

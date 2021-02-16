@@ -438,7 +438,7 @@ procedimiento Compilar: ctx, programa
     variables comp, db, conf, llave, módulo, compilado
 
     ctx#mostrarMensaje: {-- Inicializando la base de datos de módulos...}
-    fijar conf a Módulos#ConfiguraciónGlobal#predeterminado
+    fijar conf a Módulos#ConfiguraciónGlobal#predeterminado: VERDADERO
     fijar db a Módulos#BaseDeDatos#conConfiguración: conf
     ParaCadaElemento: ctx#cargaBasesDeDatos, procedimiento: nombreDelArchivo
         ctx#mostrarMensaje: ({Cargando ~t}#formatear: nombreDelArchivo)
