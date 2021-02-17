@@ -13717,7 +13717,7 @@ local _s = rt.scope(_s)
 rt.scopenewname(_s, "_3355"); _s._3355 = _3355;
 rt._ = (rt.enviarMensaje(_s._3354, "agregarAlFinal", rt.enviarMensaje("rt.modulos[~t] = function()~%~t~%end;", "formatear", rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(rt.enviarMensajeV(_s._3355, "llave"), "nombreCompletoDelArchivo")), rt.enviarMensajeV(_s._3355, "compilado"))));
 end));
-rt._ = (rt.enviarMensaje(_s._3354, "agregarAlFinal", rt.enviarMensaje(";rt.importar(~t);", "formatear", rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(_s._3252, "nombreCompletoDelArchivo")))));
+rt._ = (rt.enviarMensaje(_s._3354, "agregarAlFinal", rt.enviarMensaje(";rt.importarmain(~t, ...);", "formatear", rt.enviarMensaje(_s._3134, "llamar", rt.enviarMensajeV(_s._3252, "nombreCompletoDelArchivo")))));
 do return rt.enviarMensaje(_s._3125, "llamar", _s._3354, rt.enviarMensajeV("~%", "formatear")); end;;
 end);;
 return rt.ns({
@@ -14656,4 +14656,4 @@ return rt.ns({
   ["ctxcli"] = { value = _s._3393, autoexecutable = false },
 });
 end;
-;rt.importar("./inicio.pd");
+;rt.importarmain("./inicio.pd", ...);

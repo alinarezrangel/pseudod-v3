@@ -1364,6 +1364,15 @@ end
 -- `M.import` es un alias de `M.importar`.
 M.import = M.importar
 
+-- Como `M.import`, pero además configura `M.builtins.__Argv` con `...`.
+function M.importarmain(ruta, ...)
+   local vals = {...}
+   for i = 1, select("#", ...) do
+      M.enviarMensaje(M.builtins.__Argv, "agregarAlFinal", vals[i])
+   end
+   return M.importar(ruta)
+end
+
 -- Un ámbito.
 --
 -- Como lua limita las variables locales a 200, para eliminar esta restricción,
