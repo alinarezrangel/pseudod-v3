@@ -240,9 +240,27 @@ clase Ámbito
     @pd{ámbitoPadre}.
     DOCUMENTA]
     metodo todosLosBindingsLocales
+
+    [DOCUMENTA
+    @brief{Devuelve el número de bindings de este ámbito y todos sus
+    subámbitos.}
+    DOCUMENTA]
+    metodo númeroDeBindings
+
+    [DOCUMENTA
+    @brief{Obtiene el ámbito donde se define el binding.}
+
+    Ya que los bindings son únicos, este método siempre podrá devolver un
+    valor. Si ninguno de este ámbito o sus ámbitos padres definen este binding,
+    falla con un error.
+    DOCUMENTA]
+    metodo ámbitoDondeSeDefine: binding
 finclase
 
-atributos Ámbito#_mapeo, Ámbito#_todosLosBindings
+atributos Ámbito#_mapeo, Ámbito#_todosLosBindings, Ámbito#_númeroDeBindings
+
+[ #_númeroDeBindings es el número de bindings de este ámbito y sus
+  subámbitos. Incrementalo con #_incrementarNumBindings. ]
 
 metodo estatico Ámbito#vacío
     devolver yo#crear
@@ -252,6 +270,7 @@ metodo estatico Ámbito#desdeArreglo: lst
     variable inst
     fijar inst a yo#crear
     fijar inst#_mapeo a Diccionario#desdeArreglo: lst
+    fijar inst#_númeroDeBindings a lst#longitud / 2
     devolver inst
 finmetodo
 
@@ -259,18 +278,28 @@ metodo estatico Ámbito#conValores: ...vals
     variable inst
     fijar inst a yo#crear
     fijar inst#_mapeo a __EnviarMensaje: Diccionario, {desdePares}, vals
+    fijar inst#_númeroDeBindings a vals#longitud / 2
     devolver inst
 finmetodo
 
 metodo Ámbito#inicializar
     fijar yo#_mapeo a Diccionario#vacío
     fijar yo#_todosLosBindings a Arreglo#vacio
+    fijar yo#_númeroDeBindings a 0
     fijar yo#ámbitoPadre a NULO
+finmetodo
+
+metodo Ámbito#_incrementarNumBindings
+    fijar yo#_númeroDeBindings a yo#_númeroDeBindings + 1
+    si no EsNulo: yo#ámbitoPadre
+        yo#ámbitoPadre#_incrementarNumBindings
+    finsi
 finmetodo
 
 metodo Ámbito#agregar: nombre, binding
     yo#_mapeo#fijarEn: nombre, (DatosDeVariable#crear: binding, FALSO)
     yo#_todosLosBindings#agregarAlFinal: binding
+    yo#_incrementarNumBindings
 finmetodo
 
 metodo Ámbito#marcarComoAutoejecutable: nombre
@@ -356,4 +385,20 @@ metodo Ámbito#todosLosBindings
         fijar todosLosBindingsPadre a Arreglo#vacio
     finsi
     devolver Concatenar: yo#_todosLosBindings, todosLosBindingsPadre
+finmetodo
+
+metodo Ámbito#númeroDeBindings
+    devolver yo#_númeroDeBindings
+finmetodo
+
+metodo Ámbito#ámbitoDondeSeDefine: binding
+    si Contiene: yo#todosLosBindingsLocales, binding
+        devolver yo
+    sino
+        si no EsNulo: yo#ámbitoPadre
+            devolver yo#ámbitoPadre#ámbitoDondeSeDefine: binding
+        sino
+            __FallarConMensaje: ({El binding ~t no está definido}#formatear: binding)
+        finsi
+    finsi
 finmetodo

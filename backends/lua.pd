@@ -61,19 +61,70 @@ finfuncion
 
 [ Por limitaciones de Lua, no se pueden tener más de 200 variables locales en
   cualquier ámbito de Lua. Lamentablemente son necesarias más de 200 variables
-  locales para compilar PseudoD. La solución que utilizé es que en vez de crear
+  locales para compilar PseudoD. La solución que utilicé es que en vez de crear
   variables locales, creo una sola llamada "_s" que es un "scope" (runtime.lua
   contiene la implementación en la función "M.scope"). Cada variable de PseudoD
   es un campo de la forma "_" + binding en la tabla "_s". Por ejemplo, la
-  variable con el binding 5 está en "_s._5". ]
+  variable con el binding 5 está en "_s._5".
+
+  Esto sería perfecto si no fuese por el hecho de que este sistema tiene una
+  eficiencia abismalmente mala. Por eso, un segundo truco es realizado: si un
+  ámbito y todos sus subámbitos tienen menos de 200 bindings el "scope hack"
+  con `_s` no es necesario. ]
+
+[ Técnicamente hablando esta constante depende de como se compiló lua, pero 200
+  es el predeterminado de Lua y creo que es aceptable que también sea el
+  predeterminado aquí. ]
+variable LUA_MAX_LOCALS
+fijar LUA_MAX_LOCALS a 200
 
 [DOCUMENTA
-@brief{Obtiene el identificador en Lua de un nombre.}
-
-@pd{id} debe ser un nodo identificador.
+@brief{Devuelve el nombre en Lua de un binding.}
 DOCUMENTA]
-funcion IdentificadorDe: id
-    devolver {_s._}#concatenar: (RN#NombreResueltoDe: id)#comoTexto
+funcion NombreEnLua: binding, ámbito
+    variable ámbitoDefinído
+    fijar ámbitoDefinído a ámbito#ámbitoDondeSeDefine: binding
+    si ámbitoDefinído#númeroDeBindings < LUA_MAX_LOCALS
+        devolver {_~t}#formatear: binding
+    sino
+        devolver {_s._~t}#formatear: binding
+    finsi
+finfuncion
+
+[DOCUMENTA
+@brief{Devuelve una instrucción en Lua que define un binding.}
+
+Equivalente a @pd{DefineNombreEnLuaDesde} con @pd{luaExpr} igual a @pd{"nil"}.
+
+Véase @pd{DefineNombreEnLuaDesde} para más información.
+DOCUMENTA]
+funcion DefineNombreEnLua: binding, ámbito
+    devolver DefineNombreEnLuaDesde: binding, ámbito, {nil}
+finfuncion
+
+[DOCUMENTA
+@brief{Devuelve una instrucción en Lua que define un binding.}
+
+El texto devuelto contiene una o más instrucciones en Lua (separadas por puntos
+y comas). Las instrucciones devueltas declaran el binding: si el ámbito utiliza
+un objeto @code{_s}, entonces define el binding con @pd{rt.scopenewname}. Si,
+por el contrario, el ámbito no utiliza @code{_s}, entonces las instrucciones
+devueltas declaran la variable con @code{local}.
+
+@pd{luaExpr} es un texto que será el valor inicial de la variable (debe ser una
+expresión en Lua).
+DOCUMENTA]
+funcion DefineNombreEnLuaDesde: binding, ámbito, luaExpr
+    variable ámbitoDefinído
+    fijar ámbitoDefinído a ámbito#ámbitoDondeSeDefine: binding
+    si ámbitoDefinído#númeroDeBindings < LUA_MAX_LOCALS
+        devolver {local _~t = (~t)}#formatear: binding, luaExpr
+    sino
+        devolver {rt.scopenewname(_s, ~t); _s._~t = (~t)}#formatear:
+            (EscaparParaLua: ({_~t}#formatear: binding)),
+            binding,
+            luaExpr
+    finsi
 finfuncion
 
 [ Tal como en resoluciónDeNombres.pd, una subclase de CN#CaminaNodos es
@@ -151,7 +202,7 @@ El Runtime y la estructura del compilador:
   "nil". Funciones y procedimientos pasan a ser "functions".
 
 - Como ya fue explicado antes, las variables locales pasan a ser campos en una
-  tabla "_s".
+  tabla "_s" (más o menos, lee el comentario sobre los ámbitos).
 
 - Enviar un mensaje a un objeto se realiza con la operación
   "rt.enviarMensaje". Esta automaticamente detecta el tipo del receptor y
@@ -210,6 +261,21 @@ concatenar textos.
 
 ]
 
+metodo CompiladorSimpleALua#nombreEnLua: binding
+    si EsInstancia: binding, AST#NodoIdentificador
+        fijar binding a RN#NombreResueltoDe: binding
+    finsi
+    devolver NombreEnLua: binding, yo#_ámbito
+finmetodo
+
+metodo CompiladorSimpleALua#defineNombreEnLua: binding
+    devolver DefineNombreEnLua: binding, yo#_ámbito
+finmetodo
+
+metodo CompiladorSimpleALua#defineNombreEnLuaDesde: binding, luaExpr
+    devolver DefineNombreEnLuaDesde: binding, yo#_ámbito, luaExpr
+finmetodo
+
 [ Este método es llamado al inicio de cada ámbito. Inicializa variables
   importantes del runtime (como "_s"). ]
 metodo CompiladorSimpleALua#iniciar
@@ -222,7 +288,7 @@ metodo CompiladorSimpleALua#iniciar
     finsi
     res#agregarAlFinal: ({local _s = rt.scope(~t)}#formatear: padre)
     ParaCadaElemento: yo#_ámbito#todosLosBindingsLocales, procedimiento: id
-        res#agregarAlFinal: ({rt.scopenewname(_s, "_~t");}#formatear: id)
+        res#agregarAlFinal: (yo#defineNombreEnLua: id)
     finprocedimiento
     devolver Unir: res, {~%}#formatear
 finmetodo
@@ -231,7 +297,7 @@ metodo CompiladorSimpleALua#registrarBuiltins
     variable cods
     fijar cods a Arreglo#vacio
     yo#_compilador#_builtins#paraCadaPar: procedimiento: nombreEnRT, binding
-        cods#agregarAlFinal: ({_s._~t = rt.builtins[~t];}#formatear: binding, (EscaparParaLua: nombreEnRT))
+        cods#agregarAlFinal: ({~t = rt.builtins[~t];}#formatear: (yo#nombreEnLua: binding), (EscaparParaLua: nombreEnRT))
     finprocedimiento
     devolver Unir: cods, {~%}#formatear
 finmetodo
@@ -247,9 +313,9 @@ metodo CompiladorSimpleALua#visitarPrograma: nodo
     fijar ámbito a RN#ObtenerNombresDefinídos: nodo
     instrs#agregarAlFinal: {return rt.ns({}#formatear
     ámbito#paraCadaVariable: procedimiento: nombre, dv
-        instrs#agregarAlFinal: ({  [~t] = { value = _s._~t, autoexecutable = ~t ~e,}#formatear:
+        instrs#agregarAlFinal: ({  [~t] = { value = ~t, autoexecutable = ~t ~e,}#formatear:
             (EscaparParaLua: nombre),
-            dv#binding,
+            (yo#nombreEnLua: dv#binding),
             (dv#esAutoejecutable#escojer: {true}, {false}))
     finprocedimiento
     instrs#agregarAlFinal: {~e);}#formatear
@@ -263,7 +329,7 @@ finmetodo
 metodo CompiladorSimpleALua#visitarFijar: nodo
     si EsInstancia: nodo#objetivo, AST#NodoIdentificador
         variables obj, expr
-        fijar obj a IdentificadorDe: nodo#objetivo
+        fijar obj a yo#nombreEnLua: nodo#objetivo
         fijar expr a yo#visitar: nodo#valor
         devolver {~t = (~t);}#formatear: obj, expr
     sino
@@ -286,7 +352,7 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarClase: nodo
     variables cods, clssym, base
-    fijar clssym a IdentificadorDe: nodo#nombre
+    fijar clssym a yo#nombreEnLua: nodo#nombre
     fijar cods a Arreglo#vacio
     si no EsNulo: nodo#claseBase
         fijar base a yo#visitar: nodo#claseBase
@@ -336,7 +402,7 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetro
 
     funcion CódigoDeParam: param
         si EsInstancia: param, AST#NodoIdentificador
-            devolver {_~t}#formatear: (RN#NombreResueltoDe: param)
+            devolver {_p~t}#formatear: (RN#NombreResueltoDe: param)
         sino
             fijar variadic a param
             devolver {...}
@@ -346,7 +412,7 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetro
     fijar params a Unir: (Mapear: parámetros, &CódigoDeParam), {, }
 
     si no EsNulo: nombreResueltoDeYo
-        fijar met a {_~t}#formatear: nombreResueltoDeYo
+        fijar met a {_p~t}#formatear: nombreResueltoDeYo
         si parámetros#longitud > 0
             fijar params a {, }#concatenar: params
         finsi
@@ -356,9 +422,10 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetro
 
     funcion CódigoDeParamBody: param
         si EsInstancia: param, AST#NodoIdentificador
-            devolver {rt.scopenewname(_s, "_~t"); ~t = _~t}#formatear: (RN#NombreResueltoDe: param), (IdentificadorDe: param), (RN#NombreResueltoDe: param)
+            devolver {~t = ~t;}#formatear: (yo#nombreEnLua: (RN#NombreResueltoDe: param)), ({_p~t}#formatear: (RN#NombreResueltoDe: param))
         sino
-            devolver {rt.scopenewname(_s, "_~t")}#formatear: (RN#NombreResueltoDe: param#interno)
+            [ No es necesario hacer nada para los parámetros variadic. ]
+            devolver {}
         finsi
     finfuncion
 
@@ -366,18 +433,20 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetro
 
     si no EsNulo: nombreResueltoDeYo
         fijar paramsbody a paramsbody#concatenar:
-            ({~%;rt.scopenewname(_s, "_~t"); _s._~t = _~t}#formatear:
-                nombreResueltoDeYo, nombreResueltoDeYo, nombreResueltoDeYo)
+            ({~%;}#formatear#concatenar:
+                (yo#defineNombreEnLuaDesde:
+                    nombreResueltoDeYo,
+                    ({_p~t}#formatear: nombreResueltoDeYo)))
     finsi
 
     cods#agregarAlFinal: ({function(~t~t)}#formatear: met, params)
     cods#agregarAlFinal: yo#iniciar
     cods#agregarAlFinal: (paramsbody#concatenar: {;})
     si no EsNulo: variadic
-        [ Los parámetros no son declarados al principio de las
+        [ Los parámetros variadic no son declarados al principio de las
           funciones/métodos/procedimientos. Por esto debemos declarar este
           manualmente. ]
-        cods#agregarAlFinal: ({~t = rt.arreglo(...)}#formatear: (IdentificadorDe: variadic#interno))
+        cods#agregarAlFinal: ({~t = rt.arreglo(...)}#formatear: (yo#nombreEnLua: variadic#interno))
     finsi
 
     cods#agregarAlFinal: (yo#compilarInstrucciones: cuerpo)
@@ -388,8 +457,8 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarFunción: nodo
     variables cods, id, subyo
-    fijar subyo a yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
-    fijar id a IdentificadorDe: nodo#nombre
+    fijar subyo a yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídos}
+    fijar id a yo#nombreEnLua: nodo#nombre
     fijar cods a Arreglo#vacio
     cods#agregarAlFinal: ({~t = (~t);}#formatear:
         id,
@@ -484,7 +553,7 @@ metodo CompiladorSimpleALua#visitarSi: nodo
 
     procedimiento CompilarBloque: nodos, sub
         cods#agregarAlFinal: sub#iniciar
-        cods#agregarAlFinal: (yo#compilarInstrucciones: nodos)
+        cods#agregarAlFinal: (sub#compilarInstrucciones: nodos)
     finprocedimiento
 
     [ Si se compara directamente __Impl con una literal de texto igual a
@@ -528,7 +597,7 @@ metodo CompiladorSimpleALua#visitarMientras: nodo
     cods#agregarAlFinal: ({while ~t do}#formatear: (yo#visitar: nodo#condicional))
 
     cods#agregarAlFinal: subyo#iniciar
-    cods#agregarAlFinal: (yo#compilarInstrucciones: nodo#cuerpo)
+    cods#agregarAlFinal: (subyo#compilarInstrucciones: nodo#cuerpo)
 
     cods#agregarAlFinal: {end}
 
@@ -537,8 +606,8 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarMétodo: nodo
     variables clssym, nrdyo, subyo, cuerpoMet
-    fijar subyo a yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
-    fijar clssym a IdentificadorDe: nodo#deClase
+    fijar subyo a yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídos}
+    fijar clssym a yo#nombreEnLua: nodo#deClase
     fijar nrdyo a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
     fijar cuerpoMet a subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
     si nodo#esEstático
@@ -550,7 +619,7 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarAtributos: nodo
     variables clssym, cods
-    fijar clssym a IdentificadorDe: nodo#deClase
+    fijar clssym a yo#nombreEnLua: nodo#deClase
     fijar cods a Arreglo#vacio
     ParaCadaElemento: nodo#nombres, procedimiento: nodoId
         cods#agregarAlFinal: ({rt.enviarMensaje(~t, "agregarAtributo", ~t);}#formatear: clssym, (EscaparParaLua: nodoId#nombre))
@@ -601,11 +670,11 @@ metodo CompiladorSimpleALua#visitarUtilizar: nodo
     cods#agregarAlFinal: ({rt.ans_ns = rt.import(~t)}#formatear: (EscaparParaLua: módulo#llave#nombreCompletoDelArchivo))
     cods#agregarAlFinal: {;do}
     mapeoDeImportados#paraCadaPar: procedimiento: nombre, id
-        cods#agregarAlFinal: ({  _s._~t = rt.ans_ns:at(~t);}#formatear: id, (EscaparParaLua: nombre))
+        cods#agregarAlFinal: ({  ~t = rt.ans_ns:at(~t);}#formatear: (yo#nombreEnLua: id), (EscaparParaLua: nombre))
     finprocedimiento
     cods#agregarAlFinal: {end}
     si no EsNulo: espacioDeNombresResuelto
-        cods#agregarAlFinal: ({;_s._~t = rt.ans_ns;}#formatear: espacioDeNombresResuelto)
+        cods#agregarAlFinal: ({;~t = rt.ans_ns;}#formatear: (yo#nombreEnLua: espacioDeNombresResuelto))
     finsi
 
     devolver (Unir: cods, {~%}#formatear)
@@ -618,7 +687,7 @@ metodo CompiladorSimpleALua#visitarIdentificador: nodo
     sino
         fijar esAutoejecutable a FALSO
     finsi
-    fijar identificador a IdentificadorDe: nodo
+    fijar identificador a yo#nombreEnLua: nodo
     si esAutoejecutable
         devolver yo#enviarMensaje: identificador, {llamar}, Arreglo#vacio
     sino
@@ -701,7 +770,7 @@ metodo CompiladorSimpleALua#visitarLlamarProcedimiento: nodo
     si yo#esBuiltin: {__Lua}, (RN#NombreResueltoDe: nodo#proc)
         devolver yo#compilarBuiltinLua: nodo
     finsi
-    devolver yo#enviarMensaje: (IdentificadorDe: nodo#proc), {llamar}, nodo#argumentos
+    devolver yo#enviarMensaje: (yo#nombreEnLua: nodo#proc), {llamar}, nodo#argumentos
 finmetodo
 
 metodo CompiladorSimpleALua#compilarBuiltinLua: nodo
@@ -735,7 +804,7 @@ finmetodo
 metodo CompiladorSimpleALua#visitarNoLlamar: nodo
     variable base
     si EsInstancia: nodo#base, AST#NodoIdentificador
-        fijar base a IdentificadorDe: nodo#base
+        fijar base a yo#nombreEnLua: nodo#base
     sino
         fijar base a yo#visitar: nodo#base
     finsi
@@ -757,7 +826,7 @@ finmetodo
 
 metodo CompiladorSimpleALua#visitarFunciónAnónima: nodo
     variable nrdyo, subyo
-    fijar subyo a yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídosSinParámetros}
+    fijar subyo a yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídos}
     si nodo#esMétodo
         fijar nrdyo a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
     sino
