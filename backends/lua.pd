@@ -11,6 +11,8 @@ utilizar módulos como Módulos
 
 utilizar compilador como Compilador
 
+utilizar backends/lua/emisor como Em
+
 [ El backend de Lua está separado en dos partes. Espero, con el tiempo,
   "limpiar" mucho de este código (recuerda que el patrón del visitante ("Visitor
   Pattern") es realmente una manera de hacer "pattern matching" en lenguajes que
@@ -70,7 +72,7 @@ finfuncion
   Esto sería perfecto si no fuese por el hecho de que este sistema tiene una
   eficiencia abismalmente mala. Por eso, un segundo truco es realizado: si un
   ámbito y todos sus subámbitos tienen menos de 200 bindings el "scope hack"
-  con `_s` no es necesario. ]
+  con `_s` no es necesario y variables locales de Lua son usadas. ]
 
 [ Técnicamente hablando esta constante depende de como se compiló lua, pero 200
   es el predeterminado de Lua y creo que es aceptable que también sea el
@@ -78,16 +80,28 @@ finfuncion
 variable LUA_MAX_LOCALS
 fijar LUA_MAX_LOCALS a 200
 
+[ Todo el "compilado" se contruye incrementalmente de "partes de código", véase
+  la documentación de `backends/lua/emisor` para la definición de una parte de
+  código. ]
+
 [DOCUMENTA
 @brief{Devuelve el nombre en Lua de un binding.}
+
+Automaticamente detecta si el ámbito
+
+@pd{ámbito} es el ámbito en el que se está accediendo el
+binding. Automaticamente utiliza variables locales de Lua o el objeto @code{_s}
+dependiendo del número de bindings del ámbito que declaró @pd{binding}.
+
+@devuelve{Una parte de código.}
 DOCUMENTA]
 funcion NombreEnLua: binding, ámbito
     variable ámbitoDefinído
     fijar ámbitoDefinído a ámbito#ámbitoDondeSeDefine: binding
     si ámbitoDefinído#númeroDeBindings < LUA_MAX_LOCALS
-        devolver {_~t}#formatear: binding
+        devolver Em#Parte#sinAreaTextual: ({_~t}#formatear: binding)
     sino
-        devolver {_s._~t}#formatear: binding
+        devolver Em#Parte#sinAreaTextual: ({_s._~t}#formatear: binding)
     finsi
 finfuncion
 
@@ -105,22 +119,23 @@ finfuncion
 [DOCUMENTA
 @brief{Devuelve una instrucción en Lua que define un binding.}
 
-El texto devuelto contiene una o más instrucciones en Lua (separadas por puntos
-y comas). Las instrucciones devueltas declaran el binding: si el ámbito utiliza
-un objeto @code{_s}, entonces define el binding con @pd{rt.scopenewname}. Si,
-por el contrario, el ámbito no utiliza @code{_s}, entonces las instrucciones
-devueltas declaran la variable con @code{local}.
+La parte de código devuelta contiene una o más instrucciones en Lua (separadas
+por puntos y comas, más no incluyen un punto-y-coma final). Las instrucciones
+devueltas declaran el binding: si el ámbito utiliza un objeto @code{_s},
+entonces define el binding con @pd{rt.scopenewname}. Si, por el contrario, el
+ámbito no utiliza @code{_s}, entonces las instrucciones devueltas declaran la
+variable con @code{local}.
 
-@pd{luaExpr} es un texto que será el valor inicial de la variable (debe ser una
-expresión en Lua).
+@pd{luaExpr} es una parte de código que será el valor inicial de la variable
+(debe ser una expresión en Lua).
 DOCUMENTA]
 funcion DefineNombreEnLuaDesde: binding, ámbito, luaExpr
     variable ámbitoDefinído
     fijar ámbitoDefinído a ámbito#ámbitoDondeSeDefine: binding
     si ámbitoDefinído#númeroDeBindings < LUA_MAX_LOCALS
-        devolver {local _~t = (~t)}#formatear: binding, luaExpr
+        devolver Em#Formatear: NULO, {local _~t = (~p)}, binding, luaExpr
     sino
-        devolver {rt.scopenewname(_s, ~t); _s._~t = (~t)}#formatear:
+        devolver Em#Formatear: NULO, {rt.scopenewname(_s, ~t); _s._~t = (~p)},
             (EscaparParaLua: ({_~t}#formatear: binding)),
             binding,
             luaExpr
@@ -131,10 +146,10 @@ finfuncion
   utilizada para compilar el código. La clase "CompiladorSimpleALua" es solo un
   detalle de implementación y nunca se debería usar fuera de este módulo.
 
-  Los métodos "visitarXYZ" siempre devuelven el código Lua compilado como un
-  texto. De forma que "caminante#visitar: ast" devuelve todo el programa Lua
-  asumiendo que "ast" es un NodoPrograma y "caminante" una instancia de
-  CompiladorSimpleALua.
+  Los métodos "visitarXYZ" siempre devuelven el código Lua compilado como una
+  parte de código. De forma que "caminante#visitar: ast" devuelve una parte con
+  todo el programa en Lua asumiendo que "ast" es un NodoPrograma y "caminante"
+  una instancia de CompiladorSimpleALua.
 
   El compilado devuelto solo incluye al módulo. En la práctica estos compilados
   no son ejecutados directamente sino que son envueltos en funciones de lua
@@ -195,9 +210,9 @@ finmetodo
 
 El Runtime y la estructura del compilador:
 
-- En tiempo de ejecución, números, textos, funciones, booles y el valor nulo
-  tienen la representación en Lua que esperarías: números pasan a ser "number"
-  (Lua 5.4 garantiza números tanto enteros como reales, tal como
+- En tiempo de ejecución, los números, textos, funciones, booles y el valor
+  nulo tienen la representación en Lua que esperarías: números pasan a ser
+  "number" (Lua 5.4 garantiza números tanto enteros como reales, tal como
   PseudoD). Booles pasan a ser "true" y "false". Nulo pasa a ser
   "nil". Funciones y procedimientos pasan a ser "functions".
 
@@ -225,13 +240,15 @@ El Runtime y la estructura del compilador:
   "rt.enviarMensajeV" y escapa el mensaje a enviar. "objeto" es el objeto al
   que se le enviará un mensaje. Nota que aunque los "argumentos" sean visitados
   (es decir, compilados), "objeto" no lo es, ese parámetro ya debe ser un texto
-  que represente una expresión de Lua válida.
+  que represente una expresión de Lua válida. ("enviarMensaje" está
+  documentado, así que puedes ver su documentación para más información.)
 
 - El código generado siempre tiene puntos-y-comas separando las instrucciones.
 
 - Un patrón muy común es el de crear un arreglo de texto llamado "cods" (para
-  "códigos") e irlo llenando de textos para luego devolver "Unir: cods,
-  {;~%}#formatear".
+  "códigos") o "instrs" (para "instrucciones") e irlo llenando de partes de
+  código para finalmente devolver "Em#Parte#crear: cods, nodo" o
+  "Em#Unir: nodo, cods, {;}".
 
 - Al compilar un NodoPrograma, el espacio de nombres es devuelto (con "return")
   desde el chunk de lua. "CompiladorALua#compilarTodo" contiene la
@@ -256,11 +273,13 @@ El Runtime y la estructura del compilador:
    usas "rt.importar" (o "rt.import", son aliases).
 
 Creo que todo esto es lo necesario para entender este backend. A parte de esto,
-no es muy complicado, más que todo un monton de llamadas a "formatear" para
-concatenar textos.
+no es muy complicado, más que todo un monton de llamadas a "Em#Formatear" para
+concatenar las partes del código.
 
 ]
 
+[ Los siguientes métodos son de utilidad: Permiten no especificar el parámetro
+  "ámbito" de las respectivas funciones. ]
 metodo CompiladorSimpleALua#nombreEnLua: binding
     si EsInstancia: binding, AST#NodoIdentificador
         fijar binding a RN#NombreResueltoDe: binding
@@ -286,20 +305,23 @@ metodo CompiladorSimpleALua#iniciar
     sino
         fijar padre a {}
     finsi
-    res#agregarAlFinal: ({local _s = rt.scope(~t)}#formatear: padre)
+    res#agregarAlFinal: ({local _s = rt.scope(~t);~%}#formatear: padre)
     ParaCadaElemento: yo#_ámbito#todosLosBindingsLocales, procedimiento: id
         res#agregarAlFinal: (yo#defineNombreEnLua: id)
+        res#agregarAlFinal: {;~%}#formatear
     finprocedimiento
-    devolver Unir: res, {~%}#formatear
+    devolver res
 finmetodo
 
+[ Devuelve una parte de código que registra todos los builtins en su respectivo
+  ámbito. ]
 metodo CompiladorSimpleALua#registrarBuiltins
     variable cods
     fijar cods a Arreglo#vacio
     yo#_compilador#_builtins#paraCadaPar: procedimiento: nombreEnRT, binding
-        cods#agregarAlFinal: ({~t = rt.builtins[~t];}#formatear: (yo#nombreEnLua: binding), (EscaparParaLua: nombreEnRT))
+        cods#agregarAlFinal: (Em#Formatear: NULO, {~p = rt.builtins[~t];~%}, (yo#nombreEnLua: binding), (EscaparParaLua: nombreEnRT))
     finprocedimiento
-    devolver Unir: cods, {~%}#formatear
+    devolver cods
 finmetodo
 
 metodo CompiladorSimpleALua#esBuiltin: nombre, binding
@@ -313,13 +335,13 @@ metodo CompiladorSimpleALua#visitarPrograma: nodo
     fijar ámbito a RN#ObtenerNombresDefinídos: nodo
     instrs#agregarAlFinal: {return rt.ns({}#formatear
     ámbito#paraCadaVariable: procedimiento: nombre, dv
-        instrs#agregarAlFinal: ({  [~t] = { value = ~t, autoexecutable = ~t ~e,}#formatear:
+        instrs#agregarAlFinal: (Em#Formatear: nodo, {  [~t] = { value = ~p, autoexecutable = ~t ~e,~%},
             (EscaparParaLua: nombre),
             (yo#nombreEnLua: dv#binding),
             (dv#esAutoejecutable#escojer: {true}, {false}))
     finprocedimiento
-    instrs#agregarAlFinal: {~e);}#formatear
-    devolver Unir: instrs, {~%}#formatear
+    instrs#agregarAlFinal: {~e);~%}#formatear
+    devolver Em#Parte#crear: instrs, nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarVariable: nodo
@@ -331,48 +353,61 @@ metodo CompiladorSimpleALua#visitarFijar: nodo
         variables obj, expr
         fijar obj a yo#nombreEnLua: nodo#objetivo
         fijar expr a yo#visitar: nodo#valor
-        devolver {~t = (~t);}#formatear: obj, expr
+        devolver Em#Formatear: nodo, {~p = (~p);~%}, obj, expr
     sino
         necesitas EsInstancia: nodo#objetivo, AST#NodoEnviarMensaje
         necesitas nodo#objetivo#argumentos#longitud = 0
         variable base, fieldname
         fijar base a yo#visitar: nodo#objetivo#objeto
         fijar fieldname a {fijar_}#concatenar: nodo#objetivo#mensaje
-        devolver yo#enviarMensaje: base, fieldname, (Arreglo#crearCon: nodo#valor)
+        devolver Em#Formatear: nodo, {~p;~%}, (yo#enviarMensaje: base, fieldname, (Arreglo#crearCon: nodo#valor))
     finsi
 finmetodo
 
 metodo CompiladorSimpleALua#visitarEscribir: nodo
-    devolver {rt.escribir(~t);}#formatear: (yo#visitar: nodo#valor)
+    devolver Em#Formatear: nodo, {rt.escribir(~p);~%}, (yo#visitar: nodo#valor)
 finmetodo
 
 metodo CompiladorSimpleALua#visitarNl: nodo
-    devolver {rt.nl();}
+    devolver Em#Formatear: nodo, {rt.nl();~%}
 finmetodo
 
 metodo CompiladorSimpleALua#visitarClase: nodo
-    variables cods, clssym, base
+    variables cods, clssym, base, nodoClaseBaseSrc
     fijar clssym a yo#nombreEnLua: nodo#nombre
     fijar cods a Arreglo#vacio
     si no EsNulo: nodo#claseBase
         fijar base a yo#visitar: nodo#claseBase
+        fijar nodoClaseBaseSrc a nodo#claseBase
     sino
         fijar base a {rt.clases.Objeto}
+        fijar nodoClaseBaseSrc a nodo
     finsi
-    cods#agregarAlFinal: ({~t = (~t);}#formatear: clssym, (yo#enviarMensaje: ({(~t)}#formatear: base), {subclase}, Arreglo#vacio))
-    cods#agregarAlFinal: ({rt.enviarMensaje(~t, "fijar_nombre", ~t);}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre))
+    cods#agregarAlFinal: (Em#Formatear:
+        nodo,
+        {~p = (~p);~%},
+        clssym,
+        (yo#enviarMensaje:
+            (Em#Formatear: nodoClaseBaseSrc, {(~p)}, base),
+            {subclase},
+            Arreglo#vacio))
+    cods#agregarAlFinal: (Em#Formatear:
+        nodo#nombre,
+        {rt.enviarMensaje(~p, "fijar_nombre", ~t);~%},
+        clssym,
+        (EscaparParaLua: nodo#nombre#nombre))
     ParaCadaElemento: nodo#declaraciones, procedimiento: declr
         si EsInstancia: declr, AST#NodoDeclaraciónDeAtributosEnClase
-            cods#agregarAlFinal: ((yo#visitar: (clonar AST#NodoAtributos#crear con
+            cods#agregarAlFinal: (Em#Formatear: declr, {~p;~%}, (yo#visitar: (clonar AST#NodoAtributos#crear con
                 areaTextual: declr#areaTextual
                 deClase: nodo#nombre
                 nombres: declr#nombres
-            finclonar))#concatenar: {;})
+            finclonar)))
         sino
             [ Nada que hacer para los NodoDeclaraciónDeMétodoEnClase ]
         finsi
     finprocedimiento
-    devolver Unir: cods, {~%}#formatear
+    devolver Em#Parte#crear: cods, nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarDeclaraciónDeAtributosEnClase: nodo
@@ -400,6 +435,24 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetro
     fijar cods a Arreglo#vacio
     fijar variadic a NULO
 
+    [ Debido a que a veces las variables están en un objeto `_s`, no podemos
+      simplemente pasar todos los parámetros de la función por Lua (no es
+      posible escribir algo como `function(_s._1, _s._2)`). La solución que
+      implementa este método es crear nombres falsos para los parámetros (en
+      vez de `_s._1` o `_1` usan `_p1`) y luego los asignan a las variables
+      locales. Por ejemplo, una función con dos parámetros podría compilarse a:
+
+      function(_p1, _p2)
+         local _1, _2
+         _1 = _p1
+         _2 = _p2
+         ...
+      end
+
+      Los parámetros de la función en lua están en `params`, mientras que el
+      código que los asigna a variables en `_s` o variables locales está en
+      `paramsbody`. ]
+
     funcion CódigoDeParam: param
         si EsInstancia: param, AST#NodoIdentificador
             devolver {_p~t}#formatear: (RN#NombreResueltoDe: param)
@@ -412,7 +465,7 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetro
     fijar params a Unir: (Mapear: parámetros, &CódigoDeParam), {, }
 
     si no EsNulo: nombreResueltoDeYo
-        fijar met a {_p~t}#formatear: nombreResueltoDeYo
+        fijar met a Em#Formatear: NULO, {_p~t}, nombreResueltoDeYo
         si parámetros#longitud > 0
             fijar params a {, }#concatenar: params
         finsi
@@ -422,37 +475,40 @@ metodo CompiladorSimpleALua#expresiónDeFunción: nombreResueltoDeYo, parámetro
 
     funcion CódigoDeParamBody: param
         si EsInstancia: param, AST#NodoIdentificador
-            devolver {~t = ~t;}#formatear: (yo#nombreEnLua: (RN#NombreResueltoDe: param)), ({_p~t}#formatear: (RN#NombreResueltoDe: param))
+            devolver Em#Formatear: param, {~p = _p~t;~%}, (yo#nombreEnLua: (RN#NombreResueltoDe: param)), (RN#NombreResueltoDe: param)
         sino
-            [ No es necesario hacer nada para los parámetros variadic. ]
+            [ Los parámetros variadic son manejados más abajo. ]
             devolver {}
         finsi
     finfuncion
 
-    fijar paramsbody a Unir: (Mapear: parámetros, &CódigoDeParamBody), {;~%}#formatear
+    fijar paramsbody a Em#Unir: NULO, (Mapear: parámetros, &CódigoDeParamBody), {;~%}#formatear
 
     si no EsNulo: nombreResueltoDeYo
-        fijar paramsbody a paramsbody#concatenar:
-            ({~%;}#formatear#concatenar:
-                (yo#defineNombreEnLuaDesde:
-                    nombreResueltoDeYo,
-                    ({_p~t}#formatear: nombreResueltoDeYo)))
+        fijar paramsbody a Em#Formatear:
+            NULO,
+            {~p;~%~p;~%},
+            paramsbody,
+            (yo#defineNombreEnLuaDesde:
+                nombreResueltoDeYo,
+                (Em#Formatear: NULO, {_p~t}, nombreResueltoDeYo))
     finsi
 
-    cods#agregarAlFinal: ({function(~t~t)}#formatear: met, params)
+    cods#agregarAlFinal: (Em#Formatear: NULO, {function(~p~p)~%}, met, params)
     cods#agregarAlFinal: yo#iniciar
-    cods#agregarAlFinal: (paramsbody#concatenar: {;})
+    cods#agregarAlFinal: paramsbody
+    cods#agregarAlFinal: {;~%}#formatear
     si no EsNulo: variadic
         [ Los parámetros variadic no son declarados al principio de las
           funciones/métodos/procedimientos. Por esto debemos declarar este
           manualmente. ]
-        cods#agregarAlFinal: ({~t = rt.arreglo(...)}#formatear: (yo#nombreEnLua: variadic#interno))
+        cods#agregarAlFinal: (Em#Formatear: NULO, {~p = rt.arreglo(...);~%}, (yo#nombreEnLua: variadic#interno))
     finsi
 
     cods#agregarAlFinal: (yo#compilarInstrucciones: cuerpo)
-    cods#agregarAlFinal: {end}
+    cods#agregarAlFinal: {end~%}#formatear
 
-    devolver Unir: cods, {~%}#formatear
+    devolver cods
 finmetodo
 
 metodo CompiladorSimpleALua#visitarFunción: nodo
@@ -460,19 +516,20 @@ metodo CompiladorSimpleALua#visitarFunción: nodo
     fijar subyo a yo#crearSubámbitoDesdeNombreEnNodo: nodo, {nombresDefinídos}
     fijar id a yo#nombreEnLua: nodo#nombre
     fijar cods a Arreglo#vacio
-    cods#agregarAlFinal: ({~t = (~t);}#formatear:
+    cods#agregarAlFinal: (Em#Formatear: nodo,
+        {~p = (~p);~%},
         id,
         (subyo#expresiónDeFunción: NULO, nodo#parámetros, nodo#cuerpo)
     )
-    devolver Unir: cods, {~%}#formatear
+    devolver Em#Parte#crear: cods, nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarNecesitas: nodo
-    devolver {assert(~t);}#formatear: (yo#visitar: nodo#expresión)
+    devolver Em#Formatear: nodo, {assert(~p);~%}, (yo#visitar: nodo#expresión)
 finmetodo
 
 metodo CompiladorSimpleALua#visitarDevolver: nodo
-    devolver {do return ~t; end;}#formatear: (yo#visitar: nodo#expresión)
+    devolver Em#Formatear: nodo, {do return ~p; end;}, (yo#visitar: nodo#expresión)
 finmetodo
 
 clase ComparaciónDeBuiltin
@@ -562,7 +619,7 @@ metodo CompiladorSimpleALua#visitarSi: nodo
     variable cmp
     fijar cmp a SepararComparaciónDeBuiltin: nodo#condicional, (yo#_compilador#_builtins#en: {__Impl})
     si EsInstancia: cmp, ComparaciónDeBuiltin
-        cods#agregarAlFinal: {;do;}
+        cods#agregarAlFinal: {;do;~%}#formatear
         si cmp#tipoIgualdad = AST#TipoIgualdad#IGUALES
             si cmp#rhs = PSEUDOD_IMPL
                 CompilarBloque: nodo#siVerdadero, subSiVerdadero
@@ -576,16 +633,16 @@ metodo CompiladorSimpleALua#visitarSi: nodo
                 CompilarBloque: nodo#siVerdadero, subSiVerdadero
             finsi
         finsi
-        cods#agregarAlFinal: {;end;}
+        cods#agregarAlFinal: {;end;~%}#formatear
     sino
-        cods#agregarAlFinal: ({if ~t then}#formatear: (yo#visitar: nodo#condicional))
+        cods#agregarAlFinal: (Em#Formatear: nodo, {if ~p then~%}, (yo#visitar: nodo#condicional))
         CompilarBloque: nodo#siVerdadero, subSiVerdadero
-        cods#agregarAlFinal: {else}
+        cods#agregarAlFinal: {else~%}#formatear
         CompilarBloque: nodo#siFalso, subSiFalso
-        cods#agregarAlFinal: {end}
+        cods#agregarAlFinal: {end~%}#formatear
     finsi
 
-    devolver Unir: cods, {~%}#formatear
+    devolver Em#Parte#crear: cods, nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarMientras: nodo
@@ -594,14 +651,14 @@ metodo CompiladorSimpleALua#visitarMientras: nodo
     fijar subyo a yo#crearSubámbitoDesdeNodo: nodo
 
     fijar cods a Arreglo#vacio
-    cods#agregarAlFinal: ({while ~t do}#formatear: (yo#visitar: nodo#condicional))
+    cods#agregarAlFinal: (Em#Formatear: nodo, {while ~p do~%}, (yo#visitar: nodo#condicional))
 
     cods#agregarAlFinal: subyo#iniciar
     cods#agregarAlFinal: (subyo#compilarInstrucciones: nodo#cuerpo)
 
-    cods#agregarAlFinal: {end}
+    cods#agregarAlFinal: {end~%}#formatear
 
-    devolver Unir: cods, {~%}#formatear
+    devolver Em#Parte#crear: cods, nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarMétodo: nodo
@@ -611,9 +668,19 @@ metodo CompiladorSimpleALua#visitarMétodo: nodo
     fijar nrdyo a nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
     fijar cuerpoMet a subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
     si nodo#esEstático
-        devolver {(~t).methods[~t] = ~t}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre), cuerpoMet
+        devolver Em#Formatear:
+            nodo,
+            {(~p).methods[~t] = ~p;~%},
+            clssym,
+            (EscaparParaLua: nodo#nombre#nombre),
+            cuerpoMet
     sino
-        devolver {rt.enviarMensaje(~t, "agregarMetodo", ~t, ~t);}#formatear: clssym, (EscaparParaLua: nodo#nombre#nombre), cuerpoMet
+        devolver Em#Formatear:
+            nodo,
+            {rt.enviarMensaje(~p, "agregarMetodo", ~p, ~p);~%},
+            clssym,
+            (EscaparParaLua: nodo#nombre#nombre),
+            cuerpoMet
     finsi
 finmetodo
 
@@ -622,9 +689,9 @@ metodo CompiladorSimpleALua#visitarAtributos: nodo
     fijar clssym a yo#nombreEnLua: nodo#deClase
     fijar cods a Arreglo#vacio
     ParaCadaElemento: nodo#nombres, procedimiento: nodoId
-        cods#agregarAlFinal: ({rt.enviarMensaje(~t, "agregarAtributo", ~t);}#formatear: clssym, (EscaparParaLua: nodoId#nombre))
+        cods#agregarAlFinal: (Em#Formatear: nodoId, {rt.enviarMensaje(~p, "agregarAtributo", ~p);~%}, clssym, (EscaparParaLua: nodoId#nombre))
     finprocedimiento
-    devolver Unir: cods, {~%}#formatear
+    devolver Em#Parte#crear: cods, nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarUtilizar: nodo
@@ -667,17 +734,17 @@ metodo CompiladorSimpleALua#visitarUtilizar: nodo
 
     variable cods
     fijar cods a Arreglo#vacio
-    cods#agregarAlFinal: ({rt.ans_ns = rt.import(~t)}#formatear: (EscaparParaLua: módulo#llave#nombreCompletoDelArchivo))
-    cods#agregarAlFinal: {;do}
+    cods#agregarAlFinal: (Em#Formatear: nodo, {rt.ans_ns = rt.import(~p);~%}, (EscaparParaLua: módulo#llave#nombreCompletoDelArchivo))
+    cods#agregarAlFinal: {do~%}#formatear
     mapeoDeImportados#paraCadaPar: procedimiento: nombre, id
-        cods#agregarAlFinal: ({  ~t = rt.ans_ns:at(~t);}#formatear: (yo#nombreEnLua: id), (EscaparParaLua: nombre))
+        cods#agregarAlFinal: (Em#Formatear: nodo, {  ~p = rt.ans_ns:at(~t);~%}, (yo#nombreEnLua: id), (EscaparParaLua: nombre))
     finprocedimiento
-    cods#agregarAlFinal: {end}
+    cods#agregarAlFinal: {end~%}#formatear
     si no EsNulo: espacioDeNombresResuelto
-        cods#agregarAlFinal: ({;~t = rt.ans_ns;}#formatear: (yo#nombreEnLua: espacioDeNombresResuelto))
+        cods#agregarAlFinal: (Em#Formatear: nodo, {~p = rt.ans_ns;}, (yo#nombreEnLua: espacioDeNombresResuelto))
     finsi
 
-    devolver (Unir: cods, {~%}#formatear)
+    devolver Em#Parte#crear: cods, nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarIdentificador: nodo
@@ -689,18 +756,18 @@ metodo CompiladorSimpleALua#visitarIdentificador: nodo
     finsi
     fijar identificador a yo#nombreEnLua: nodo
     si esAutoejecutable
-        devolver yo#enviarMensaje: identificador, {llamar}, Arreglo#vacio
+        devolver Em#Parte#crear: (yo#enviarMensaje: identificador, {llamar}, Arreglo#vacio), nodo
     sino
-        devolver identificador
+        devolver Em#Parte#crear: identificador, nodo
     finsi
 finmetodo
 
 metodo CompiladorSimpleALua#visitarNúmeroLiteral: nodo
-    devolver nodo#valor
+    devolver Em#Parte#crear: nodo#valor, nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarTextoLiteral: nodo
-    devolver EscaparParaLua: nodo#valor
+    devolver Em#Parte#crear: (EscaparParaLua: nodo#valor), nodo
 finmetodo
 
 [DOCUMENTA
@@ -717,12 +784,21 @@ enviado a el objeto resultante.}
 NodoVariadic (o ninguno).}
 )
 
-@devuelve{Una llamada adecuada a "rt.enviarMensaje" o "rt.enviarMensajeV".}
+@devuelve{La parte de código con una llamada adecuada a @code{rt.enviarMensaje}
+o @code{rt.enviarMensajeV}.}
 DOCUMENTA]
 metodo CompiladorSimpleALua#enviarMensaje: objeto, mensaje, argumentos
-    variables args, argsComoTexto, funciónParaEnviarMensaje
+    variables args, argsComoTexto, funciónParaEnviarMensaje, alMenosUnArgumento
+
+    [ `args` será un arreglo con los argumentos del mensaje. Cada secuencia de
+    argumentos que no incluyan un variadic será agregada a `args` como un
+    arreglo de nodos, mientras que los variadics serán agregados tal cual. Por
+    ejemplo, los argumentos `1, 2, ...x, 4, ...y` sería agregado a `args` como
+    `Arreglo#crearCon: (Arreglo#crearCon: 1, 2), x, (Arreglo#crearCon: 4), y`
+    (claro, los números y `x` y `y` serían realmente nodos del AST.) ]
 
     fijar args a Arreglo#vacio
+    fijar alMenosUnArgumento a FALSO
     ParaCadaElemento: argumentos, procedimiento: arg
         si EsInstancia: arg, AST#NodoVariadic
             args#agregarAlFinal: arg
@@ -736,10 +812,11 @@ metodo CompiladorSimpleALua#enviarMensaje: objeto, mensaje, argumentos
             finsi
             (ÚltimoElemento: args)#agregarAlFinal: arg
         finsi
+        fijar alMenosUnArgumento a VERDADERO
     finprocedimiento
 
     funcion CompilarArgumentosSimples: args
-        devolver Unir: (Mapear: args, funcion: x devolver yo#visitar: x finfuncion), {, }
+        devolver Em#Unir: NULO, (Mapear: args, funcion: x devolver yo#visitar: x finfuncion), {, }
     finfuncion
 
     fijar funciónParaEnviarMensaje a NULO
@@ -751,26 +828,37 @@ metodo CompiladorSimpleALua#enviarMensaje: objeto, mensaje, argumentos
     finsi
     si EsNulo: funciónParaEnviarMensaje
         fijar funciónParaEnviarMensaje a {enviarMensajeV}
-        fijar argsComoTexto a Unir: (Mapear: args, funcion: arg
+        fijar argsComoTexto a Em#Unir: NULO, (Mapear: args, funcion: arg
             si EsInstancia: arg, AST#NodoVariadic
                 devolver yo#visitar: arg#interno
             sino
-                devolver {{ __pd_var=true, n=~t, ~t ~e}#formatear: arg#longitud, (CompilarArgumentosSimples: arg)
+                devolver Em#Formatear: arg, {{ __pd_var=true, n=~t, ~p ~e}, arg#longitud, (CompilarArgumentosSimples: arg)
             finsi
         finfuncion), {, }
     finsi
-    si argsComoTexto#longitud > 0
-        fijar argsComoTexto a {, }#concatenar: argsComoTexto
+    si alMenosUnArgumento
+        fijar argsComoTexto a Em#Formatear: NULO, {, ~p}, argsComoTexto
     finsi
 
-    devolver {rt.~t(~t, ~t~t)}#formatear: funciónParaEnviarMensaje, objeto, (EscaparParaLua: mensaje), argsComoTexto
+    devolver Em#Formatear:
+        NULO,
+        {rt.~t(~p, ~t~p)},
+        funciónParaEnviarMensaje,
+        objeto,
+        (EscaparParaLua: mensaje),
+        argsComoTexto
 finmetodo
 
 metodo CompiladorSimpleALua#visitarLlamarProcedimiento: nodo
     si yo#esBuiltin: {__Lua}, (RN#NombreResueltoDe: nodo#proc)
         devolver yo#compilarBuiltinLua: nodo
     finsi
-    devolver yo#enviarMensaje: (yo#nombreEnLua: nodo#proc), {llamar}, nodo#argumentos
+    devolver Em#Parte#crear:
+        (yo#enviarMensaje:
+            (yo#nombreEnLua: nodo#proc),
+            {llamar},
+            nodo#argumentos),
+        nodo
 finmetodo
 
 metodo CompiladorSimpleALua#compilarBuiltinLua: nodo
@@ -787,15 +875,26 @@ metodo CompiladorSimpleALua#compilarBuiltinLua: nodo
                 finsi
                 devolver yo#visitar: x
             finfuncion
-    devolver {((~t)(~t))}#formatear: arg#valor, (Unir: argumentosEvaluados, {, })
+    devolver Em#Formatear:
+        nodo,
+        {((~p)(~p))},
+        arg#valor,
+        (Em#Unir: nodo, argumentosEvaluados, {, })
 finmetodo
 
 metodo CompiladorSimpleALua#visitarEnviarMensaje: nodo
-    devolver yo#enviarMensaje: (yo#visitar: nodo#objeto), nodo#mensaje, nodo#argumentos
+    devolver Em#Parte#crear:
+        (yo#enviarMensaje:
+            (yo#visitar: nodo#objeto),
+            nodo#mensaje,
+            nodo#argumentos),
+        nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarOperador: nodo
-    devolver {rt.enviarMensaje(~t, ~t, ~t)}#formatear:
+    devolver Em#Formatear:
+        nodo,
+        {rt.enviarMensaje(~p, ~t, ~p)},
         (yo#visitar: nodo#lhs),
         (EscaparParaLua: ({operador_~t}#formatear: nodo#op#op)),
         (yo#visitar: nodo#rhs)
@@ -811,17 +910,23 @@ metodo CompiladorSimpleALua#visitarNoLlamar: nodo
     si nodo#mensajes#longitud > 0
         variable cod
         fijar cod a Reducir: base, funcion: acc, mensaje
-            devolver {rt.enviarMensaje(~t, ~t)}#formatear: acc, (EscaparParaLua: mensaje#texto)
+            devolver Em#Formatear: nodo, {rt.enviarMensaje(~p, ~t)}, acc, (EscaparParaLua: mensaje#texto)
         finfuncion, (PedazoDeArreglo: nodo#mensajes, 0, -2)
-        fijar cod a {rt.enviarMensaje(~t, ~t, ...)}#formatear: cod, (EscaparParaLua: (ÚltimoElemento: nodo#mensajes)#texto)
-        devolver {function(...) return ~t end}#formatear: cod
+        fijar cod a Em#Formatear:
+            nodo,
+            {rt.enviarMensaje(~p, ~t, ...)},
+            cod,
+            (EscaparParaLua: (ÚltimoElemento: nodo#mensajes)#texto)
+        devolver Em#Formatear: nodo, {function(...) return ~p end}, cod
     sino
-        devolver base
+        devolver Em#Parte#crear: base, nodo
     finsi
 finmetodo
 
 metodo CompiladorSimpleALua#visitarAutoejecutar: nodo
-    devolver yo#enviarMensaje: (yo#visitar: nodo#expr), {llamar}, nodo#argumentos
+    devolver Em#Parte#crear:
+        (yo#enviarMensaje: (yo#visitar: nodo#expr), {llamar}, nodo#argumentos),
+        nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarFunciónAnónima: nodo
@@ -832,16 +937,18 @@ metodo CompiladorSimpleALua#visitarFunciónAnónima: nodo
     sino
         fijar nrdyo a NULO
     finsi
-    devolver subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo
+    devolver Em#Parte#crear:
+        (subyo#expresiónDeFunción: nrdyo, nodo#parámetros, nodo#cuerpo),
+        nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarSonIguales: nodo
     variable igual
     fijar igual a yo#enviarMensaje: (yo#visitar: nodo#lhs), {igualA}, (Arreglo#crearCon: nodo#rhs)
     si nodo#tipoIgualdad = AST#TipoIgualdad#IGUALES
-        devolver igual
+        devolver Em#Parte#crear: igual, nodo
     sino
-        devolver {not ~t}#formatear: igual
+        devolver Em#Formatear: nodo, {not ~p}, igual
     finsi
 finmetodo
 
@@ -850,18 +957,23 @@ metodo CompiladorSimpleALua#visitarReferenciar: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarNo: nodo
-    devolver {not ~t}#formatear: (yo#visitar: nodo#expresión)
+    devolver Em#Formatear: nodo, {not ~p}, (yo#visitar: nodo#expresión)
 finmetodo
 
 metodo CompiladorSimpleALua#visitarClonar: nodo
     variable tabla
-    fijar tabla a {{~t~e}#formatear:
-        (Unir:
+    fijar tabla a Em#Formatear: nodo, {{~p~e},
+        (Em#Unir:
+            nodo,
             (Mapear: nodo#campos, funcion: res
-                devolver {[~t] = ~t}#formatear: (EscaparParaLua: (res#en: 0)), (yo#visitar: (res#en: 1))
+                devolver Em#Formatear: nodo, {[~t] = ~p},
+                    (EscaparParaLua: (res#en: 0)),
+                    (yo#visitar: (res#en: 1))
             finfuncion),
             {, })
-    devolver {rt.clonar(~t, ~t)}#formatear: (yo#visitar: nodo#expresiónAClonar), tabla
+    devolver Em#Formatear: nodo, {rt.clonar(~p, ~p)},
+        (yo#visitar: nodo#expresiónAClonar),
+        tabla
 finmetodo
 
 metodo CompiladorSimpleALua#visitarVariadic: nodo
@@ -877,18 +989,18 @@ El motivo por el que este método exíste es porque en Lua no todas las
 expresiones pueden usarse como instrucciones, este método captura expresiones
 en @pd{nodos} y las transforma a instrucciones equivalentes que Lua acepta.
 
-@devuelve{Un texto: los nodos compilados.}
+@devuelve{Una parte de código: los nodos compilados.}
 DOCUMENTA]
 metodo CompiladorSimpleALua#compilarInstrucciones: nodos
     variable cods
     fijar cods a Mapear: nodos, funcion: nodo
         si EsInstancia: nodo, AST#NodoExpresion
-            devolver {rt._ = (~t)}#formatear: (yo#visitar: nodo)
+            devolver Em#Formatear: nodo, {rt._ = (~p);~%}, (yo#visitar: nodo)
         sino
-            devolver yo#visitar: nodo
+            devolver Em#Formatear: nodo, {~p;~%}, (yo#visitar: nodo)
         finsi
     finfuncion
-    devolver (Unir: cods, {;~%}#formatear)#concatenar: {;}
+    devolver Em#Parte#sinAreaTextual: cods
 finmetodo
 
 [DOCUMENTA
@@ -909,11 +1021,17 @@ el programa.}
 @devuelve{Un texto que es el código lua compilado.}
 DOCUMENTA]
 funcion CompilarALua: moddb, ast, ámbito, compilador
-    variables comp, ini, builtins
+    variables comp, ini, builtins, código
     fijar comp a CompiladorSimpleALua#crear: moddb, ámbito, compilador
     fijar ini a comp#iniciar
     fijar builtins a comp#registrarBuiltins
-    devolver {local rt = require "backends.lua.runtime";~%~t~%~t~%~t}#formatear: ini, builtins, (comp#visitar: ast)
+    fijar código a Em#Formatear:
+        ast,
+        {local rt = require "backends.lua.runtime";~%~p~%~p~%~p~%},
+        ini,
+        builtins,
+        (comp#visitar: ast)
+    devolver Em#EmitirCódigo: código
 finfuncion
 
 [DOCUMENTA

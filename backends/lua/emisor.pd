@@ -1,0 +1,269 @@
+utilizar bepd/builtins
+utilizar bepd/utilidades/texto como Tx
+utilizar bepd/utilidades/arreglo
+utilizar tokens como Tokens
+utilizar ast como AST
+
+[DOCUMENTA
+@brief{Obtiene el area textual de algo, o @pd{NULO} si no tiene.}
+
+@pd{para} será el objeto cuya area textual será extraída. Puede ser uno de:
+
+@itemlist(
+@item{@pd{AST#Nodo}: Obtiene el area del nodo.}
+@item{@pd{Tokens#Token}: Obtiene el area del token.}
+@item{@pd{Tokens#AreaTextual}: Devuelve @pd{para} sin cambios.}
+@item{@pd{Parte}: Devuelve el area de la parte (posiblemente @pd{NULO}).}
+@item{@pd{Texto}, @pd{Arreglo} o @pd{NULO}: Devuelve @pd{NULO}.}
+)
+DOCUMENTA]
+funcion AreaTextualDe: para
+    si EsNulo: para
+        devolver NULO
+    finsi
+    si EsInstancia: para, AST#Nodo
+        devolver para#areaTextual
+    finsi
+    si EsInstancia: para, Tokens#Token
+        devolver para#areaDelToken
+    finsi
+    si EsInstancia: para, Tokens#AreaTextual
+        devolver para
+    finsi
+    si EsInstancia: para, Parte
+        devolver para#areaTextual
+    finsi
+    si EsInstancia: para, Arreglo
+        devolver NULO
+    finsi
+    si EsInstancia: para, Texto
+        devolver NULO
+    finsi
+    Inalcanzable
+finfuncion
+
+[DOCUMENTA
+@brief{Parte (con area textual) de un código emitído.}
+
+Contiene un "contenido" y, opcionalmente, un area textual.
+
+A lo largo de este módulo, se hará referencia a una "parte" de código. Una
+parte es cualquiera de:
+
+@itemlist(
+@item{@pd{Texto}: Representa su contenido, sin area textual.}
+@item{@pd{Arreglo} de otras partes: Representa sus elementos en orden.}
+@item{@pd{Parte} con otra parte de contenido: Representa su contenido,
+opcionalmente con un area textual.}
+)
+
+Para distinguír entre "parte" como la clase y "parte" como cualquiera de los
+tipos anteriores, el resto de la documentación utilizará @pd{Parte} para la
+clase y solo "parte" para los tipos.
+
+Las partes exísten para separar partes del código emitido, de forma que sea
+posible para una parte tener un area textual y para otras no. El area textual
+de una parte es el area textual del programa del cual se compiló esta parte.
+DOCUMENTA]
+clase Parte
+    [DOCUMENTA
+    @brief{Contenido de la parte.}
+
+    Un @pd{Texto}, @pd{Arreglo} de partes u otra @pd{Parte}.
+    DOCUMENTA]
+    atributo contenido
+
+    [DOCUMENTA
+    @brief{Area textual de esta parte, o @pd{NULO}.}
+    DOCUMENTA]
+    atributo areaTextual
+
+    [DOCUMENTA
+    @brief{Crea una @pd{Parte}.}
+
+    @pd{conAreaTextual} debe ser cualquier cosa con un área textual, o
+    @pd{NULO} (véase @pd{AreaTextualDe} para las cosas que tienen un area
+    textual).
+    DOCUMENTA]
+    metodo estatico crear: contenido, conAreaTextual
+
+    [DOCUMENTA
+    @brief{Equivalente a @pd{Parte#crear: contenido, NULO}.}
+    DOCUMENTA]
+    metodo estatico sinAreaTextual: contenido
+
+    [DOCUMENTA
+    @brief{Devuelve una representación textual de la parte.}
+
+    La representación devuelta es legible solo por personas. Para obtener el
+    código representado por una parte, usa @pd{EmitirCódigo}.
+    DOCUMENTA]
+    metodo comoTexto
+finclase
+
+metodo estatico Parte#sinAreaTextual: contenido
+    devolver yo#crear: contenido, NULO
+finmetodo
+
+metodo Parte#inicializar: contenido, conAreaTextual
+    fijar yo#contenido a contenido
+    fijar yo#areaTextual a AreaTextualDe: conAreaTextual
+finmetodo
+
+metodo Parte#comoTexto
+    devolver {(Parte: en ~t con ~t)}#formatear: yo#areaTextual, yo#contenido
+finmetodo
+
+[DOCUMENTA
+@brief{Convierte un dato a una @pd{Parte}.}
+
+Si @pd{dato} es una @pd{Parte}, lo devuelve sin cambios. @pd{dato} también
+puede ser un @pd{Texto}, en cuyo caso devuelve @pd{Parte#sinAreaTextual: dato},
+o un @pd{Arreglo} de otros datos similares (@pd{Texto}, @pd{Arreglo} o
+@pd{Parte}) en cuyo caso devuelve una @pd{Parte} sin area textual con el
+arreglo luego de convertir los elementos del arreglo a @pd{Parte} de forma
+recursiva.
+
+Esta función tiene el propósito de "normalizar" una parte. Normalmente, como ya
+se explicó, las partes pueden estar compuestas de @pd{Texto}, @pd{Arreglo} o
+@pd{Parte} en cualquier estructura, pero para algunos algoritmos la siguiente
+estructura (una "parte normalizada") es mucho más fácil de usar:
+
+@subarea{
+@bold{Una parte normalizada} es una @pd{Parte} cuyo contenido es:
+
+@itemlist(
+@item{Un @pd{Texto}.}
+@item{Un @pd{Arreglo} de @pd{Parte}.}
+@item{Otra @pd{Parte}.}
+)
+}
+DOCUMENTA]
+funcion DatoAParte: dato
+    si EsInstancia: dato, Texto
+        devolver Parte#sinAreaTextual: dato
+    finsi
+    si EsInstancia: dato, Arreglo
+        devolver Parte#sinAreaTextual: (Mapear: dato, &DatoAParte)
+    finsi
+    si EsInstancia: dato, Parte
+        devolver dato
+    finsi
+    Inalcanzable
+finfuncion
+
+[DOCUMENTA
+@brief{Emíte el código de una parte.}
+
+@pd{parte} es la parte a emitir. Devuelve un @pd{Texto} que contiene el código
+de dicha. Toda la información del programa (las áreas textuales) será ignorada.
+DOCUMENTA]
+funcion EmitirCódigo: parte
+    variable res
+    fijar res a Arreglo#vacio
+
+    procedimiento Procesar: contenido
+        si EsInstancia: contenido, Texto
+            res#agregarAlFinal: contenido
+            devolver NULO
+        finsi
+        si EsInstancia: contenido, Arreglo
+            ParaCadaElemento: contenido, procedimiento: c
+                Procesar: c
+            finprocedimiento
+            devolver NULO
+        finsi
+        si EsInstancia: contenido, Parte
+            devolver Procesar: contenido#contenido
+        finsi
+        Inalcanzable
+    finprocedimiento
+
+    Procesar: parte
+    devolver Tx#Unir: res, {}
+finfuncion
+
+[DOCUMENTA
+@brief{Formatea varias partes.}
+
+@pd{conArea} debe ser algo con un area textual (véase @pd{AreaTextualDe}) del
+cual se obtendrá el area textual de la parte devuelta.
+
+@pd{fmt} es el texto de formato. Su estructura es similar a la aceptada por
+@pd{Texto#formatear}, con las siguientes diferencias:
+
+@itemlist(
+@item{@code{~|%} no está soportado.}
+@item{@code{~T} no está soportado, solo @code{~t}.}
+@item{Un nuevo formato, @code{~p}, agrega una parte al resultado.}
+)
+
+Por ejemplo, @pd|{Formatear: NULO, {hola ~t = ~p ~t}, 2, OtraParte, 4}| es equivalente a
+@pd{Parte#sinAreaTextual: (Arreglo#crearCon: ({hola ~t}#formatear: 2), OtraParte, ({ ~t}#formatear: 4))}.
+Como puedes ver, utilizar @pd{Formatear} es mucho más fácil.
+
+Advertencia: Debido a que el formato @code{~t} convierte su argumento con
+@pd{#comoTexto}, cualquier cosa que se pueda convertir a texto será
+aceptada. Esto no debería ser sorprendente, así también funciona
+@pd{#formatear}. El problema es que @pd{Parte}, @pd{Texto} y @pd{Arreglo} (es
+decir, cualquier parte) @italic{también} se pueden convertir a texto. Esto
+significa que si utilizas el formato @code{~t} en vez de @code{~p} para
+formatear otra parte no habrá ningún error, en cambio solo se producirá código
+erróneo.
+DOCUMENTA]
+funcion Formatear: conArea, fmt, ...partes
+    variables res, accTexto, i, partesI
+    fijar i a 0
+    fijar partesI a 0
+    fijar res a Arreglo#vacio
+    fijar accTexto a {}
+    mientras i < fmt#longitud
+        variables ch, agregar
+        fijar ch a fmt#en: i
+        si ch = {~}
+            fijar i a i + 1
+            fijar ch a fmt#en: i
+            si (ch = {%}) || (ch = {e}) || (ch = {E}) || (ch = {q}) || (ch = {~})
+                fijar agregar a ({~}#concatenar: ch)#formatear
+            finsi
+            si ch = {p}
+                fijar agregar a partes#en: partesI
+                fijar partesI a partesI + 1
+                necesitas
+                    (EsInstancia: agregar, Arreglo) ||
+                    (EsInstancia: agregar, Parte) ||
+                    (EsInstancia: agregar, Texto)
+            finsi
+            si ch = {t}
+                fijar agregar a (partes#en: partesI)#comoTexto
+                fijar partesI a partesI + 1
+            finsi
+            necesitas no EsNulo: agregar
+        sino
+            fijar agregar a ch
+        finsi
+        fijar i a i + 1
+
+        si EsInstancia: agregar, Texto
+            fijar accTexto a accTexto#concatenar: agregar
+        sino
+            res#agregarAlFinal: accTexto
+            res#agregarAlFinal: agregar
+            fijar accTexto a {}
+        finsi
+    finmientras
+    res#agregarAlFinal: accTexto
+    devolver Parte#crear: res, conArea
+finfuncion
+
+[DOCUMENTA
+@brief{Une varias partes con un separador.}
+
+@pd{partes} debe ser un arreglo de partes y @pd{separador} otra
+parte. @pd{separador} será intercalado entre @pd{partes} y el resultado será
+convertido a una @pd{Parte} cuya área textual vendrá de @pd{conArea} (véase
+@pd{AreaTextualDe}).
+DOCUMENTA]
+funcion Unir: conArea, partes, separador
+    devolver Parte#crear: (Intercalar: partes, separador), conArea
+finfuncion

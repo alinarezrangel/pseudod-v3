@@ -1,0 +1,27 @@
+utilizar bepd/builtins
+
+[DOCUMENTA
+@brief{Intercala un elemento en un arreglo.}
+
+Intercala @pd{valor} entre todos los elementos de @pd{arr}. Por ejemplo:
+
+@ejemplo|{
+necesitas
+    (Intercalar: (Arreglo#crearCon: 1, 2, 3, 4), {=})
+    =
+    (Arreglo#crearCon: 1, {=}, 2, {=}, 3, {=}, 4)
+}|
+
+Puedes imaginarlo como una versión de @pd{Unir} pero para arreglos.
+DOCUMENTA]
+funcion Intercalar: arr, valor
+    variable res
+    fijar res a Arreglo#vacio
+    ParaCadaElementoConÍndice: arr, procedimiento: elem, i
+        si i > 0
+            res#agregarAlFinal: valor
+        finsi
+        res#agregarAlFinal: elem
+    finprocedimiento
+    devolver res
+finfuncion
