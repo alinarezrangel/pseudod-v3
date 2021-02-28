@@ -1610,8 +1610,12 @@ function M.resetandload(code)
    return chunk()
 end
 
+-- Utilizado por el compilador para ignorar expresiones en posición de
+-- instrucción. Solo es necesario porque lua no permite, por ejemplo, la
+-- expresión 5 como su propia instrucción.
+function M.ignore(...) end
+
 -- Utilizado como variable temporal por el compilador.
 M.ans_rt = nil
-M._ = nil
 
 return M

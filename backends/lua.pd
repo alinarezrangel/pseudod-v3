@@ -995,7 +995,7 @@ metodo CompiladorSimpleALua#compilarInstrucciones: nodos
     variable cods
     fijar cods a Mapear: nodos, funcion: nodo
         si EsInstancia: nodo, AST#NodoExpresion
-            devolver Em#Formatear: nodo, {rt._ = (~p);~%}, (yo#visitar: nodo)
+            devolver Em#Formatear: nodo, {rt.ignore(~p);~%}, (yo#visitar: nodo)
         sino
             devolver Em#Formatear: nodo, {~p;~%}, (yo#visitar: nodo)
         finsi
