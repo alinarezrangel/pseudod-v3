@@ -14,13 +14,13 @@ PDC=$(LUA) $(STAGE1)/pseudod.lua
 
 BEPD_FILES=bepd/builtins.pd bepd/builtinsImpl.pd bepd/algoritmos.pd				\
 bepd/intrinsics.pd bepd/datos/diccionario.pd bepd/datos/pila.pd					\
-bepd/datos/resultado.pd bepd/utilidades/texto.pd								\
+bepd/datos/resultado.pd bepd/utilidades/texto.pd bepd/utilidades/arreglo.pd		\
 bepd/utilidades/texto/ascii.pd bepd/x/enum.pd bepd/x/puerto.pd bepd/x/sexpr.pd	\
-bepd/x/puerto/conPosición.pd bepd/x/puerto/deArchivo.pd							\
-bepd/x/sistemaDeArchivos/archivo.pd
+bepd/x/entorno.pd bepd/x/adhoc.pd bepd/x/puerto/conPosición.pd					\
+bepd/x/puerto/deArchivo.pd bepd/x/sistemaDeArchivos/archivo.pd
 COMPILER_FILES=$(BEPD_FILES) ámbito.pd ast.pd caminaNodos.pd combinadores.pd	\
 compilador.pd inicio.pd módulos.pd parser.pd resoluciónDeNombres.pd				\
-tokenizador.pd tokens.pd backends/lua.pd
+tokenizador.pd tokens.pd backends/lua.pd backends/lua/emisor.pd
 
 all: stage0 stage1 tests tools
 

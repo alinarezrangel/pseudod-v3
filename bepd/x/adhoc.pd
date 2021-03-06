@@ -1,0 +1,44 @@
+utilizar bepd/builtins
+
+funcion ObjetoAdHoc: ...pares
+    variable dic
+    fijar dic a __EnviarMensaje: Diccionario, {desdePares}, pares
+
+    clase ClaseAdHoc finclase
+    metodo ClaseAdHoc#metodoNoEncontrado: mensaje, argumentos
+        si (mensaje = {operador_=}) || (mensaje = {igualA})
+            necesitas argumentos#longitud = 1
+            devolver __CompararObjeto: yo, (argumentos#en: 0)
+        finsi
+        si mensaje = {clonar}
+            necesitas argumentos#longitud = 0
+            devolver __ClonarObjeto: yo
+        finsi
+        si mensaje = {comoTexto}
+            necesitas argumentos#longitud = 0
+            devolver {(ObjetoAdHoc: ~t)}#formatear: dic
+        finsi
+
+        variables esFijar, atributo_
+        fijar esFijar a (mensaje#subTexto: 0, {fijar_}#longitud) = {fijar_}
+        si esFijar
+            fijar atributo_ a mensaje#subTexto: {fijar_}#longitud, mensaje#longitud
+        sino
+            fijar atributo_ a mensaje
+        finsi
+
+        si no dic#contiene: atributo_
+            __FallarConMensaje: ({No exíste el atributo [~t] en el objeto (del método ~t)}#formatear: atributo_, mensaje)
+        finsi
+
+        si esFijar
+            necesitas argumentos#longitud = 1
+            dic#fijarEn: atributo_, (argumentos#en: 0)
+        sino
+            necesitas argumentos#longitud = 0
+            devolver dic#en: atributo_
+        finsi
+    finmetodo
+
+    devolver ClaseAdHoc#crear
+finfuncion

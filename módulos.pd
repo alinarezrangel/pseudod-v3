@@ -237,12 +237,19 @@ clase Módulo
     metodo compilado
 
     [DOCUMENTA
+    @brief{Información de depuración del módulo.}
+
+    Es un texto, su contenido también depende del backend actual.
+    DOCUMENTA]
+    metodo informaciónDeDepuración
+
+    [DOCUMENTA
     @brief{Representación simple del módulo como texto.}
     DOCUMENTA]
     metodo comoTexto
 finclase
 
-atributos Módulo#llave, Módulo#exporta, Módulo#compilado
+atributos Módulo#llave, Módulo#exporta, Módulo#compilado, Módulo#informaciónDeDepuración
 
 metodo Módulo#ruta
     devolver yo#llave#ruta

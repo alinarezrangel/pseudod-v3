@@ -1020,7 +1020,7 @@ el programa.}
 
 @devuelve{Un texto que es el código lua compilado.}
 DOCUMENTA]
-funcion CompilarALua: moddb, ast, ámbito, compilador
+funcion CompilarALua: moddb, llaveDeMódulo, ast, ámbito, compilador
     variables comp, ini, builtins, código
     fijar comp a CompiladorSimpleALua#crear: moddb, ámbito, compilador
     fijar ini a comp#iniciar
@@ -1031,7 +1031,14 @@ funcion CompilarALua: moddb, ast, ámbito, compilador
         ini,
         builtins,
         (comp#visitar: ast)
-    devolver Em#EmitirCódigo: código
+    devolver clonar Compilador#ResultadoDeCompilación#crear con
+        compilado: Em#EmitirCódigo: código
+        informaciónDeDepuración:
+            Em#EmitirInformaciónDeDepuración:
+                llaveDeMódulo#nombreCompletoDelArchivo,
+                código,
+                &EscaparParaLua
+    finclonar
 finfuncion
 
 [DOCUMENTA
@@ -1045,7 +1052,7 @@ clase CompiladorALua hereda Compilador#CompiladorBase
     DOCUMENTA]
     metodo inicializar: db
 
-    metodo compilarAST: ast, ámbito
+    metodo compilarAST: llaveDeMódulo, ast, ámbito
     metodo importarMódulo: nombreDelMódulo
     metodo inyectarNombresEnÁmbito: ámbito
 
@@ -1107,8 +1114,8 @@ metodo CompiladorALua#inicializar: db
             {__TextoAByte}, {__ByteEof}, {__Capturar}, {__LeerCaracter}
 finmetodo
 
-metodo CompiladorALua#compilarAST: ast, ámbito
-    devolver CompilarALua: yo#baseDeDatos, ast, ámbito, yo
+metodo CompiladorALua#compilarAST: llaveDeMódulo, ast, ámbito
+    devolver CompilarALua: yo#baseDeDatos, llaveDeMódulo, ast, ámbito, yo
 finmetodo
 
 metodo CompiladorALua#importarMódulo: nombreDelMódulo
@@ -1155,9 +1162,11 @@ metodo CompiladorALua#compilarTodo: llavePrincipal
     fijar móduloPrincipal a yo#baseDeDatos#buscarMóduloPorLlave: llavePrincipal
     fijar cods a Arreglo#vacio
     cods#agregarAlFinal: {local rt = require "backends.lua.runtime";}
+    cods#agregarAlFinal: {local errloc = require "backends.lua.errloc";}
     yo#baseDeDatos#paraCadaMódulo: procedimiento: módulo
         cods#agregarAlFinal: ({rt.modulos[~t] = function()~%~t~%end;}#formatear: (EscaparParaLua: módulo#llave#nombreCompletoDelArchivo), módulo#compilado)
+        cods#agregarAlFinal: módulo#informaciónDeDepuración
     finprocedimiento
-    cods#agregarAlFinal: ({;rt.importarmain(~t, ...);}#formatear: (EscaparParaLua: llavePrincipal#nombreCompletoDelArchivo))
+    cods#agregarAlFinal: ({;rt.llamarmain(rt.importarmain, ~t, ...);}#formatear: (EscaparParaLua: llavePrincipal#nombreCompletoDelArchivo))
     devolver Unir: cods, {~%}#formatear
 finmetodo

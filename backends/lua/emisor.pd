@@ -1,6 +1,7 @@
 utilizar bepd/builtins
 utilizar bepd/utilidades/texto como Tx
 utilizar bepd/utilidades/arreglo
+utilizar bepd/x/adhoc
 utilizar tokens como Tokens
 utilizar ast como AST
 
@@ -181,6 +182,71 @@ funcion EmitirCódigo: parte
 
     Procesar: parte
     devolver Tx#Unir: res, {}
+finfuncion
+
+funcion EmitirInformaciónDeDepuración: rutaAlMódulo, parte, escaparALua
+    funcion Emitir: numLínea, numCol, offset, areaTextual
+        devolver «rt.debug.info(~t, {~t, ~t, ~t, ~t, {~t, ~t, ~t}, {~t, ~t, ~t}});~%»#formatear:
+            (%escaparALua: rutaAlMódulo),
+            numLínea, numCol, offset,
+            (%escaparALua: rutaAlMódulo),
+            areaTextual#posiciónInicial#línea, areaTextual#posiciónInicial#columna, areaTextual#posiciónInicial#offset,
+            areaTextual#posiciónFinal#línea, areaTextual#posiciónFinal#columna, areaTextual#posiciónFinal#offset
+    finfuncion
+
+    funcion AcumularInformaciónDeLínea: numCol, texto
+        variables adcLin
+        fijar adcLin a 0
+        ParaCadaElemento: texto, procedimiento: car
+            si car = {~%}#formatear
+                fijar adcLin a adcLin + 1
+                fijar numCol a 0
+            sino
+                fijar numCol a numCol + 1
+            finsi
+        finprocedimiento
+        devolver ObjetoAdHoc:
+            {líneasAdicionales}, adcLin,
+            {numCol}, numCol
+    finfuncion
+
+    variables cods, áreas, numLínea, numCol, offset
+    fijar áreas a Pila#vacía
+    fijar cods a Arreglo#vacio
+    fijar numLínea a 1
+    fijar numCol a 0
+    fijar offset a 0
+    procedimiento Procesar: contenido
+        si EsInstancia: contenido, Texto
+            variable ret
+            fijar ret a AcumularInformaciónDeLínea: numCol, contenido
+            fijar numLínea a numLínea + ret#líneasAdicionales
+            fijar numCol a ret#numCol
+            fijar offset a offset + contenido#longitud
+            cods#agregarAlFinal: (Emitir: numLínea, numCol, offset, áreas#últimoValorApilado)
+            devolver NULO
+        finsi
+        si EsInstancia: contenido, Arreglo
+            ParaCadaElemento: contenido, procedimiento: c
+                Procesar: c
+            finprocedimiento
+            devolver NULO
+        finsi
+        si EsInstancia: contenido, Parte
+            si no EsNulo: contenido#areaTextual
+                variable acc
+                áreas#apilar: contenido#areaTextual
+                fijar acc a Procesar: contenido#contenido
+                áreas#desapilar
+                devolver acc
+            sino
+                devolver Procesar: contenido#contenido
+            finsi
+        finsi
+        Inalcanzable
+    finprocedimiento
+    Procesar: parte
+    devolver Tx#Unir: cods, {}
 finfuncion
 
 [DOCUMENTA

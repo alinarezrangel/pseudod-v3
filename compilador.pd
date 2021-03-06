@@ -6,6 +6,18 @@ utilizar resoluciónDeNombres como RN
 utilizar módulos como Módulos
 
 [DOCUMENTA
+@brief{El resultado de compilar un AST.}
+
+@pd{compilado} es un texto, el compilado del módulo.
+
+@pd{informaciónDeDepuración} es otro texto: la información de depuración de
+@code{rt.debug}.
+DOCUMENTA]
+clase ResultadoDeCompilación
+    atributos compilado, informaciónDeDepuración
+finclase
+
+[DOCUMENTA
 @brief{Clase base para los compiladores.}
 
 Los compiladores manejan todo el proceso desde tokenizar un puerto hasta
@@ -55,11 +67,11 @@ clase CompiladorBase
     resueltos. @pd{ámbito} es el ámbito global del programa tal como es
     devuelto por @pd{RN#ResolverNombres}.
 
-    Devuelve un texto que es el compilado del AST.
+    Devuelve un @pd{ResultadoDeCompilación}.
 
     Es un método abstracto.
     DOCUMENTA]
-    metodo compilarAST: ast, ámbito
+    metodo compilarAST: llaveDeMódulo, ast, ámbito
 
     [DOCUMENTA
     @brief{Importa un módulo.}
@@ -101,7 +113,7 @@ clase CompiladorBase
     metodo removerNombresDeÁmbito: ámbito
 finclase
 
-metodo CompiladorBase#compilarAST: ast, ámbito
+metodo CompiladorBase#compilarAST: llaveDeMódulo, ast, ámbito
     MétodoAbstracto
 finmetodo
 
@@ -118,7 +130,7 @@ metodo CompiladorBase#removerNombresDeÁmbito: ámbito
 finmetodo
 
 metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
-    variables ast, ámbito, compilado
+    variables ast, ámbito, res
     Escribir: ({---- Parsear: ~t}#formatear: llaveDeMódulo)
     fijar ast a Parser#CrearAST: puerto
     Escribir: ({---- RN: ~t}#formatear: llaveDeMódulo)
@@ -130,12 +142,13 @@ metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
         yo#removerNombresDeÁmbito: ámbito
     finprocedimiento
     Escribir: ({---- Compilar: ~t}#formatear: llaveDeMódulo)
-    fijar compilado a yo#compilarAST: ast, ámbito
+    fijar res a yo#compilarAST: llaveDeMódulo, ast, ámbito
     Escribir: ({---- Mod: ~t}#formatear: llaveDeMódulo)
     devolver clonar Módulos#Módulo#_crear con
         llave: llaveDeMódulo
         exporta: ámbito
-        compilado: compilado
+        compilado: res#compilado
+        informaciónDeDepuración: res#informaciónDeDepuración
     finclonar
 finmetodo
 

@@ -13,6 +13,11 @@ local M = {}
 --   utilizado para distinguir objetos de tablas normales. `attrs` es una tabla
 --   secuencial con los atributos del objeto y `methods` es una tabla que
 --   contiene los métodos del objeto.
+--
+-- Otras cosas importantes que tener en cuenta son:
+--
+-- * Los errores en PseudoD utilizan la misma interfaz que Lua (`error`,
+--   `pcall`, `xpcall`, etc).
 
 -- Es importante mantener esta variable igual a la del mismo nombre en
 -- "backends/lua.pd".
@@ -23,8 +28,9 @@ local PSEUDOD_IMPL = "Lua Bootstrap"
 -- pairs) mientras que los demás parámetros serán pasados como argumentos. De
 -- esta forma, para convertir a función el iterador `ipairs` sobre una tabla
 -- `X`, sería `itertofunc(ipairs, tbl)`. Devuelve una función que itera y
--- devuelve los valores cada vez que es llamada. Para terminar la iteración
--- devuelve nil.
+-- devuelve los valores cada vez que es llamada y una función que devuelve
+-- `true` si ya no hay más elementos que iterar o `false` si aún se puede
+-- seguir iterando. Para terminar la iteración devuelve nil.
 local function itertofunc(iter, ...)
    local iterfunc, state, ctrl, closing = iter(...)
    local function ended()
@@ -137,6 +143,7 @@ function M.pdformat(fmt, ...)
    return result
 end
 
+-- Devuelve un string de forma que `res#formatear = str`.
 function M.strtopdformat(str)
    local res = ""
    for p, cd in utf8.codes(str) do
@@ -373,7 +380,7 @@ local function primitiveCompare(tbl)
 end
 
 -- Los tipos primitivos de Lua no requieren que sus métodos "clonar" realizen
--- una copia completa. Esta función hace el método "clonar" en una table
+-- una copia completa. Esta función hace el método "clonar" en una tabla
 -- dispatch solo devuelva el objeto sin cambios.
 local function primitiveClone(tbl)
    tbl["clonar"] = function(self)
@@ -1599,6 +1606,8 @@ function M.abrirArchivo(path, mode)
 end
 
 -- Reinicia el estado del runtime y ejecuta dinámicamente `code` con `load`.
+--
+-- Es utilizado por el modo "intérprete" del compilador.
 function M.resetandload(code)
    local chunk, errmsg = load(code, "<interpreted code from resetandload>")
    if not chunk then
@@ -1617,5 +1626,51 @@ function M.ignore(...) end
 
 -- Utilizado como variable temporal por el compilador.
 M.ans_rt = nil
+
+-------------------------------------------------------------------------------
+-- El depurador (soporte del runtime):
+--
+-- El depurador completo aún no está implementado. Esta sección solo implementa
+-- la parte que acumula la información de depuración para que el depurador
+-- pueda accederla después.
+
+M.debug = {}
+M.debug.modulos = {}
+
+-- Véase `emisor.pd` para el formato en el que se emite la información de
+-- depuración. Esta función acumula dicha información para el depurador.
+function M.debug.info(mod, reg)
+   local tbl = M.debug.modulos[mod]
+   if tbl == nil then
+      M.debug.modulos[mod] = { n = 0, type = "debuginfo" }
+      tbl = M.debug.modulos[mod]
+   end
+   tbl.n = tbl.n + 1
+   tbl[tbl.n] = reg
+end
+
+-- Llama a `func` con `...` como sus argumentos. Devuelve dos (o más) valores,
+-- `ok` y lo devuelto por `func`. `ok` es `true` si la función se pudo llamar
+-- con éxito, `false` de lo contrario (básicamente tiene la misma interfaz que
+-- `pcall`). Además, se asume que de devolver `false` el mensaje de error
+-- generado al llamar a `func` fue escrito a la salida estándar.
+--
+-- FIXME: Por ahora, `func` solo puede devolver un valor. Esto será corregido
+-- después para que tenga la misma interfaz que `pcall`.
+--
+-- Esta función no está hecha para ser usada por un programador, si no por el
+-- compilador para llamar al módulo principal.
+--
+-- Esta función es reemplazada por una apropiada cuando se importa
+-- `errloc.lua`. Si no importas `errloc.lua`, esta función es equivalente a
+-- `return true, func(...)` (es decir, no captura ni imprime ningún error).
+--
+-- Si lo que deseas es poder ver el stacktrace de una función en PseudoD, mira
+-- el módulo `errloc.lua`. Si deseas detectar si una función en PseudoD lanzó o
+-- no un error puedes usar `pcall`/`xpcall` ya que PseudoD utiliza el mismo
+-- sistema de errores que Lua.
+function M.llamarmain(func, ...)
+   return true, func(...)
+end
 
 return M
