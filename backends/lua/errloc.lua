@@ -2,50 +2,6 @@ local M = {}
 
 local rt = require "backends.lua.runtime"
 
--- Una advertencia sobre los módulos:
---
---  Todo este módulo asume que los módulos en PseudoD siempre aparecen en el
---  callstack, por ejemplo, con el siguiente programa:
---
---      [ ./ejemplo1.pd ]
---      funcion Hola devolver 1 finfuncion
---
---      [ ./ejemplo2.pd ]
---      funcion Adios devolver 2 finfuncion
---
---  Se asume que en el callstack para `Hola` se verá la función de
---  `rt.modulos["./ejemplo1.pd"]` y lo mismo para `Adios` en
---  `./ejemplo2.pd`. Este módulo usa esa información para determinar donde se
---  encuentra cada parte del callstack y de esa forma buscar la información de
---  depuración.
---
---  Esto siempre funciona mientras que los módulos mismos (es decir, la función
---  ubicada en `rt.modulos[NOMBRE]`) **nunca** llamen a una función en PseudoD
---  en tailcall (recuerda que una llamada en tailcall elimina el frame del
---  invocador). Por suerte los módulos en PseudoD siempre tienen que devolver
---  espacios de nombres (`rt.ns`) así que no es como que puedan llamar a otra
---  función. Pero aún existe un error con este sistema: Si una función en un
---  módulo (digamos `hola.pd`) llama a una función en otro módulo (`adios.pd`)
---  con una función como argumento (es decir, una función de orden superior
---  "higher order function", tipo `ParaCadaElemento`) entonces el frame del
---  módulo no se encontrará. En general, el esquema actual es pésimo en la
---  presencia de más de un módulo.
---
---  La solución sencilla es modificar `find_module_name` para que busque dentro
---  de los rangos de código de cada módulo la función dada, de forma que en vez
---  de buscar el elemento `X` tal que `rt.modulos[X] == func`, busque todas las
---  funciones `rt.modulos` una cuyo `defined_at_line` y `ends_at_line` incluya
---  el `current_line` de `func`. Esto aún no funciona si los módulos pueden
---  estar en archivos separados (y tengo planes de permitir esto a futuro).
---
---  La verdadera solución es mezclar lo anterior con otra comparación para
---  determinar que `func` y `rt.modulos[X]` estén en el mismo archivo. Por
---  suerte revisé y los cambios no son mayores, creo que este será mi siguiente
---  commit.
---
---  Hasta que este horrible bug no sea solucionado, este comentario no será
---  eliminado.
-
 -- Búsqueda binaria.
 --
 -- Busca el elemento `value` en `tbl`, comparándolos con `cmp`. `cmp` siempre
@@ -248,12 +204,8 @@ local function get_lua_callstack(start_level)
    end
 end
 
--- Dada la función de un módulo (es decir, el chunk que lo instancia) devuelve
--- el nombre de dicho.
---
--- La identidad `find_module_name(rt.modulos[NOMBRE]) == NOMBRE` siempre se
--- cumple mientras `NOMBRE` sea un nombre de módulo válido. Si el módulo no se
--- encuentra, devuelve `nil`.
+-- Dada una función y la línea actual ejecutandose dentro de esta función,
+-- devuelve el nombre del módulo en PseudoD que la contiene.
 local function find_module_name(func, current_line)
    assert(debug, "debug library needed")
    for mod_name, mod_func in pairs(rt.modulos) do
@@ -263,7 +215,9 @@ local function find_module_name(func, current_line)
       local modinfo = debug.getinfo(mod_func, "S")
       local funcinfo = debug.getinfo(func, "S")
       if current_line >= modinfo.linedefined and
-         current_line <= modinfo.lastlinedefined then
+         current_line <= modinfo.lastlinedefined and
+         funcinfo.source == modinfo.source
+      then
          return mod_name
       end
    end
@@ -447,19 +401,26 @@ function M.call_with_good_backtraces(func, ...)
 end
 
 -- Imprime un callstack. Esta función siempre trata de tener el mismo formato
--- que los errores del parser del compilador.
---
--- Únicamente imprime frames que tengan información de PseudoD, ignorando
--- completamente los frames que son solo de Lua.
+-- que los errores del parser del compilador a menos que la opción
+-- `errloc.long` (mensajes de error largos) del RTS esté activa.
 local function print_callstack(callstack)
    for i = 0, #callstack do
-      -- FIXME: Invertigar porque los frames que no son tail calls son "falsos"
-      -- (su srcloc siempre está mal).
-      if callstack[i].is_tail_call then
-         if callstack[i].srcloc then
-            local srcloc = callstack[i].srcloc
-            io.write(("«%s:%d:%d» #%d\n"):format(srcloc.filename, srcloc.line, srcloc.column, i))
+      local frame = callstack[i]
+      if rt.RTS.errloc.long then
+         if frame.is_tail_call then
+            io.write("T ")
+         else
+            io.write("  ")
          end
+         io.write(("[%s:%s]"):format(frame.source, frame.current_line))
+         if frame.srcloc then
+            local srcloc = frame.srcloc
+            io.write((" «%s:%d:%d»"):format(srcloc.filename, srcloc.line, srcloc.column))
+         end
+         io.write((" #%d\n"):format(i))
+      elseif frame.srcloc then
+         local srcloc = frame.srcloc
+         io.write(("  «%s:%d:%d»\n"):format(srcloc.filename, srcloc.line, srcloc.column, i))
       end
    end
 end

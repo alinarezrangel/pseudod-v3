@@ -1371,12 +1371,56 @@ end
 -- `M.import` es un alias de `M.importar`.
 M.import = M.importar
 
--- Como `M.import`, pero además configura `M.builtins.__Argv` con `...`.
+-- Banderas del RTS (véase `M.importarmain` y `parsear_rts`).
+M.RTS = {
+   errloc = {
+      long = false,
+   },
+}
+
+-- Parsea `flags` (una lista de strings) en sus opciones de la tabla RTS.
+--
+-- Las siguientes opciones están reservadas:
+--
+-- * `-E`: errloc
+--
+--   * `long`: Activa los mensajes de error largos.
+local function parsearRts(flags)
+   for i = 1, #flags do
+      local f = flags[i]
+      if f == "-Elong" then
+         M.RTS.errloc.long = true
+      end
+   end
+end
+
+-- Como `M.import`, pero además configura `M.builtins.__Argv` con `...` y
+-- procesa banderas del runtime.
+--
+-- Las opciones del CLI entre `+RTS` y `-RTS` son procesadas especialmente:
+-- para comenzar son eliminadas de `__Argv` de forma que el programa en PseudoD
+-- nunca las ve.
+--
+-- Además, cada opción después pasa a ser un campo en la tabla `M.RTS`. Estas
+-- opciones son utilizadas después por distíntas partes del runtime para
+-- configurarse a si mismas (por ejemplo, el soporte del depurador más abajo
+-- utiliza el RTS para activar/desactivar los mensajes de error "largos").
 function M.importarmain(ruta, ...)
    local vals = {...}
+   local rts = {}
+   local in_rts = false
    for i = 1, select("#", ...) do
-      M.enviarMensaje(M.builtins.__Argv, "agregarAlFinal", vals[i])
+      if in_rts and vals[i] == "-RTS" then
+         in_rts = false
+      elseif in_rts then
+         rts[#rts + 1] = vals[i]
+      elseif vals[i] == "+RTS" then
+         in_rts = true
+      else
+         M.enviarMensaje(M.builtins.__Argv, "agregarAlFinal", vals[i])
+      end
    end
+   parsearRts(rts)
    return M.importar(ruta)
 end
 
