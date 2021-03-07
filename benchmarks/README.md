@@ -48,9 +48,9 @@ matrices. Para este benchmark `matmul` multiplica una matris de 2x3 por una de
 - 2021-01-25, commit `71009de00cf9e4d57c759477d1650f9d30fc3728`: Con la
   implementación en C++ de PseudoD v3, `matmul` tarda un promedio de 15
   segundos, mientras que en la versión compilada a Lua 5.4 tarda solo 1.7
-  segundos (un incremento de 800% o x8). Este incremento de x8-x10 parece ser
-  bastante consistente después de cambiar varias veces la cantidad de
-  iteraciones del bucle exterior.
+  segundos (un incremento de entre 800% o x8 y 10000% o x10). Este incremento
+  de x8-x10 parece ser bastante consistente después de cambiar varias veces la
+  cantidad de iteraciones del bucle exterior.
   
   Uso de memoria con la implementación de C++ de PseudoD v3 fue (reportada por
   valgrind):
@@ -105,7 +105,8 @@ veces.
 iterativa como recursiva.
 
 - 2021-01-25, commit `8d9b80fa2fdf0eb3a1cd19edc352c05a8196a7c4`: La
-  implementación de C++ toma 13 segundos. En Lua toma 1.5 segundos.
+  implementación de C++ toma 13 segundos. En Lua toma 1.5 segundos. Este es un
+  incremento de x8.
 
 ### `quicksort` -- QuickSort ###
 

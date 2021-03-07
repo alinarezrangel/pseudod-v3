@@ -21,7 +21,7 @@ resto del programa por 20 signos de `=` consecutivos.
 
 El formato de la cabecera JSON es:
 
-```json
+```js
 {
     "nombre": string, // Nombre del test.
     "espera": "éxito" | "error", // Si debería ejecutarse con éxito o fallar.

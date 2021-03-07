@@ -24,9 +24,7 @@ Veamos el comando en más detalle:
   -o gcc`.
 - ... `-o outputs/compilador.lua --guardar-db outputs/compilador.sdb`:
   Guardamos el compilado en `outputs/compilador.lua`. Este es nuestro
-  compilador. Actualmente el compilador no es ejecutado tal cual, en cambio, un
-  pequeño "wrapper" (véase `pseudod.lua` en `bootstrapped/stage0/` y
-  `bootstrapped/stage1/`) que invoca al compilado.
+  compilador, listo para ser ejecutado con Lua.
 
 Luego de esto tenemos un compilador completo de PseudoD en Lua.
 
@@ -64,7 +62,7 @@ con:
   old" si puede ser distinto a ambos.
 
 Este sistema permite detectar errores triviales. Combina esto con el hecho de
-que ambos stages son incluidos en cada commit del repositorio y obtener un
-sistema en el que puedes detectar errores simples del compilados y puedes
+que ambos stages son incluidos en cada commit del repositorio y obtienes un
+sistema en el que puedes detectar errores simples del compilador y puedes
 moverte en el tiempo para probar compiladores antiguos sin tener que recompilar
 todo desde 0 (simplemente haciendo "checkout" a un commit).
