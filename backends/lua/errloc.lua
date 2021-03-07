@@ -206,7 +206,7 @@ end
 
 -- Dada una función y la línea actual ejecutandose dentro de esta función,
 -- devuelve el nombre del módulo en PseudoD que la contiene.
-local function find_module_name(func, current_line)
+function M.find_module_name(func, current_line)
    assert(debug, "debug library needed")
    for mod_name, mod_func in pairs(rt.modulos) do
       if mod_func == func then
@@ -345,7 +345,7 @@ local function attach_callstack_to_error(err)
       local new_stack = {}
       local module_name
       for i = #stack, 1, -1 do
-         local mod_name = find_module_name(stack[i].func, stack[i].currentline)
+         local mod_name = M.find_module_name(stack[i].func, stack[i].currentline)
          module_name = mod_name or module_name
          local new_stack_frame = {
             name = stack[i].name,
