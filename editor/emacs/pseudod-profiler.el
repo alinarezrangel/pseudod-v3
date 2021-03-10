@@ -173,7 +173,7 @@ relative."
     (when (and file line)
       (let ((file-to-find (concat (file-name-as-directory base-dir) file)))
         (push-mark)
-        (find-file file-to-find)
+        (find-file-other-window file-to-find)
         (goto-char (point-min))
         (forward-line (- line 1))
         (message "Visited %s" file-to-find)))))
