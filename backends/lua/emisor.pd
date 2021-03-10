@@ -185,11 +185,16 @@ funcion EmitirCódigo: parte
 finfuncion
 
 funcion EmitirInformaciónDeDepuración: rutaAlMódulo, parte, escaparALua
+    [ Crear una variable con este valor es más eficiente que recalcularlo en
+      cada iteración. ]
+    variable rutaAlMóduloComoLua
+    fijar rutaAlMóduloComoLua a %escaparALua: rutaAlMódulo
+
     funcion Emitir: numLínea, numCol, offset, areaTextual
         devolver «rt.debug.info(~t, {~t, ~t, ~t, ~t, {~t, ~t, ~t}, {~t, ~t, ~t}});~%»#formatear:
-            (%escaparALua: rutaAlMódulo),
+            rutaAlMóduloComoLua,
             numLínea, numCol, offset,
-            (%escaparALua: rutaAlMódulo),
+            rutaAlMóduloComoLua,
             areaTextual#posiciónInicial#línea, areaTextual#posiciónInicial#columna, areaTextual#posiciónInicial#offset,
             areaTextual#posiciónFinal#línea, areaTextual#posiciónFinal#columna, areaTextual#posiciónFinal#offset
     finfuncion

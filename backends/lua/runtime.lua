@@ -1621,6 +1621,10 @@ function M.abrirArchivo(path, mode)
          self:getfile():write(string.char(byte))
       end
    end
+   file.methods["escribirTexto"] = function(self, text)
+      assert(self:getfile() ~= nil)
+      self:getfile():write(text)
+   end
    file.methods["posicionActual"] = function(self)
       assert(self:getfile() ~= nil)
       return self:getfile():seek()

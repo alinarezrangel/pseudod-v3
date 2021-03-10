@@ -1,0 +1,48 @@
+utilizar bepd/builtins
+
+
+clase Thunk
+finclase
+
+atributos Thunk#_proc, Thunk#_mem, Thunk#_tieneMem
+
+funcion DesdeFunción: proc
+    devolver clonar Thunk#_crear con
+        _proc: proc
+        _mem: NULO
+        _tieneMem: FALSO
+    finclonar
+finfuncion
+
+funcion Constante: valor
+    variable th
+    fijar th a DesdeFunción: funcion devolver valor finfuncion
+    Evaluar: th
+    devolver th
+finfuncion
+
+funcion Evaluar: thunk
+    si no EsUnThunk: thunk
+        devolver thunk
+    sino
+        si thunk#_tieneMem
+            devolver thunk#_mem
+        sino
+            fijar thunk#_mem a Evaluar: thunk#_proc#\llamar\
+            fijar thunk#_tieneMem a VERDADERO
+            devolver thunk#_mem
+        finsi
+    finsi
+finfuncion
+
+funcion EstáEvaluado: valor
+    si EsUnThunk: valor
+        devolver valor#_tieneMem
+    sino
+        devolver VERDADERO
+    finsi
+finfuncion
+
+funcion EsUnThunk: valor
+    devolver EsInstancia: valor, Thunk
+finfuncion

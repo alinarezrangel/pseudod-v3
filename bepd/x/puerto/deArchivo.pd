@@ -136,11 +136,17 @@ metodo PuertoDeArchivoDeEscritura#inicializar: archivo
 finmetodo
 
 metodo PuertoDeArchivoDeEscritura#escribirTexto: texto
-    ParaCadaElemento: texto, procedimiento: carácter
-        variable byte
-        fijar byte a __TextoAByte: carácter
-        yo#archivo#escribirByte: byte
-    finprocedimiento
+    si __Impl = {Lua Bootstrap}
+        [ Este método aún no está estabilizado, por eso esta bajo el "guard"
+          de __Impl ]
+        yo#archivo#escribirTexto: texto
+    sino
+        ParaCadaElemento: texto, procedimiento: carácter
+            variable byte
+            fijar byte a __TextoAByte: carácter
+            yo#archivo#escribirByte: byte
+        finprocedimiento
+    finsi
 finmetodo
 
 metodo PuertoDeArchivoDeEscritura#cerrar

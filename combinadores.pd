@@ -381,7 +381,9 @@ funcion PalabraClave: pal
         finsi
     finfuncion
     funcion genMensjError: tk, pos
-        devolver Error#conMensajeYLugar: ({Se esperaba la palabra clave [~t] pero se obtuvo ~t}#formatear: pal, (ComoTextoBonito: tk)), pos
+        devolver Error#conMensajeYLugar:
+            ({Se esperaba la palabra clave [~t] pero se obtuvo ~t}#formatear: pal, (ComoTextoBonito: tk))
+            pos
     finfuncion
     devolver Token: &pred, &genMensjError
 finfuncion
@@ -397,7 +399,9 @@ funcion Identificador
         devolver EsInstancia: tk, TokensNS#TokenIdentificador
     finfuncion
     funcion genMensjError: tk, pos
-        devolver Error#conMensajeYLugar: ({Se esperaba un identificador pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)), pos
+        devolver Error#conMensajeYLugar:
+            ({Se esperaba un identificador pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)),
+            pos
     finfuncion
     devolver Token: &pred, &genMensjError
 finfuncion
@@ -413,7 +417,9 @@ funcion NumeroLiteral
         devolver EsInstancia: tk, TokensNS#TokenNumero
     finfuncion
     funcion genMensjError: tk, pos
-        devolver Error#conMensajeYLugar: ({Se esperaba un número pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)), pos
+        devolver Error#conMensajeYLugar:
+            ({Se esperaba un número pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)),
+            pos
     finfuncion
     devolver Token: &pred, &genMensjError
 finfuncion
@@ -429,7 +435,9 @@ funcion Operador
         devolver EsInstancia: tk, TokensNS#TokenOperador
     finfuncion
     funcion genMensjError: tk, pos
-        devolver Error#conMensajeYLugar: ({Se esperaba un operador pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)), pos
+        devolver Error#conMensajeYLugar:
+            ({Se esperaba un operador pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)),
+            pos
     finfuncion
     devolver Token: &pred, &genMensjError
 finfuncion
@@ -445,7 +453,9 @@ funcion TextoLiteral
         devolver EsInstancia: tk, TokensNS#TokenTexto
     finfuncion
     funcion genMensjError: tk, pos
-        devolver Error#conMensajeYLugar: ({Se esperaba un texto literal pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)), pos
+        devolver Error#conMensajeYLugar:
+            ({Se esperaba un texto literal pero se obtuvo ~t}#formatear: (ComoTextoBonito: tk)),
+            pos
     finfuncion
     devolver Token: &pred, &genMensjError
 finfuncion
@@ -508,7 +518,9 @@ metodo CombElegir#mensajeDeError: tokens
     sino
         fijar pos a tk#areaDelToken#posiciónInicial
     finsi
-    devolver Error#conMensajeYLugar: ({No se esperaba ~t}#formatear: (ComoTextoBonito: tk)), pos
+    devolver Error#conMensajeYLugar:
+        ({No se esperaba ~t}#formatear: (ComoTextoBonito: tk)),
+        pos
 finmetodo
 
 metodo CombElegir#parsear: tokens
@@ -795,7 +807,10 @@ metodo CombNoSigue#parsear: tokens
         variable tk
         tokens#irAPunto: posIni
         fijar tk a tokens#leerToken
-        devolver Resultado#error: (Error#enToken: ({El combinador de NoSigue la logrado parsear en ~t}#formatear: tk#areaDelToken), tk)
+        devolver Resultado#error:
+            (Error#enToken:
+                ({El combinador de NoSigue la logrado parsear en ~t}#formatear: tk#areaDelToken),
+                tk)
     finsi
 finmetodo
 

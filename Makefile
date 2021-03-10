@@ -16,7 +16,7 @@ BEPD_FILES=bepd/builtins.pd bepd/builtinsImpl.pd bepd/algoritmos.pd				\
 bepd/intrinsics.pd bepd/datos/diccionario.pd bepd/datos/pila.pd					\
 bepd/datos/resultado.pd bepd/utilidades/texto.pd bepd/utilidades/arreglo.pd		\
 bepd/utilidades/texto/ascii.pd bepd/x/enum.pd bepd/x/puerto.pd bepd/x/sexpr.pd	\
-bepd/x/entorno.pd bepd/x/adhoc.pd bepd/x/puerto/conPosición.pd					\
+bepd/x/entorno.pd bepd/x/adhoc.pd bepd/x/lazy.pd bepd/x/puerto/conPosición.pd	\
 bepd/x/puerto/deArchivo.pd bepd/x/sistemaDeArchivos/archivo.pd
 COMPILER_FILES=$(BEPD_FILES) ámbito.pd ast.pd caminaNodos.pd combinadores.pd	\
 compilador.pd inicio.pd módulos.pd parser.pd resoluciónDeNombres.pd				\
@@ -52,6 +52,9 @@ shift_stages: stage1
 force_update_stage0:
 	touch $(STAGE0)/inicio.lua $(STAGE0)/inicio.sdb
 
+force_update_stage1:
+	touch $(STAGE1)/inicio.lua $(STAGE1)/inicio.sdb
+
 # Tests:
 
 tests: test_interpreter test_stage0 test_stage1
@@ -69,7 +72,7 @@ test_stage1:
 
 tools: tool_tags
 
-tool_tags: $(OUTPUTS)/tags.lua $(TOOLS)/tags.lua
+tool_tags:  $(OUTPUTS)/tags.lua $(TOOLS)/tags.lua
 
-$(OUTPUTS)/tags.lua: $(TOOLS)/tags.pd $(OUTPUTS) stage1 $(STAGE1)/inicio.sdb
+$(OUTPUTS)/tags.lua: $(OUTPUTS) $(TOOLS)/tags.pd $(OUTPUTS) stage1 $(STAGE1)/inicio.sdb
 	$(PDC) $(TOOLS)/tags.pd --cargar-db $(STAGE1)/inicio.sdb -o $(OUTPUTS)/tags.lua

@@ -1121,7 +1121,8 @@ funcion ErrorComoTraceback: error
         sino
             fijar indent a {  }
         finsi
-        fijar acc a acc#concatenar: ({~t~t: ~t}#formatear: indent, error#lugar, error#mensaje)
+        fijar acc a acc#concatenar:
+            ({~t~t: ~t}#formatear: indent, error#lugar, error#mensaje)
         fijar error a error#causa
         si no EsNulo: error
             fijar acc a acc#concatenar: ({~%  Causado por:}#formatear)
