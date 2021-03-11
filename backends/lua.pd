@@ -43,7 +43,7 @@ DOCUMENTA]
 funcion EscaparParaLua: texto
     si __Impl = {Lua Bootstrap}
         devolver __Lua: {function(texto)
-return string.gsub(texto, "[\"\n\\]", "\\%1")
+return '"' .. string.gsub(texto, "[\"\n\\]", "\\%1") .. '"'
 end}, texto
     [ " ]
     sino
