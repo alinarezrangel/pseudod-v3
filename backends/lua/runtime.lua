@@ -85,62 +85,50 @@ function M.pdformat(fmt, ...)
         inserta el resultado
       - `~|%` = consume el siguiente fin de línea, eliminandolo del texto
    --]]
-
-   local paramIdx = 1
+   local paramsIdx = 1
    local params = table.pack(...)
-   local nextiter, ended = itertofunc(utf8.codes, fmt)
-   local function readch()
-      local pos, code = nextiter()
-      local ch
-      if code ~= nil then
-         ch = utf8.char(code)
-      end
-      return pos, code, ch
+   local i = 1
+   local res = ""
+   local function getc()
+      i = i + 1
+      assert(i <= #fmt)
+      return fmt:sub(i, i)
    end
-   local result = ""
-   while true do
-      local pos, code = nextiter()
-      if ended() then
-         break
-      end
-      local ch = utf8.char(code)
-      if ch == "~" then
-         local nxpos, nxcode, nxch = readch()
-         assert(not ended())
-         if nxch == "t" then
-            result = result .. M.enviarMensaje(params[paramIdx], "comoTexto")
-            paramIdx = paramIdx + 1
-         elseif nxch == "T" then
-            M.pdasserttype(params[paramIdx], "texto")
-            result = result .. params[paramIdx]
-            paramIdx = paramIdx + 1
-         elseif nxch == "~" then
-            result = result .. "~"
-         elseif nxch == "%" then
-            result = result .. "\n"
-         elseif nxch == "e" then
-            result = result .. "}"
-         elseif nxch == "E" then
-            result = result .. "»"
-         elseif nxch == "q" then
-            result = result .. '"'
-         elseif nxch == "|" then
-            nxpos, nxcode, nxch = readch()
-            assert(not ended())
-            assert(nxch == "%")
-            nxpos, nxcode, nxch = readch()
-            assert(not ended())
-            -- TODO: Agrega soporte para \r\n y \r
-            assert(nxch == "\n")
+   while i <= #fmt do
+      local c = fmt:sub(i, i)
+      if c == "~" then
+         c = getc()
+         if c == "t" then
+            res = res .. M.enviarMensaje(params[paramsIdx], "comoTexto")
+            paramsIdx = paramsIdx + 1
+         elseif c == "T" then
+            M.pdasserttype(params[paramsIdx], "texto")
+            res = res .. params[paramsIdx]
+            paramsIdx = paramsIdx + 1
+         elseif c == "%" then
+            res = res .. "\n"
+         elseif c == "e" then
+            res = res .. "}"
+         elseif c == "E" then
+            res = res .. "»"
+         elseif c == "q" then
+            res = res .. '"'
+         elseif c == "~" then
+            res = res .. "~"
+         elseif c == "|" then
+            c = getc()
+            assert(c == "%")
+            c = getc()
+            assert(c == "\n")
          else
-            error("todo")
+            error("formato no existente")
          end
       else
-         result = result .. ch
+         res = res .. c
       end
+      i = i + 1
    end
-
-   return result
+   return res
 end
 
 -- Devuelve un string de forma que `res#formatear = str`.

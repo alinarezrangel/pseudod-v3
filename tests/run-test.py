@@ -247,6 +247,16 @@ def run_test_only_for_file(filename, pseudod_impl):
         test_result.debug.pretty_print()
 
 
+def run_lua_tests(path):
+    cmd = [search_in_path('lua5.4'), os.path.join(path, "all.lua")]
+    print("Running", cmd)
+    proc = run(cmd, check=False)
+    if proc.returncode != 0:
+        print("Error executing the tests!")
+    print(proc.stdout, end="")
+    print("Finished")
+
+
 def main():
     TESTS_DIR = get_script_dir()
     parser = argparse.ArgumentParser(
@@ -255,15 +265,21 @@ def main():
         Warning: this program must be executed from the project root, not from the `tests/` subdirectory.
         '''
     )
-    parser.add_argument('--run-test', help='The test file that will be executed', type=str, default=None)
+    parser.add_argument('--language', help='Run language tests', default=False, action='store_true')
+    parser.add_argument('--lua', help='Run lua tests', default=False, action='store_true')
+    parser.add_argument('--run-test', help='The test file that will be executed (only for language tests)', type=str, default=None)
     parser.add_argument('--pseudod-impl', help='Implementation of PseudoD to use', type=str, default='interpreter')
     args = parser.parse_args()
     print('Warning: this program must be executed from the project root, not from the `tests/` subdirectory.')
     pseudod_impl = args.pseudod_impl
-    if args.run_test is not None:
-        run_test_only_for_file(args.run_test, pseudod_impl)
+    if args.language:
+        if args.run_test is not None:
+            run_test_only_for_file(args.run_test, pseudod_impl)
+        else:
+            run_tests(os.path.join(TESTS_DIR, "language"), pseudod_impl)
     else:
-        run_tests(TESTS_DIR, pseudod_impl)
+        assert args.lua, "must run lua or language tests"
+        run_lua_tests(os.path.join(TESTS_DIR, "lua"))
 
 
 if __name__ == '__main__':

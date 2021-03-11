@@ -57,16 +57,19 @@ force_update_stage1:
 
 # Tests:
 
-tests: test_interpreter test_stage0 test_stage1
+tests: test_interpreter test_stage0 test_stage1 test_lua
 
 test_interpreter:
-	$(PYTHON3) ./tests/run-test.py --pseudod-impl interpreter
+	$(PYTHON3) ./tests/run-test.py --language --pseudod-impl interpreter
 
 test_stage0:
-	$(PYTHON3) ./tests/run-test.py --pseudod-impl stage0
+	$(PYTHON3) ./tests/run-test.py --language --pseudod-impl stage0
 
 test_stage1:
-	$(PYTHON3) ./tests/run-test.py --pseudod-impl stage1
+	$(PYTHON3) ./tests/run-test.py --language --pseudod-impl stage1
+
+test_lua:
+	$(PYTHON3) ./tests/run-test.py --lua
 
 # Compila los programas de `tools/`
 

@@ -2,13 +2,18 @@
 
 El programa `run-test.py` (que debe ser ejecutado desde la raíz del proyecto,
 no desde este directorio) puede ejecutar uno o más tests en varias
-implementaciones. Antes de esto es importante ver el formato de los tests:
+implementaciones.
 
-## El formato de los tests ##
+## Tests del lenguaje ##
+
+Los tests del lenguaje prueban todo el compilador. Para ejecutarlos puedes usar
+`run-tests.py` con las opciones `--language --pseudod-impl=IMPL` donde `IMPL`
+es el nombre de la implementación de PseudoD a probar (`stage0`, `stage1` o
+`interpreter`).
 
 Todos los archivos con las extensiones `.pd`, `.psd`, `.pseudo` y `.pseudod`
-que estén en este directorio o subdirectorios son ejecutados como tests. Cada
-uno de estos archivos debe tener el formato:
+que estén en el directorio `tests/language/` o subdirectorios son ejecutados
+como tests. Cada uno de estos archivos debe tener el formato:
 
 ```
 CABECERA-JSON
@@ -44,3 +49,14 @@ son opcionales. Sus valores predeterminados son:
   test falla no se va a contar.
 - `"salida contiene"` tiene un valor predeterminado de `""` (lo que significa
   que cualquier salida será considerada como exitosa).
+
+
+## Tests del runtime ##
+
+### Lua ###
+
+Los tests del runtime del backend en Lua están en el directorio
+`tests/lua/`. Para ejecutar estos puedes ejecutar `run-tests.py` con la
+opción `--lua`.
+
+El punto de entrada de los tests de Lua es `tests/lua/all.lua`.
