@@ -3,3 +3,6 @@
 
 # Compilados de prueba
 outputs/
+
+# El compilador ya compilado
+bootstrapped/

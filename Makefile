@@ -6,11 +6,11 @@ OUTPUTS=outputs
 
 STAGE0=bootstrapped/stage0
 STAGE1=bootstrapped/stage1
-STAGE0_FILES=$(STAGE0)/inicio.lua $(STAGE0)/inicio.sdb $(STAGE0)/pseudod.lua
-STAGE1_FILES=$(STAGE1)/inicio.lua $(STAGE1)/inicio.sdb $(STAGE1)/pseudod.lua
+STAGE0_FILES=$(STAGE0)/inicio.lua $(STAGE0)/inicio.sdb
+STAGE1_FILES=$(STAGE1)/inicio.lua $(STAGE1)/inicio.sdb
 
 TOOLS=tools
-PDC=$(LUA) $(STAGE1)/pseudod.lua
+PDC=$(LUA) $(STAGE1)/inicio.lua
 
 BEPD_FILES=bepd/builtins.pd bepd/builtinsImpl.pd bepd/algoritmos.pd				\
 bepd/intrinsics.pd bepd/datos/diccionario.pd bepd/datos/pila.pd					\
@@ -41,7 +41,7 @@ stage1: $(STAGE1_FILES)
 $(STAGE1)/inicio.sdb: $(STAGE1)/inicio.lua $(COMPILER_FILES)
 
 $(STAGE1)/inicio.lua: $(STAGE0)/inicio.lua $(COMPILER_FILES)
-	$(LUA) $(STAGE0)/pseudod.lua inicio.pd --salida $(STAGE1)/inicio.lua --guardar-db $(STAGE1)/inicio.sdb
+	$(LUA) $(STAGE0)/inicio.lua inicio.pd --salida $(STAGE1)/inicio.lua --guardar-db $(STAGE1)/inicio.sdb
 
 # Targets útiles mientras se trabaja en el compilador
 

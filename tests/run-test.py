@@ -46,7 +46,7 @@ def get_pseudod_exec(pseudod_impl):
     elif pseudod_impl == "stage0":
         return [
             search_in_path('lua5.4'),
-            from_project_root('bootstrapped/stage0/pseudod.lua'),
+            from_project_root('bootstrapped/stage0/inicio.lua'),
             '--sin-mensajes',
             '--escribir-salida',
             '-',
@@ -54,7 +54,7 @@ def get_pseudod_exec(pseudod_impl):
     elif pseudod_impl == "stage1":
         return [
             search_in_path('lua5.4'),
-            from_project_root('bootstrapped/stage1/pseudod.lua'),
+            from_project_root('bootstrapped/stage1/inicio.lua'),
             '--sin-mensajes',
             '--escribir-salida',
             '-',
