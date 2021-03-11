@@ -175,6 +175,7 @@ clase CompiladorSimpleALua hereda CN#CaminaNodos
     metodo registrarBuiltins
 
     metodo esBuiltin: nombre, binding
+    metodo esFunciónDe: nombreDelMódulo, nombreDeLaFunción, nodoId
 finclase
 
 atributos CompiladorSimpleALua#_ámbito, [ Ámbito actual ]
@@ -887,6 +888,40 @@ metodo CompiladorSimpleALua#compilarBuiltinLua: nodo
         {((~p)(~p))},
         arg#valor,
         (Em#Unir: nodo, argumentosEvaluados, {, })
+finmetodo
+
+[ Determina si el nodo identificador `nodoId` fué exportado de
+  `nombreDelMódulo` y tenía el nombre nombreDeLaFunción ]
+metodo CompiladorSimpleALua#esFunciónDe: nombreDelMódulo, nombreDeLaFunción, nodoId
+    [ NOTA: Este método no está siendo usado actualmente ]
+    funcion FueImportadoDe: módulo, nombre, importadoDe, seLlamaba
+        si (módulo = importadoDe#nombre) && (nombre = seLlamaba)
+            devolver VERDADERO
+        finsi
+        variables mod, refer
+        fijar mod a yo#_compilador#baseDeDatos#buscarMóduloPorLlave: importadoDe
+        necesitas no EsNulo: mod
+        necesitas mod#exporta#contiene: seLlamaba
+        si no mod#exporta#fueImportada: seLlamaba
+            devolver FALSO
+        finsi
+        devolver FueImportadoDe:
+            módulo,
+            nombre,
+            (mod#exporta#importadaDe: seLlamaba),
+            (mod#exporta#seLlamaba: seLlamaba)
+    finfuncion
+
+    variables importadoDe, seLlamaba
+    fijar importadoDe a nodoId#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {importadoDe}
+    fijar seLlamaba a nodoId#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {seLlamaba}
+    si (EsNulo: importadoDe) || (EsNulo: seLlamaba)
+        devolver FALSO
+    sino
+        devolver FueImportadoDe:
+            nombreDelMódulo, nombreDeLaFunción,
+            importadoDe, seLlamaba
+    finsi
 finmetodo
 
 metodo CompiladorSimpleALua#visitarEnviarMensaje: nodo

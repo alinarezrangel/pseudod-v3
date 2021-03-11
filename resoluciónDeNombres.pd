@@ -282,6 +282,7 @@ metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
             variable id
             fijar id a GenerarIdDeNombre
             yo#_nombres#agregar: nombreFinal#nombre, id
+            yo#_nombres#marcarComoImportada: nombreFinal#nombre, instanciaDeMódulo#llave, nombreEnMódulo#nombre
             si instanciaDeMódulo#exporta#esAutoejecutable: nombreEnMódulo#nombre
                 yo#_nombres#marcarComoAutoejecutable: nombreFinal#nombre
             finsi
@@ -295,6 +296,7 @@ metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
             variable id
             fijar id a GenerarIdDeNombre
             yo#_nombres#agregar: nombre, id
+            yo#_nombres#marcarComoImportada: nombre, instanciaDeMódulo#llave, nombre
             si instanciaDeMódulo#exporta#esAutoejecutable: nombre
                 yo#_nombres#marcarComoAutoejecutable: nombre
             finsi
@@ -309,9 +311,18 @@ finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarIdentificador: nodo
     FijarNombreResuelto: nodo, (yo#_nombres#obtenerBinding: nodo#nombre)
-    variable esAutoejecutable
+    variables esAutoejecutable, importadoDe, seLlamaba
     fijar esAutoejecutable a yo#_nombres#esAutoejecutable: nodo#nombre
+    si yo#_nombres#fueImportada: nodo#nombre
+        fijar importadoDe a yo#_nombres#importadaDe: nodo#nombre
+        fijar seLlamaba a yo#_nombres#seLlamaba: nodo#nombre
+    sino
+        fijar importadoDe a NULO
+        fijar seLlamaba a NULO
+    finsi
     nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}, esAutoejecutable
+    nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {importadoDe}, importadoDe
+    nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {seLlamaba}, seLlamaba
 finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarNúmeroLiteral: nodo
@@ -459,7 +470,9 @@ Los nodos son anotados con metadatos de la siguiente forma:
 @item{@pd{AST#NodoIdentificador} es anotado con @code{nombreResuelto}, que
 contiene el binding de esa variable. También son anotados con
 @code{esAutoejecutable}, un boole que indica si la variable es o no
-autoejecutable.}
+autoejecutable; @code{importadoDe} que contiene la llave del módulo del que fue
+importado (o @pd{NULO}) y @code{seLlamaba}, un texto que es el nombre que la
+variable tenía antes de ser importada.}
 
 @item{Los nodos @pd{AST#NodoMientras}, @pd{AST#NodoFunción},
 @pd{AST#NodoPrograma} @pd{AST#NodoMétodo} y @pd{AST#NodoFunciónAnónima} tienen

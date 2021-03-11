@@ -27,6 +27,20 @@ clase DatosDeVariable
     atributo esAutoejecutable
 
     [DOCUMENTA
+    @brief{La llave del módulo de donde se importó esta variable.}
+
+    Es @pd{NULO} para variables que no fueron importadas.
+    DOCUMENTA]
+    atributo importadoDe
+
+    [DOCUMENTA
+    @brief{El nombre de esta variable en el módulo en el que se importó.}
+
+    Es @pd{NULO} para variables que no fueron importadas. Es un texto.
+    DOCUMENTA]
+    atributo seLlamaba
+
+    [DOCUMENTA
     @brief{Inicializa los datos con los valores dados.}
     DOCUMENTA]
     metodo inicializar: binding, esAutoejecutable
@@ -37,13 +51,16 @@ clase DatosDeVariable
     metodo comoTexto
 finclase
 
-metodo DatosDeVariable#inicializar: binding, esAutoejecutable
+metodo DatosDeVariable#inicializar: binding, esAutoejecutable, importadoDe, seLlamaba
     fijar yo#binding a binding
     fijar yo#esAutoejecutable a esAutoejecutable
+    fijar yo#importadoDe a importadoDe
+    fijar yo#seLlamaba a seLlamaba
 finmetodo
 
 metodo DatosDeVariable#comoTexto
-    devolver {(DatosDeVariable#crear: ~t, ~t)}#formatear: yo#binding, yo#esAutoejecutable
+    devolver {(DatosDeVariable#crear: ~t, ~t, ~t, ~t)}#formatear:
+        yo#binding, yo#esAutoejecutable, yo#importadoDe, yo#seLlamaba
 finmetodo
 
 [DOCUMENTA
@@ -98,8 +115,8 @@ clase Ámbito
 
     @ejemplo|{
     Arreglo#crearCon:
-        "Hola", (DatosDevariable#crear: 1, FALSO),
-        "Mundo", (DatosDevariable#crear: 2, FALSO)
+        "Hola", (DatosDevariable#crear: 1, FALSO, NULO, NULO),
+        "Mundo", (DatosDevariable#crear: 2, FALSO, NULO, NULO)
     }|
 
     Creará un ámbito con las variables @pd{"Hola"} y @pd{"Mundo"}.
@@ -154,6 +171,15 @@ clase Ámbito
     metodo marcarComoAutoejecutable: nombre
 
     [DOCUMENTA
+    @brief{Marca una variable como importada.}
+
+    @pd{importadaDe} y @pd{seLlamaba} tienen el mismo significado que los
+    campos del mismo nombre en @pd{DatosDeVariable} excepto que no pueden ser
+    @pd{NULO}.
+    DOCUMENTA]
+    metodo marcarComoImportada: nombre, importadaDe, seLlamaba
+
+    [DOCUMENTA
     @brief{Elimina una variable.}
 
     Quita @pd{nombre} y su @pd{DatosDeVariable} del ámbito. Su binding aún es
@@ -183,6 +209,27 @@ clase Ámbito
     recursivamente.
     DOCUMENTA]
     metodo esAutoejecutable: nombre
+
+    [DOCUMENTA
+    @brief{Determina si la variable @pd{nombre} fue importada de otro módulo.}
+    DOCUMENTA]
+    metodo fueImportada: nombre
+
+    [DOCUMENTA
+    @brief{La llave del módulo del cual la variable @pd{nombre} fue importada.}
+
+    Si la variable @pd{nombre} no fue importada, devuelve @pd{NULO}.
+    DOCUMENTA]
+    metodo importadaDe: nombre
+
+    [DOCUMENTA
+    @brief{El nombre que tenía la variable @pd{nombre} antes de ser importada.}
+
+    Cuando una variable es importada, su nombre puede cambiar. Este método
+    devuelve su nombre antes de ser importada. Es @pd{NULO} si la variable no
+    fue importada.
+    DOCUMENTA]
+    metodo seLlamaba: nombre
 
     [DOCUMENTA
     @brief{Determina si este ámbito contiene a una variable.}
@@ -297,7 +344,7 @@ metodo Ámbito#_incrementarNumBindings
 finmetodo
 
 metodo Ámbito#agregar: nombre, binding
-    yo#_mapeo#fijarEn: nombre, (DatosDeVariable#crear: binding, FALSO)
+    yo#_mapeo#fijarEn: nombre, (DatosDeVariable#crear: binding, FALSO, NULO, NULO)
     yo#_todosLosBindings#agregarAlFinal: binding
     yo#_incrementarNumBindings
 finmetodo
@@ -306,6 +353,13 @@ metodo Ámbito#marcarComoAutoejecutable: nombre
     variable dv
     fijar dv a yo#_mapeo#en: nombre
     fijar dv#esAutoejecutable a VERDADERO
+finmetodo
+
+metodo Ámbito#marcarComoImportada: nombre, importadaDe, seLlamaba
+    variable dv
+    fijar dv a yo#_mapeo#en: nombre
+    fijar dv#importadoDe a importadaDe
+    fijar dv#seLlamaba a seLlamaba
 finmetodo
 
 metodo Ámbito#eliminarNombre: nombre
@@ -346,6 +400,18 @@ finmetodo
 
 metodo Ámbito#esAutoejecutable: nombre
     devolver (yo#_obtener: nombre)#esAutoejecutable
+finmetodo
+
+metodo Ámbito#fueImportada: nombre
+    devolver no EsNulo: (yo#_obtener: nombre)#importadoDe
+finmetodo
+
+metodo Ámbito#importadaDe: nombre
+    devolver (yo#_obtener: nombre)#importadoDe
+finmetodo
+
+metodo Ámbito#seLlamaba: nombre
+    devolver (yo#_obtener: nombre)#seLlamaba
 finmetodo
 
 metodo Ámbito#contiene: nombre
