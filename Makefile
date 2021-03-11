@@ -4,8 +4,9 @@ PYTHON3=python3
 
 OUTPUTS=outputs
 
-STAGE0=bootstrapped/stage0
-STAGE1=bootstrapped/stage1
+BTDIR=bootstrapped
+STAGE0=$(BTDIR)/stage0
+STAGE1=$(BTDIR)/stage1
 STAGE0_FILES=$(STAGE0)/inicio.lua $(STAGE0)/inicio.sdb
 STAGE1_FILES=$(STAGE1)/inicio.lua $(STAGE1)/inicio.sdb
 
@@ -27,20 +28,29 @@ all: stage0 stage1 tests tools
 $(OUTPUTS):
 	mkdir -p $(OUTPUTS)
 
+$(BTDIR):
+	mkdir -p $(BTDIR)
+
 # Stages y las distíntas partes del compilador:
 
 stage0: $(STAGE0_FILES)
 
-$(STAGE0)/inicio.sdb: $(STAGE0)/inicio.lua $(COMPILER_FILES)
+$(STAGE0): $(BTDIR)
+	mkdir -p $(STAGE0)
 
-$(STAGE0)/inicio.lua: $(COMPILER_FILES)
+$(STAGE0)/inicio.sdb: $(STAGE0) $(STAGE0)/inicio.lua $(COMPILER_FILES)
+
+$(STAGE0)/inicio.lua: $(STAGE0) $(COMPILER_FILES)
 	$(PDINT) -X v3x inicio.pd -- inicio.pd --salida $(STAGE0)/inicio.lua --guardar-db $(STAGE0)/inicio.sdb
 
 stage1: $(STAGE1_FILES)
 
-$(STAGE1)/inicio.sdb: $(STAGE1)/inicio.lua $(COMPILER_FILES)
+$(STAGE1): $(BTDIR)
+	mkdir -p $(STAGE1)
 
-$(STAGE1)/inicio.lua: $(STAGE0)/inicio.lua $(COMPILER_FILES)
+$(STAGE1)/inicio.sdb: $(STAGE1) $(STAGE1)/inicio.lua $(COMPILER_FILES)
+
+$(STAGE1)/inicio.lua: $(STAGE1) $(STAGE0)/inicio.lua $(COMPILER_FILES)
 	$(LUA) $(STAGE0)/inicio.lua inicio.pd --salida $(STAGE1)/inicio.lua --guardar-db $(STAGE1)/inicio.sdb
 
 # Targets útiles mientras se trabaja en el compilador
@@ -49,10 +59,10 @@ shift_stages: stage1
 	mv $(STAGE1)/inicio.lua $(STAGE0)/inicio.lua
 	mv $(STAGE1)/inicio.sdb $(STAGE0)/inicio.sdb
 
-force_update_stage0:
+force_update_stage0: $(BTDIR)
 	touch $(STAGE0)/inicio.lua $(STAGE0)/inicio.sdb
 
-force_update_stage1:
+force_update_stage1: $(BTDIR)
 	touch $(STAGE1)/inicio.lua $(STAGE1)/inicio.sdb
 
 # Tests:
