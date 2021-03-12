@@ -260,7 +260,8 @@ metodo Módulo#nombre
 finmetodo
 
 metodo Módulo#comoTexto
-    devolver {(Módulo: llave = ~t, exporta = ~t, compilado = ~t)}#formatear: yo#llave, yo#exporta, yo#compilado
+    devolver {(Módulo: llave = ~t, exporta = ~t, compilado = ~t, debuginfo = ~t)}#formatear:
+        yo#llave, yo#exporta, yo#compilado, yo#informaciónDeDepuración
 finmetodo
 
 
@@ -468,6 +469,7 @@ metodo BaseDeDatos#cargarMódulos: puerto
             llave: (LlaveDeMódulo#crear: (vals#en: (S: {ruta})), (vals#en: (S: {nombre})), (vals#en: (S: {extension})))
             exporta: exporta
             compilado: (vals#en: (S: {compilado}))
+            informaciónDeDepuración: {}  [ FIXME: Guarda la información de depuración. ]
         finclonar)
     finprocedimiento
 finmetodo
