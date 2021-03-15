@@ -1679,7 +1679,8 @@ M.debug = {}
 M.debug.modulos = {}
 
 -- Véase `emisor.pd` para el formato en el que se emite la información de
--- depuración. Esta función acumula dicha información para el depurador.
+-- depuración. Estas funciones acumulan la información en tablas o base 64.
+
 function M.debug.info(mod, reg)
    local tbl = M.debug.modulos[mod]
    if tbl == nil then
@@ -1688,6 +1689,36 @@ function M.debug.info(mod, reg)
    end
    tbl.n = tbl.n + 1
    tbl[tbl.n] = reg
+end
+
+M.debug.BIN_INFO_FMT = "!1< I4I4I4 I4I4I4 I4I4I4 s2"
+
+function M.debug.info64(mod, b64info)
+   local bytes = b64.decode(b64info)
+   local idx = 1
+   while idx <= #bytes do
+      local lline, lcol, lpos, pdsline, pdscol, pdspos, pdeline, pdecol, pdepos, pdfile
+      lline, lcol, lpos,
+         pdsline, pdscol, pdspos,
+         pdeline, pdecol, pdepos,
+         pdfile, idx =
+         string.unpack(M.debug.BIN_INFO_FMT, b64info, idx)
+      M.debug.info(
+         mod,
+         { lline, lcol, lpos,
+           pdfile,
+           {pdsline, pdscol, pdspos},
+           {pdeline, pdecol, pdepos} }
+      )
+   end
+end
+
+function M.debug.make64(pdfile, luapos, pdstart, pdend)
+   return string.pack(M.debug.BIN_INFO_FMT,
+                      luapos[1], luapos[2], luapos[3],
+                      pdstart[1], pdstart[2], pdstart[3],
+                      pdend[1], pdend[2], pdend[3],
+                      pdfile)
 end
 
 -- Llama a `func` con `...` como sus argumentos. Devuelve dos (o más) valores,
