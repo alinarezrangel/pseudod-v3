@@ -1,4 +1,5 @@
 utilizar bepd/builtinsImpl
+utilizar bepd/utilidades/texto
 
 [DOCUMENTA
 @brief{Todo el alfabeto ASCII en mayúsculas.}
@@ -22,14 +23,14 @@ fijar ALFABETO_ASCII a ALFABETO_ASCII_MINÚSCULAS#concatenar: ALFABETO_ASCII_MAY
 @brief{Determina si @param{car} es un dígito ASCII decimal.}
 DOCUMENTA]
 funcion EsDígitoDecimal: car
-    devolver Contiene: {0123456789}, car
+    devolver TextoContiene: {0123456789}, car
 finfuncion
 
 [DOCUMENTA
 @brief{Determina si @param{car} es un carácter alfabético ASCII.}
 DOCUMENTA]
 funcion EsAlfabético: car
-    devolver Contiene: ALFABETO_ASCII, car
+    devolver TextoContiene: ALFABETO_ASCII, car
 finfuncion
 
 [DOCUMENTA

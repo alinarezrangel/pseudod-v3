@@ -67,6 +67,8 @@ clase PuertoConPosiciónTextual hereda Puerto#Puerto
 
     [DOCUMENTA
     @brief{Devuelve la posición actual en el puerto.}
+
+    La @pd{PosiciónTextual} devuelta no debe ser modificada.
     DOCUMENTA]
     metodo posiciónActual
 finclase
@@ -74,33 +76,46 @@ finclase
 atributos
     PuertoConPosiciónTextual#posiciónActual,
     PuertoConPosiciónTextual#puerto,
+    PuertoConPosiciónTextual#línea,
+    PuertoConPosiciónTextual#columna,
+    PuertoConPosiciónTextual#offset,
     PuertoConPosiciónTextual#posiciónAnterior
 
 metodo PuertoConPosiciónTextual#inicializar: puerto
     fijar yo#puerto a puerto
-    fijar yo#posiciónActual a PosiciónTextual#crear: {}, 1, 0, 0
-    fijar yo#posiciónAnterior a clonar yo#posiciónActual con finclonar
+    fijar yo#línea a 1
+    fijar yo#columna a 0
+    fijar yo#offset a 0
+    fijar yo#posiciónActual a PosiciónTextual#crear: {}, yo#línea, yo#columna, yo#offset
+    fijar yo#posiciónAnterior a yo#posiciónActual
 finmetodo
 
 metodo PuertoConPosiciónTextual#leerCarácter
-    variables c, np
+    variable c
     fijar c a yo#puerto#leerCarácter
-    fijar yo#posiciónAnterior a clonar yo#posiciónActual con finclonar
-    fijar np a clonar yo#posiciónActual con finclonar
-    fijar np#offset a np#offset + 1
+    fijar yo#posiciónAnterior a yo#posiciónActual
+    fijar yo#offset a yo#offset + 1
     si c = {~%}#formatear
-        fijar np#línea a yo#posiciónActual#línea + 1
-        fijar np#columna a 0
+        fijar yo#línea a yo#línea + 1
+        fijar yo#columna a 0
     sino
-        fijar np#columna a yo#posiciónActual#columna + 1
+        fijar yo#columna a yo#columna + 1
     finsi
-    fijar yo#posiciónActual a np
+    fijar yo#posiciónActual a clonar yo#posiciónActual con
+        nombreDelArchivo: {}
+        línea: yo#línea
+        columna: yo#columna
+        offset: yo#offset
+    finclonar
     devolver c
 finmetodo
 
 metodo PuertoConPosiciónTextual#desleerCarácter
     variable c
     fijar c a yo#puerto#desleerCarácter
-    fijar yo#posiciónActual a clonar yo#posiciónAnterior con finclonar
+    fijar yo#posiciónActual a yo#posiciónAnterior
+    fijar yo#línea a yo#posiciónActual#línea
+    fijar yo#columna a yo#posiciónActual#columna
+    fijar yo#offset a yo#posiciónActual#offset
     devolver c
 finmetodo

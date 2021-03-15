@@ -1,4 +1,5 @@
 utilizar bepd/builtins
+utilizar bepd/utilidades/texto como TextoNS
 utilizar bepd/utilidades/texto/ascii como ASCII
 utilizar bepd/x/puerto como Puerto
 utilizar bepd/x/puerto/conPosición como PuertoConPos
@@ -58,7 +59,7 @@ identificador @code{holaMundo} es válido, si @code{a} fuese un separador,
 @code{holaMundo} sería tokenizado como @code{hol}, @code{a}, @code{Mundo}.
 DOCUMENTA]
 funcion EsFinDePalabra: car
-    devolver (Contiene: «{}():#.%[],"», car) || (Contiene: {«»}, car)
+    devolver (TextoNS#TextoContiene: «{}():#.%[],"», car) || (TextoNS#TextoContiene: {«»}, car)
 finfuncion
 
 [ " ]
@@ -74,7 +75,7 @@ finfuncion
 @brief{Si @pd{car} es un carácter válido para un operador.}
 DOCUMENTA]
 funcion EsOperador: car
-    devolver (Contiene: {<>=+-*/!|^&~}, car)
+    devolver (TextoNS#TextoContiene: {<>=+-*/!|^&~}, car)
 finfuncion
 
 [DOCUMENTA
@@ -84,7 +85,7 @@ Por ejemplo, los paréntesis son especiales, ya que deben tokenizarse como
 palabras clave incluso si no están rodeados de espacios en blanco.
 DOCUMENTA]
 funcion EsSímbolo: car
-    devolver Contiene: {():#.%,&}, car
+    devolver TextoNS#TextoContiene: {():#.%,&}, car
 finfuncion
 
 [DOCUMENTA

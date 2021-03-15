@@ -316,6 +316,7 @@ funcion Formatear: conArea, fmt, ...partes
         fijar i a i + 1
 
         si EsInstancia: agregar, Texto
+            [ TODO: Usar arreglos + `Unir` para mayor performance ]
             fijar accTexto a accTexto#concatenar: agregar
         sino
             res#agregarAlFinal: accTexto
