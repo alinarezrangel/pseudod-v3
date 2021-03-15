@@ -13,9 +13,9 @@ distínto de la enumeración.
 
 Una enumeración es una clase con un número fijo de instancias únicas. Cada una
 de estas instancias está expuesta por un método estático con su mismo
-nombre. Cada instancia solo tiene tres métodos: @code{igualA} (junto a
-@code{operador_=}) y @code{comoTexto}. Las instancias solo se comparan como
-iguales a si mismas.
+nombre. Cada instancia solo tiene cuatro métodos: @code{igualA} (junto a
+@code{operador_=}), @code{clonar} y @code{comoTexto}. Las instancias solo se
+comparan como iguales con si mismas y con sus copias hechas con @code{clonar}.
 
 Por ejemplo:
 
@@ -30,32 +30,87 @@ necesitas no (Letras#ALPHA = ExtensiónDeArchivo#ALPHA)
 }|
 DOCUMENTA]
 funcion Enum: nombre, ...campos
+    variable camposYValores
+    fijar camposYValores a Arreglo#vacio
+    ParaCadaElemento: campos, procedimiento: campo
+        camposYValores#agregarAlFinal: campo
+        camposYValores#agregarAlFinal: campo
+    finprocedimiento
+
+    devolver EnumConValores: nombre, ...camposYValores
+finfuncion
+
+[DOCUMENTA
+@brief{Una enumeración con valores.}
+
+Similar a @pd{Enum}, pero @pd{camposYValores} no son textos con las
+enumeraciones a crear sino pares texto-valor (como en
+@pd{Diccionario#desdePares}) que son los nombres de las "variantes" de la
+enumeración y su respectivo valor.
+
+Tal como con @pd{Enum}, las instancias tienen los métodos @code{igualA},
+@code{operador_=}, @code{clonar} y @code{comoTexto}. Además, tienen los métodos
+@code{nombre} (el nombre de la instancia como un texto) y @code{valor} (su
+valor asociado).
+
+Por ejemplo:
+
+@ejemplo|{
+variable HTTP
+fijar HTTP a EnumConValores: {HTTP},
+    {OK}, 200,
+    {NOT_FOUND}, 404,
+    {INTERNAL_SERVER_ERROR}, 500
+
+Escribir: HTTP#NOT_FOUND
+
+necesitas HTTP#OK#valor = 200
+necesitas HTTP#INTERNAL_SERVER_ERROR#nombre = {INTERNAL_SERVER_ERROR}
+}|
+DOCUMENTA]
+funcion EnumConValores: nombre, ...camposYValores
+    variable dic
+    fijar dic a Diccionario#desdePares: ...camposYValores
+
     clase Enumeración
-        metodo inicializar: valor
+        metodo inicializar: nombre, valor
         metodo comoTexto
 
         metodo estatico comoTexto
+        metodo estatico desdeValor: valor
         metodo estatico metodoNoEncontrado: mensaje, argumentos
     finclase
 
-    atributo Enumeración#_valor
+    atributos Enumeración#_nombre, Enumeración#_valor
 
-    metodo Enumeración#inicializar: valor
+    metodo Enumeración#inicializar: nombre, valor
+        fijar yo#_nombre a nombre
         fijar yo#_valor a valor
     finmetodo
 
     metodo Enumeración#comoTexto
-        devolver {(~t: ~t)}#formatear: (TipoDe: yo), yo#_valor
+        devolver {(~t: ~t ~t)}#formatear: (TipoDe: yo), yo#_nombre, yo#_valor
     finmetodo
 
     metodo estatico Enumeración#comoTexto
         devolver {Clase ~t}#formatear: nombre
     finmetodo
 
+    metodo estatico Enumeración#desdeValor: valor
+        devolver LlamarConEC: procedimiento: dev
+            dic#paraCadaPar: procedimiento: llave, valor'
+                si valor' = valor
+                    %dev: (yo#crear: llave, valor')
+                finsi
+            finprocedimiento
+            __FallarConMensaje: ({No hay enumeración de ~t (~t) con el valor ~t}#formatear: (TipoDe: yo), nombre, valor)
+        finprocedimiento
+    finmetodo
+
     metodo estatico Enumeración#metodoNoEncontrado: mensaje, argumentos
-        si Contiene: campos, mensaje
+        si dic#contiene: mensaje
             necesitas argumentos#longitud = 0
-            devolver yo#crear: mensaje
+            devolver yo#crear: mensaje, (dic#en: mensaje)
         finsi
         si (mensaje = {igualA}) || (mensaje = {operador_=})
             necesitas argumentos#longitud = 1
@@ -65,7 +120,7 @@ funcion Enum: nombre, ...campos
             necesitas argumentos#longitud = 0
             devolver __ClonarObjeto: yo
         finsi
-        __FallarConMensaje: ({Método ~t no encontrado en la instancia de ~t}#formatear: mensaje, yo)
+        __FallarConMensaje: ({Método ~t no encontrado en la instancia de ~t (~t)}#formatear: mensaje, yo, nombre)
     finmetodo
 
     devolver Enumeración
