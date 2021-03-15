@@ -1,0 +1,58 @@
+{
+    "nombre": "Forzar autoejecutable (métodos)",
+    "espera": "éxito",
+    "líneas de salida": [
+        "0", "6", "6", "5", "5", "3", "17"
+    ]
+}
+====================
+procedimiento Escribir: X
+    escribir X#comoTexto
+    nl
+finprocedimiento
+
+funcion Suma: A
+    variables acc, i
+    fijar acc a 0
+    fijar i a 0
+    mientras i < A#longitud
+        fijar acc a acc + (A#en: i)
+        fijar i a i + 1
+    finmientras
+    devolver acc
+finfuncion
+
+clase X finclase
+
+metodo X#Hola: ...X
+    devolver funcion
+        devolver Suma: X
+    finfuncion
+finmetodo
+
+metodo X#Adios: A, B
+    devolver funcion: C
+        devolver A + B + C
+    finfuncion
+finmetodo
+
+metodo X#Final: A, B
+    devolver funcion: ...X
+        devolver A + B + (Suma: X)
+    finfuncion
+finmetodo
+
+variable W
+fijar W a X#crear
+
+variables T, V
+fijar T a Arreglo#crearCon: 1, 2, 3
+fijar V a Arreglo#vacio
+
+Escribir: %(W#Hola)
+Escribir: %(W#Hola: 1, 2, 3)
+Escribir: %(W#Hola: ...T)
+Escribir: %(W#Adios: 1, ...V, 2): 2
+Escribir: %(W#Adios: 1, 2): ...V, 2
+Escribir: %(W#Adios: 1, ...V, ...V, 2): ...V, ...V
+Escribir: %(W#Final: ...(Arreglo#crearCon: 1, 2)): ...T, ...T, 2
