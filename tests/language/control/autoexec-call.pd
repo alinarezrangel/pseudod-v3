@@ -1,6 +1,7 @@
 {
     "nombre": "Llamar a una funcion no autoejecutable",
     "espera": "error",
+    "tiene que pasar": false,
     "error en": [5, 9]
 }
 ====================
