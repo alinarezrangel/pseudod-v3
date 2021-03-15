@@ -375,22 +375,3 @@ procedimiento NecesitasOK: cod
     finsi
     necesitas cod = CódigoDeError#OK
 finprocedimiento
-
-variables res, db
-fijar res a Sqlite#open_memory
-necesitas no EsNulo: (res#en: 0)
-fijar db a ComoBaseDeDatos: (res#en: 0)
-
-NecesitasOK: (db#exec: {
-CREATE TABLE test (id INTEGER PRIMARY KEY, content);
-
-INSERT INTO test VALUES (NULL, 'Hello World');
-INSERT INTO test VALUES (NULL, 'Hello PseudoD');
-INSERT INTO test VALUES (NULL, 'Hello SQLite3')
-})
-
-(db#nrows: {SELECT * FROM test})#paraCadaElemento: procedimiento: row
-    Escribir: ({~t	~t}#formatear: (row#primitivoEn: {id}), (row#primitivoEn: {content}))
-finprocedimiento
-
-db#close
