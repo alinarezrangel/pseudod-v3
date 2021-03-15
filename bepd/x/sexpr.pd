@@ -55,23 +55,38 @@ El texto devuelto escapa de manera correcta todos los carácteres especiales
 como "\", '"' y los tabuladores.
 DOCUMENTA]
 funcion EscaparTexto: texto
-    devolver MapearTexto: texto, funcion: car
-        si car = {\}
-            devolver {\\}
-        finsi
-        si car = {~q}#formatear
-            devolver {\~q}#formatear
-        finsi
-        si car = {~%}#formatear
-            devolver {\n}
-        finsi
-        [ El siguiente tabulador en el texto DEBE SER LITERAL.
-          O, en otras palabras, no lo conviertas a espacios. ]
-        si car = {	}
-            devolver {\t}
-        finsi
-        devolver car
-    finfuncion
+    si __Impl = {Lua Bootstrap}
+        devolver __Lua: {function(texto)
+            return string.gsub(texto, "[\\\n\"\t]", function(c)
+                if c == "\t" then
+                    return "\\t"
+                elseif c == "\n" then
+                    return "\\n"
+                else
+                    return "\\" .. c
+                end
+            end)
+        end}, texto
+        [ " ]
+    sino
+        devolver MapearTexto: texto, funcion: car
+            si car = {\}
+                devolver {\\}
+            finsi
+            si car = {~q}#formatear
+                devolver {\~q}#formatear
+            finsi
+            si car = {~%}#formatear
+                devolver {\n}
+            finsi
+            [ El siguiente tabulador en el texto DEBE SER LITERAL.
+            O, en otras palabras, no lo conviertas a espacios. ]
+            si car = {	}
+                devolver {\t}
+            finsi
+            devolver car
+        finfuncion
+    finsi
 finfuncion
 
 [DOCUMENTA
