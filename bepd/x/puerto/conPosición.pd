@@ -74,11 +74,11 @@ clase PuertoConPosiciónTextual hereda Puerto#Puerto
 finclase
 
 atributos
-    PuertoConPosiciónTextual#posiciónActual,
     PuertoConPosiciónTextual#puerto,
     PuertoConPosiciónTextual#línea,
     PuertoConPosiciónTextual#columna,
     PuertoConPosiciónTextual#offset,
+    PuertoConPosiciónTextual#posiciónActual,
     PuertoConPosiciónTextual#posiciónAnterior
 
 metodo PuertoConPosiciónTextual#inicializar: puerto
