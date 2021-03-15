@@ -272,7 +272,7 @@ fijar grVariadicArg a
                 interno: res#en: 1
             finclonar
         finfuncion,
-        (seq: (try: (kw: {.}), (kw: {.}), (kw: {.})), (alt: grId, grParens))
+        (seq: (try: (kw: {.}), (kw: {.}), (kw: {.})), (alt: grParens, grId))
 
 variable grArgumentos
 fijar grArgumentos a
@@ -341,11 +341,11 @@ fijar grAutoejecutar a
         funcion: res
             variables base, argumentos, nodoFinal
             fijar base a res#en: 1
-            fijar argumentos a Arreglo#vacio
-            fijar nodoFinal a base
-            si (res#en: 2)#longitud = 2
-                fijar argumentos a (res#en: 2)#en: 1
+            fijar argumentos a res#en: 2
+            si argumentos#longitud > 0
                 fijar nodoFinal a ÚltimoElemento: argumentos
+            sino
+                fijar nodoFinal a base
             finsi
             devolver clonar AST#NodoAutoejecutar#crear con
                 areaTextual: AreaTotal: base, nodoFinal
@@ -356,11 +356,7 @@ fijar grAutoejecutar a
         (seq:
             (try': (kw: {%})),
             (alt: grParens, grId),
-            (opt':
-                (try': (kw: {:})),
-                (delim1:
-                    (delay: funcion devolver grExprSinOperador finfuncion),
-                    (try': (kw: {,})))))
+            (opt: grArgumentos))
 
 variable grVariadic
 fijar grVariadic a
