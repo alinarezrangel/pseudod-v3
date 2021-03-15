@@ -1,133 +1,396 @@
 utilizar bepd/builtins
+utilizar bepd/x/enum como Enum
 
 
-__Requiere: {Es módulo bindings/sqlite3 require el backend de Lua},
-    {__Impl}, {Lua Bootstrap}
+variables Wrapper, OOB
+[ TODO: No debería usar variables globales ]
+fijar Wrapper a __Lua: {function()
+    __pd_exts = require "backends.lua.exts"
+    return __pd_exts.Wrapper
+end}
+fijar OOB a __Lua: {function() return __pd_exts.OOB end}
 
 
-variables Tabla, LlamarLua', Require', Iter'
-fijar Tabla a __Lua: {function() return require("backends.lua.exts").Tabla end}
-fijar LlamarLua' a __Lua: {function() return require("backends.lua.exts").LlamarLua end}
-fijar Require' a __Lua: {function() return require("backends.lua.exts").Require end}
-fijar Iter' a __Lua: {function() return require("backends.lua.exts").Iter end}
+variable Campo
+fijar Campo a Enum#Enum: {Campo},
+    {FUNCIÓN}, {MÉTODO}, {VARIABLE}, {MÉTODO_ITERADOR}, {FUNCIÓN_ITERADOR}
 
-funcion LlamarLua: func, ...args
-    devolver %LlamarLua': func, ...args
+
+funcion ComienzaCon: texto, inicio
+    si texto#longitud < inicio#longitud
+        devolver FALSO
+    sino
+        devolver (texto#subTexto: 0, inicio#longitud) = inicio
+    finsi
 finfuncion
 
-funcion Require: mod
-    devolver %Require': mod
+funcion SinInicio: texto, inicio
+    necesitas ComienzaCon: texto, inicio
+    devolver texto#parteDelTexto: inicio#longitud, texto#longitud
 finfuncion
 
-procedimiento Iter: iter, argumentos, proc
-    devolver %Iter': iter, argumentos, proc
-finprocedimiento
+funcion AjustarArreglosCon: arra, arrb, vala, valb
+    si arra#longitud = arrb#longitud
+        devolver FALSO
+    sino
+        mientras arra#longitud < arrb#longitud
+            arra#agregarAlFinal: vala
+        finmientras
+        mientras arrb#longitud < arra#longitud
+            arrb#agregarAlFinal: valb
+        finmientras
+        devolver VERDADERO
+    finsi
+finfuncion
+
 
 clase Iterador
     metodo paraCadaElemento: proc
     metodo paraCadaElementoConÍndice: proc
 finclase
 
-atributos Iterador#iterador, Iterador#argumentos, Iterador#consumido
+atributos Iterador#_iter, Iterador#_argumentos, Iterador#_terminó, Iterador#_conv
 
-metodo Iterador#inicializar: iterador, argumentos
-    fijar yo#iterador a iterador
-    fijar yo#argumentos a argumentos
-    fijar yo#consumido a FALSO
+metodo Iterador#inicializar: iter, argumentos
+    fijar yo#_iter a iter
+    fijar yo#_argumentos a argumentos
+    fijar yo#_terminó a FALSO
+    fijar yo#_conv a NULO
 finmetodo
 
 metodo Iterador#paraCadaElemento: proc
-    necesitas no yo#consumido
-    fijar yo#consumido a VERDADERO
-    Iter: yo#iterador, yo#argumentos, proc
+    necesitas no yo#_terminó
+    fijar yo#_terminó a VERDADERO
+    __Lua: {__pd_exts.Iter}, yo#_iter, yo#_argumentos, procedimiento: args
+        si no EsNulo: yo#_conv
+            variable res
+            fijar res a yo#_conv#\llamar\: args
+            devolver proc#\llamar\: ...res
+        sino
+            devolver proc#\llamar\: ...args
+        finsi
+    finprocedimiento
 finmetodo
 
 metodo Iterador#paraCadaElementoConÍndice: proc
     variable i
     fijar i a 0
-    yo#paraCadaElemento: procedimiento: ...args
+    yo#paraCadaElemento: procedimiento: ...vals
+        proc#\llamar\: ...vals, i
         fijar i a i + 1
-        %proc: ...args, i
     finprocedimiento
 finmetodo
 
-clase TablaNS
-    metodo estatico desdeTabla: tbl
-    metodo estatico desdeRequire: mod
 
-    metodo metodoNoEncontrado: mensaje, args
+clase FFI
+    metodo inicializar: nombre
+
+    metodo forma: nombre, tipoDelCampo, parámetros, devuelve
+
+    metodo metodoNoEncontrado: mensaje, argumentos
 finclase
 
-atributo TablaNS#__tbl
+atributos FFI#_nombre, FFI#_formas, FFI#_valor
 
-metodo estatico TablaNS#desdeTabla: tbl
-    variable inst
-    fijar inst a yo#_crear
-    fijar inst#__tbl a tbl
-    devolver inst
+metodo FFI#inicializar: nombre
+    fijar yo#_nombre a nombre
+    fijar yo#_formas a Diccionario#vacío
+    fijar yo#_valor a OOB
 finmetodo
 
-metodo estatico TablaNS#desdeRequire: mod
-    devolver yo#desdeTabla: (Require: mod)
+metodo FFI#forma: nombre, tipoDelCampo, parámetros, devuelve
+    yo#_formas#fijarEn: nombre, (Arreglo#crearCon: tipoDelCampo, parámetros, devuelve)
 finmetodo
 
-funcion ComienzaCon: texto, inicio
-    devolver (texto#subTexto: 0, inicio#longitud) = inicio
-finfuncion
-
-funcion SinInicio: texto, inicio
-    necesitas texto#longitud >= inicio#longitud
-    necesitas ComienzaCon: texto, inicio
-    devolver texto#parteDelTexto: inicio#longitud, texto#longitud
-finfuncion
-
-metodo TablaNS#metodoNoEncontrado: mensaje, args
-    si (mensaje = {igualA}) || (mensaje = {operador_=})
-        necesitas args#longitud = 1
-        devolver __CompararObjeto: yo, (args#en: 0)
-    finsi
+metodo FFI#metodoNoEncontrado: mensaje, argumentos
     si mensaje = {clonar}
-        necesitas args#longitud = 0
-        devolver __ClonarObjeto: yo
+        necesitas argumentos#longitud = 0
+        variables valor, clon
+        fijar valor a yo#_valor
+        fijar yo#_valor a NULO
+        fijar clon a __ClonarObjeto: yo
+        fijar yo#_valor a valor
+        devolver clon
+    finsi
+    si (mensaje = {igualA}) || (mensaje = {operador_=})
+        necesitas argumentos#longitud = 1
+        devolver __CompararObjeto: yo, (argumentos#en: 0)
     finsi
 
-    si ComienzaCon: mensaje, {c_}
-        devolver LlamarLua: (yo#__tbl#en: (SinInicio: mensaje, {c_})), ...args
+    si ComienzaCon: mensaje, {v_}
+        variable campo
+        fijar campo a SinInicio: mensaje, {v_}
+        devolver yo#_valor#en: campo
     finsi
     si ComienzaCon: mensaje, {m_}
-        devolver LlamarLua: (yo#__tbl#en: (SinInicio: mensaje, {m_})), yo#__tbl, ...args
+        variable campo
+        fijar campo a SinInicio: mensaje, {m_}
+        devolver (yo#_valor#en: campo)#\llamar\: (ArregloConFinal: yo#_valor, argumentos)
     finsi
-    si ComienzaCon: mensaje, {v_}
-        devolver yo#__tbl#en: (SinInicio: mensaje, {v_})
-    finsi
-    si ComienzaCon: mensaje, {ic_}
-        variable iter
-        fijar iter a yo#__tbl#en: (SinInicio: mensaje, {ic_})
-        devolver Iterador#crear: iter, args
+    si ComienzaCon: mensaje, {c_}
+        variable campo
+        fijar campo a SinInicio: mensaje, {c_}
+        devolver (yo#_valor#en: campo)#\llamar\: argumentos
     finsi
     si ComienzaCon: mensaje, {im_}
-        variable iter
-        fijar iter a yo#__tbl#en: (SinInicio: mensaje, {ic_})
-        devolver Iterador#crear: iter, (Concatenar: (Arreglo#crearCon: yo#__tbl), args)
+        variable campo
+        fijar campo a SinInicio: mensaje, {im_}
+        devolver Iterador#crear: (yo#_valor#en: campo), (ArregloConFinal: yo#_valor, argumentos)
+    finsi
+    si ComienzaCon: mensaje, {ic_}
+        variable campo
+        fijar campo a SinInicio: mensaje, {ic_}
+        devolver Iterador#crear: (yo#_valor#en: campo), argumentos
     finsi
 
-    __FallarConMensaje: ({Mensaje ~t no encontrado en la instancia de TablaNS}#formatear: mensaje)
+    si yo#_formas#contiene: mensaje
+        variables forma, campo, tipoDeCampo, argumentosDeForma, resultadosDeForma
+        fijar forma a yo#_formas#en: mensaje
+        fijar tipoDeCampo a forma#en: 0
+        fijar argumentosDeForma a clonar forma#en: 1 con finclonar
+        fijar resultadosDeForma a clonar forma#en: 2 con finclonar
+
+        fijar campo a yo#_valor#en: mensaje
+
+        AjustarArreglosCon: argumentos, argumentosDeForma, NULO, TTodo
+        ParaCadaElementoConÍndice: argumentos, procedimiento: arg, i
+            si EsInstancia: arg, FFI
+                fijar arg a arg#_valor
+            finsi
+            si EsInstancia: (argumentosDeForma#en: i), FFI
+                necesitas EsInstancia: arg, Wrapper
+                argumentos#fijarEn: i, arg
+            sino
+                necesitas Wrapper#esPrimitivo: arg
+                necesitas (argumentosDeForma#en: i)#\llamar\: arg
+                argumentos#fijarEn: i, (Wrapper#envolver: arg)
+            finsi
+        finprocedimiento
+
+        procedimiento ConvertirResultados: resultados
+            AjustarArreglosCon: resultados, resultadosDeForma, NULO, TTodo
+            ParaCadaElementoConÍndice: resultados, procedimiento: res, i
+                si no Wrapper#esPrimitivo: res
+                    si no (res#desenvolver = OOB)
+                        fijar res a res#desenvolver
+                    finsi
+                finsi
+                si EsInstancia: (resultadosDeForma#en: i), FFI
+                    resultados#fijarEn: i, clonar resultadosDeForma#en: i con
+                        _valor: res
+                    finclonar
+                sino
+                    necesitas (resultadosDeForma#en: i)#\llamar\: res
+                    resultados#fijarEn: i, res
+                finsi
+            finprocedimiento
+        finprocedimiento
+
+        procedimiento ResultadoSimple: resultados
+            ConvertirResultados: resultados
+
+            si resultadosDeForma#longitud = 0
+                devolver NULO
+            finsi
+            si resultadosDeForma#longitud = 1
+                devolver resultados#en: 0
+            finsi
+            devolver resultados
+        finprocedimiento
+
+        procedimiento ResultadoIterador: iterador
+            fijar iterador#_conv a funcion: args
+                ConvertirResultados: args
+                devolver args
+            finfuncion
+            devolver iterador
+        finprocedimiento
+
+        si tipoDeCampo = Campo#FUNCIÓN
+            variable resultados
+            fijar resultados a campo#\llamar\: argumentos
+            devolver ResultadoSimple: resultados
+        finsi
+        si tipoDeCampo = Campo#VARIABLE
+            variable resultados
+            fijar resultados a Arreglo#crearCon: campo
+            devolver ResultadoSimple: resultados
+        finsi
+        si tipoDeCampo = Campo#MÉTODO
+            variable resultados
+            fijar resultados a campo#\llamar\: (ArregloConFinal: yo#_valor, argumentos)
+            devolver ResultadoSimple: resultados
+        finsi
+        si tipoDeCampo = Campo#FUNCIÓN_ITERADOR
+            variable iterador
+            fijar iterador a Iterador#crear: campo, argumentos
+            devolver ResultadoIterador: iterador
+        finsi
+        si tipoDeCampo = Campo#MÉTODO_ITERADOR
+            variable iterador
+            fijar iterador a Iterador#crear: campo, (ArregloConFinal: yo#_valor, argumentos)
+            devolver ResultadoIterador: iterador
+        finsi
+
+        Inalcanzable
+    finsi
+
+    __FallarConMensaje: ({Método ~t no encontrado en la instancia de FFI ~t}#formatear: mensaje, yo#_nombre)
 finmetodo
 
-variable Sqlite
-fijar Sqlite a TablaNS#desdeRequire: "sqlite3"
 
-variable db
-fijar db a Sqlite#c_open_memory
+variable TPrim
+fijar TPrim a funcion: valor
+    devolver Algún: (Arreglo#crearCon: Numero, Texto, Boole, TipoNulo, Procedimiento), funcion: x
+        devolver EsInstancia: valor, x
+    finfuncion
+finfuncion
 
-db#m_exec: {
+funcion TTipo: T
+    devolver funcion: valor
+        devolver EsInstancia: valor, T
+    finfuncion
+finfuncion
+
+variable TTodo
+fijar TTodo a funcion: _ devolver VERDADERO finfuncion
+
+variable TWrap
+fijar TWrap a funcion: x devolver EsInstancia: x, Wrapper finfuncion
+
+
+funcion A: ...v
+    devolver Arreglo#crearCon: ...v
+finfuncion
+
+variables Sqlite, BaseDeDatos, Instrucción
+fijar Sqlite a FFI#crear: {Sqlite}
+fijar BaseDeDatos a FFI#crear: {BaseDeDatos}
+fijar Instrucción a FFI#crear: {Instrucción}
+
+funcion ComoInstrucción: val
+    devolver clonar Instrucción con _valor: val finclonar
+finfuncion
+
+funcion ComoBaseDeDatos: val
+    devolver clonar BaseDeDatos con _valor: val finclonar
+finfuncion
+
+variable CódigoDeError
+fijar CódigoDeError a Enum#EnumConValores: {CódigoDeError},
+    {OK},         0,
+    {ERROR},      1,
+    {INTERNAL},   2,
+    {PERM},       3,
+    {ABORT},      4,
+    {BUSY},       5,
+    {LOCKED},     6,
+    {NOMEM},      7,
+    {READONLY},   8,
+    {INTERRUPT},  9,
+    {IOERR},      10,
+    {CORRUPT},    11,
+    {NOTFOUND},   12,
+    {FULL},       13,
+    {CANTOPEN},   14,
+    {PROTOCOL},   15,
+    {EMPTY},      16,
+    {SCHEMA},     17,
+    {TOOBIG},     18,
+    {CONSTRAINT}, 19,
+    {MISMATCH},   20,
+    {MISUSE},     21,
+    {NOLFS},      22,
+    {FORMAT},     24,
+    {RANGE},      25,
+    {NOTADB},     26,
+    {ROW},        100,
+    {DONE},       101
+
+variable ModoDeApertura
+fijar ModoDeApertura a Enum#EnumConValores: {ModoDeApertura},
+    {READONLY}, __Lua: {function() return (require 'lsqlite3').OPEN_READONLY end},
+    {READWRITE}, __Lua: {function() return (require 'lsqlite3').OPEN_READWRITE end},
+    {CREATE}, __Lua: {function() return (require 'lsqlite3').OPEN_CREATE end},
+    {URI}, __Lua: {function() return (require 'lsqlite3').OPEN_URI end},
+    {MEMORY}, __Lua: {function() return (require 'lsqlite3').OPEN_MEMORY end},
+    {NOMUTEX}, __Lua: {function() return (require 'lsqlite3').OPEN_NOMUTEX end},
+    {FULLMUTEX}, __Lua: {function() return (require 'lsqlite3').OPEN_FULLMUTEX end},
+    {SHAREDCACHE}, __Lua: {function() return (require 'lsqlite3').OPEN_SHAREDCACHE end},
+    {PRIVATECACHE}, __Lua: {function() return (require 'lsqlite3').OPEN_PRIVATECACHE end}
+
+funcion CombinarModos: ...modos
+    devolver Reducir: 0, funcion: A, B devolver A#valor + B#valor finfuncion, modos
+finfuncion
+
+variables TCódigoDeError, TNuloOInstrucción, TNuloOBaseDeDatos
+fijar TCódigoDeError a TTipo: Numero
+fijar TNuloOInstrucción a TTodo
+fijar TNuloOBaseDeDatos a TTodo
+
+fijar Sqlite#_valor a __Lua: {function() return __pd_exts.wrap(require 'lsqlite3') end}
+
+Sqlite#forma: {open_memory}, Campo#FUNCIÓN, (A), (A: TNuloOBaseDeDatos, TTodo, TTodo)
+Sqlite#forma: {open}, Campo#FUNCIÓN, (A: (TTipo: Texto), TTodo), (A: BaseDeDatos)
+Sqlite#forma: {version}, Campo#FUNCIÓN, (A), (A: (TTipo: Texto))
+Sqlite#forma: {lversion}, Campo#FUNCIÓN, (A), (A: (TTipo: Texto))
+Sqlite#forma: {complete}, Campo#FUNCIÓN, (A: (TTipo: Texto)), (A: (TTipo: Boole))
+Sqlite#forma: {temp_directory}, Campo#FUNCIÓN, (A: TTodo), (A: TTodo)
+
+BaseDeDatos#forma: {close}, Campo#MÉTODO, (A), (A: TCódigoDeError)
+BaseDeDatos#forma: {exec}, Campo#MÉTODO, (A: (TTipo: Texto)), (A: TCódigoDeError)
+BaseDeDatos#forma: {changes}, Campo#MÉTODO, (A), (A: (TTipo: Numero))
+BaseDeDatos#forma: {nrows}, Campo#MÉTODO_ITERADOR, (A: (TTipo: Texto)), (A: TWrap)
+BaseDeDatos#forma: {rows}, Campo#MÉTODO_ITERADOR, (A), (A: TWrap)
+BaseDeDatos#forma: {error_code}, Campo#MÉTODO, (A), (A: TCódigoDeError)
+BaseDeDatos#forma: {error_message}, Campo#MÉTODO, (A), (A: (TTipo: Texto))
+BaseDeDatos#forma: {interrupt}, Campo#MÉTODO, (A), (A)
+BaseDeDatos#forma: {isopen}, Campo#MÉTODO, (A), (A: (TTipo: Boole))
+BaseDeDatos#forma: {last_insert_rowid}, Campo#MÉTODO, (A), (A: (TTipo: Numero))
+BaseDeDatos#forma: {prepare}, Campo#MÉTODO_ITERADOR, (A: (TTipo: Texto)), (A: TNuloOInstrucción)
+BaseDeDatos#forma: {db_filename}, Campo#MÉTODO, (A), (A: TTodo)
+
+Instrucción#forma: {bind}, Campo#MÉTODO, (A: (TTipo: Numero), TPrim), (A: TCódigoDeError)
+Instrucción#forma: {bind_blob}, Campo#MÉTODO, (A), (A: TCódigoDeError)
+Instrucción#forma: {bind_parameter_count}, Campo#MÉTODO, (A), (A: (TTipo: Numero))
+Instrucción#forma: {columns}, Campo#MÉTODO, (A), (A: (TTipo: Numero))
+Instrucción#forma: {finalize}, Campo#MÉTODO, (A), (A: TCódigoDeError)
+Instrucción#forma: {get_name}, Campo#MÉTODO, (A: (TTipo: Numero)), (A: (TTipo: Texto))
+Instrucción#forma: {isopen}, Campo#MÉTODO, (A), (A: (TTipo: Boole))
+Instrucción#forma: {nrows}, Campo#MÉTODO_ITERADOR, (A), (A: TWrap)
+Instrucción#forma: {rows}, Campo#MÉTODO_ITERADOR, (A), (A: TWrap)
+Instrucción#forma: {step}, Campo#MÉTODO, (A), (A: TCódigoDeError)
+Instrucción#forma: {last_insert_rowid}, Campo#MÉTODO, (A), (A: (TTipo: Numero))
+
+procedimiento Preparar: db, stmt
+    variable s
+    fijar s a db#prepare: stmt
+    necesitas no EsNulo: s
+    devolver ComoInstrucción: s
+finprocedimiento
+
+procedimiento NecesitasOK: cod
+    si EsInstancia: cod, Numero
+        fijar cod a CódigoDeError#desdeValor: cod
+    finsi
+    necesitas cod = CódigoDeError#OK
+finprocedimiento
+
+variables res, db
+fijar res a Sqlite#open_memory
+necesitas no EsNulo: (res#en: 0)
+fijar db a ComoBaseDeDatos: (res#en: 0)
+
+NecesitasOK: (db#exec: {
 CREATE TABLE test (id INTEGER PRIMARY KEY, content);
 
 INSERT INTO test VALUES (NULL, 'Hello World');
 INSERT INTO test VALUES (NULL, 'Hello PseudoD');
 INSERT INTO test VALUES (NULL, 'Hello SQLite3')
-}
+})
 
-(db#im_nrows: {SELECT * FROM test})#paraCadaElemento: procedimiento: row
-    Escribir: ({~t	~t}#formatear: row#v_id, row#v_content)
+(db#nrows: {SELECT * FROM test})#paraCadaElemento: procedimiento: row
+    Escribir: ({~t	~t}#formatear: (row#primitivoEn: {id}), (row#primitivoEn: {content}))
 finprocedimiento
+
+db#close
