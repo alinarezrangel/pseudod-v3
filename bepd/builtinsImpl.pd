@@ -68,7 +68,7 @@ funcion Contiene: arr, valor
     si __Impl = {Lua Bootstrap}
         devolver __Lua: {function(arr, valor)
 for i, v in rt.arregloipairs(arr) do
-   if rt.enviarMensaje(v, "operador_=", valor) then
+   if rt_enviarMensaje(v, "operador_=", valor) then
        return true
    end
 end
@@ -117,7 +117,7 @@ if type(proc) == "function" then
     end
 else
     for i, v in rt.arregloipairs(arr) do
-        rt.enviarMensaje(proc, "llamar", v)
+        rt_enviarMensaje(proc, "llamar", v)
     end
 end
 end}, arr, proc
@@ -180,7 +180,7 @@ if type(proc) == "function" then
     end
 else
     for i = from, (to - 1), step do
-        rt.enviarMensaje(proc, "llamar", i)
+        rt_enviarMensaje(proc, "llamar", i)
     end
 end
 end}, desde, hasta, paso, proc
@@ -225,7 +225,7 @@ if type(proc) == "function" then
     end
 else
     for i, v in rt.arregloipairs(arr) do
-        rt.enviarMensaje(proc, "llamar", v, i)
+        rt_enviarMensaje(proc, "llamar", v, i)
     end
 end
 end}, arr, proc
@@ -307,7 +307,7 @@ if type(func) == "function" then
 else
     local acc = base
     for i, v in rt.arregloipairs(arr) do
-        acc = rt.enviarMensaje(func, "llamar", acc, v)
+        acc = rt_enviarMensaje(func, "llamar", acc, v)
     end
     return acc
 end
@@ -502,7 +502,7 @@ funcion Concatenar: ...arrs
 local res = rt.arreglo()
 for _i, arr in rt.arregloipairs(arrs) do
     for _j, val in rt.arregloipairs(arr) do
-        rt.enviarMensaje(res, "agregarAlFinal", val)
+        rt_enviarMensaje(res, "agregarAlFinal", val)
     end
 end
 return res

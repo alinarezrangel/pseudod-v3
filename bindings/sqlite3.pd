@@ -1,0 +1,133 @@
+utilizar bepd/builtins
+
+
+__Requiere: {Es módulo bindings/sqlite3 require el backend de Lua},
+    {__Impl}, {Lua Bootstrap}
+
+
+variables Tabla, LlamarLua', Require', Iter'
+fijar Tabla a __Lua: {function() return require("backends.lua.exts").Tabla end}
+fijar LlamarLua' a __Lua: {function() return require("backends.lua.exts").LlamarLua end}
+fijar Require' a __Lua: {function() return require("backends.lua.exts").Require end}
+fijar Iter' a __Lua: {function() return require("backends.lua.exts").Iter end}
+
+funcion LlamarLua: func, ...args
+    devolver %LlamarLua': func, ...args
+finfuncion
+
+funcion Require: mod
+    devolver %Require': mod
+finfuncion
+
+procedimiento Iter: iter, argumentos, proc
+    devolver %Iter': iter, argumentos, proc
+finprocedimiento
+
+clase Iterador
+    metodo paraCadaElemento: proc
+    metodo paraCadaElementoConÍndice: proc
+finclase
+
+atributos Iterador#iterador, Iterador#argumentos, Iterador#consumido
+
+metodo Iterador#inicializar: iterador, argumentos
+    fijar yo#iterador a iterador
+    fijar yo#argumentos a argumentos
+    fijar yo#consumido a FALSO
+finmetodo
+
+metodo Iterador#paraCadaElemento: proc
+    necesitas no yo#consumido
+    fijar yo#consumido a VERDADERO
+    Iter: yo#iterador, yo#argumentos, proc
+finmetodo
+
+metodo Iterador#paraCadaElementoConÍndice: proc
+    variable i
+    fijar i a 0
+    yo#paraCadaElemento: procedimiento: ...args
+        fijar i a i + 1
+        %proc: ...args, i
+    finprocedimiento
+finmetodo
+
+clase TablaNS
+    metodo estatico desdeTabla: tbl
+    metodo estatico desdeRequire: mod
+
+    metodo metodoNoEncontrado: mensaje, args
+finclase
+
+atributo TablaNS#__tbl
+
+metodo estatico TablaNS#desdeTabla: tbl
+    variable inst
+    fijar inst a yo#_crear
+    fijar inst#__tbl a tbl
+    devolver inst
+finmetodo
+
+metodo estatico TablaNS#desdeRequire: mod
+    devolver yo#desdeTabla: (Require: mod)
+finmetodo
+
+funcion ComienzaCon: texto, inicio
+    devolver (texto#subTexto: 0, inicio#longitud) = inicio
+finfuncion
+
+funcion SinInicio: texto, inicio
+    necesitas texto#longitud >= inicio#longitud
+    necesitas ComienzaCon: texto, inicio
+    devolver texto#parteDelTexto: inicio#longitud, texto#longitud
+finfuncion
+
+metodo TablaNS#metodoNoEncontrado: mensaje, args
+    si (mensaje = {igualA}) || (mensaje = {operador_=})
+        necesitas args#longitud = 1
+        devolver __CompararObjeto: yo, (args#en: 0)
+    finsi
+    si mensaje = {clonar}
+        necesitas args#longitud = 0
+        devolver __ClonarObjeto: yo
+    finsi
+
+    si ComienzaCon: mensaje, {c_}
+        devolver LlamarLua: (yo#__tbl#en: (SinInicio: mensaje, {c_})), ...args
+    finsi
+    si ComienzaCon: mensaje, {m_}
+        devolver LlamarLua: (yo#__tbl#en: (SinInicio: mensaje, {m_})), yo#__tbl, ...args
+    finsi
+    si ComienzaCon: mensaje, {v_}
+        devolver yo#__tbl#en: (SinInicio: mensaje, {v_})
+    finsi
+    si ComienzaCon: mensaje, {ic_}
+        variable iter
+        fijar iter a yo#__tbl#en: (SinInicio: mensaje, {ic_})
+        devolver Iterador#crear: iter, args
+    finsi
+    si ComienzaCon: mensaje, {im_}
+        variable iter
+        fijar iter a yo#__tbl#en: (SinInicio: mensaje, {ic_})
+        devolver Iterador#crear: iter, (Concatenar: (Arreglo#crearCon: yo#__tbl), args)
+    finsi
+
+    __FallarConMensaje: ({Mensaje ~t no encontrado en la instancia de TablaNS}#formatear: mensaje)
+finmetodo
+
+variable Sqlite
+fijar Sqlite a TablaNS#desdeRequire: "sqlite3"
+
+variable db
+fijar db a Sqlite#c_open_memory
+
+db#m_exec: {
+CREATE TABLE test (id INTEGER PRIMARY KEY, content);
+
+INSERT INTO test VALUES (NULL, 'Hello World');
+INSERT INTO test VALUES (NULL, 'Hello PseudoD');
+INSERT INTO test VALUES (NULL, 'Hello SQLite3')
+}
+
+(db#im_nrows: {SELECT * FROM test})#paraCadaElemento: procedimiento: row
+    Escribir: ({~t	~t}#formatear: row#v_id, row#v_content)
+finprocedimiento

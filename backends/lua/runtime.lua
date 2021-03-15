@@ -1,5 +1,18 @@
 local M = {}
 
+local type, string, table, select, assert, utf8, error, pairs, ipairs =
+   type, string, table, select, assert, utf8, error, pairs, ipairs
+local tonumber, tostring, setmetatable, getmetatable, pcall, xpcall =
+   tonumber, tostring, setmetatable, getmetatable, pcall, xpcall
+local rawequal = rawequal
+
+local table_pack, table_unpack =
+   table.pack, table.unpack
+local string_len, string_sub, string_find =
+   string.len, string.sub, string.find
+
+local b64 = require "backends.lua.b64"
+
 -- Es muy importante entender la representación de los objetos de PseudoD en
 -- Lua. `backends/lua.pd` ya habló un poco al respecto, básicamente:
 --
@@ -38,9 +51,9 @@ local function itertofunc(iter, ...)
    end
    local function nextiter()
       assert(not ended())
-      local res = table.pack(iterfunc(state, ctrl))
+      local res = table_pack(iterfunc(state, ctrl))
       ctrl = res[1]
-      return ctrl, table.unpack(res, 2, res.n)
+      return ctrl, table_unpack(res, 2, res.n)
    end
    return nextiter, ended
 end
@@ -86,7 +99,7 @@ function M.pdformat(fmt, ...)
       - `~|%` = consume el siguiente fin de línea, eliminandolo del texto
    --]]
    local paramsIdx = 1
-   local params = table.pack(...)
+   local params = table_pack(...)
    local i = 1
    local res = ""
    local function getc()
@@ -153,6 +166,16 @@ function M.strtopdformat(str)
    return res
 end
 
+-- Véase PRIM_DISPATCH_TABLE y M.enviarMensaje. Debería estar más abajo pero
+-- como `M.object()` depende de el entonces tiene que estar aquí.
+local LUA_TYPE_TO_PRIM_CLASS = {
+   ["number"] = "Numero",
+   ["string"] = "Texto",
+   ["nil"] = "TipoNulo",
+   ["boolean"] = "Boole",
+   ["function"] = "Procedimiento",
+}
+
 -- Crea un nuevo objeto.
 --
 -- Los únicos métodos del objeto son los predeterminados (`operador_=`,
@@ -185,19 +208,15 @@ function M.objeto()
    function obj:addAttribute(name)
       local i = self:newAttribute()
       self.methods[name] = function(self)
-         M.pdasserttype(self, "objeto", ("atributo %q requiere un objeto como 'yo'"):format(name))
          return self:getAttribute(i)
       end
       self.methods["fijar_" .. name] = function(self, nval)
-         M.pdasserttype(self, "objeto", ("atributo %q requiere un objeto como 'yo'"):format(name))
          self:setAttribute(i, nval)
       end
       return i
    end
 
    function obj:equalTo(other)
-      M.pdasserttype(self, "objeto", "Yo debo ser un objeto")
-
       if M.pdtypeof(other) ~= "objeto" then
          return false
       end
@@ -238,22 +257,29 @@ function M.objeto()
    end
 
    function obj:clone()
-      M.pdasserttype(self, "objeto", "Yo debo ser un objeto")
       local clone = M.objeto()
       for i = 1, self.attrs.n do
-         clone.attrs[i] = M.enviarMensaje(self.attrs[i], "clonar")
+         if LUA_TYPE_TO_PRIM_CLASS[type(self.attrs[i])] then
+            clone.attrs[i] = self.attrs[i]
+         else
+            clone.attrs[i] = M.enviarMensaje(self.attrs[i], "clonar")
+         end
       end
       clone.attrs.n = self.attrs.n
       for name, proc in pairs(self.methods) do
-         clone.methods[name] = M.enviarMensaje(proc, "clonar")
+         if type(proc) == "function" then
+            clone.methods[name] = proc
+         else
+            clone.methods[name] = M.enviarMensaje(proc, "clonar")
+         end
       end
       return clone
    end
 
    function obj:recvMensaje(mensaje, ...)
-      if obj.methods[mensaje] == nil then
-         if obj.methods["metodoNoEncontrado"] ~= nil then
-            return M.enviarMensaje(obj.methods["metodoNoEncontrado"], "llamar", self, mensaje, M.arreglo(...))
+      if self.methods[mensaje] == nil then
+         if self.methods["metodoNoEncontrado"] ~= nil then
+            return M.enviarMensaje(self.methods["metodoNoEncontrado"], "llamar", self, mensaje, M.arreglo(...))
          elseif mensaje == "igualA" or mensaje == "operador_=" then
             return self:equalTo(...)
          elseif mensaje == "clonar" then
@@ -262,7 +288,7 @@ function M.objeto()
             error(("Método %q no encontrado"):format(mensaje))
          end
       else
-         return M.enviarMensaje(obj.methods[mensaje], "llamar", self, ...)
+         return M.enviarMensaje(self.methods[mensaje], "llamar", self, ...)
       end
    end
 
@@ -280,6 +306,10 @@ end
 -- - `nulo` para nil.
 -- - `objeto` para cualquier objeto creado con `M.objeto()`.
 -- - Falla con un error para cualquier otro valor.
+--
+-- NOTA: Por motivos de eficiencia, distintas partes del runtime usan versiones
+-- *inline* de esta función. Si alguna vez se modifica esta función, asegúrate
+-- de buscar `INLINED pdtypeof` en este archivo para ver esas partes.
 function M.pdtypeof(val)
    local t = type(val)
    if t == "table" and val.__pd_object then
@@ -315,58 +345,6 @@ end
 -- un tipo dato. Cuando se envía un mensaje a estos tipos, en vez de llamar a
 -- "obj.methods[...](...)" llama a `METODOS_...[...](...)`.
 
--- Función de utilidad, declara métodos de comparación en una tabla de
--- dispatch. Los métodos y operadores para "menor que", "mayor que", "menor o
--- igual a", "mayor o igual a" e "igual a" son definídos.
---
--- Todos funcionan llamando a un método `comparar` que devuelve alguno de los
--- strings `"eq"`, `"lt"` o `"gt"`.
-local function makeComparer(tbl)
-   local eqf = function(self, other)
-      return M.enviarMensaje(self, "comparar", other) == "eq"
-   end
-   local ltf = function(self, other)
-      return M.enviarMensaje(self, "comparar", other) == "lt"
-   end
-   local gtf = function(self, other)
-      return M.enviarMensaje(self, "comparar", other) == "gt"
-   end
-   local lef = function(self, other)
-      local cmp = M.enviarMensaje(self, "comparar", other)
-      return cmp == "lt" or cmp == "eq"
-   end
-   local gef = function(self, other)
-      local cmp = M.enviarMensaje(self, "comparar", other)
-      return cmp == "gt" or cmp == "eq"
-   end
-   tbl["operador_="] = eqf
-   tbl["igualA"] = eqf
-   tbl["operador_<"] = ltf
-   tbl["menorQue"] = ltf
-   tbl["operador_>"] = gtf
-   tbl["mayorQue"] = gtf
-   tbl["operador_=<"] = lef
-   tbl["menorOIgualA"] = lef
-   tbl["operador_>="] = gef
-   tbl["mayorOIgualA"] = gef
-end
-
--- Agrega un método `comparar` a una tabla dispatch que utiliza los operadores
--- de lua `<`, `==` y `>`.
-local function primitiveCompare(tbl)
-   tbl["comparar"] = function(self, other)
-      if self == other then
-         return "eq"
-      elseif type(self) == type(other) and self < other then
-         return "lt"
-      elseif type(self) == type(other) and self > other then
-         return "gt"
-      else
-         return "none"
-      end
-   end
-end
-
 -- Los tipos primitivos de Lua no requieren que sus métodos "clonar" realizen
 -- una copia completa. Esta función hace el método "clonar" en una tabla
 -- dispatch solo devuelva el objeto sin cambios.
@@ -400,6 +378,26 @@ local function makePrimBinop(op)
       return function(self, other)
          return self .. other
       end
+   elseif op == "=" then
+      return function(self, other)
+         return self == other
+      end
+   elseif op == "<" then
+      return function(self, other)
+         return self < other
+      end
+   elseif op == ">" then
+      return function(self, other)
+         return self > other
+      end
+   elseif op == "=<" then
+      return function(self, other)
+         return self <= other
+      end
+   elseif op == ">=" then
+      return function(self, other)
+         return self >= other
+      end
    end
 end
 
@@ -416,6 +414,21 @@ local METODOS_NUMERO = {
    ["operador_*"] = makePrimBinop("*"),
    dividir = makePrimBinop("/"),
    ["operador_/"] = makePrimBinop("/"),
+
+   igualA = makePrimBinop("="),
+   ["operador_="] = makePrimBinop("="),
+
+   menorQue = makePrimBinop("<"),
+   ["operador_<"] = makePrimBinop("<"),
+
+   mayorQue = makePrimBinop(">"),
+   ["operador_>"] = makePrimBinop(">"),
+
+   menorOIgualA = makePrimBinop("=<"),
+   ["operador_=<"] = makePrimBinop("=<"),
+
+   mayorOIgualA = makePrimBinop(">="),
+   ["operador_>="] = makePrimBinop(">="),
 
    negar = function(self)
       return -self
@@ -438,8 +451,6 @@ local METODOS_NUMERO = {
    end,
 }
 primitiveClone(METODOS_NUMERO)
-primitiveCompare(METODOS_NUMERO)
-makeComparer(METODOS_NUMERO)
 
 local METODOS_NULO = {
    comoTexto = function(self)
@@ -447,10 +458,10 @@ local METODOS_NULO = {
    end,
 
    igualA = function(self, other)
-      return self == other
+      return rawequal(self, other)
    end,
    ["operador_="] = function(self, other)
-      return self == other
+      return rawequal(self, other)
    end,
 }
 primitiveClone(METODOS_NULO)
@@ -461,10 +472,10 @@ local METODOS_TEXTO = {
    end,
 
    igualA = function(self, other)
-      return self == other
+      return rawequal(self, other)
    end,
    ["operador_="] = function(self, other)
-      return self == other
+      return rawequal(self, other)
    end,
 
    comoNumeroEntero = function(self)
@@ -475,16 +486,16 @@ local METODOS_TEXTO = {
    end,
 
    longitud = function(self)
-      return string.len(self)
+      return string_len(self)
    end,
 
    en = function(self, idx)
       M.pdasserttype(idx, "numero")
       -- Recuerda que los índices en PseudoD comienzan desde 0
-      if idx < 0 or idx >= string.len(self) then
+      if idx < 0 or idx >= string_len(self) then
          error("string indexing out of bounds")
       else
-         return string.sub(self, idx + 1, idx + 1)
+         return string_sub(self, idx + 1, idx + 1)
       end
    end,
 
@@ -503,16 +514,16 @@ local METODOS_TEXTO = {
       M.pdasserttype(start, "numero")
       M.pdasserttype(end_, "numero")
       -- Recuerda (de nuevo) que los índices en PseudoD comienzan desde 0
-      return string.sub(self, start + 1, end_)
+      return string_sub(self, start + 1, end_)
    end,
 
    buscar = function(self, from, str)
       M.pdasserttype(from, "numero")
       M.pdasserttype(str, "texto")
-      if string.len(str) == 0 then
+      if string_len(str) == 0 then
          return from
       end
-      local start, end_ = string.find(self, str, from + 1, true)
+      local start, end_ = string_find(self, str, from + 1, true)
       if not start then
          return nil
       else
@@ -539,8 +550,8 @@ local METODOS_BOOLE = {
       end
    end,
 
-   igualA = function(self, other) return self == other end,
-   ["operador_="] = function(self, other) return self == other end,
+   igualA = function(self, other) return rawequal(self, other) end,
+   ["operador_="] = function(self, other) return rawequal(self, other) end,
 
    escojer = function(self, ifTrue, ifFalse)
       if self then
@@ -588,42 +599,33 @@ local METODOS_PROC = {
 }
 primitiveClone(METODOS_PROC)
 
--- Devuelve una función que, dada una instancia, un mensaje y demás argumentos,
--- hace el dispatch al método apropiado de la tabla dispatch
--- `methodstbl`. `clsname` es el nombre de la clase que la tabla representa y
--- es usado al mostrar mensajes de error.
-local function makeDispatcher(methodstbl, clsname)
-   return function(self, message, ...)
-      if methodstbl[message] == nil then
-         error(("Mensaje %q no encontrado en la instancia %s de %s"):format(message, self, clsname))
-      else
-         return methodstbl[message](self, ...)
-      end
-   end
-end
-
-local enviarMensajeNumero = makeDispatcher(METODOS_NUMERO, "Numero")
-local enviarMensajeNulo = makeDispatcher(METODOS_NULO, "TipoNulo")
-local enviarMensajeTexto = makeDispatcher(METODOS_TEXTO, "Texto")
-local enviarMensajeBoole = makeDispatcher(METODOS_BOOLE, "Boole")
-local enviarMensajeProc = makeDispatcher(METODOS_PROC, "Procedimiento")
+local PRIM_DISPATCH_TABLE = {
+   ["number"] = METODOS_NUMERO,
+   ["string"] = METODOS_TEXTO,
+   ["nil"] = METODOS_NULO,
+   ["boolean"] = METODOS_BOOLE,
+   ["function"] = METODOS_PROC,
+}
 
 -- Envía un mensaje a un objeto. Es posiblemente la función más importante del
 -- runtime.
 function M.enviarMensaje(obj, mensaje, ...)
-   local typ = M.pdtypeof(obj)
-   if typ == "numero" then
-      return enviarMensajeNumero(obj, mensaje, ...)
-   elseif typ == "texto" then
-      return enviarMensajeTexto(obj, mensaje, ...)
-   elseif typ == "boole" then
-      return enviarMensajeBoole(obj, mensaje, ...)
-   elseif typ == "procedimiento" then
-      return enviarMensajeProc(obj, mensaje, ...)
-   elseif typ == "nulo" then
-      return enviarMensajeNulo(obj, mensaje, ...)
-   else
+   -- INLINED pdtypeof
+   --
+   -- La lógica para detectar objetos (tablas+`__pd_object`) esta mezclada con
+   -- el resto del dispatch.
+   if PRIM_DISPATCH_TABLE[type(obj)] then
+      local tbl = PRIM_DISPATCH_TABLE[type(obj)]
+      if tbl[mensaje] == nil then
+         error(("Mensaje %q no encontrado en la instancia %s de %s"):format(
+               mensaje, self, LUA_TYPE_TO_PRIM_CLASS[type(obj)]))
+      else
+         return tbl[mensaje](obj, ...)
+      end
+   elseif type(obj) == "table" and obj.__pd_object then
       return obj:recvMensaje(mensaje, ...)
+   else
+      error(("%s directly passed across PD FFI"):format(type(obj)))
    end
 end
 
@@ -639,7 +641,10 @@ end
 -- Por ejemplo, `M.enviarMensajeV(X, "Y", A, { 1, 2, __pd_var=true, n=2, }, B)`
 -- corresponde al código PseudoD `X#Y: ...A, 1, 2, ...B`.
 function M.enviarMensajeV(obj, mensaje, ...)
-   local partes = table.pack(...)
+   if select("#", ...) == 0 then
+      return M.enviarMensaje(obj, mensaje)
+   end
+   local partes = table_pack(...)
    local args = { n = 0 }
    for i = 1, partes.n do
       local parte = partes[i]
@@ -656,7 +661,7 @@ function M.enviarMensajeV(obj, mensaje, ...)
          args.n = args.n + n
       end
    end
-   return M.enviarMensaje(obj, mensaje, table.unpack(args, 1, args.n))
+   return M.enviarMensaje(obj, mensaje, table_unpack(args, 1, args.n))
 end
 
 function M.escribir(val)
@@ -808,7 +813,7 @@ end
 -- `M.arreglo(A, B, C)` crea un arreglo que contiene los valores `A`, `B` y
 -- `C`. nils en los argumentos son guardados.
 function M.arreglo(...)
-   local pk = table.pack(...)
+   local pk = table_pack(...)
    local reidxpk = { n = pk.n }
    for i = 1, pk.n do
       reidxpk[i - 1] = pk[i]
@@ -841,7 +846,7 @@ function M.arreglounpack(arr)
    for i, x in M.arregloipairs(arr) do
       tbl[i] = x
    end
-   return table.unpack(tbl, 0, M.enviarMensaje(arr, "longitud") - 1)
+   return table_unpack(tbl, 0, M.enviarMensaje(arr, "longitud") - 1)
 end
 
 -- Como `M.arreglounpack` pero requiere que su parámetro sea un arreglo creado
@@ -853,7 +858,7 @@ function M.fastarreglounpack(arr)
    assert(type(arr) == "table")
    assert(arr.__pd_object and arr.__pd_arreglo)
    local t = arr:getAttribute(ARREGLO_ATTRS_IDX)
-   return table.unpack(t, 0, t.n)
+   return table_unpack(t, 0, t.n)
 end
 
 -- Crea un espacio de nombres.
@@ -1233,7 +1238,7 @@ function M.builtins.ProcedimientoVarargs(n, proc)
          end
       end
       pos[n + 1] = var
-      return M.enviarMensaje(proc, "llamar", table.unpack(pos, 1, n + 1))
+      return M.enviarMensaje(proc, "llamar", table_unpack(pos, 1, n + 1))
    end
 end
 

@@ -306,14 +306,18 @@ finmetodo
 [ Este método es llamado al inicio de cada ámbito. Inicializa variables
   importantes del runtime (como "_s"). ]
 metodo CompiladorSimpleALua#iniciar
-    variables res, padre
+    variable res
     fijar res a Arreglo#vacio
-    si no EsNulo: yo#_ámbito#ámbitoPadre
-        fijar padre a {_s}
-    sino
-        fijar padre a {}
+    [ Evita crear el objeto _s si el ámbito no lo usa. ]
+    si yo#_ámbito#númeroDeBindings >= LUA_MAX_LOCALS
+        variable padre
+        si no EsNulo: yo#_ámbito#ámbitoPadre
+            fijar padre a {_s}
+        sino
+            fijar padre a {}
+        finsi
+        res#agregarAlFinal: ({local _s = rt.scope(~t);~%}#formatear: padre)
     finsi
-    res#agregarAlFinal: ({local _s = rt.scope(~t);~%}#formatear: padre)
     ParaCadaElemento: yo#_ámbito#todosLosBindingsLocales, procedimiento: id
         res#agregarAlFinal: (yo#defineNombreEnLua: id)
         res#agregarAlFinal: {;~%}#formatear
@@ -401,7 +405,7 @@ metodo CompiladorSimpleALua#visitarClase: nodo
             Arreglo#vacio))
     cods#agregarAlFinal: (Em#Formatear:
         nodo#nombre,
-        {rt.enviarMensaje(~p, "fijar_nombre", ~t);~%},
+        {rt_enviarMensaje(~p, "fijar_nombre", ~t);~%},
         clssym,
         (EscaparParaLua: nodo#nombre#nombre))
     ParaCadaElemento: nodo#declaraciones, procedimiento: declr
@@ -685,7 +689,7 @@ metodo CompiladorSimpleALua#visitarMétodo: nodo
     sino
         devolver Em#Formatear:
             nodo,
-            {rt.enviarMensaje(~p, "agregarMetodo", ~p, ~p);~%},
+            {rt_enviarMensaje(~p, "agregarMetodo", ~p, ~p);~%},
             clssym,
             (EscaparParaLua: nodo#nombre#nombre),
             cuerpoMet
@@ -697,7 +701,7 @@ metodo CompiladorSimpleALua#visitarAtributos: nodo
     fijar clssym a yo#nombreEnLua: nodo#deClase
     fijar cods a Arreglo#vacio
     ParaCadaElemento: nodo#nombres, procedimiento: nodoId
-        cods#agregarAlFinal: (Em#Formatear: nodoId, {rt.enviarMensaje(~p, "agregarAtributo", ~p);~%}, clssym, (EscaparParaLua: nodoId#nombre))
+        cods#agregarAlFinal: (Em#Formatear: nodoId, {rt_enviarMensaje(~p, "agregarAtributo", ~p);~%}, clssym, (EscaparParaLua: nodoId#nombre))
     finprocedimiento
     devolver Em#Parte#crear: cods, nodo
 finmetodo
@@ -831,11 +835,11 @@ metodo CompiladorSimpleALua#enviarMensaje: objeto, mensaje, argumentos
     si args#longitud = 1
         si EsInstancia: (args#en: 0), Arreglo
             fijar argsComoTexto a CompilarArgumentosSimples: (args#en: 0)
-            fijar funciónParaEnviarMensaje a {enviarMensaje}
+            fijar funciónParaEnviarMensaje a {rt_enviarMensaje}
         finsi
     finsi
     si EsNulo: funciónParaEnviarMensaje
-        fijar funciónParaEnviarMensaje a {enviarMensajeV}
+        fijar funciónParaEnviarMensaje a {rt_enviarMensajeV}
         fijar argsComoTexto a Em#Unir: NULO, (Mapear: args, funcion: arg
             si EsInstancia: arg, AST#NodoVariadic
                 devolver yo#visitar: arg#interno
@@ -850,7 +854,7 @@ metodo CompiladorSimpleALua#enviarMensaje: objeto, mensaje, argumentos
 
     devolver Em#Formatear:
         NULO,
-        {rt.~t(~p, ~t~p)},
+        {~t(~p, ~t~p)},
         funciónParaEnviarMensaje,
         objeto,
         (EscaparParaLua: mensaje),
@@ -936,7 +940,7 @@ finmetodo
 metodo CompiladorSimpleALua#visitarOperador: nodo
     devolver Em#Formatear:
         nodo,
-        {rt.enviarMensaje(~p, ~t, ~p)},
+        {rt_enviarMensaje(~p, ~t, ~p)},
         (yo#visitar: nodo#lhs),
         (EscaparParaLua: ({operador_~t}#formatear: nodo#op#op)),
         (yo#visitar: nodo#rhs)
@@ -952,11 +956,11 @@ metodo CompiladorSimpleALua#visitarNoLlamar: nodo
     si nodo#mensajes#longitud > 0
         variable cod
         fijar cod a Reducir: base, funcion: acc, mensaje
-            devolver Em#Formatear: nodo, {rt.enviarMensaje(~p, ~t)}, acc, (EscaparParaLua: mensaje#texto)
+            devolver Em#Formatear: nodo, {rt_enviarMensaje(~p, ~t)}, acc, (EscaparParaLua: mensaje#texto)
         finfuncion, (PedazoDeArreglo: nodo#mensajes, 0, -2)
         fijar cod a Em#Formatear:
             nodo,
-            {rt.enviarMensaje(~p, ~t, ...)},
+            {rt_enviarMensaje(~p, ~t, ...)},
             cod,
             (EscaparParaLua: (ÚltimoElemento: nodo#mensajes)#texto)
         devolver Em#Formatear: nodo, {function(...) return ~p end}, cod
@@ -1069,7 +1073,7 @@ funcion CompilarALua: moddb, llaveDeMódulo, ast, ámbito, compilador
     fijar builtins a comp#registrarBuiltins
     fijar código a Em#Formatear:
         ast,
-        {local rt = require "backends.lua.runtime";~%~p~%~p~%~p~%},
+        {local rt = require "backends.lua.runtime";~%local rt_enviarMensaje, rt_enviarMensajeV = rt.enviarMensaje, rt.enviarMensajeV;~%~p~%~p~%~p~%},
         ini,
         builtins,
         (comp#visitar: ast)
