@@ -1,0 +1,10 @@
+{
+    "nombre": "Números reales",
+    "espera": "éxito",
+    "salida contiene": "1.2\n2.3\n3.1415\n-524.345\n"
+}
+====================
+escribir (1.2)#comoTexto nl
+escribir (2.3)#comoTexto nl
+escribir (3.1415)#comoTexto nl
+escribir (-524.345)#comoTexto nl

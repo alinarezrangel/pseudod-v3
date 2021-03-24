@@ -454,6 +454,44 @@ funcion ConvertirAEntero: texto
 finfuncion
 
 [DOCUMENTA
+@brief{Convierte un texto a un número.}
+
+La sintáxis de @param{texto} debe ser la misma de un número (entero o real) de
+PseudoD.
+DOCUMENTA]
+funcion ConvertirANúmero: texto
+    variables n, signo, punto
+    necesitas texto#longitud > 0
+    fijar signo a 1
+    fijar n a 0
+    fijar punto a NULO
+    si (texto#en: 0) = {-}
+        fijar signo a -1
+        fijar texto a texto#subTexto: 1, (texto#longitud - 1)
+    finsi
+    necesitas texto#longitud > 0
+    fijar punto a texto#buscar: 0, {.}
+    si EsNulo: punto
+        fijar punto a texto#longitud
+    finsi
+    ParaCadaElementoConÍndice: texto, procedimiento: c, i
+        variables exponente, p
+        si i < punto
+            fijar exponente a (punto - i) - 1
+        sino
+            si i = punto
+                devolver NULO [ Estamos en el {.} ]
+            sino [ i > punto ]
+                fijar exponente a 0 - ((i - punto) + 1)
+            finsi
+        finsi
+        fijar p a Elevar: 10, exponente
+        fijar n a n + (p * DígitoAEntero: c)
+    finprocedimiento
+    devolver n * signo
+finfuncion
+
+[DOCUMENTA
 @brief{Determina si un texto puede ser convertido a un entero.}
 
 Si devuelve @pd{VERDADERO}, @param{texto} puede ser pasado a
@@ -474,6 +512,42 @@ funcion EsNúmeroEntero: texto
         finsi
     finprocedimiento
     devolver esNum
+finfuncion
+
+
+[DOCUMENTA
+@brief{Determina si un texto puede ser convertido a un número.}
+
+Si devuelve @pd{VERDADERO}, @param{texto} puede ser pasado a
+@pd{ConvertirANúmero}.
+DOCUMENTA]
+funcion EsNúmero: texto
+    variables seEncontróSigno, seEncontróPunto, seEncontróDígito
+    fijar seEncontróSigno a FALSO
+    fijar seEncontróPunto a FALSO
+    fijar seEncontróDígito a FALSO
+    devolver LlamarConEC: procedimiento: dev
+        ParaCadaElemento: texto, procedimiento: c
+            si c = {-}
+                si seEncontróSigno %dev: FALSO finsi
+                si seEncontróDígito %dev: FALSO finsi
+                si seEncontróPunto %dev: FALSO finsi
+                fijar seEncontróSigno a VERDADERO
+                devolver NULO
+            finsi
+            si c = {.}
+                si seEncontróPunto %dev: FALSO finsi
+                fijar seEncontróPunto a VERDADERO
+                devolver NULO
+            finsi
+            si no EsNulo: (DígitoAEntero: c)
+                fijar seEncontróDígito a VERDADERO
+                devolver NULO
+            finsi
+            %dev: FALSO
+        finprocedimiento
+        devolver VERDADERO
+    finprocedimiento
 finfuncion
 
 [DOCUMENTA
@@ -561,7 +635,7 @@ finfuncion
 @pd{Aplicar} es una función muy útil, pero a veces incómoda de usar:
 en diversas ocaciones podrías necesitas llamar a una función tanto con
 argumentos fijos como variables y utilizar @pd{Aplicar} en estas situaciones
-es muy ruidoso:
+es demasiado complicado:
 
 @ejemplo|{
 variable otrosValores

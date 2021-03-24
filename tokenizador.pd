@@ -134,12 +134,21 @@ finprocedimiento
   textual del principio como posIni. ]
 
 procedimiento LeerLiteralNumérica: posIni, tx, puerto
-    variables texto, posFin, area
+    variables texto, posFin, area, punto
     fijar texto a LeerPalabra: tx, puerto
+    fijar punto a puerto#leerCarácter
+    si punto = {.}
+       variable decimales
+       fijar decimales a LeerPalabra: {}, puerto
+       necesitas EsNúmeroEntero: decimales
+       fijar texto a texto#concatenar: ({.}#concatenar: decimales)
+    sino
+        puerto#desleerCarácter
+    finsi
     fijar posFin a puerto#posiciónActual
     fijar area a Tokens#AreaTextual#crear: posIni, posFin
-    necesitas EsNúmeroEntero: texto
-    devolver Tokens#TokenNumero#crear: area, texto, (ConvertirAEntero: texto)
+    necesitas EsNúmero: texto
+    devolver Tokens#TokenNumero#crear: area, texto, (ConvertirANúmero: texto)
 finprocedimiento
 
 procedimiento LeerIdentificador: posIni, tx, puerto
