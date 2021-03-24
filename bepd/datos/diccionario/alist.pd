@@ -1,0 +1,201 @@
+utilizar bepd/builtinsImpl
+utilizar bepd/datos/diccionario/interfaz
+
+[DOCUMENTA
+@brief{Un diccionario @italic{alist}.}
+
+El único requerimiento de este diccionario es que las llaves puedan ser
+comparadas con @code{#operador_=} y @code{#igualA}.
+
+Un @italic{alist} es un arreglo de arreglos de dos elementos, donde cada
+subarreglo tiene como primer elemento la llave y como segundo elemento el
+valor. Los @italic{alists} son usados ampliamente en @italic{LISPs} para
+diccionarios pequeños. Esto es por el hecho de que son extremadamente
+ineficientes.
+
+El orden de iteración de un diccionario alist es determinista: aunque el orden
+es indeterminado, siempre será igual en distintas ejecuciones del programa y
+para distintas iteraciones sobre un mismo diccionario alist mientras no se
+modifique.
+
+@dato-de-implementacion{
+Los diccionarios alist, en su implementación actual, tienen un orden de
+iteración igual a su orden de inserción. Es decir, si se insertan las llaves
+@pd{1}, @pd{2} y @pd{3}, el orden de iteración es @pd{1, 2, 3}. Si luego se
+elimina @pd{2} y se inserta @pd{0} entonces el orden es @pd{1, 3, 0}. Esto es
+un detalle de implementación y podría cambiar en cualquier momento.
+}
+DOCUMENTA]
+clase DiccionarioAlist hereda IDiccionario
+    metodo estatico vacío
+    metodo estatico desdeArreglo: arr
+    metodo estatico desdePares: ...valores
+finclase
+
+atributos DiccionarioAlist#_pares
+
+metodo estatico DiccionarioAlist#vacío
+    variable inst
+    fijar inst a yo#_crear
+    fijar inst#_pares a Arreglo#vacio
+    devolver inst
+finmetodo
+
+metodo estatico DiccionarioAlist#desdeArreglo: arr
+    variable inst
+    fijar inst a yo#_crear
+    fijar inst#_pares a arr
+    devolver inst
+finmetodo
+
+metodo estatico DiccionarioAlist#desdePares: ...valores
+    necesitas EsPar: valores#longitud
+
+    variables inst, i
+    fijar inst a yo#_crear
+    fijar inst#_pares a Arreglo#vacio
+    fijar i a 0
+
+    mientras i < valores#longitud
+        inst#_pares#agregarAlFinal: (Arreglo#crearCon: (valores#en: i), (valores#en: (i + 1)))
+        fijar i a i + 2
+    finmientras
+
+    devolver inst
+finmetodo
+
+metodo DiccionarioAlist#en: llave
+    devolver yo#transformarPar: llave, &Identidad
+finmetodo
+
+metodo DiccionarioAlist#fijarEn: llave, nuevoValor
+    yo#_transformarParImpl: llave, funcion: viejoValor
+        devolver nuevoValor
+    finfuncion, VERDADERO
+finmetodo
+
+metodo DiccionarioAlist#transformarPar: llave, proc
+    devolver yo#_transformarParImpl: llave, proc, FALSO
+finmetodo
+
+metodo DiccionarioAlist#_transformarParImpl: llave, proc, crearSiNoExíste
+    variable i
+    fijar i a 0
+    mientras i < yo#_pares#longitud
+        variable par
+        fijar par a yo#_pares#en: i
+        si (par#en: 0) = llave
+            variable nuevoValor
+            fijar nuevoValor a %proc: (par#en: 1)
+            yo#_pares#fijarEn: i, (Arreglo#crearCon: (par#en: 0), nuevoValor)
+            devolver nuevoValor
+        finsi
+        fijar i a i + 1
+    finmientras
+    si no crearSiNoExíste
+        __FallarConMensaje: ({El diccionario no contiene la llave ~t}#formatear: llave)
+    sino
+        yo#_pares#agregarAlFinal: (Arreglo#crearCon: llave, (%proc: NULO))
+    finsi
+finmetodo
+
+metodo DiccionarioAlist#eliminar: llave
+    variables i, encontrado
+    fijar i a 0
+    fijar encontrado a FALSO
+    mientras i < yo#_pares#longitud
+        si encontrado
+            yo#_pares#fijarEn: (i - 1), (yo#_pares#en: i)
+        sino
+            variable par
+            fijar par a yo#_pares#en: i
+            si (par#en: 0) = llave
+                fijar encontrado a VERDADERO
+            finsi
+        finsi
+        fijar i a i + 1
+    finmientras
+    si encontrado
+        yo#_pares#redimensionar: (yo#_pares#longitud - 1)
+    finsi
+finmetodo
+
+metodo DiccionarioAlist#contiene: llave
+    variable i
+    fijar i a 0
+    mientras i < yo#_pares#longitud
+        variable par
+        fijar par a yo#_pares#en: i
+        si (par#en: 0) = llave
+            devolver VERDADERO
+        finsi
+        fijar i a i + 1
+    finmientras
+    devolver FALSO
+finmetodo
+
+metodo DiccionarioAlist#vaciar
+    fijar yo#_pares a Arreglo#vacio
+finmetodo
+
+metodo DiccionarioAlist#longitud
+    devolver yo#_pares#longitud
+finmetodo
+
+metodo DiccionarioAlist#comoTexto
+    variables txt, primero
+    fijar txt a {(Diccionario#desdePares: }
+    fijar primero a VERDADERO
+    ParaCadaElemento: yo#_pares, procedimiento: par
+        si no primero
+            fijar txt a txt#concatenar: {, }
+        sino
+            fijar primero a FALSO
+        finsi
+        fijar txt a txt#concatenar: {~t, ~t}#formatear: (par#en: 0), (par#en: 1)
+    finprocedimiento
+    devolver txt
+finmetodo
+
+metodo DiccionarioAlist#comoArreglo
+    devolver yo#_pares#\clonar\
+finmetodo
+
+metodo DiccionarioAlist#paraCadaPar: proc
+    ParaCadaElemento: yo#_pares, procedimiento: el
+        %proc: (el#en: 0), (el#en: 1)
+    finprocedimiento
+finmetodo
+
+metodo DiccionarioAlist#paraCadaLlave: proc
+    ParaCadaElemento: yo#_pares, procedimiento: el
+        %proc: (el#en: 0)
+    finprocedimiento
+finmetodo
+
+metodo DiccionarioAlist#paraCadaValor: proc
+    ParaCadaElemento: yo#_pares, procedimiento: el
+        %proc: (el#en: 1)
+    finprocedimiento
+finmetodo
+
+metodo DiccionarioAlist#reducir: ini, proc
+    variable acc
+    fijar acc a ini
+    yo#paraCadaPar: procedimiento: par
+        fijar acc a %proc: acc, (par#en: 0), (par#en: 1)
+    finprocedimiento
+    devolver acc
+finmetodo
+
+metodo DiccionarioAlist#transformar: proc
+    ParaCadaElementoConÍndice: yo#_pares, procedimiento: el, idx
+        yo#_pares#fijarEn: idx, (%proc: (el#en: 0), (el#en: 1))
+    finprocedimiento
+finmetodo
+
+metodo DiccionarioAlist#mapear: proc
+    devolver DiccionarioAlist#desdeArreglo: (Mapear: yo#_pares, funcion: par
+        devolver %proc: (par#en: 0), (par#en: 1)
+    finfuncion)
+finmetodo

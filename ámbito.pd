@@ -317,7 +317,7 @@ metodo estatico Ámbito#desdeArreglo: lst
     variable inst
     fijar inst a yo#crear
     fijar inst#_mapeo a Diccionario#desdeArreglo: lst
-    fijar inst#_númeroDeBindings a lst#longitud / 2
+    fijar inst#_númeroDeBindings a lst#longitud
     devolver inst
 finmetodo
 

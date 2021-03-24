@@ -250,5 +250,159 @@ function M.Iter(iter, args, body)
    end
 end
 
+-- HashMap implementado con tablas de Lua.
+local HashMap = em(rt.clases.Objeto, "subclase")
+em(HashMap, "fijar_nombre", "HashMap")
+
+local HASHMAP_TABLE_IDX = em(HashMap, "agregarAtributo", "__tabla")
+
+local function gettbl(hashmap)
+   return hashmap:getAttribute(HASHMAP_TABLE_IDX)
+end
+
+-- Para diferenciar valores no existentes de aquellos que existen pero son
+-- NULO, usamos este objeto `null` que siempre es comparado por referencia.
+--
+-- Esto es necesario porque NULO de PseudoD es `nil` en lua.
+local null = {}
+local function isnull(v)
+   return rawequal(v, null)
+end
+
+local function iskey(v)
+   return isprim(v) and v ~= nil
+end
+
+HashMap.methods["vacío"] = function(self)
+   local obj = em(self, "_crear")
+   obj:setAttribute(HASHMAP_TABLE_IDX, {})
+   return obj
+end
+
+HashMap.methods["puedeTenerDeLlave"] = function(self, objeto)
+   return iskey(objeto)
+end
+
+em(
+   HashMap, "agregarMetodo", "igualA",
+   function(self, other)
+      error("No se pueden comparar HashMaps de lua")
+   end
+)
+
+em(
+   HashMap, "agregarMetodo", "operador_=",
+   function(self, other)
+      error("No se pueden comparar HashMaps de lua")
+   end
+)
+
+em(
+   HashMap, "agregarMetodo", "clonar",
+   function(self)
+      error("No se puede clonar un HashMaps de lua")
+   end
+)
+
+em(
+   HashMap, "agregarMetodo", "en",
+   function(self, llave)
+      assert(iskey(llave))
+      local v = gettbl(self)[llave]
+      if v == nil then
+         error(("La llave %s no existe en el hashmap"):format(llave))
+      elseif isnull(v) then
+         return nil
+      else
+         return v
+      end
+   end
+)
+
+em(
+   HashMap, "agregarMetodo", "fijarEn",
+   function(self, llave, valor)
+      assert(iskey(llave))
+      if valor == nil then
+         valor = null
+      end
+      gettbl(self)[llave] = valor
+   end
+)
+
+em(
+   HashMap, "agregarMetodo", "eliminar",
+   function(self, llave)
+      assert(iskey(llave))
+      gettbl(self)[llave] = nil
+   end
+)
+
+em(
+   HashMap, "agregarMetodo", "contiene",
+   function(self, llave)
+      return iskey(llave) and gettbl(self)[llave] ~= nil
+   end
+)
+
+em(
+   HashMap, "agregarMetodo", "paraCadaPar",
+   function(self, proc)
+      for k, v in pairs(gettbl(self)) do
+         if isnull(v) then
+            v = nil
+         end
+         proc(k, v)
+      end
+   end
+)
+
+-- El método `paraCadaParConOrden` itera sobre las llaves+valores del hashmap
+-- con un orden determinista pero no especificado. La implementación actual
+-- ordena el hashmap y luego itera sobre el arreglo ordenado.
+
+-- Tipos distíntos serán comparados con esta tabla. Por ejemplo, todos los
+-- booleanos siempre serán "<" que los números porque `TYPE_ORDER["boolean"] <
+-- TYPE_ORDER["number"]`.
+local TYPE_ORDER = {
+   ["boolean"] = 0,
+   ["number"] = 1,
+   ["string"] = 2,
+}
+
+local function univcmp(a, b)
+   local ta, tb = type(a), type(b)
+   if ta ~= tb then
+      return TYPE_ORDER[ta] < TYPE_ORDER[tb]
+   elseif ta == "number" or ta == "string" then
+      return a < b
+   elseif ta == "boolean" then
+      -- `(not a) and b` => verdadero cuando `a` es falso y `b` verdadero =>
+      -- false será comparado como menor que true.
+      return (not a) and b
+   elseif ta == "function" then
+      error("total ordering of functions as hash-table's keys is not implemented")
+   else
+      error("cannot compare objects (unreachable)")
+   end
+end
+
+em(
+   HashMap, "agregarMetodo", "paraCadaParConOrden",
+   function(self, proc)
+      local tosort = {}
+      for k, v in pairs(gettbl(self)) do
+         tosort[#tosort + 1] = {k, v}
+      end
+      table.sort(tosort, function(a, b) return univcmp(a[1], b[1]) end)
+      local res = rt.arreglo()
+      for i = 1, #tosort do
+         em(proc, "llamar", tosort[i][1], tosort[i][2])
+      end
+   end
+)
+
+M.HashMap = HashMap
+
 
 return M

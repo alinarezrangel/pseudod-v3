@@ -1,0 +1,147 @@
+{
+    "nombre": "Diccionario",
+    "espera": "éxito"
+}
+====================
+utilizar bepd/builtins
+
+
+clase ComparablePeroNoHasheable
+    atributo valor
+finclase
+
+metodo ComparablePeroNoHasheable#inicializar: valor
+    fijar yo#valor a valor
+finmetodo
+
+
+variable FunciónDeEjemploA, FunciónDeEjemploB
+fijar FunciónDeEjemploA a funcion
+    devolver {A}
+finfuncion
+fijar FunciónDeEjemploB a funcion
+    devolver {B}
+finfuncion
+
+
+procedimiento Test_DiccionarioVacío
+    variable diccionario
+    fijar diccionario a Diccionario#vacío
+    necesitas diccionario#longitud = 0
+    necesitas diccionario#comoArreglo = Arreglo#vacio
+    variable otroDiccionario
+    fijar otroDiccionario a Diccionario#vacío
+    necesitas diccionario = otroDiccionario
+finprocedimiento
+
+procedimiento Test_DiccionarioConHasheables
+    variables A, B
+    fijar A a Diccionario#vacío
+    A#fijarEn: {A}, 2
+    A#fijarEn: 2, (ComparablePeroNoHasheable#crear: 5)
+    A#fijarEn: 3, {hola}
+    A#fijarEn: VERDADERO, 3
+    A#fijarEn: FunciónDeEjemploA, NULO
+
+    fijar B a Diccionario#desdePares:
+        {A}, 2,
+        2, (ComparablePeroNoHasheable#crear: 5),
+        3, {hola},
+        VERDADERO, 3,
+        FunciónDeEjemploA, NULO
+
+    necesitas A = B
+    necesitas A#comoArreglo = B#comoArreglo
+    necesitas A#longitud = 5
+    necesitas B#longitud = A#longitud
+    necesitas (A#en: {A}) = 2
+    necesitas (B#en: 2) = (ComparablePeroNoHasheable#crear: 5)
+    necesitas (A#en: 3) = (B#en: 3)
+    necesitas (A#en: VERDADERO) = 3
+    necesitas EsNulo: (B#en: FunciónDeEjemploA)
+
+    necesitas (Diccionario#desdeArreglo: A#comoArreglo) = A
+    necesitas (Diccionario#desdeArreglo: B#comoArreglo) = B
+    necesitas (Diccionario#desdeArreglo: A#comoArreglo) = (Diccionario#desdeArreglo: B#comoArreglo)
+    necesitas (Diccionario#desdeArreglo: B#comoArreglo) = A
+
+    necesitas A#contiene: {A}
+    necesitas B#contiene: VERDADERO
+    necesitas no A#contiene: FunciónDeEjemploB
+    necesitas no B#contiene: 48264
+
+    A#eliminar: {A}
+    B#eliminar: VERDADERO
+
+    necesitas no A#contiene: 23724
+    necesitas no B#contiene: VERDADERO
+    necesitas A#contiene: FunciónDeEjemploA
+    necesitas B#contiene: 3
+
+    A#vaciar
+
+    necesitas no (A = B)
+    necesitas A = Diccionario#vacío
+
+    B#vaciar
+
+    necesitas A = B
+    necesitas B = Diccionario#vacío
+finprocedimiento
+
+procedimiento Test_DiccionarioConNoHasheables
+    variables A, B, C, K
+    fijar K a ComparablePeroNoHasheable#crear: 5
+    fijar A a Diccionario#vacío
+    A#fijarEn: 2, {hola}
+    A#fijarEn: K, 3
+    A#fijarEn: FunciónDeEjemploA, FALSO
+
+    fijar B a Diccionario#desdePares:
+        FunciónDeEjemploA, FALSO,
+        K, 3,
+        2, {hola}
+
+    fijar C a Diccionario#desdeArreglo:
+        (Arreglo#crearCon:
+            (Arreglo#crearCon: K, 3),
+            (Arreglo#crearCon: 2, {hola}),
+            (Arreglo#crearCon: FunciónDeEjemploA, FALSO))
+
+    necesitas A = B
+    necesitas B = C
+    necesitas A = C
+
+    necesitas A#contiene: K
+    necesitas B#contiene: 2
+    necesitas C#contiene: FunciónDeEjemploA
+
+    necesitas A#contiene: (ComparablePeroNoHasheable#crear: 5)
+    necesitas B#contiene: (ComparablePeroNoHasheable#crear: 5)
+    necesitas C#contiene: (ComparablePeroNoHasheable#crear: 5)
+
+    necesitas (A#longitud = B#longitud) && (B#longitud = C#longitud)
+
+    A#eliminar: K
+    B#eliminar: (ComparablePeroNoHasheable#crear: 5)
+
+    necesitas A = B
+    necesitas no (A = C)
+    necesitas no (C = B)
+
+    necesitas A#longitud = B#longitud
+    necesitas A#longitud = (C#longitud - 1)
+
+    fijar C a Diccionario#desdePares:
+        2, {hola},
+        FunciónDeEjemploA, FALSO
+
+    necesitas A = C
+    necesitas C = B
+    necesitas A#longitud = C#longitud
+finprocedimiento
+
+
+Test_DiccionarioVacío
+Test_DiccionarioConHasheables
+Test_DiccionarioConNoHasheables
