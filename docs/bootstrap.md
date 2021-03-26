@@ -65,4 +65,7 @@ Este sistema permite detectar errores triviales. Combina esto con el hecho de
 que ambos stages son incluidos en cada commit del repositorio y obtienes un
 sistema en el que puedes detectar errores simples del compilador y puedes
 moverte en el tiempo para probar compiladores antiguos sin tener que recompilar
-todo desde 0 (simplemente haciendo "checkout" a un commit).
+todo desde 0 (simplemente haciendo "checkout" a un commit**.
+
+**Nota 2021-03-26**: El compilado del compilador ya no es incluído con cada
+commit por motivos de eficiencia y espacio.
