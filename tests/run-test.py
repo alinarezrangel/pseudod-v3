@@ -197,43 +197,6 @@ def test(header, successfull, output):
     return TestSuccess(successfull=successfull)
 
 
-def run_tests(test_dir, pseudod_impl):
-    passed = 0
-    expected_to_pass = 0
-    passed_tests = []
-    failed_tests = []
-    EXTS = ['.pd', '.psd', '.pseudo', '.pseudod']
-    for root, dirs, files in os.walk(test_dir):
-        print(f'At {root=}')
-        for name in files:
-            if not any(name.endswith(x) for x in EXTS):
-                continue
-            full_filename = os.path.join(root, name)
-            print('At file', full_filename)
-            test_result = run_test_for_file(full_filename, pseudod_impl)
-            print(f'Ran test "{test_result.name}" -- \'{name}\':')
-            print(f'  Passed = {test_result.passed}')
-            print(f'  Successfull = {test_result.successfull}')
-            print(f'  Had to pass = {test_result.has_to_pass}')
-            if test_result.error:
-                print(f'  Error: {test_result.error.message}')
-
-            if not test_result.passed:
-                test_result.debug.pretty_print()
-
-            if test_result.passed:
-                passed += 1
-                passed_tests.append(name)
-            if test_result.has_to_pass:
-                expected_to_pass += 1
-            if not test_result.passed and test_result.has_to_pass:
-                failed_tests.append(name)
-    print('Diagnostics:')
-    print(f'  Tests passed: {passed} -- {passed_tests}')
-    print(f'  Tests expected to pass: {expected_to_pass}')
-    print('  Tests failed:', expected_to_pass - passed, f'-- {failed_tests}')
-
-
 def run_test_only_for_file(filename, pseudod_impl):
     test_result = run_test_for_file(filename, pseudod_impl)
     print(f'Ran test "{test_result.name}" -- \'{filename}\':')
@@ -245,6 +208,45 @@ def run_test_only_for_file(filename, pseudod_impl):
 
     if not test_result.passed:
         test_result.debug.pretty_print()
+
+    return test_result
+
+
+def run_tests(test_dir, pseudod_impl):
+    passed = 0
+    expected_to_pass = 0
+    failed = 0
+    passed_tests = []
+    failed_tests = []
+    optional_failed_tests = []
+    EXTS = ['.pd', '.psd', '.pseudo', '.pseudod']
+    for root, dirs, files in os.walk(test_dir):
+        print(f'At {root=}')
+        for name in files:
+            if not any(name.endswith(x) for x in EXTS):
+                continue
+            full_filename = os.path.join(root, name)
+            print('At file', full_filename)
+            test_result = run_test_only_for_file(full_filename, pseudod_impl)
+
+            if test_result.passed:
+                passed += 1
+                passed_tests.append(name)
+            else:
+                failed += 1
+                if test_result.has_to_pass:
+                    failed_tests.append(name)
+                else:
+                    optional_failed_tests.append(name)
+            if test_result.has_to_pass:
+                expected_to_pass += 1
+    assert failed == (len(failed_tests) + len(optional_failed_tests))
+    assert passed == len(passed_tests)
+    print('Diagnostics:')
+    print(f'  Successfull: {passed}  Failed: {failed}  Expected: {expected_to_pass}  Total: {passed + failed}')
+    print(f'  Tests passed: #{passed} -- {passed_tests}')
+    print(f'  Tests failed: #{len(failed_tests)} -- {failed_tests}')
+    print(f'  Tests failed but were optional: #{len(optional_failed_tests)} -- {optional_failed_tests}')
 
 
 def run_lua_tests(path):
