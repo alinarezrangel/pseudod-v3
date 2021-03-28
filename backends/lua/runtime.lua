@@ -197,6 +197,13 @@ function M.objeto()
       return i
    end
 
+   function obj:newAttributes(n)
+      assert(n > 0)
+      local i = self.attrs.n + 1
+      self.attrs.n = self.attrs.n + n
+      return i
+   end
+
    function obj:getAttribute(i)
       return self.attrs[i]
    end
@@ -1065,11 +1072,17 @@ function M.mkclase()
          cls = stack[i]
          local nattrs = cls:getAttribute(cls.atributosDeInstanciaIdx)
          local mets = cls:getAttribute(cls.metodosDeInstanciaIdx)
-         for i = 1, nattrs do
-            inst:newAttribute()
+         if nattrs > 0 then
+            inst:newAttributes(nattrs)
          end
-         for i, pair in M.arregloipairs(mets) do
-            local name, proc = M.fastarreglounpack(pair)
+         assert(mets.__pd_arreglo)
+         local n = M.enviarMensaje(mets, "longitud")
+         for i = 0, (n - 1) do
+            local pair = METODOS_ARREGLO["en"](mets, i)
+            assert(pair.__pd_arreglo)
+            local name, proc
+            name = METODOS_ARREGLO["en"](pair, 0)
+            proc = METODOS_ARREGLO["en"](pair, 1)
             M.pdasserttype(name, "texto")
             inst.methods[name] = proc
          end

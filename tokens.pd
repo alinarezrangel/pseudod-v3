@@ -171,6 +171,21 @@ fijar PALABRAS_CLAVE a
 [ " ]
 
 [DOCUMENTA
+@brief{Las palabras clave pero como un diccionario.}
+
+Mapea cada palabra clave a @pd{VERDADERO}. Existe porque un @pd{Diccionario}
+puede ser más rápido que buscar en una lista.
+DOCUMENTA]
+variable PALABRAS_CLAVE_COMO_DICCIONARIO
+fijar PALABRAS_CLAVE_COMO_DICCIONARIO a
+    Diccionario#desdeArreglo:
+        (Mapear:
+            PALABRAS_CLAVE,
+            funcion: palabra
+                devolver Arreglo#crearCon: palabra, VERDADERO
+            finfuncion)
+
+[DOCUMENTA
 @brief{Token de literales numéricas.}
 DOCUMENTA]
 clase TokenNumero hereda Token

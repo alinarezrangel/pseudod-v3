@@ -227,13 +227,21 @@ Lee carácteres de @pd{puerto} hasta que se encuentre uno que no sea un espacio
 en blanco (definído por @pd{TerminaConEspacios}). Esto básicamente avanza el
 puerto de forma que la siguiente llamada a @pd{PuertoDeLectura#leerCarácter} no
 devuelva un espacio en blanco.
-
-@devuelve{Un texto que contiene todos los espacios en blanco que se leyeron.}
 DOCUMENTA]
 procedimiento SaltarEspacios: puerto
-    devolver LeerMientras: puerto, funcion: buffer
-        devolver (buffer#longitud = 0) || TerminaConEspacios: buffer
-    finfuncion
+    variable car
+    fijar car a puerto#leerCarácter
+    mientras VERDADERO
+        si car = EOF
+            devolver NULO
+        finsi
+        si no TerminaConEspacios: car
+            puerto#desleerCarácter
+            devolver NULO
+        finsi
+        fijar car a puerto#leerCarácter
+    finmientras
+    Inalcanzable
 finprocedimiento
 
 [DOCUMENTA

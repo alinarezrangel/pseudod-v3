@@ -78,22 +78,27 @@ atributos
     PuertoConPosiciónTextual#línea,
     PuertoConPosiciónTextual#columna,
     PuertoConPosiciónTextual#offset,
-    PuertoConPosiciónTextual#posiciónActual,
-    PuertoConPosiciónTextual#posiciónAnterior
+    PuertoConPosiciónTextual#viejaLínea,
+    PuertoConPosiciónTextual#viejaColumna,
+    PuertoConPosiciónTextual#viejoOffset
 
 metodo PuertoConPosiciónTextual#inicializar: puerto
     fijar yo#puerto a puerto
     fijar yo#línea a 1
     fijar yo#columna a 0
     fijar yo#offset a 0
-    fijar yo#posiciónActual a PosiciónTextual#crear: {}, yo#línea, yo#columna, yo#offset
-    fijar yo#posiciónAnterior a yo#posiciónActual
+    fijar yo#viejaLínea a 1
+    fijar yo#viejaColumna a 0
+    fijar yo#viejoOffset a 0
 finmetodo
 
 metodo PuertoConPosiciónTextual#leerCarácter
     variable c
     fijar c a yo#puerto#leerCarácter
-    fijar yo#posiciónAnterior a yo#posiciónActual
+    fijar yo#viejaLínea a yo#línea
+    fijar yo#viejaColumna a yo#columna
+    fijar yo#viejoOffset a yo#offset
+
     fijar yo#offset a yo#offset + 1
     si c = {~%}#formatear
         fijar yo#línea a yo#línea + 1
@@ -101,21 +106,18 @@ metodo PuertoConPosiciónTextual#leerCarácter
     sino
         fijar yo#columna a yo#columna + 1
     finsi
-    fijar yo#posiciónActual a clonar yo#posiciónActual con
-        nombreDelArchivo: {}
-        línea: yo#línea
-        columna: yo#columna
-        offset: yo#offset
-    finclonar
     devolver c
 finmetodo
 
 metodo PuertoConPosiciónTextual#desleerCarácter
     variable c
     fijar c a yo#puerto#desleerCarácter
-    fijar yo#posiciónActual a yo#posiciónAnterior
-    fijar yo#línea a yo#posiciónActual#línea
-    fijar yo#columna a yo#posiciónActual#columna
-    fijar yo#offset a yo#posiciónActual#offset
+    fijar yo#línea a yo#viejaLínea
+    fijar yo#columna a yo#viejaColumna
+    fijar yo#offset a yo#viejoOffset
     devolver c
+finmetodo
+
+metodo PuertoConPosiciónTextual#posiciónActual
+    devolver PosiciónTextual#crear: {}, yo#línea, yo#columna, yo#offset
 finmetodo

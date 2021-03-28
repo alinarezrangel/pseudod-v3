@@ -157,7 +157,7 @@ procedimiento LeerIdentificador: posIni, tx, puerto
     fijar posFin a puerto#posiciónActual
     fijar area a Tokens#AreaTextual#crear: posIni, posFin
 
-    si Contiene: Tokens#PALABRAS_CLAVE, texto
+    si Tokens#PALABRAS_CLAVE_COMO_DICCIONARIO#contiene: texto
         devolver Tokens#TokenPalabraClave#crear: area, texto, texto
     finsi
     si Todos: (Mapear: texto, &EsOperador)
