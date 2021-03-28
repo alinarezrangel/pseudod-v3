@@ -56,3 +56,7 @@ fundamentales del lenguaje. Este está separado en dos partes:
 permitir a las otras partes de `bepd/builtins` (como `bepd/datos/diccionario`)
 utilizar las funciones de dicho sin tener que realizar "importaciones
 recursivas" (que actualmente no están soportadas por el lenguaje).
+
+Partes de la biblioteca estándar que aún no son estables están en `bepd/x/`,
+mientras que "bindings" (FFI) a algunas bibliotecas externas están en
+`bindings/`.

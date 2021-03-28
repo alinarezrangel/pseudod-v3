@@ -25,6 +25,7 @@ La siguiente lista contiene una referencia rápida de que archivo hace que:
 - `editor/`: Soporte para distintos editores.
 - `ejemplos/`: Algunos programas de ejemplo en PseudoD.
 - `tools/`: Herramientas útiles adicionales.
+- `bindings/`: Bindings a distintas bibliotecas externas.
 - `inicio.pd`: Punto de inicio del compilador.
 - `tokens.pd`, `tokenizador.pd`: El tokenizador.
 - `combinadores.pd`: Una biblioteca de combinadores de parsers ("parser
