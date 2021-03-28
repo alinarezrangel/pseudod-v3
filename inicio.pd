@@ -206,6 +206,21 @@ clase ContextoDeCLI
     atributo escribirCompilado
 
     [DOCUMENTA
+    @brief{Experimentos activos.}
+
+    Un arreglo de textos, cada uno indicando un experimento activo. Los
+    experimentos reconocidos son:
+
+    @itemlist(
+    @item{@code{v3x}: No hace nada. En otras implementaciones esto activa el
+    soporte de PseudoD v3. Esta implementación soporta PseudoD v3 sin opciones
+    adicionales.}
+    @item{@code{v3}: Alias de @code{v3x}.}
+    )
+    DOCUMENTA]
+    atributo experimentos
+
+    [DOCUMENTA
     @brief{Devuelve este contexto como un texto.}
     DOCUMENTA]
     metodo comoTexto
@@ -238,10 +253,11 @@ metodo ContextoDeCLI#inicializar
     fijar yo#guardaBaseDeDatos a NULO
     fijar yo#cargaBasesDeDatos a Arreglo#vacio
     fijar yo#escribirCompilado a FALSO
+    fijar yo#experimentos a Arreglo#vacio
 finmetodo
 
 metodo ContextoDeCLI#comoTexto
-    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t, guardaBaseDeDatos ~t, cargaBasesDeDatos ~t, escribirCompilado ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo, yo#archivoDeSalida, yo#mostrarMensajes, yo#guardaBaseDeDatos, yo#cargaBasesDeDatos, yo#escribirCompilado
+    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t, guardaBaseDeDatos ~t, cargaBasesDeDatos ~t, escribirCompilado ~t, experimentos ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo, yo#archivoDeSalida, yo#mostrarMensajes, yo#guardaBaseDeDatos, yo#cargaBasesDeDatos, yo#escribirCompilado, yo#experimentos
 finmetodo
 
 metodo ContextoDeCLI#mostrarMensaje: texto
@@ -316,6 +332,11 @@ procedimiento ParsearOpción: ctx, arg, resto
         necesitas EsNulo: ctx#archivoDeSalida
         necesitas resto#longitud > 0
         fijar ctx#archivoDeSalida a ObtenerArchivoDesdeCLI: (resto#en: 0)
+        devolver 1
+    finsi
+    si arg = {-X}
+        necesitas resto#longitud > 0
+        ctx#experimentos#agregarAlFinal: (resto#en: 0)
         devolver 1
     finsi
     si arg = {--sin-mensajes}
