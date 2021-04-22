@@ -6,3 +6,7 @@ outputs/
 
 # El compilador ya compilado
 bootstrapped/
+
+# Distribución
+disttmp/
+dist.zip
