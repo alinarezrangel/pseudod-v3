@@ -26,7 +26,8 @@ compilador.pd inicio.pd módulos.pd parser.pd resoluciónDeNombres.pd				\
 tokenizador.pd tokens.pd backends/lua.pd backends/lua/emisor.pd
 
 DIST_EXTRA_FILES=README.md
-DIST_FILES=$(DIST_EXTRA_FILES) $(BEPD_FILES) $(STAGE1_FILES) $(TOOLS)/tags.lua
+LUA_RUNTIME_FILES=backends/lua/b64.lua backends/lua/errloc.lua backends/lua/runtime.lua backends/lua/exts.lua
+DIST_FILES=$(DIST_EXTRA_FILES) $(BEPD_FILES) $(STAGE1_FILES) $(LUA_RUNTIME_FILES) $(TOOLS)/tags.lua
 DIST_ZIP=dist.zip
 
 .PHONY: all
@@ -44,13 +45,14 @@ $(BTDIR):
 dist: $(DIST_ZIP)
 
 $(DIST_ZIP): $(DIST_FILES)
-	mkdir -p $(DIST_TMP)/pseudod-v3 $(DIST_TMP)/pseudod-v3/bepd $(DIST_TMP)/pseudod-v3/tools
+	mkdir -p $(DIST_TMP)/pseudod-v3 $(DIST_TMP)/pseudod-v3/bepd $(DIST_TMP)/pseudod-v3/tools $(DIST_TMP)/pseudod-v3/backends/lua
 	cp $(STAGE1)/inicio.lua $(DIST_TMP)/pseudod-v3/pseudod.lua
 	cp $(STAGE1)/inicio.sdb $(DIST_TMP)/pseudod-v3/compilador.sdb
 	cp -r $(BEPD_DIR) $(DIST_TMP)/pseudod-v3
 	cp $(TOOLS)/tags.lua $(DIST_TMP)/pseudod-v3/tools
 	cp -r $(TOOLS)/profiler $(DIST_TMP)/pseudod-v3/tools
 	cp $(DIST_EXTRA_FILES) $(DIST_TMP)/pseudod-v3
+	cp $(LUA_RUNTIME_FILES) $(DIST_TMP)/pseudod-v3/backends/lua
 	cd $(DIST_TMP) && zip -r dist.zip pseudod-v3
 	cp $(DIST_TMP)/dist.zip $(DIST_ZIP)
 
