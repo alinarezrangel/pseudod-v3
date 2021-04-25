@@ -24,7 +24,7 @@
   siguientes pases pueden utilizar para distinguir un nombre de otro (piensa en
   como es posible tener dos variables con el mismo nombre en ámbitos
   distintos). El pase se encuentra en `resoluciónDeNombres.pd`.
-- Tanto durante la resolución de nombres como en otras partes del compilados,
+- Tanto durante la resolución de nombres como en otras partes del compilador,
   es útil tener una estructura que represente los ámbitos léxicos del
   programa. En vez de implementar lo mismo una y otra vez, todos los pases
   utilizar la clase `Ámbito` del archivo `ámbito.pd`.
@@ -34,7 +34,7 @@
 - Finalmente, el compilador (cuya interfaz está en `compilador.pd` y los
   backends en `backends/`) utiliza el AST con los nombres "resueltos" y la base
   de datos de módulos para compilar el archivo y todas sus dependencias. El
-  resultado es un archivo textual que puede ser ejecutado.
+  resultado es un archivo que puede ser ejecutado.
 - Todo este proceso es iniciado y administrado por `inicio.pd`, el punto de
   inicio del programa. Este archivo también se encarga de leer la línea de
   comandos.

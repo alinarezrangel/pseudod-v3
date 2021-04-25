@@ -20,6 +20,9 @@ La siguiente lista contiene una referencia rápida de que archivo hace que:
   (o etapas). El archivo `docs/bootstrap.md` contiene más información de como
   funciona.
 - `docs/`: La documentación del proyecto.
+- `disttmp/` y `dist.zip`: Distribución creada con `make dist`. Contiene todo
+  lo necesario para ejecutar el compilador excluyendo el código fuente. También
+  incluye la documentación, README y la licencia.
 - `benchmarks/`: Los benchmarks. Comparan el compilador bootstrapeado (stage 0)
   con el original en C++.
 - `editor/`: Soporte para distintos editores.
