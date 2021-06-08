@@ -1,0 +1,211 @@
+utilizar bepd/builtinsImpl
+utilizar bepd/datos/diccionario (Diccionario)
+
+[DOCUMENTA
+@brief{Un conjunto de valores únicos.}
+
+Los conjuntos son inmutables, y no importa cuantas veces se les agrege el mismo
+elemento, siempre poseerán una única referencia a dicho. Sus elementos se
+comparan con @code{operador_=}.
+
+@codeblock|{
+variable c
+fijar c a Conjunto#conValores: 1, 2, 3
+fijar c a c#unión: (Conjunto#conValores: 2, 3, 4)
+necesitas c = (Conjunto#conValores: 1, 2, 3, 4)
+}|
+
+Los conjuntos están optimizados para las siguientes operaciones:
+
+@itemlist(
+@item{@code{contiene}: Quizas la operación más importante de los conjuntos. Se
+asume que será una de las más usadas.}
+
+@item{@code{unión}, @code{sin}: Las dos operaciones principales para manipular
+conjuntos.}
+)
+
+El orden de iteración de un conjunto @bold{no está determinado}. Es posible
+para un conjunto iterar de forma aleatoria incluso dentro de la ejecución de un
+mismo programa.
+DOCUMENTA]
+clase Conjunto
+    [DOCUMENTA
+    @brief{Crea y devuelve un conjunto vacío.}
+    DOCUMENTA]
+    metodo estatico vacío
+
+    [DOCUMENTA
+    @brief{Crea un conjunto con los valores especificados.}
+
+    Este método hace para un conjunto, lo que @code{crearCon} hace en
+    @pd{Arreglo}. @pd{Conjunto} también tiene un método @code{crearCon}, pero
+    este está recomendado.
+    DOCUMENTA]
+    metodo estatico conValores: ...valores
+
+    [DOCUMENTA
+    @brief{Alias de @code{conValores}.}
+
+    También crea un conjunto con los valores dados. Cuando puedas, prefiere
+    @code{conValores} en vez de este método.
+    DOCUMENTA]
+    metodo estatico crearCon: ...valores
+
+    [DOCUMENTA
+    @brief{Crea un conjunto desde los elementos de un arreglo.}
+
+    Puedes verlo como una versión más eficiente de @pd{Conjunto#conValores: ...(expresión)}.
+    DOCUMENTA]
+    metodo estatico desdeArreglo: valores
+
+    [DOCUMENTA
+    @brief{Devuelve la cantidad de elementos en el conjunto.}
+    DOCUMENTA]
+    metodo longitud
+
+    [DOCUMENTA
+    @brief{Devuelve la unión de dos o más conjuntos.}
+
+    La unión de varios conjuntos es un conjunto con todos sus
+    elementos. Recuerda que los conjuntos nunca tienen elementos duplicados.
+
+    @codeblock|{
+    necesitas ((Conjuntos#conValores: 1, 2)#unión: (Conjuntos#conValores: 2, 3)) = (Conjuntos#conValores: 1, 2, 3)
+    }|
+    DOCUMENTA]
+    metodo unión: ...otrosConjuntos
+
+    [DOCUMENTA
+    @brief{Substrae otro conjunto de este.}
+
+    Devuelve un nuevo conjunto que es igual a este pero sin los elementos de
+    @pd{conjunto}. Por ejemplo:
+
+    @codeblock|{
+    necesitas ((Conjuntos#conValores: 1, 2, 3, 4)#sin: (Conjuntos#conValores: 3, 4)) = (Conjuntos#conValores: 1, 2)
+    }|
+    DOCUMENTA]
+    metodo sin: conjunto
+
+    [DOCUMENTA
+    @brief{Determina si este conjunto contiene @pd{elemento}.}
+    DOCUMENTA]
+    metodo contiene: elemento
+
+    [DOCUMENTA
+    @brief{Itera sobre cada elemento del conjunto.}
+
+    El órden de iteración esta indefinído. Véase la advertencia en la
+    documentación de la clase @pd{Conjunto}.
+    DOCUMENTA]
+    metodo paraCadaElemento: proc
+
+    [DOCUMENTA
+    @brief{Mapea los elementos de este conjunto.}
+
+    Devuelve un nuevo conjunto cuyos elementos son los mismos que este pero
+    mapeados con la función @pd{proc}. Si @pd{proc} devuelve el mismo valor
+    para dos elementos distíntos, solo uno es conservado.
+
+    El órden de iteración esta indefinído. Véase la advertencia en la
+    documentación de la clase @pd{Conjunto}.
+    DOCUMENTA]
+    metodo mapear: proc
+
+    [DOCUMENTA
+    @brief{Obtiene los elementos del conjunto como un arreglo.}
+
+    Tal como @code{paraCadaElemento} no garantiza el órden de iteración, el
+    órden de los elementos dentro del arreglo devuelto no está garantizado.
+    DOCUMENTA]
+    metodo comoArreglo
+
+    [DOCUMENTA
+    @brief{Devuelve una representación textual del conjunto.}
+    DOCUMENTA]
+    metodo comoTexto
+finclase
+
+[ La implementación actual utiliza diccionarios para almacenar los elementos,
+  dando así un beneficio de rendimiento enorme para los elementos hasheables. ]
+
+atributo Conjunto#_elementos
+
+metodo estatico Conjunto#vacío
+    devolver yo#crear: Arreglo#vacio
+finmetodo
+
+metodo estatico Conjunto#conValores: ...valores
+    devolver yo#crear: valores
+finmetodo
+
+metodo estatico Conjunto#crearCon: ...valores
+    devolver yo#crear: valores
+finmetodo
+
+metodo estatico Conjunto#desdeArreglo: valores
+    devolver yo#crear: valores
+finmetodo
+
+metodo Conjunto#inicializar: valores
+    fijar yo#_elementos a Diccionario#vacío
+    ParaCadaElemento: valores, procedimiento: valor
+        yo#_elementos#fijarEn: valor, VERDADERO
+    finprocedimiento
+finmetodo
+
+metodo Conjunto#longitud
+    devolver yo#_elementos#longitud
+finmetodo
+
+metodo Conjunto#contiene: el
+    devolver yo#_elementos#contiene: el
+finmetodo
+
+metodo Conjunto#unión: ...otrosConjuntos
+    variable res
+    fijar res a yo#\clonar\
+    ParaCadaElemento: otrosConjuntos, procedimiento: conjunto
+        conjunto#_elementos#paraCadaLlave: procedimiento: elemento
+            res#_elementos#fijarEn: elemento, VERDADERO
+        finprocedimiento
+    finprocedimiento
+    devolver res
+finmetodo
+
+metodo Conjunto#sin: conjunto
+    variable res
+    fijar res a yo#\clonar\
+    conjunto#_elementos#paraCadaLlave: procedimiento: elemento
+        res#_elementos#eliminar: elemento
+    finprocedimiento
+    devolver res
+finmetodo
+
+metodo Conjunto#paraCadaElemento: proc
+    devolver yo#_elementos#paraCadaLlave: proc
+finmetodo
+
+metodo Conjunto#mapear: proc
+    devolver Conjunto#desdeArreglo: (Mapear: yo#comoArreglo, proc)
+finmetodo
+
+metodo Conjunto#comoArreglo
+    variable res
+    fijar res a Arreglo#vacio
+    yo#_elementos#paraCadaLlave: procedimiento: llave
+        res#agregarAlFinal: llave
+    finprocedimiento
+    devolver res
+finmetodo
+
+metodo Conjunto#comoTexto
+    variable res
+    fijar res a {(Conjunto con }
+    ParaCadaElemento: yo#comoArreglo, procedimiento: el
+        fijar res a res#concatenar: ({~t, }#formatear: el)
+    finprocedimiento
+    fijar res a res#concatenar: {)}
+    devolver res
+finmetodo

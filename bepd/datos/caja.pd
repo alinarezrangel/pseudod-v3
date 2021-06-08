@@ -1,0 +1,76 @@
+[DOCUMENTA
+@brief{Te permite mutar una referencia a un valor inmutable.}
+
+Los valores inmutables, como los números, textos o conjuntos, no permiten ser
+mutados. Pero imagina, por ejemplo, que quieres llevar cuenta de un número en
+un cálculo:
+
+@codeblock|{
+variable suma
+fijar suma a 0
+ParaCadaElemento: arr, procedimiento: el
+    fijar suma a suma + el
+finprocedimiento
+}|
+
+Pero, ¿Qué tal si @pd{suma}, en vez de ser una variable local, fuese un
+parámetro?
+
+@codeblock|{
+procedimiento Sumando: total
+    devolver procedimiento: el
+        fijar total a total + el
+    finprocedimiento
+finprocedimiento
+
+variable suma
+fijar suma a 0
+ParaCadaElemento: (Sumando: suma)
+}|
+
+Esto no modificará la variable @pd{suma}, tal como podrías estar esperando. La
+solución para este problema empleada por lenguajes como Scheme y PseudoD es con
+una estructura de datos sencilla llamada @italic{caja}. Una caja es un
+contenedor mutable para otro objeto, generalmente inmutable. El ejemplo
+anterior se escribiría:
+
+@codeblock|{
+procedimiento Sumando: total
+    devolver procedimiento: el
+        fijar total#valor a total#valor + el
+    finprocedimiento
+finprocedimiento
+
+variable suma
+fijar suma a Caja#crear: 0
+ParaCadaElemento: (Sumando: suma)
+}|
+
+Nota como ahora los accesos a @pd{total} @italic{desempacan} (con
+@code{#valor}) la caja, mientras que la inicialización de @pd{suma} no crea un
+número, sino una caja con un número.
+DOCUMENTA]
+clase Caja
+    [DOCUMENTA
+    @brief{El valor dentro de la caja.}
+    DOCUMENTA]
+    atributo valor
+
+    [DOCUMENTA
+    @brief{Crea una nueva caja con un valor dado.}
+    DOCUMENTA]
+    metodo estatico crear: valor
+
+    [DOCUMENTA
+    @brief{Muestra la caja, como un texto.}
+    DOCUMENTA]
+    metodo comoTexto
+finclase
+
+metodo Caja#inicializar: v
+    fijar yo#valor a v
+finmetodo
+
+metodo Caja#comoTexto
+    devolver {(Caja ~t)}#formatear: yo#valor#comoTexto
+finmetodo
