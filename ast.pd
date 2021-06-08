@@ -533,7 +533,7 @@ finmetodo
 El AST no tiene una representación para llamar a un procedimiento sin
 argumentos. Esto se determina al momento de resolver los nombres.
 
-La sintáxis @pd{A: B, C, D} corresponde con este módulo.
+La sintáxis @pd{A: B, C, D} corresponde con este nodo.
 
 @pd{proc} es un @pd{NodoIdentificador}, el procedimiento o función a llamar.
 
