@@ -141,7 +141,13 @@ procedimiento Test_DiccionarioConNoHasheables
     necesitas A#longitud = C#longitud
 finprocedimiento
 
+procedimiento Test_DiccionarioComoTexto
+    necesitas EsInstancia: (Diccionario#vacío#comoTexto), Texto
+    necesitas EsInstancia: ((Diccionario#desdePares: 1, 2,  3, 4,  5, 6)#comoTexto), Texto
+finprocedimiento
+
 
 Test_DiccionarioVacío
 Test_DiccionarioConHasheables
 Test_DiccionarioConNoHasheables
+Test_DiccionarioComoTexto

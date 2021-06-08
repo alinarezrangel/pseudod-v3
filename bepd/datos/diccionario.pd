@@ -161,7 +161,17 @@ metodo Diccionario#longitud
 finmetodo
 
 metodo Diccionario#comoTexto
-    devolver yo#_impl#comoTexto
+    variable res
+    fijar res a {(Diccionario#desdePares: }
+    si __Impl = {Lua Bootstrap}
+        yo#_hash#paraCadaPar: procedimiento: ll, v
+            fijar res a res#concatenar: ((ll#comoTexto#concatenar: ({, }#concatenar: v#comoTexto))#concatenar: {, })
+        finprocedimiento
+    finsi
+    yo#_alist#paraCadaPar: procedimiento: ll, v
+        fijar res a res#concatenar: ((ll#comoTexto#concatenar: ({, }#concatenar: v#comoTexto))#concatenar: {, })
+    finprocedimiento
+    devolver res#concatenar: {)}
 finmetodo
 
 metodo Diccionario#comoArreglo
