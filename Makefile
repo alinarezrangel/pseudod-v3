@@ -103,6 +103,9 @@ force_update_stage0: $(BTDIR)
 force_update_stage1: $(BTDIR)
 	touch $(STAGE1)/inicio.lua $(STAGE1)/inicio.sdb
 
+PDTAGS: tool_tags $(COMPILER_FILES)
+	$(LUA) $(OUTPUTS)/tags.lua -o $@ $(COMPILER_FILES)
+
 # Tests:
 
 .PHONY: tests
