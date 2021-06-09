@@ -432,8 +432,9 @@ Returns the same thing that
   (pseudod-tags--find-all-tags-for-predicate
    tags
    (lambda (c)
-     (string-match-p (concat ".*" (regexp-quote symbol) ".*")
-                     c))))
+     (let ((case-fold-search nil))
+       (string-match-p (concat ".*" (regexp-quote symbol) ".*")
+                       c)))))
 
 (defun pseudod-tags--find-all-tags-for-starting-symbol (tags symbol)
   "Find all of the tags in TAGS that start with SYMBOL (a string).
@@ -443,8 +444,7 @@ Returns the same thing that
   (pseudod-tags--find-all-tags-for-predicate
    tags
    (lambda (c)
-     (string-match-p (concat (regexp-quote symbol) ".*")
-                     c))))
+     (string-prefix-p symbol c))))
 
 (defun pseudod-tags--get-completions-alist (all-tags)
   "Create a completions alist for the found tags.
@@ -461,7 +461,7 @@ source in which this tag exists and `tag' is the tag found."
                           (found-tags (cdr el))
                           (tagged-file (cadadr file-tags)))
                      (mapcar (lambda (found)
-                               (cons (format "%s: %s <%s>" tagged-file (cadr found) (car found))
+                               (cons (format "%s <%s> @ <%s>" (cadr found) (car found) tagged-file)
                                      (cons tagged-file found)))
                              found-tags)))
                  all-tags)))
