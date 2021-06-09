@@ -34,7 +34,7 @@ puede ser utilizada como una referencia).
 
 ## Esquema ##
 
-El archivo PDTAGS contiene 0 o más expresiones S, cada una de la forma:
+El archivo PDTAGS contiene una lista de expresiones S, cada una de la forma:
 
 ```
 (tags (nombre-del-archivo <NOMBRE>)
@@ -91,7 +91,7 @@ finmetodo
 Genera un archivo PDTAGS:
 
 ```
-(tags
+((tags
     (nombre-del-archivo "outputs/sampletags.pd" )
     (tags
         (tag (definition "variables HOLA, MUNDO" ) (tag "HOLA" ) (line-number 1 ) (byte-offset 10 ) )
@@ -102,5 +102,5 @@ Genera un archivo PDTAGS:
         (tag (definition "clase Privado" ) (tag "Privado" ) (line-number 15 ) (byte-offset 296 ) )
         (tag (definition "atributos PrivadoA, PrivadoB" ) (tag "A" ) (line-number 18 ) (byte-offset 332 ) )
         (tag (definition "atributos PrivadoA, PrivadoB" ) (tag "B" ) (line-number 18 ) (byte-offset 343 ) )
-        (tag (definition "método Privado#hola" ) (tag "hola" ) (line-number 20 ) (byte-offset 361 ) ) ) )
+        (tag (definition "método Privado#hola" ) (tag "hola" ) (line-number 20 ) (byte-offset 361 ) ) ) ))
 ```

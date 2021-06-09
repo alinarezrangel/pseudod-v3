@@ -6,6 +6,8 @@
 
 (require 'comint)
 (require 'smartparens)
+(require 'projectile)
+(require 'xref)
 
 (defgroup pseudod nil
   "PseudoD support for Emacs."
@@ -245,14 +247,6 @@ indentation (or a bigger indentation) then extra tabs are added."
 
 ;; Major Mode:
 
-(defvar pseudod-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-k") #'run-pseudod)
-    (define-key map (kbd "C-c C-z") #'pseudod-switch-to-repl-buffer)
-    (define-key map (kbd "<backtab>") #'pseudod-dedent)
-    map)
-  "Keymap for pseudod-mode.")
-
 (defun pseudod-switch-to-repl-buffer ()
   "Switch to the REPL buffer of PseudoD."
   (interactive)
@@ -351,6 +345,142 @@ indentation (or a bigger indentation) then extra tabs are added."
                  :unless '(sp-in-comment-p sp-in-string-p))
   (sp-local-pair "«" "»"
                  :unless '(sp-in-comment-p sp-in-string-p)))
+
+
+;; PDTAGS support:
+
+;; Some important things to know about the PDTAGS module.
+;;
+;; First, make sure to know the format of the PDTAGS file, you can read it from
+;; `docs/pdtags.md' at the PseudoD source code.
+;;
+;; The file-tags is an element of the PDTAGS list. For example, while the tags
+;; might look like `((tags ...) (tags ...) ...)' a single file-tags looks like
+;; `(tags ...)'.
+;;
+;; A single tag is a list of the form `(definition completion line-number
+;; byte-offset)'. Each one of these fields is it's corresponding on the tags
+;; alist. So for example `(tag (definition "variables HOLA, MUNDO") (tag
+;; "HOLA") (line-number 1) (byte-offset 10))' would be `("variables HOLA,
+;; MUNDO" "HOLA" 1 10)'.
+
+(defvar pseudod-parsed-tags '()
+  "The parsed PDTAGS file.")
+
+(defun pseudod-tags-load-tag-file (tag-file)
+  "Load TAG-FILE, a PDTAGS file, so that `pseudod-tags-dwim' can use it."
+  (interactive "fPDTAGS file to load: ")
+  (save-mark-and-excursion
+    (with-temp-buffer
+      (insert-file-contents tag-file)
+      (goto-char (point-min))
+      (setq pseudod-parsed-tags (read (current-buffer))))))
+
+(defun pseudod-tags--find-tag-for-predicate (file-tags pred)
+  "Find all the tags that satisfy a predicate.
+
+All of the \"tag strings\" of the tags on FILE-TAGS are checked
+with PRED. All of those for which PRED returns true get returned
+as a list."
+  (let ((tags-found '()))
+    (dolist (tag (cdaddr file-tags) tags-found)
+      (let ((def (cadr (cadr tag)))
+            (completion (cadr (caddr tag)))
+            (lineno (cadr (cadddr tag)))
+            (offset (cadr (cadddr (cdr tag)))))
+        (when (funcall pred completion)
+          (add-to-list 'tags-found `(,def ,completion ,lineno ,offset)))))))
+
+(defun pseudod-tags--visit-tag (tagged-file tag)
+  "Visits a single tag (TAG).
+
+TAGGED-FILE is the filename of the PseudoD source from which that
+tag was generated."
+  (let* ((def (car tag))
+         (name (cadr tag))
+         (lineno (caddr tag))
+         (offset (cadddr tag)))
+    (xref-push-marker-stack)
+    (find-file (expand-file-name tagged-file (projectile-project-root)))
+    (goto-line lineno)))
+
+(defun pseudod-tags--find-all-tags-for-predicate (tags pred)
+  "Find all tags among all the file-tags in TAGS that satisfy PRED.
+
+Similar to `pseudod-tags--find-tag-for-predicate', but instead of
+searching in a single file-tags, searches on all of the file-tags
+of TAGS.
+
+Instead of returning a simple list of the found tags, returns a
+list of the form `((file-tags . tags-found) ...)' where
+`file-tags' is the file-tags in which the corresponding
+`tags-found' (a list of tags just like the ones returned by
+`pseudod-tags--find-tag-for-predicate') were found."
+  (let ((tags-found '()))
+    (dolist (file-tags tags tags-found)
+      (let ((tags-found-in-file
+             (pseudod-tags--find-tag-for-predicate file-tags pred)))
+        (setq tags-found
+              (cons (cons file-tags tags-found-in-file)
+                    tags-found))))))
+
+(defun pseudod-tags--find-all-tags-for-symbol (tags symbol)
+  "Find all of the tags in TAGS for SYMBOL.
+
+Returns the same thing that
+`pseudod-tags--find-all-tags-for-predicate'."
+  (pseudod-tags--find-all-tags-for-predicate
+   tags
+   (lambda (c)
+     (string-match-p (concat ".*" (regexp-quote symbol) ".*")
+                     c))))
+
+(defun pseudod-tags--get-completions-alist (all-tags)
+  "Create a completions alist for the found tags.
+
+ALL-TAGS is an value as the ones returned by
+`pseudod-tags--find-all-tags-for-predicate'. This function
+returns a list of the form `((label tagged-file . tag))', in
+which `label' is a simple string to be displayed by
+`completing-read', `tagged-file' is the filename of the PseudoD
+source in which this tag exists and `tag' is the tag found."
+  (apply #'append
+         (mapcar (lambda (el)
+                   (let* ((file-tags (car el))
+                          (found-tags (cdr el))
+                          (tagged-file (cadadr file-tags)))
+                     (mapcar (lambda (found)
+                               (cons (format "%s: %s <%s>" tagged-file (cadr found) (car found))
+                                     (cons tagged-file found)))
+                             found-tags)))
+                 all-tags)))
+
+(defun pseudod-tags-dwim ()
+  "Go to the symbol at the point, asking the user to resolve any ambiguity."
+  (interactive)
+  (let ((symbol (symbol-at-point)))
+    (if symbol
+        (let* ((symbol (format "%s" symbol))
+               (all-tags (pseudod-tags--find-all-tags-for-symbol
+                          pseudod-parsed-tags symbol))
+               (completions-alist (pseudod-tags--get-completions-alist all-tags))
+               (readed (completing-read "Go to: " completions-alist))
+               (found (alist-get readed completions-alist nil nil #'equal)))
+          (if found
+              (pseudod-tags--visit-tag (car found) (cdr found))
+            (message "Could not find tag in tag list")))
+      (message "No symbol at point"))))
+
+
+(defvar pseudod-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-k") #'run-pseudod)
+    (define-key map (kbd "C-c C-z") #'pseudod-switch-to-repl-buffer)
+    (define-key map (kbd "<backtab>") #'pseudod-dedent)
+    (define-key map (kbd "M-.") #'pseudod-tags-dwim)
+    (define-key map (kbd "M-,") #'xref-pop-marker-stack)
+    map)
+  "Keymap for pseudod-mode.")
 
 ;;;###autoload
 (define-derived-mode pseudod-mode prog-mode "PseudoD"

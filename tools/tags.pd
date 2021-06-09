@@ -121,15 +121,13 @@ funcion GenerarArchivoEtags: nombreDelArchivo, tags
     funcion Par': K, V
         devolver ArregloConFinal: (SExpr#Símbolo#desdeTexto: K), V
     finfuncion
-    variables dato, puerto
-    fijar puerto a Puerto#PuertoParaTexto
+    variable dato
     fijar dato a
         Arreglo#crearCon:
             (SExpr#Símbolo#desdeTexto: {tags}),
             (Par: {nombre-del-archivo}, nombreDelArchivo),
             (Par': {tags}, (Mapear: tags, funcion: tag devolver tag#comoLíneaDeEtags finfuncion))
-    SExpr#DesparsearDato: puerto, dato
-    devolver puerto#texto
+    devolver dato
 finfuncion
 
 
@@ -147,7 +145,10 @@ procedimiento Inicio: archivosDeEntrada, nombreDelArchivoTags
         contenido#agregarAlFinal: tags
     finprocedimiento
     Escribir: ({Escribiendo ~t}#formatear: nombreDelArchivoTags)
-    Archivos#EscribirArchivo: nombreDelArchivoTags, ((Unir: contenido, {~%}#formatear)#concatenar: {~%}#formatear)
+    variable puerto
+    fijar puerto a Puerto#PuertoParaTexto
+    SExpr#DesparsearDato: puerto, contenido
+    Archivos#EscribirArchivo: nombreDelArchivoTags, (puerto#texto#concatenar: {~%}#formatear)
 finprocedimiento
 
 
