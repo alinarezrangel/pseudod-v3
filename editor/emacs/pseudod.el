@@ -425,7 +425,7 @@ list of the form `((file-tags . tags-found) ...)' where
                     tags-found))))))
 
 (defun pseudod-tags--find-all-tags-for-symbol (tags symbol)
-  "Find all of the tags in TAGS for SYMBOL.
+  "Find all of the tags in TAGS for SYMBOL (a string).
 
 Returns the same thing that
 `pseudod-tags--find-all-tags-for-predicate'."
@@ -435,11 +435,22 @@ Returns the same thing that
      (string-match-p (concat ".*" (regexp-quote symbol) ".*")
                      c))))
 
+(defun pseudod-tags--find-all-tags-for-starting-symbol (tags symbol)
+  "Find all of the tags in TAGS that start with SYMBOL (a string).
+
+Returns the same thing that
+`pseudod-tags--find-all-tags-for-predicate'."
+  (pseudod-tags--find-all-tags-for-predicate
+   tags
+   (lambda (c)
+     (string-match-p (concat (regexp-quote symbol) ".*")
+                     c))))
+
 (defun pseudod-tags--get-completions-alist (all-tags)
   "Create a completions alist for the found tags.
 
 ALL-TAGS is an value as the ones returned by
-`pseudod-tags--find-all-tags-for-predicate'. This function
+`pseudod-tags--find-all-tags-for-predicate'.  This function
 returns a list of the form `((label tagged-file . tag))', in
 which `label' is a simple string to be displayed by
 `completing-read', `tagged-file' is the filename of the PseudoD
@@ -470,6 +481,33 @@ source in which this tag exists and `tag' is the tag found."
               (pseudod-tags--visit-tag (car found) (cdr found))
             (message "Could not find tag in tag list")))
       (message "No symbol at point"))))
+
+(defun pseudod-tags--completions-as-simple-list (completions-alist)
+  "Convert the alist returned by `pseudod-tags--get-completions-alist' into a list.
+
+The returned list only contains unique tags. Only the tag's
+\"string\" is considered. For example, for a class `A', a
+variable `B' and a function `C' this returns the list `(\"A\"
+\"B\" \"C\")'."
+  (mapcar (lambda (pair) (cadddr pair))
+          completions-alist))
+
+(defun pseudod-tags--complete-at-point-function ()
+  "Complete the symbol at point using the pdtags data.
+
+Suitable for use with `completion-at-point-functions'."
+  (let* ((symb (bounds-of-thing-at-point 'symbol))
+         (ssym (and symb (buffer-substring-no-properties (car symb) (cdr symb)))))
+    (if symb
+        (let* ((all-tags (pseudod-tags--find-all-tags-for-starting-symbol
+                          pseudod-parsed-tags ssym))
+               (completions-alist (pseudod-tags--get-completions-alist all-tags))
+               (as-list (pseudod-tags--completions-as-simple-list completions-alist)))
+          (if as-list
+              (list (car symb) (cdr symb) as-list)
+            nil))
+      nil)))
+
 
 
 (defvar pseudod-mode-map
@@ -495,6 +533,10 @@ source in which this tag exists and `tag' is the tag found."
   (setq-local indent-line-function #'pseudod-indent-function)
   (setq-local tab-width pseudod-indentation-level)
   (setq-local electric-indent-inhibit t)
+  (add-hook 'completion-at-point-functions
+            #'pseudod-tags--complete-at-point-function
+            nil
+            t)
   ;(setq-local font-lock-extend-region-functions
   ;            (cons #'pseudod--extend-region-to-string
   ;                  font-lock-extend-region-functions))
