@@ -367,6 +367,20 @@ indentation (or a bigger indentation) then extra tabs are added."
 (defvar pseudod-parsed-tags '()
   "The parsed PDTAGS file.")
 
+(defvar pseudod-predefined-completions
+  '("Objeto" "VERDADERO" "FALSO" "NULO" "Aplicar"
+    "ProcedimientoVarargs" "TipoDe" "__EnviarMensaje"
+    "__FallarConMensaje" "__ClonarObjeto" "__CompararObjeto"
+    "__AbrirArchivo" "__ByteATexto" "__TextoAByte" "__ByteEof"
+    "__Capturar" "__Argv" "__LeerCaracter" "__Impl" "Boole"
+    "Numero" "Arreglo" "Procedimiento" "Texto" "EspacioDeNombres"
+    "Referencia" "TipoNulo" "__Lua")
+  "Completions to always be suggested.
+
+Predefined identifiers like `VERDADERO' or `Objeto' must always
+be completed, even if a PDTAGs file has not been loaded.  This
+list contains such identifiers.")
+
 (defun pseudod-tags-load-tag-file (tag-file)
   "Load TAG-FILE, a PDTAGS file, so that `pseudod-tags-dwim' can use it."
   (interactive "fPDTAGS file to load: ")
@@ -466,10 +480,12 @@ source in which this tag exists and `tag' is the tag found."
                              found-tags)))
                  all-tags)))
 
-(defun pseudod-tags-dwim ()
+(defun pseudod-tags-dwim (ask-for-symbol)
   "Go to the symbol at the point, asking the user to resolve any ambiguity."
-  (interactive)
-  (let ((symbol (symbol-at-point)))
+  (interactive "p")
+  (let ((symbol (if (= 1 ask-for-symbol)
+                    (symbol-at-point)
+                  (read-from-minibuffer "Symbol to go to: "))))
     (if symbol
         (let* ((symbol (format "%s" symbol))
                (all-tags (pseudod-tags--find-all-tags-for-symbol
@@ -485,8 +501,8 @@ source in which this tag exists and `tag' is the tag found."
 (defun pseudod-tags--completions-as-simple-list (completions-alist)
   "Convert the alist returned by `pseudod-tags--get-completions-alist' into a list.
 
-The returned list only contains unique tags. Only the tag's
-\"string\" is considered. For example, for a class `A', a
+The returned list may contain duplicate tags.  Only the tag's
+\"string\" is considered.  For example, for a class `A', a
 variable `B' and a function `C' this returns the list `(\"A\"
 \"B\" \"C\")'."
   (mapcar (lambda (pair) (cadddr pair))
@@ -504,7 +520,10 @@ Suitable for use with `completion-at-point-functions'."
                (completions-alist (pseudod-tags--get-completions-alist all-tags))
                (as-list (pseudod-tags--completions-as-simple-list completions-alist)))
           (if as-list
-              (list (car symb) (cdr symb) as-list)
+              (list (car symb)
+                    (cdr symb)
+                    (remove-duplicates
+                     (append as-list pseudod-predefined-completions)))
             nil))
       nil)))
 
