@@ -26,15 +26,18 @@ COMPILER_FILES=$(BEPD_FILES) ámbito.pd ast.pd caminaNodos.pd combinadores.pd	\
 compilador.pd inicio.pd módulos.pd parser.pd resoluciónDeNombres.pd				\
 tokenizador.pd tokens.pd backends/lua.pd backends/lua/emisor.pd
 
-DIST_EXTRA_FILES=README.md
+DOCS=docs
+
+DIST_EXTRA_FILES=README.md $(DOCS)/man/pseudod.1 $(DOCS)/man/pseudod.html	\
+$(DOCS)/man/pseudod.md
 LUA_RUNTIME_FILES=backends/lua/b64.lua backends/lua/errloc.lua backends/lua/runtime.lua backends/lua/exts.lua
-EDITOR_FILES_DIR=editor/
+EDITOR_FILES_DIR=editor
 EDITOR_FILES=$(EDITOR_FILES_DIR)/emacs/pseudod.el $(EDITOR_FILES_DIR)/emacs/pseudod-profiler.el
 DIST_FILES=$(DIST_EXTRA_FILES) $(BEPD_FILES) $(STAGE1_FILES) $(LUA_RUNTIME_FILES) $(EDITOR_FILES) $(TOOLS)/tags.lua
 DIST_ZIP=dist.zip
 
 .PHONY: all
-all: stage0 stage1 tests tools
+all: stage0 stage1 tests tools all_docs
 
 $(OUTPUTS):
 	mkdir -p $(OUTPUTS)
@@ -137,3 +140,14 @@ tool_tags: $(OUTPUTS)/tags.lua $(TOOLS)/tags.lua
 
 $(OUTPUTS)/tags.lua: $(OUTPUTS) $(TOOLS)/tags.pd $(OUTPUTS) stage1 $(STAGE1)/inicio.sdb
 	$(PDC) $(TOOLS)/tags.pd --cargar-db $(STAGE1)/inicio.sdb -o $(OUTPUTS)/tags.lua
+
+# Documentación
+
+.PHONY: all_docs
+all_docs: $(DOCS)/man/pseudod.1 $(DOCS)/man/pseudod.html
+
+$(DOCS)/man/pseudod.1: $(DOCS)/man/pseudod.md
+	pandoc --standalone --to man --output="$@" $<
+
+$(DOCS)/man/pseudod.html: $(DOCS)/man/pseudod.md
+	pandoc --standalone --to html --output="$@" $<
