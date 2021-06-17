@@ -114,6 +114,14 @@ clase Conjunto
     metodo mapear: proc
 
     [DOCUMENTA
+    @brief{Filtra los elementos de este conjunto con un predicado.}
+
+    El conjunto devuelto solo contendrá los elementos para los que @pd{pred}
+    devolvió @pd{VERDADERO}.
+    DOCUMENTA]
+    metodo filtrar: pred
+
+    [DOCUMENTA
     @brief{Obtiene los elementos del conjunto como un arreglo.}
 
     Tal como @code{paraCadaElemento} no garantiza el órden de iteración, el
@@ -189,6 +197,17 @@ finmetodo
 
 metodo Conjunto#mapear: proc
     devolver Conjunto#desdeArreglo: (Mapear: yo#comoArreglo, proc)
+finmetodo
+
+metodo Conjunto#filtrar: pred
+    variable arr
+    fijar arr a Arreglo#vacio
+    yo#paraCadaElemento: procedimiento: el
+        si %pred: el
+            arr#agregarAlFinal: el
+        finsi
+    finprocedimiento
+    devolver Conjunto#desdeArreglo: arr
 finmetodo
 
 metodo Conjunto#comoArreglo
