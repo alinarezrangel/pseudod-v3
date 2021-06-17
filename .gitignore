@@ -10,3 +10,9 @@ bootstrapped/
 # Distribución
 disttmp/
 dist.zip
+
+# Compilados de la documentación
+
+## Generados con pandoc al crear los manuales
+docs/man/*.1
+docs/man/*.html
