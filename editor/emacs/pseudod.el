@@ -374,7 +374,20 @@ indentation (or a bigger indentation) then extra tabs are added."
     "__AbrirArchivo" "__ByteATexto" "__TextoAByte" "__ByteEof"
     "__Capturar" "__Argv" "__LeerCaracter" "__Impl" "Boole"
     "Numero" "Arreglo" "Procedimiento" "Texto" "EspacioDeNombres"
-    "Referencia" "TipoNulo" "__Lua")
+    "Referencia" "TipoNulo" "__Lua"
+
+    "igualA" "operador_=" "clonar" "llamar" "comoTexto"
+    "sumar" "restar" "multiplicar" "dividir" "menorQue" "mayorQue"
+    "menorOIgualA" "mayorOIgualA" "negar" "piso" "techo" "truncar"
+    "comoNumeroEntero" "comoNumeroReal" "longitud" "en" "concatenar"
+    "subTexto" "parteDelTexto" "buscar" "buscarEnReversa"
+    "formatear" "escojer" "llamarSegun" "y" "o" "fijarEn"
+    "agregarAlFinal" "redimensionar" "mapear" "reducir"
+    "metodoNoEncontrado" "verdadero" "falso" "crear" "_crear" "vacío"
+    "vacio" "vacía" "vacia" "cerrar" "estaAbierto" "leerByte"
+    "obtenerSiguienteByte" "escribirByte" "escribirTexto"
+    "posicionActual" "cambiarPosicion" "finDelArchivo" "error"
+    "nombreDelArchivo" "modo" "__leerTodo")
   "Completions to always be suggested.
 
 Predefined identifiers like `VERDADERO' or `Objeto' must always
