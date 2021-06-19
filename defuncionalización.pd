@@ -1,0 +1,440 @@
+utilizar bepd/builtins
+utilizar bepd/datos/conjunto (Conjunto)
+utilizar bepd/datos/caja (Caja)
+utilizar bepd/x/adhoc (ObjetoAdHoc)
+utilizar tokenizador como Tokenizador
+utilizar parser como Parser
+utilizar resoluciónDeNombres como RN
+utilizar ámbito como Ámbito
+utilizar ast como AST
+utilizar ámbito (DatosDeVariable, Ámbito)
+
+
+variable programa
+fijar programa a {
+
+funcion $: ...Q finfuncion
+
+variables X, Y
+funcion F1: Z
+    funcion F1_1: W
+        $: X, Y, Z, W
+    finfuncion
+
+    funcion F1_2: W
+        $: Z, W
+    finfuncion
+
+    funcion F1_3: W
+        $: W
+    finfuncion
+
+    funcion F1_4
+        $
+    finfuncion
+finfuncion
+
+funcion F2: A, B
+    variables Q, W, E
+
+    funcion F2_1: R, T, Y
+        $: X, Y, A, B, Q, W, E, R, T, Y
+    finfuncion
+
+    funcion F2_2: R
+        $: X, Y, A, B, Q, W, E, R
+    finfuncion
+
+    funcion F2_3: R
+        $: Q, W, E, R
+    finfuncion
+
+    funcion F2_4: R
+        $: R
+    finfuncion
+finfuncion
+
+funcion F3: A
+    variable Z
+    funcion F3_1: B
+        variable W
+        funcion F3_1_1: C
+            variable T
+            $: X, Y, Z, W, T, A, B, C
+        finfuncion
+    finfuncion
+finfuncion
+
+}
+
+variable ast
+fijar ast a Parser#CrearAST: programa
+
+variable ámbitoPrincipal
+fijar ámbitoPrincipal a RN#ResolverNombres:
+    ast,
+    procedimiento: nombreDelMódulo
+        Inalcanzable
+    finprocedimiento,
+    procedimiento: ámbito finprocedimiento,
+    procedimiento: ámbito finprocedimiento
+
+[DOCUMENTA
+@brief{Un bucle funcional.}
+
+Equivalente a un @italic{let con nombre} del lenguaje de programación Scheme,
+@pd{Bucle} debe llamarse de la forma:
+
+@codeblock|{
+fijar resultado a Bucle: ...estado, cuerpo
+}|
+
+Donde @pd{estado} son cero o más valores que serán el @italic{estado} del
+bucle. @pd{cuerpo} debe ser una función de la forma:
+
+@codeblock|{
+funcion Cuerpo: recur, ...estado
+    ...
+finfuncion
+}|
+
+Esta función será llamada con un nuevo valor @pd{recur}, otra función explicada
+más abajo, y el @pd{estado} actual.
+
+@pd{recur} es otra función que al llamarse @pd{%recur: ...nuevoEstado} iniciará
+una nueva iteración del bucle con @pd{nuevoEstado} como el estado. @pd{recur}
+devuelve el valor de esta iteración.
+
+Mientras que @pd{Reducir} abstrae la recursión sobre listas, @pd{Bucle} abstrae
+toda la recursión.
+
+@pd{Bucle} devuelve el valor de la última iteración.
+
+Por ejemplo:
+
+@ejemplo|{
+funcion Factorial: n
+    devolver Bucle: n, 1, función: recur, n, acc
+        si n <= 1
+            devolver acc
+        sino
+            devolver %recur: (n - 1), (acc * n)
+        finsi
+    finfuncion
+finfuncion
+}|
+
+@pd{Factorial: 4} se ejecutaría de la forma:
+
+@codeblock|{
+funcion Factorial: 4
+    devolver Bucle: n, 1, función: recur, n, acc
+        si n <= 1
+            devolver acc
+        sino
+            devolver %recur: (n - 1), (acc * n)
+        finsi
+    finfuncion
+finfuncion
+==>
+devolver Bucle: 4, 1, función: recur, n, acc
+    si n <= 1
+        devolver acc
+    sino
+        devolver %recur: (n - 1), (acc * n)
+    finsi
+finfuncion
+==>
+si 4 <= 1
+    devolver acc
+sino
+    devolver %recur: (4 - 1), (1 * 4)
+finsi
+==>
+devolver %recur: 3, 4
+==> Ahora el "recur" se reemplaza por toda la función de nuevo:
+devolver Bucle: 3, 1, función: recur, n, acc
+    si n <= 1
+        devolver acc
+    sino
+        devolver %recur: (n - 1), (acc * n)
+    finsi
+finfuncion
+==>
+...
+==>
+devolver %recur: 2, 12
+==>
+devolver Bucle: 2, 12, función: recur, n, acc
+    si n <= 1
+        devolver acc
+    sino
+        devolver %recur: (n - 1), (acc * n)
+    finsi
+finfuncion
+==>
+...
+==>
+devolver %recur: 1, 24
+==>
+si 1 <= 1
+    devolver 24
+sino
+    devolver %recur: (1 - 1), (24 * 1)
+finsi
+==>
+devolver 24
+}|
+DOCUMENTA]
+funcion Bucle: ...estadoYCuerpo
+    variables estado, cuerpo
+    fijar estado a PedazoDeArreglo: estadoYCuerpo, 0, (estadoYCuerpo#longitud - 1)
+    fijar cuerpo a ÚltimoElemento: estadoYCuerpo
+    funcion Recur: ...E
+        devolver %cuerpo: &Recur, ...E
+    finfuncion
+    devolver Recur: ...estado
+finfuncion
+
+[DOCUMENTA
+@brief{Determina si dos objetos son el mismo objeto.}
+
+Solo devuelve @pd{VERDADERO} si ambos objetos tienen la misma identidad. Dos
+objetos iguales pero con identidades distintas no serán considerados "lo
+mismo".
+
+@ejemplo|{
+variables A, B, C, D, E, F
+fijar A a Arreglo#vacio
+fijar B a A
+fijar C a Arreglo#vacio
+fijar D a C
+
+Escribir: {A y B son iguales}
+necesitas A = B
+Escribir: {Y también son lo mismo}
+necesitas SonElMismoObjeto: A, B
+Escribir: {C y D son iguales}
+necesitas son iguales C y D
+Escribir: {Y también, tal como A y B, son lo mismo}
+necesitas SonElMismoObjeto: C, D
+Escribir: {A y C son iguales (ambos son la lista vacía)}
+necesitas A = C
+Escribir: {Pero tienen identidades diferentes}
+necesitas no SonElMismoObjeto: A, C
+Escribir: {Esto lo podemos notar modificando alguno de estos:}
+Escribir: ({A es ~t}#formatear: A)
+Escribir: ({B es ~t}#formatear: B)
+Escribir: ({C es ~t}#formatear: C)
+Escribir: ({C es ~t}#formatear: D)
+A#agregarAlFinal: 1
+Escribir: {Como A y B son el mismo objeto, ambos fueron cambiados}
+Escribir: {Pero como A y C/D son objetos distintos, los cambios a uno no afectan al otro}
+Escribir: ({A es ~t}#formatear: A)
+Escribir: ({B es ~t}#formatear: B)
+Escribir: ({C es ~t}#formatear: C)
+Escribir: ({C es ~t}#formatear: D)
+}|
+DOCUMENTA]
+funcion SonElMismoObjeto: X, Y
+    [ FIXME: Esto debería ser un builtin ]
+    devolver __Lua: {function(X, Y) return X == Y end}, X, Y
+finfuncion
+
+[DOCUMENTA
+@brief{Determina si un binding es local entre dos ámbitos.}
+
+@pd{identOBinding} puede ser un binding o un
+@pd{AST#NodoIdentificador}. @pd{ámbitoActual} debe ser un ámbito que tiene a
+@pd{ámbitoSuperior} como ámbito padre en algún punto.
+
+Esta función devuelve @pd{VERDADERO} si el binding @pd{identOBinding} está
+definido en @pd{ámbitoActual}, o alguno de sus ámbitos padres/superiores, pero
+sin contar aquellos que estén más allá de @pd{ámbitoSuperior}.
+DOCUMENTA]
+funcion EsLocalEntre: ámbitoSuperior, ámbitoActual, identOBinding
+    variables nr, definídoEn
+    si EsInstancia: identOBinding, AST#NodoIdentificador
+        fijar nr a RN#NombreResueltoDe: identOBinding
+    sino
+        fijar nr a identOBinding
+    finsi
+    fijar definídoEn a ámbitoActual#ámbitoDondeSeDefine: nr
+    devolver Bucle: ámbitoActual, procedimiento: recur, ámbito
+        si SonElMismoObjeto: ámbito, definídoEn
+            devolver VERDADERO
+        finsi
+        si SonElMismoObjeto: ámbito, ámbitoSuperior
+            devolver FALSO
+        finsi
+        [ Tiene que haber una ruta de ámbitoActual a ámbitoSuperior ]
+        necesitas no EsNulo: ámbito#ámbitoPadre
+        devolver %recur: ámbito#ámbitoPadre
+    finprocedimiento
+finfuncion
+
+[DOCUMENTA
+@brief{Tipo de @pd{LLAVE_DEFUNCIONALIZACIÓN}.}
+DOCUMENTA]
+clase LlaveDefuncionalización
+    metodo comoTexto
+finclase
+
+metodo LlaveDefuncionalización#comoTexto
+    devolver {<LLAVE_DEFUNCIONALIZACIÓN>}
+finmetodo
+
+[DOCUMENTA
+@brief{Llave de defuncionalización.}
+
+Es la llave usada por el pase de defuncionalización para agregar metadatos a
+los nodos. Véase @pd{Defuncionalizar} para los metadatos que agrega.
+DOCUMENTA]
+variable LLAVE_DEFUNCIONALIZACIÓN
+fijar LLAVE_DEFUNCIONALIZACIÓN a LlaveDefuncionalización#crear
+
+[
+Funciones de ayuda: obtienen los ámbitos de varios nodos del AST.
+
+Véase la documentación de la resolución de nombres para la documentación de
+estos metadatos.
+]
+
+funcion NombresDefinídos: ast
+    devolver ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídos}
+finfuncion
+
+funcion NombresDefinídosSinParámetros: ast
+    devolver ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSinParámetros}
+finfuncion
+
+[
+@brief{Defuncionaliza un AST.}
+
+Véase la documentación de @pd{Defuncionalizar} para la interfáz pública de este
+procedimiento (incluyendo que metadatos agrega, etc).
+
+@params(
+@defparam(ast){El AST a defuncionalizar.}
+@defparam(ámbitoDeFunción){El ámbito de la función más reciente en la que se
+está.}
+@defparam(ámbitoMásReciente){El ámbito más reciente en el que se está. Mientras
+que @pd{ámbitoDeFunción} tiene que ser el ámbito de una función, este puede ser
+de cualquier estructura con un ámbito, incluyendo un condicional, bucle, etc.}
+@defparam(callbacksParaNoLocales){Un arreglo de funciones de la forma
+@code{funcion: ámbito, binding ... finfuncion}. Cada una de estas funciones
+será llamada cuando se "use" un identificador. Se les pasará el ámbito en el
+que se encontró el identificador y el binding de dicho.}
+)
+
+@pd{callbacksParaNoLocales} nunca será modificado.
+
+Tanto @pd{ámbitoDeFunción} como @pd{ámbitoMásReciente} pueden ser @pd{NULO}. En
+este caso, @pd{ast} debe ser un @pd{AST#NodoPrograma} cuyo ámbito será usado
+para el resto de la recursión.
+]
+procedimiento DefuncionalizarImpl: ast, ámbitoDeFunción, ámbitoMásReciente, callbacksParaNoLocales
+    si EsInstancia: ast, AST#NodoPrograma
+        variable ámbito
+        fijar ámbito a NombresDefinídos: ast
+        devolver ParaCadaElemento: ast#instrucciones, procedimiento: instr
+            devolver DefuncionalizarImpl: instr, ámbito, ámbito, callbacksParaNoLocales
+        finprocedimiento
+    finsi
+    necesitas no EsNulo: ámbitoDeFunción
+    necesitas no EsNulo: ámbitoMásReciente
+    si EsInstancia: ast, AST#NodoFunción
+        variables ámbitoDeAST, parámetros, callbacks, nombresLibres
+        fijar ámbitoDeAST a NombresDefinídos: ast
+        fijar parámetros a Conjunto#desdeArreglo: (Mapear: ast#parámetros, funcion: param
+            si EsInstancia: param, AST#NodoIdentificador
+                devolver RN#NombreResueltoDe: param
+            sino
+                devolver RN#NombreResueltoDe: param#interno
+            finsi
+        finfuncion)
+        fijar nombresLibres a Conjunto#vacío
+        funcion EsLibre: binding, ámbito
+            devolver (no EsLocalEntre: ámbitoDeFunción, ámbito, binding)
+                     ||
+                     ((Contiene: ámbitoDeFunción#todosLosBindingsLocales, binding)
+                      &&
+                      (no parámetros#contiene: binding))
+            [ No se si se lee mejor lo anterior o: ]
+            [si no EsLocalEntre: ámbitoDeFunción, ámbito, binding
+                devolver VERDADERO
+            sino
+                si Contiene: ámbitoDeFunción#todosLosBindingsLocales, binding
+                    devolver no parámetros#contiene: binding
+                sino
+                    devolver FALSO
+                finsi
+            finsi]
+        finfuncion
+        fijar callbacks a Concatenar: callbacksParaNoLocales, (Arreglo#crearCon: funcion: ámbito, binding
+            si EsLibre: binding, ámbito
+                fijar nombresLibres a nombresLibres#unión: (Conjunto#crearCon: binding)
+            finsi
+        finfuncion)
+        ParaCadaElemento: ast#cuerpo, procedimiento: instr
+            devolver DefuncionalizarImpl: instr, ámbitoDeAST, ámbitoDeAST, callbacks
+        finprocedimiento
+        ast#fijarMetadato: LLAVE_DEFUNCIONALIZACIÓN, {nombresLibres}, nombresLibres
+        devolver NULO
+    finsi
+    si EsInstancia: ast, AST#NodoLlamarProcedimiento
+        devolver ParaCadaElemento: ast#argumentos, procedimiento: arg
+            necesitas EsInstancia: arg, AST#NodoIdentificador
+            ParaCadaElemento: callbacksParaNoLocales, procedimiento: callback
+                devolver %callback: ámbitoMásReciente, (RN#NombreResueltoDe: arg)
+            finprocedimiento
+        finprocedimiento
+    finsi
+    devolver NULO
+finprocedimiento
+
+[DOCUMENTA
+@brief{Defuncionaliza un AST.}
+
+Va por todo el AST, anotando funciones, métodos y procedimientos con los datos
+de sus capturas.
+
+Los @italic{closures} son funciones, métodos o procedimientos que "capturan"
+variables de los ámbitos superiores, por ejemplo:
+
+@codeblock|{
+variable X
+funcion Hola: Y
+    devolver funcion
+        devolver X + Y
+    finfuncion
+finfuncion
+}|
+
+@pd{Hola} captura a @pd{X}, y la función devuelta por @pd{Hola} captura a
+@pd{X} y a @pd{Y}. Para compilar estas funciones es necesario crear un
+@italic{closure}, una representación de estas funciones como un
+@italic{entorno} y un @italic{código}. El entorno contiene las variables
+capturadas y por esto lo primero que hay que hacer es encontrarlas. Existen dos
+algoritmos para "encontrar" estas variables capturadas (véase nota 1):
+@italic{lambda lifting} (en inglés: @italic{levantamiento de lambdas}) y
+@italic{closure conversion} (en inglés: @italic{conversión de closures}). El
+algoritmo usado por este pase es el segundo.
+
+El metadato @pd{"nombresLibres"} (del inglés @italic{free names}) será agregado
+a todas estas funciones/metodos/procedimientos. Es un @pd{Conjunto} con los
+bindings que esta función/método/procedimiento captura de alguno de los ámbitos
+superiores.
+
+@nota{
+@bold{Nota 1}: Técnicamente hablando, el @italic{levantamiento de lambdas} no
+encuentra las capturas de estas funciones sino que convierte las funciones a
+otras que toman las capturas explícitamente. Sin embargo, para propósitos de
+esta explicación tanto el @italic{levantamiento de lambdas} como la
+@italic{conversión de closures} se pueden realizar con mucha facilidad luego de
+que este pase ha anotado todas las capturas.
+}
+DOCUMENTA]
+procedimiento Defuncionalizar: ast
+    devolver DefuncionalizarImpl: ast, NULO, NULO, Arreglo#vacio
+finprocedimiento
