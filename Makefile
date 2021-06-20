@@ -16,9 +16,10 @@ PDC=$(LUA) $(STAGE1)/inicio.lua
 
 BEPD_DIR=bepd
 BEPD_FILES=bepd/builtins.pd bepd/builtinsImpl.pd bepd/algoritmos.pd				\
-bepd/intrinsics.pd bepd/datos/diccionario.pd bepd/datos/pila.pd					\
-bepd/datos/caja.pd bepd/datos/conjunto.pd bepd/datos/resultado.pd				\
-bepd/utilidades/texto.pd bepd/utilidades/arreglo.pd								\
+bepd/intrinsics.pd bepd/datos/diccionario.pd bepd/datos/diccionario/alist.pd	\
+bepd/datos/diccionario/interfaz.pd bepd/datos/diccionario/hashmap.pd			\
+bepd/datos/pila.pd bepd/datos/caja.pd bepd/datos/conjunto.pd					\
+bepd/datos/resultado.pd bepd/utilidades/texto.pd bepd/utilidades/arreglo.pd		\
 bepd/utilidades/texto/ascii.pd bepd/x/enum.pd bepd/x/puerto.pd bepd/x/sexpr.pd	\
 bepd/x/entorno.pd bepd/x/adhoc.pd bepd/x/lazy.pd bepd/x/puerto/conPosición.pd	\
 bepd/x/puerto/deArchivo.pd bepd/x/sistemaDeArchivos/archivo.pd
