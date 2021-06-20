@@ -430,7 +430,7 @@ end
 function rt.llamarmain(func, ...)
    local ok, res_or_err = M.call_with_good_backtraces(func, ...)
    if ok then
-      return true, res_or_err
+      os.exit(true, true)
    else
       local function print_lua_error(err)
          if type(err.object) == "string" then
@@ -447,7 +447,7 @@ function rt.llamarmain(func, ...)
          assert(res_or_err.type == "lua error")
          print_lua_error(res_or_err)
       end
-      return false
+      os.exit(false, true)
    end
 end
 

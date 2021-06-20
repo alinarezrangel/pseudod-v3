@@ -1734,28 +1734,22 @@ function M.debug.make64(pdfile, luapos, pdstart, pdend)
                       pdfile)
 end
 
--- Llama a `func` con `...` como sus argumentos. Devuelve dos (o más) valores,
--- `ok` y lo devuelto por `func`. `ok` es `true` si la función se pudo llamar
--- con éxito, `false` de lo contrario (básicamente tiene la misma interfaz que
--- `pcall`). Además, se asume que de devolver `false` el mensaje de error
--- generado al llamar a `func` fue escrito a la salida estándar.
+-- Llama a `func` con `...`.
 --
--- FIXME: Por ahora, `func` solo puede devolver un valor. Esto será corregido
--- después para que tenga la misma interfaz que `pcall`.
+-- IMPORTANTE: Esta función puede llamar a `os.exit`. La idea es que si hubo un
+-- error entonces el código de salida de Lua tiene que ser distinto de cero.
+--
+-- El propósito de esta función es que `errloc.lua` tenga un "punto de
+-- inyección" en el cual pueda capturar los errores del módulo en lua e
+-- imprimir el "traceback".
 --
 -- Esta función no está hecha para ser usada por un programador, si no por el
 -- compilador para llamar al módulo principal.
 --
--- Esta función es reemplazada por una apropiada cuando se importa
--- `errloc.lua`. Si no importas `errloc.lua`, esta función es equivalente a
--- `return true, func(...)` (es decir, no captura ni imprime ningún error).
---
--- Si lo que deseas es poder ver el stacktrace de una función en PseudoD, mira
--- el módulo `errloc.lua`. Si deseas detectar si una función en PseudoD lanzó o
--- no un error puedes usar `pcall`/`xpcall` ya que PseudoD utiliza el mismo
--- sistema de errores que Lua.
+-- Si deseas detectar si una función en PseudoD lanzó o no un error puedes usar
+-- `pcall`/`xpcall` ya que PseudoD utiliza el mismo sistema de errores que Lua.
 function M.llamarmain(func, ...)
-   return true, func(...)
+   return func(...)
 end
 
 return M
