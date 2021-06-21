@@ -144,7 +144,7 @@ finmetodo
 
 metodo DiccionarioAlist#comoTexto
     variables txt, primero
-    fijar txt a {(Diccionario#desdePares: }
+    fijar txt a {(DiccionarioAlist#desdePares: }
     fijar primero a VERDADERO
     ParaCadaElemento: yo#_pares, procedimiento: par
         si no primero
@@ -154,7 +154,7 @@ metodo DiccionarioAlist#comoTexto
         finsi
         fijar txt a txt#concatenar: {~t, ~t}#formatear: (par#en: 0), (par#en: 1)
     finprocedimiento
-    devolver txt
+    devolver txt#concatenar: {)}
 finmetodo
 
 metodo DiccionarioAlist#comoArreglo
@@ -198,4 +198,32 @@ metodo DiccionarioAlist#mapear: proc
     devolver DiccionarioAlist#desdeArreglo: (Mapear: yo#_pares, funcion: par
         devolver %proc: (par#en: 0), (par#en: 1)
     finfuncion)
+finmetodo
+
+metodo DiccionarioAlist#igualA: otro
+    si no ((TipoDe: yo) = (TipoDe: otro))
+        devolver FALSO
+    finsi
+    si no (yo#_pares#longitud = otro#_pares#longitud)
+        devolver FALSO
+    finsi
+
+    [ Para ver una explicación de como funciona esto, véase el mismo método en
+      DiccionarioHashMap. ]
+    [ NOTA: Este método es O(n^2)! ]
+    devolver LlamarConEC: procedimiento: \devolver\
+        yo#paraCadaPar: procedimiento: llave, valor
+            si no otro#contiene: llave
+                %\devolver\: FALSO
+            finsi
+            si no ((yo#en: llave) = (otro#en: llave))
+                %\devolver\: FALSO
+            finsi
+        finprocedimiento
+        devolver VERDADERO
+    finprocedimiento
+finmetodo
+
+metodo DiccionarioAlist#\operador_=\: otro
+    devolver yo#igualA: otro
 finmetodo
