@@ -1,6 +1,7 @@
 LUA=lua5.4
 PDINT=pseudod
 PYTHON3=python3
+FISH=fish
 
 OUTPUTS=outputs
 DIST_TMP=disttmp
@@ -53,17 +54,9 @@ $(BTDIR):
 dist: $(DIST_ZIP)
 
 $(DIST_ZIP): $(DIST_FILES)
-	mkdir -p $(DIST_TMP)/pseudod-v3 $(DIST_TMP)/pseudod-v3/bepd $(DIST_TMP)/pseudod-v3/tools $(DIST_TMP)/pseudod-v3/backends/lua
-	cp $(STAGE1)/inicio.lua $(DIST_TMP)/pseudod-v3/pseudod.lua
-	cp $(STAGE1)/inicio.sdb $(DIST_TMP)/pseudod-v3/compilador.sdb
-	cp -r $(BEPD_DIR) $(DIST_TMP)/pseudod-v3/
-	cp $(TOOLS)/tags.lua $(DIST_TMP)/pseudod-v3/tools
-	cp -r $(TOOLS)/profiler $(DIST_TMP)/pseudod-v3/tools
-	cp $(DIST_EXTRA_FILES) $(DIST_TMP)/pseudod-v3/
-	cp $(LUA_RUNTIME_FILES) $(DIST_TMP)/pseudod-v3/backends/lua
-	cp -r $(EDITOR_FILES_DIR) $(DIST_TMP)/pseudod-v3/
-	cd $(DIST_TMP) && zip -r dist.zip pseudod-v3
-	cp $(DIST_TMP)/dist.zip $(DIST_ZIP)
+	mkdir -p $(DIST_TMP)
+	$(FISH) scripts/make-dist.fish $(DIST_ZIP) $(DIST_FILES)
+	mv $(DIST_TMP)/$(DIST_ZIP) $(DIST_ZIP)
 
 .PHONY: distclean
 distclean:

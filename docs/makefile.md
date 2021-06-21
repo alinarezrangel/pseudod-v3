@@ -25,6 +25,8 @@ para verlas todas pero algunas de las más importantes son:
   cámbiala a donde instalastes el intérprete.
 - `OUTPUTS`: Directorio donde se guardarán los archivos compilados. De forma
   predeterminada es `outputs`.
+- `FISH`: Ruta al ejecutable de fish. Solo es necesario para distribuir
+  PseudoD.
 
 ## Compilando PseudoD ##
 
@@ -89,7 +91,6 @@ se indique lo contrario, todos los archivos compilados están en el directorio
 
 ## Distribución ##
 
-El objetivo `dist` crea un [tarball](https://es.wikipedia.org/wiki/Tar) listo
-para ser distribuido. Actualmente el script tiene muchos bugs y no te
-recomiendo usarlo hasta que lo reemplace por una mejor versión en Python.
-
+El objetivo `dist` crea un archivo ZIP listo para ser distribuido. Actualmente
+el script tiene muchos bugs y no te recomiendo usarlo hasta que lo reemplace
+por una mejor versión en Python.
