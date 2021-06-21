@@ -1,8 +1,8 @@
 # Formato del archivo `PDTAGS` #
 
 El programa `tags.pd` distribuido junto al compilador (en el directorio
-`tools/`) produce, dados varios archivos de entrada produce un archivo TAGS que
-puede ser utilizado por programas externos para auto completar archivos de
+`tools/`) produce, dados varios archivos de entrada, un archivo TAGS que puede
+ser utilizado por programas externos para auto completar archivos de
 PseudoD. Este documento describe el formato del archivo para que puedas
 conectarlo a tus propios programas.
 
@@ -10,7 +10,7 @@ Cabe resaltar que el programa `tags.pd` funciona utilizando el AST
 directamente, a diferencia de los otros programas para crear tags que
 generalmente funcionan con expresiones regulares. Esto significa que `tags.pd`
 solo captura definiciones en el ámbito del módulo y solo funciona en programas
-PseudoD válidos.
+válidos.
 
 ## Expresión S ##
 
