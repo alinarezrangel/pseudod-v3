@@ -80,6 +80,121 @@ end
 
 M.prettyprint = prettyprint
 
+-- Inspecciona un objeto.
+--
+-- Como `prettyprint` pero no escribe 7 copias completas de la odisea a la
+-- pantalla cada vez que inspeccionas un objeto.
+function M.inspectobj(obj, indent)
+   --[[
+      Objetos básicos:
+        %q
+      Funciones:
+        %s
+      Arreglos:
+        [el0, el1, ...]
+      Otros objetos:
+        obj(%s)
+        a = [attrs...]
+        m = { methods... }
+   --]]
+   local t = type(obj)
+   indent = indent or 0
+   local function iprintf(fmt, ...)
+      print(("%s" .. fmt):format(string.rep(" ", indent), ...))
+   end
+   local function simpletype(obj)
+      local t = type(obj)
+      return t == "number" or t == "string" or t == "nil" or t == "boolean" or t == "function"
+   end
+   local function simpletostr(sim)
+      local t = type(sim)
+      assert(simpletype(sim))
+      if t == "number" or t == "string" or t == "nil" or t == "boolean" then
+         return ("%q"):format(sim)
+      elseif t == "function" then
+         return ("%s"):format(sim)
+      else
+         assert(false)
+      end
+   end
+   if simpletype(obj) then
+      iprintf("%s", simpletostr(obj))
+   elseif t ~= "table" then
+      iprintf("invalid %s : %q", obj, t)
+   elseif obj.__pd_arreglo then
+      local els = obj.attrs[M.ARREGLO_ATTRS_IDX]
+      local simple = els.n < 10
+      for i = 0, els.n - 1 do
+         simple = simple and simpletype(els[i])
+      end
+      if simple then
+         local st = "["
+         for i = 0, els.n - 1 do
+            st = st .. simpletostr(els[i]) .. ", "
+         end
+         iprintf("%s]", st)
+      else
+         iprintf("[")
+         for i = 0, els.n - 1 do
+            M.inspectobj(els[i], indent + 2)
+         end
+         iprintf("]")
+      end
+   elseif obj.__pd_cls then
+      iprintf("cls %s (%s)", obj:getAttribute(obj.nombreIdx), obj)
+      local base = obj:getAttribute(obj.claseBaseIdx)
+      if base == nil then
+         iprintf(" no base class")
+      else
+         local baseName = base:getAttribute(base.nombreIdx)
+         iprintf(" base class = cls %s (%s)", baseName, base)
+         M.inspectobj(base, indent + 2)
+      end
+      iprintf(" instance attrs = %s", obj:getAttribute(obj.atributosDeInstanciaIdx))
+      for i, p in M.arregloipairs(obj:getAttribute(obj.metodosDeInstanciaIdx)) do
+         local name = M.enviarMensaje(p, "en", 0)
+         local method = M.enviarMensaje(p, "en", 1)
+         if type(method) == "function" then
+            iprintf(" method %q : %s", name, method)
+         else
+            iprintf(" method %q", name)
+            M.inspectobj(method, indent + 2)
+         end
+      end
+   elseif obj.__pd_object then
+      iprintf("obj(%s)", obj)
+      iprintf("a = #%q", obj.attrs.n)
+      for i = 1, obj.attrs.n do
+         iprintf(" #%q", i)
+         M.inspectobj(obj.attrs[i], indent + 3)
+      end
+      iprintf("m =")
+      for k, v in pairs(obj.methods) do
+         if type(v) == "function" then
+            iprintf(" %q : %s", k, v)
+         else
+            iprintf(" %q :", k)
+            M.inspectobj(v, indent + 3)
+         end
+      end
+   else
+      iprintf("table(%s)", obj)
+      for k, v in pairs(obj) do
+         if simpletype(k) then
+            iprintf(" %s", simpletostr(k))
+         else
+            M.inspectobj(k, indent + 1)
+         end
+         iprintf("  =")
+         if simpletype(v) then
+            iprintf("   %s", simpletostr(v))
+         else
+            M.inspectobj(v, indent + 3)
+         end
+      end
+   end
+end
+
 -- Formatea objetos de PseudoD.
 --
 -- Es la implementación del método "formatear" de "Texto". `fmt` es el string a
