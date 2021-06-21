@@ -60,3 +60,22 @@ recursivas" (que actualmente no están soportadas por el lenguaje).
 Partes de la biblioteca estándar que aún no son estables están en `bepd/x/`,
 mientras que "bindings" (FFI) a algunas bibliotecas externas están en
 `bindings/`.
+
+## Backends ##
+
+El compilador funciona con diversos "backends". Cada backend tiene la
+responsabilidad de compilar a un único "objetivo" (*target*). Actualmente el
+único backend funcional es el backend a Lua 5.4 que se encuentra en
+`backends/lua/`, pero estoy trabajando en un backend a [WebAssembly][wasm].
+
+### Lua ###
+
+El backend de lua es muy sencillo, compilando cada estructura de PseudoD a su
+equivalente en Lua. Debido a esto es el más fácil de entender, pero también es
+el más ineficiente.
+
+### WebAssembly ###
+
+El nuevo backend a WebAssembly. Aún no está listo. Estará en `backends/wasm/`.
+
+[wasm]: https://webassembly.org

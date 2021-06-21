@@ -74,7 +74,7 @@ archivos y la arquitectura del compilador.
 El directorio `docs/` contiene documentación adicional.
 
 Todos los archivos de PseudoD (y el runtime de Lua) están documentados con
-comentarios. Estoy trabajando en la documentación real.
+comentarios. Estoy trabajando en la documentación "real" en HTML.
 
 [pseudod-orig]: https://github.com/alinarezrangel/PseudoD
 [pseudod-v3-releases]: https://github.com/alinarezrangel/pseudod-v3/releases
