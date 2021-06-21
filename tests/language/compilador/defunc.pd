@@ -1,0 +1,295 @@
+{
+    "nombre": "Defuncionalización",
+    "espera": "éxito"
+}
+====================
+utilizar bepd/builtins
+utilizar bepd/datos/conjunto (Conjunto)
+utilizar bepd/utilidades/texto como UtilTexto
+utilizar parser como Parser
+utilizar resoluciónDeNombres como RN
+utilizar defuncionalización como Defun
+
+
+funcion PExpr: expr, ast
+    []
+    [ ejemplos de expr: ]
+    [ NodoPrograma>cuerpo#0/NodoVariable>nombre/NodoIdentificador>nombre ]
+    variables filtros, acc
+    fijar filtros a UtilTexto#PartirSinVacíos: expr, {/}
+    fijar acc a ast
+    ParaCadaElemento: filtros, procedimiento: filtro
+        si EsNúmeroEntero: filtro
+            fijar acc a acc#en: (ConvertirAEntero: filtro)
+            devolver NULO
+        finsi
+        si filtro = {envolver}
+            si no EsInstancia: acc, Arreglo
+                fijar acc a Arreglo#crearCon: acc
+            finsi
+            devolver NULO
+        finsi
+        si filtro = {longitud}
+            si EsInstancia: acc, Arreglo
+                fijar acc a acc#longitud
+            sino
+                fijar acc a 1
+            finsi
+            devolver NULO
+        finsi
+        variables partes, nodo, selector, llaveMetadato, nombreMetadato
+        fijar partes a UtilTexto#Partir: filtro, {>}
+        fijar nodo a partes#en: 0
+        si partes#longitud >= 2
+            fijar selector a partes#en: 1
+            si selector = {}
+                fijar selector a NULO
+            finsi
+        sino
+            fijar selector a NULO
+        finsi
+        si partes#longitud >= 4
+            fijar llaveMetadato a partes#en: 2
+            fijar nombreMetadato a partes#en: 3
+        sino
+            fijar llaveMetadato a NULO
+            fijar nombreMetadato a NULO
+        finsi
+        si no (nodo = {})
+            si EsInstancia: acc, Arreglo
+                fijar acc a Filtrar: acc, funcion: el
+                    devolver (TipoDe: el)#nombre = nodo
+                finfuncion
+            sino
+                necesitas (TipoDe: acc)#nombre = nodo
+            finsi
+        finsi
+        si no EsNulo: selector
+            funcion selectorF: el
+                variable campos
+                fijar campos a UtilTexto#Partir: selector, {#}
+                ParaCadaElemento: campos, procedimiento: campo
+                    si EsNúmeroEntero: campo
+                        fijar el a el#en: (ConvertirAEntero: campo)
+                    sino
+                        fijar el a __EnviarMensaje: el, campo, Arreglo#vacio
+                    finsi
+                finprocedimiento
+                devolver el
+            finfuncion
+            si EsInstancia: acc, Arreglo
+                fijar acc a Mapear: acc, &selectorF
+            sino
+                fijar acc a selectorF: acc
+            finsi
+        finsi
+        si (no EsNulo: llaveMetadato) && (no EsNulo: nombreMetadato)
+            funcion obtenerM: el
+                variable llave
+                si llaveMetadato = {RN}
+                    fijar llave a RN#LLAVE_RESOLUCIÓN_DE_NOMBRES
+                sino
+                    necesitas llaveMetadato = {DEFUN}
+                    fijar llave a Defun#LLAVE_DEFUNCIONALIZACIÓN
+                finsi
+                devolver el#obtenerMetadato: llave, nombreMetadato
+            finfuncion
+            si EsInstancia: acc, Arreglo
+                fijar acc a Mapear: acc, &obtenerM
+            sino
+                fijar acc a obtenerM: acc
+            finsi
+        finsi
+    finprocedimiento
+    devolver acc
+finfuncion
+
+variable programa
+fijar programa a {
+
+funcion $: ...Q finfuncion
+
+variables X, Y
+funcion F1: Z
+    funcion F1_1: W
+        $: X, Y, Z, W
+    finfuncion
+
+    funcion F1_2: W
+        $: Z, W
+    finfuncion
+
+    funcion F1_3: W
+        $: W
+    finfuncion
+
+    funcion F1_4
+        $
+    finfuncion
+finfuncion
+
+funcion F2: A, B
+    variables Q, W, E
+
+    funcion F2_1: R, T, Y
+        $: X, Y, A, B, Q, W, E, R, T, Y
+    finfuncion
+
+    funcion F2_2: R
+        $: X, Y, A, B, Q, W, E, R
+    finfuncion
+
+    funcion F2_3: R
+        $: Q, W, E, R
+    finfuncion
+
+    funcion F2_4: R
+        $: R
+    finfuncion
+finfuncion
+
+funcion F3: A
+    variable Z
+    funcion F3_1: B
+        variable W
+        funcion F3_1_1: C
+            variable T
+            $: X, Y, Z, W, T, A, B, C
+        finfuncion
+    finfuncion
+finfuncion
+
+}
+
+variable ast
+fijar ast a Parser#CrearAST: programa
+
+variable ámbitoPrincipal
+fijar ámbitoPrincipal a RN#ResolverNombres:
+    ast,
+    procedimiento: nombreDelMódulo
+        Inalcanzable
+    finprocedimiento,
+    procedimiento: ámbito finprocedimiento,
+    procedimiento: ámbito finprocedimiento
+Defun#Defuncionalizar: ast
+
+procedimiento Test_F1
+    variable prog
+    fijar prog a PExpr: {NodoPrograma>instrucciones}, ast
+
+    variables X, Y, XYs
+    fijar X a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, prog
+    fijar Y a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/1}, prog
+    fijar XYs a Conjunto#crearCon: X, Y
+
+    variables F1, F1_1, F1_2, F1_3, F1_4
+    fijar F1 a PExpr: {NodoFunción/1}, prog
+    fijar F1_1 a PExpr: {>cuerpo/NodoFunción/0}, F1
+    fijar F1_2 a PExpr: {>cuerpo/NodoFunción/1}, F1
+    fijar F1_3 a PExpr: {>cuerpo/NodoFunción/2}, F1
+    fijar F1_4 a PExpr: {>cuerpo/NodoFunción/3}, F1
+
+    variables F1p, F1_1p, F1_2p, F1_3p, F1_4p
+    fijar F1p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F1)
+    fijar F1_1p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F1_1)
+    fijar F1_2p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F1_2)
+    fijar F1_3p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F1_3)
+    fijar F1_4p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F1_4)
+
+    variables F1n, F1_1n, F1_2n, F1_3n, F1_4n
+    fijar F1n a PExpr: {>>DEFUN>nombresLibres}, F1
+    fijar F1_1n a PExpr: {>>DEFUN>nombresLibres}, F1_1
+    fijar F1_2n a PExpr: {>>DEFUN>nombresLibres}, F1_2
+    fijar F1_3n a PExpr: {>>DEFUN>nombresLibres}, F1_3
+    fijar F1_4n a PExpr: {>>DEFUN>nombresLibres}, F1_4
+
+    necesitas F1n = XYs
+    necesitas F1_1n = (F1p#unión: XYs)
+    necesitas F1_2n = F1p
+    necesitas F1_3n = Conjunto#vacío
+    necesitas F1_4n = Conjunto#vacío
+finprocedimiento
+
+procedimiento Test_F2
+    variable prog
+    fijar prog a PExpr: {NodoPrograma>instrucciones}, ast
+
+    variables X, Y, XYs
+    fijar X a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, prog
+    fijar Y a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/1}, prog
+    fijar XYs a Conjunto#crearCon: X, Y
+
+    variables F2, F2_1, F2_2, F2_3, F2_4
+    fijar F2 a PExpr: {NodoFunción/2}, prog
+    fijar F2_1 a PExpr: {>cuerpo/NodoFunción/0}, F2
+    fijar F2_2 a PExpr: {>cuerpo/NodoFunción/1}, F2
+    fijar F2_3 a PExpr: {>cuerpo/NodoFunción/2}, F2
+    fijar F2_4 a PExpr: {>cuerpo/NodoFunción/3}, F2
+
+    variables Q, W, E, QWEs
+    fijar Q a PExpr: {>cuerpo/NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, F2
+    fijar W a PExpr: {>cuerpo/NodoVariable/0/>nombres/>>RN>nombreResuelto/1}, F2
+    fijar E a PExpr: {>cuerpo/NodoVariable/0/>nombres/>>RN>nombreResuelto/2}, F2
+    fijar QWEs a Conjunto#crearCon: Q, W, E
+
+    variables F2p, F2_1p, F2_2p, F2_3p, F2_4p
+    fijar F2p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F2)
+    fijar F2_1p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F2_1)
+    fijar F2_2p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F2_2)
+    fijar F2_3p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F2_3)
+    fijar F2_4p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F2_4)
+
+    variables F2n, F2_1n, F2_2n, F2_3n, F2_4n
+    fijar F2n a PExpr: {>>DEFUN>nombresLibres}, F2
+    fijar F2_1n a PExpr: {>>DEFUN>nombresLibres}, F2_1
+    fijar F2_2n a PExpr: {>>DEFUN>nombresLibres}, F2_2
+    fijar F2_3n a PExpr: {>>DEFUN>nombresLibres}, F2_3
+    fijar F2_4n a PExpr: {>>DEFUN>nombresLibres}, F2_4
+
+    necesitas F2n = XYs
+    necesitas F2_1n = ((F2p#unión: (Conjunto#crearCon: X))#unión: QWEs)
+    necesitas F2_2n = ((F2p#unión: XYs)#unión: QWEs)
+    necesitas F2_3n = QWEs
+    necesitas F2_4n = Conjunto#vacío
+finprocedimiento
+
+procedimiento Test_F3
+    variable prog
+    fijar prog a PExpr: {NodoPrograma>instrucciones}, ast
+
+    variables X, Y, XYs
+    fijar X a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, prog
+    fijar Y a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/1}, prog
+    fijar XYs a Conjunto#crearCon: X, Y
+
+    variables F3, F3_1, F3_1_1
+    fijar F3 a PExpr: {NodoFunción/3}, prog
+    fijar F3_1 a PExpr: {>cuerpo/NodoFunción/0}, F3
+    fijar F3_1_1 a PExpr: {>cuerpo/NodoFunción/0}, F3_1
+
+    variables Z, W, T, ZWTs
+    fijar Z a PExpr: {>cuerpo/NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, F3
+    fijar W a PExpr: {>cuerpo/NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, F3_1
+    fijar T a PExpr: {>cuerpo/NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, F3_1_1
+    fijar ZWTs a Conjunto#crearCon: Z, W, T
+
+    variables F3p, F3_1p, F3_1_1p
+    fijar F3p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F3)
+    fijar F3_1p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F3_1)
+    fijar F3_1_1p a Conjunto#desdeArreglo: (PExpr: {>parámetros/>>RN>nombreResuelto}, F3_1_1)
+
+    variables F3n, F3_1n, F3_1_1n
+    fijar F3n a PExpr: {>>DEFUN>nombresLibres}, F3
+    fijar F3_1n a PExpr: {>>DEFUN>nombresLibres}, F3_1
+    fijar F3_1_1n a PExpr: {>>DEFUN>nombresLibres}, F3_1_1
+
+    necesitas F3n = XYs
+    necesitas F3_1n = ((F3p#unión: XYs)#unión: (Conjunto#crearCon: Z))
+    necesitas F3_1_1n = (((F3p#unión: XYs)#unión: (Conjunto#crearCon: Z, W))#unión: F3_1p)
+finprocedimiento
+
+
+Test_F1
+Test_F2
+Test_F3

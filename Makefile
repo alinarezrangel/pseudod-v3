@@ -25,7 +25,8 @@ bepd/x/entorno.pd bepd/x/adhoc.pd bepd/x/lazy.pd bepd/x/puerto/conPosición.pd	\
 bepd/x/puerto/deArchivo.pd bepd/x/sistemaDeArchivos/archivo.pd
 COMPILER_FILES=$(BEPD_FILES) ámbito.pd ast.pd caminaNodos.pd combinadores.pd	\
 compilador.pd inicio.pd módulos.pd parser.pd resoluciónDeNombres.pd				\
-tokenizador.pd tokens.pd backends/lua.pd backends/lua/emisor.pd
+tokenizador.pd tokens.pd defuncionalización.pd backends/lua.pd					\
+backends/lua/emisor.pd
 
 DOCS=docs
 

@@ -1,83 +1,34 @@
 utilizar bepd/builtins
 utilizar bepd/datos/conjunto (Conjunto)
 utilizar bepd/datos/caja (Caja)
+utilizar bepd/utilidades/texto como UtilTexto
 utilizar bepd/x/adhoc (ObjetoAdHoc)
 utilizar tokenizador como Tokenizador
 utilizar parser como Parser
 utilizar resoluciónDeNombres como RN
-utilizar ámbito como Ámbito
+utilizar ámbito como Ámbito (DatosDeVariable, Ámbito)
 utilizar ast como AST
-utilizar ámbito (DatosDeVariable, Ámbito)
 
 
-variable programa
-fijar programa a {
+[DOCUMENTA
+@brief{Tipo de @pd{LLAVE_DEFUNCIONALIZACIÓN}.}
+DOCUMENTA]
+clase LlaveDefuncionalización
+    metodo comoTexto
+finclase
 
-funcion $: ...Q finfuncion
+metodo LlaveDefuncionalización#comoTexto
+    devolver {<LLAVE_DEFUNCIONALIZACIÓN>}
+finmetodo
 
-variables X, Y
-funcion F1: Z
-    funcion F1_1: W
-        $: X, Y, Z, W
-    finfuncion
+[DOCUMENTA
+@brief{Llave de defuncionalización.}
 
-    funcion F1_2: W
-        $: Z, W
-    finfuncion
-
-    funcion F1_3: W
-        $: W
-    finfuncion
-
-    funcion F1_4
-        $
-    finfuncion
-finfuncion
-
-funcion F2: A, B
-    variables Q, W, E
-
-    funcion F2_1: R, T, Y
-        $: X, Y, A, B, Q, W, E, R, T, Y
-    finfuncion
-
-    funcion F2_2: R
-        $: X, Y, A, B, Q, W, E, R
-    finfuncion
-
-    funcion F2_3: R
-        $: Q, W, E, R
-    finfuncion
-
-    funcion F2_4: R
-        $: R
-    finfuncion
-finfuncion
-
-funcion F3: A
-    variable Z
-    funcion F3_1: B
-        variable W
-        funcion F3_1_1: C
-            variable T
-            $: X, Y, Z, W, T, A, B, C
-        finfuncion
-    finfuncion
-finfuncion
-
-}
-
-variable ast
-fijar ast a Parser#CrearAST: programa
-
-variable ámbitoPrincipal
-fijar ámbitoPrincipal a RN#ResolverNombres:
-    ast,
-    procedimiento: nombreDelMódulo
-        Inalcanzable
-    finprocedimiento,
-    procedimiento: ámbito finprocedimiento,
-    procedimiento: ámbito finprocedimiento
+Es la llave usada por el pase de defuncionalización para agregar metadatos a
+los nodos. Véase @pd{Defuncionalizar} para los metadatos que agrega.
+DOCUMENTA]
+variable LLAVE_DEFUNCIONALIZACIÓN
+fijar LLAVE_DEFUNCIONALIZACIÓN a LlaveDefuncionalización#crear
 
 [DOCUMENTA
 @brief{Un bucle funcional.}
@@ -272,26 +223,6 @@ funcion EsLocalEntre: ámbitoSuperior, ámbitoActual, identOBinding
         devolver %recur: ámbito#ámbitoPadre
     finprocedimiento
 finfuncion
-
-[DOCUMENTA
-@brief{Tipo de @pd{LLAVE_DEFUNCIONALIZACIÓN}.}
-DOCUMENTA]
-clase LlaveDefuncionalización
-    metodo comoTexto
-finclase
-
-metodo LlaveDefuncionalización#comoTexto
-    devolver {<LLAVE_DEFUNCIONALIZACIÓN>}
-finmetodo
-
-[DOCUMENTA
-@brief{Llave de defuncionalización.}
-
-Es la llave usada por el pase de defuncionalización para agregar metadatos a
-los nodos. Véase @pd{Defuncionalizar} para los metadatos que agrega.
-DOCUMENTA]
-variable LLAVE_DEFUNCIONALIZACIÓN
-fijar LLAVE_DEFUNCIONALIZACIÓN a LlaveDefuncionalización#crear
 
 [
 Funciones de ayuda: obtienen los ámbitos de varios nodos del AST.

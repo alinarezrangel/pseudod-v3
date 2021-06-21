@@ -362,6 +362,32 @@ funcion Mapear: arr, func
 finfuncion
 
 [DOCUMENTA
+@brief{Filtra un arreglo en base a un predicado.}
+
+Devuelve un nuevo arreglo como @pd{arr}, pero solo contiene aquellos elementos
+para los que la función @pd{pred} devolvió @pd{VERDADERO}.
+
+@ejemplo|{
+variables A, B
+fijar A a Arreglo#crearCon: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+fijar B a Filtrar: A, funcion: elemento
+    devolver elemento >= 5
+finfuncion
+necesitas B = (Arreglo#crearCon: 5, 6, 7, 8, 9, 10)
+}|
+DOCUMENTA]
+funcion Filtrar: arr, pred
+    variable res
+    fijar res a Arreglo#vacio
+    ParaCadaElemento: arr, procedimiento: el
+        si %pred: el
+            res#agregarAlFinal: el
+        finsi
+    finprocedimiento
+    devolver res
+finfuncion
+
+[DOCUMENTA
 @brief{Determina si todos los elementos de @param{arr} son verdaderos.}
 
 @devuelve{@pd{VERDADERO} si todos los elementos de @param{arr} son
