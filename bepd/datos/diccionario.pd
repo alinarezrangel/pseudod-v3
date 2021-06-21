@@ -130,7 +130,16 @@ metodo Diccionario#en: llave
 finmetodo
 
 metodo Diccionario#fijarEn: llave, nuevoValor
-    devolver yo#_dispatch: {fijarEn}, llave, nuevoValor
+    si __Impl = {Lua Bootstrap}
+        utilizar bepd/datos/diccionario/hashmap (HashMap)
+        si HashMap#puedeTenerDeLlave: llave
+            devolver yo#_hash#fijarEn: llave, nuevoValor
+        sino
+            devolver yo#_alist#fijarEn: llave, nuevoValor
+        finsi
+    sino
+        devolver yo#_dispatch: {fijarEn}, llave, nuevoValor
+    finsi
 finmetodo
 
 metodo Diccionario#transformarPar: llave, proc
