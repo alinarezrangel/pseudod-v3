@@ -176,7 +176,7 @@ finmetodo
 
 metodo Diccionario#comoArreglo
     si __Impl = {Lua Bootstrap}
-        devolver Concatenar: yo#_hash#comoArreglo + yo#_alist#comoArreglo
+        devolver Concatenar: yo#_hash#comoArreglo, yo#_alist#comoArreglo
     sino
         devolver yo#_alist#comoArreglo
     finsi
