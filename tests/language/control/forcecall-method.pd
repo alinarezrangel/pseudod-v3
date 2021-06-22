@@ -54,5 +54,5 @@ Escribir: %(W#Hola: 1, 2, 3)
 Escribir: %(W#Hola: ...T)
 Escribir: %(W#Adios: 1, ...V, 2): 2
 Escribir: %(W#Adios: 1, 2): ...V, 2
-Escribir: %(W#Adios: 1, ...V, ...V, 2): ...V, ...V
+Escribir: %(W#Final: 1, ...V, ...V, 2): ...V, ...V
 Escribir: %(W#Final: ...(Arreglo#crearCon: 1, 2)): ...T, ...T, 2
