@@ -1,8 +1,18 @@
 # Archivos de respaldo de Emacs
 *~
 
+# Escritorio de Emacs
+.emacs.desktop
+.emacs.desktop.lock
+
+# Datos de VSCode
+.vscode/
+
 # Compilados de prueba
 outputs/
+
+# Archivo TAGS para PseudoD
+PDTAGS
 
 # El compilador ya compilado
 bootstrapped/
