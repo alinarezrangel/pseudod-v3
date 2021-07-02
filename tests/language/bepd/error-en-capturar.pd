@@ -1,0 +1,19 @@
+{
+    "nombre": "Error en capturar",
+    "espera": "error",
+    "error en": [9, 4]
+}
+====================
+
+procedimiento Error
+    __FallarConMensaje: {error interno}
+finprocedimiento
+
+__Capturar: procedimiento: salir
+    escribir {A}
+    nl
+    Error
+    escribir {B}
+    nl
+finprocedimiento
+

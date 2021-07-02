@@ -1429,6 +1429,30 @@ function M.builtins.__ByteEof()
    return -1
 end
 
+-- Las dos funciones `pdpcall` y `rethrow` son como "hooks" con los cuales
+-- `__Capturar` puede ser configurado.
+--
+-- * `pdpcall` es como `pcall`. Será usado por __Capturar para atrapar errores
+--   en su cuerpo (más importante: lo usará para capturar la "marca" con la que
+--   se "sale" de __Capturar).
+-- * `rethrow` debe relanzar un error devuelto por `pdpcall`. Si un error
+--   sucede dentro del cuerpo de __Capturar `rethrow` será usado para
+--   relanzarlo, idealmente manteniendo el stacktrace.
+-- * `unwrap_error`: Obtiene el error pasado a `error` desde uno devuelto por
+--   `pdpcall`.
+
+function M.pdpcall(func, ...)
+   return pcall(func, ...)
+end
+
+function M.rethrow(err)
+   error(err)
+end
+
+function M.unwrap_error(err)
+   return err
+end
+
 function M.builtins.__Capturar(proc)
    local mark = {}
    local in_extent = true
@@ -1439,16 +1463,17 @@ function M.builtins.__Capturar(proc)
          error(mark)
       end
    end
-   local ok, err = pcall(function()
-         return M.enviarMensaje(proc, "llamar", escape)
-   end)
+   local function callproc()
+      return M.enviarMensaje(proc, "llamar", escape)
+   end
+   local ok, err = M.pdpcall(callproc)
    in_extent = false
    if ok then
       return true
-   elseif rawequal(err, mark) then
+   elseif rawequal(M.unwrap_error(err), mark) then
       return false
    else
-      error(err)
+      M.rethrow(err)
    end
 end
 

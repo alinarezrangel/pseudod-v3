@@ -197,7 +197,7 @@ def test(header, successfull, output):
     return TestSuccess(successfull=successfull)
 
 
-def run_test_only_for_file(filename, pseudod_impl):
+def run_test_only_for_file(filename, pseudod_impl, *, show_output=False):
     test_result = run_test_for_file(filename, pseudod_impl)
     print(f'Ran test "{test_result.name}" -- \'{filename}\':')
     print(f'  Passed = {test_result.passed}')
@@ -206,7 +206,7 @@ def run_test_only_for_file(filename, pseudod_impl):
     if test_result.error:
         print(f'  Error: {test_result.error.message}')
 
-    if not test_result.passed:
+    if not test_result.passed or show_output:
         test_result.debug.pretty_print()
 
     return test_result
@@ -271,12 +271,13 @@ def main():
     parser.add_argument('--lua', help='Run lua tests', default=False, action='store_true')
     parser.add_argument('--run-test', help='The test file that will be executed (only for language tests)', type=str, default=None)
     parser.add_argument('--pseudod-impl', help='Implementation of PseudoD to use', type=str, default='interpreter')
+    parser.add_argument('--show-output', help='Show output of test even if successfull.', type=bool, default=False)
     args = parser.parse_args()
     print('Warning: this program must be executed from the project root, not from the `tests/` subdirectory.')
     pseudod_impl = args.pseudod_impl
     if args.language:
         if args.run_test is not None:
-            run_test_only_for_file(args.run_test, pseudod_impl)
+            run_test_only_for_file(args.run_test, pseudod_impl, show_output=args.show_output)
         else:
             run_tests(os.path.join(TESTS_DIR, "language"), pseudod_impl)
     else:

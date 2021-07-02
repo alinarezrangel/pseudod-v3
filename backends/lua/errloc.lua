@@ -179,7 +179,17 @@ end
 function M.make_error_with_callstack(stack, err)
    return { type = "error/callstack",
             error = err,
-            callstack = stack }
+            callstack = stack,
+            srcloc_info_attached = false }
+end
+
+-- Determina si `err` fue creado con `M.make_lua_error` o
+-- `M.make_error_with_callstack`.
+function M.is_wrapped_error(err)
+   return type(err) == "table"
+      and type(err.type) == "string"
+      and (err.type == "lua error"
+           or err.type == "error/callstack")
 end
 
 -- Obtiene el callstack de Lua utilizando la biblioteca `debug`.
@@ -307,10 +317,9 @@ end
 -- Esta función no se debe llamar directamente, en cambio se debe usar como
 -- *message handler* para `xpcall`.
 --
--- Si la biblioteca `debug` no está disponible solo devuelve
--- `M.make_lua_error(err)`. Pero si lo está entonces obtiene el callstack
--- actual y devuelve un `M.make_error_with_callstack` con *frames* de la
--- siguiente forma:
+-- Si la biblioteca `debug` no está disponible solo devuelve el error
+-- envuelto. Pero si lo está entonces obtiene el callstack actual y devuelve un
+-- `M.make_error_with_callstack` con *frames* de la siguiente forma:
 --
 -- * `name` (corresponde a `name` de `debug`): Es el nombre de la función o
 --   `nil` si no tiene.
@@ -338,8 +347,21 @@ end
 -- encuentrá en el índice 0 de la lista de frames del error y únicamente tiene
 -- los campos `current_line` y `module_name`.
 local function attach_callstack_to_error(err)
+   local wrapped_err, is_wrapped
+   if M.is_wrapped_error(err) then
+      wrapped_err = err
+      is_wrapped = true
+   else
+      wrapped_err = M.make_lua_error(err)
+      is_wrapped = false
+   end
    if not debug then
-      return M.make_lua_error(err)
+      return wrapped_err
+   elseif is_wrapped and wrapped_err.type == "error/callstack" then
+      -- Se relanzó un error con un callstack. El callstack del error original
+      -- es muy posiblemente más detallado que el actual, que corresponde con
+      -- el callstack del "rethrow".
+      return wrapped_err
    else
       local stack = get_lua_callstack(1)
       local new_stack = {}
@@ -364,7 +386,7 @@ local function attach_callstack_to_error(err)
             module_name = module_name,
          }
       end
-      return M.make_error_with_callstack(new_stack, M.make_lua_error(err))
+      return M.make_error_with_callstack(new_stack, wrapped_err)
    end
 end
 
@@ -390,14 +412,41 @@ function M.call_with_good_backtraces(func, ...)
    if ok then
       return table.unpack(results, 1, results.n)
    end
-   if res_or_err.type == "error/callstack" then
+   if res_or_err.type == "error/callstack" and not res_or_err.srcloc_info_attached then
       for i = 1, #res_or_err.callstack do
          local frame = res_or_err.callstack[i]
          attach_srcloc_to_frame(frame)
       end
-      attach_srcloc_to_starting_frame(res_or_err.callstack[0])
+      if res_or_err.callstack[0] then
+         attach_srcloc_to_starting_frame(res_or_err.callstack[0])
+      end
+      res_or_err.srcloc_info_attached = true
    end
    return false, res_or_err
+end
+
+-- La función __Capturar (rt.builtins.__Capturar) lanza, captura y relanza
+-- errores. Dicha función provee los siguientes "hooks" con los cuales podemos
+-- cambiar su comportamiento: en este caso, al hacerla usar
+-- `M.call_with_good_backtraces` y esta versión nueva de `rt.rethrow` podrá
+-- mantener el stacktrace a través de sus llamadas.
+
+function rt.rethrow(err)
+   error(err)
+end
+
+rt.pdpcall = M.call_with_good_backtraces
+
+function rt.unwrap_error(err)
+   if M.is_wrapped_error(err) then
+      if err.type == "lua error" then
+         return err.object
+      else
+         return rt.unwrap_error(err.error)
+      end
+   else
+      return err
+   end
 end
 
 -- Imprime un callstack. Esta función siempre trata de tener el mismo formato
