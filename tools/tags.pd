@@ -6,6 +6,7 @@ utilizar bepd/x/sistemaDeArchivos/archivo como Archivos
 utilizar bepd/x/sexpr como SExpr
 utilizar bepd/x/puerto como Puerto
 utilizar caminaNodos como CN
+utilizar ast como AST
 utilizar parser como Parser
 
 
@@ -42,6 +43,8 @@ finmetodo
 
 clase ExtraeDeclrs hereda CN#CaminaNodos
     atributo declaraciones  [ <-- Todos los Tags del programa ]
+
+    metodo tagParaAtributos: nombres, identClase
 finclase
 
 metodo ExtraeDeclrs#inicializar
@@ -86,6 +89,11 @@ metodo ExtraeDeclrs#visitarClase: nodo
     fijar linenum a nodo#nombre#areaTextual#posiciónInicial#línea
     fijar byteoff a nodo#nombre#areaTextual#posiciónInicial#offset
     yo#declaraciones#agregarAlFinal: (Tag#crear: textoDeDefinición, nombre, linenum, byteoff)
+    ParaCadaElemento: nodo#declaraciones, procedimiento: declr
+        si EsInstancia: declr, AST#NodoDeclaraciónDeAtributosEnClase
+            yo#tagParaAtributos: declr#nombres, nodo#nombre
+        finsi
+    finprocedimiento
 finmetodo
 
 metodo ExtraeDeclrs#visitarMétodo: nodo
@@ -98,13 +106,17 @@ metodo ExtraeDeclrs#visitarMétodo: nodo
 finmetodo
 
 metodo ExtraeDeclrs#visitarAtributos: nodo
+    yo#tagParaAtributos: nodo#nombres, nodo#deClase
+finmetodo
+
+metodo ExtraeDeclrs#tagParaAtributos: nombres, identClase
     variable textoDeDefinición
     fijar textoDeDefinición a
         {atributos }#concatenar:
-        (Unir: (Mapear: nodo#nombres,
-                        funcion: var devolver nodo#deClase#nombre#concatenar: var#nombre finfuncion),
+        (Unir: (Mapear: nombres,
+                        funcion: var devolver {~t#~t}#formatear: identClase#nombre, var#nombre finfuncion),
                {, })
-    ParaCadaElemento: nodo#nombres, procedimiento: var
+    ParaCadaElemento: nombres, procedimiento: var
         variables nombre, linenum, byteoff
         fijar linenum a var#areaTextual#posiciónInicial#línea
         fijar byteoff a var#areaTextual#posiciónInicial#offset
