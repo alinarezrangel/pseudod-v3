@@ -90,8 +90,6 @@ Basically, the number of spaces that each step will be."
   (setq-local paragraph-start pseudod-repl-prompt-regexp)
 
   (setq-local font-lock-multiline t)
-  (add-to-list 'after-change-functions
-               #'pseudod--after-change)
   (setq-local font-lock-defaults pseudod-font-lock-defaults))
 
 ;;;###autoload
@@ -224,14 +222,42 @@ See also `pseudod--indentation-of-current-line'."
 (defun pseudod-dedent ()
   "Dedent the current function to the previous tab stop."
   (interactive)
-  (let ((indentation (pseudod--indentation-of-current-line)))
-    (indent-line-to (indent-next-tab-stop indentation t))))
+  (save-mark-and-excursion
+    (let ((indentation (pseudod--indentation-of-current-line)))
+      (indent-line-to (indent-next-tab-stop indentation t)))))
 
 (defun pseudod-indent ()
   "Indent the current function to the next tab stop."
   (interactive)
-  (let ((indentation (pseudod--indentation-of-current-line)))
-    (indent-line-to (indent-next-tab-stop indentation))))
+  (save-mark-and-excursion
+    (let ((indentation (pseudod--indentation-of-current-line)))
+      (indent-line-to (indent-next-tab-stop indentation)))))
+
+(defun pseudod-indent-region (start end)
+  "Indent all lines in a region to the next tab stop.
+
+Works on the region between the POINT and the MARK."
+  (interactive "r")
+  (save-mark-and-excursion
+    (goto-char start)
+    (beginning-of-line)
+    (while (< (point) end)
+      (pseudod-indent)
+      (forward-line 1)
+      (beginning-of-line))))
+
+(defun pseudod-dedent-region (start end)
+  "Dedent all lines in a region to the next tab stop.
+
+Works on the region between the POINT and the MARK."
+  (interactive "r")
+  (save-mark-and-excursion
+    (goto-char start)
+    (end-of-line)
+    (while (< (point) end)
+      (pseudod-dedent)
+      (forward-line 1)
+      (end-of-line))))
 
 (defun pseudod-indent-function ()
   "Indent a line of PseudoD code.
@@ -242,7 +268,7 @@ indentation (or a bigger indentation) then extra tabs are added."
   (if (= 0 (pseudod--indentation-of-current-line))
       (progn
         (pseudod-indent-line-to-previous)
-        (end-of-line))
+        (back-to-indentation))
     (pseudod-indent)))
 
 ;; Major Mode:
@@ -549,6 +575,8 @@ Suitable for use with `completion-at-point-functions'."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-k") #'run-pseudod)
     (define-key map (kbd "C-c C-z") #'pseudod-switch-to-repl-buffer)
+    (define-key map (kbd "C-c <") #'pseudod-indent-region)
+    (define-key map (kbd "C-c >") #'pseudod-dedent-region)
     (define-key map (kbd "<backtab>") #'pseudod-dedent)
     (define-key map (kbd "M-.") #'pseudod-tags-dwim)
     (define-key map (kbd "M-,") #'xref-pop-marker-stack)
