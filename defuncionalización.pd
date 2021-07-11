@@ -274,54 +274,97 @@ procedimiento DefuncionalizarImpl: ast, ámbitoDeFunción, ámbitoMásReciente, 
     finsi
     necesitas no EsNulo: ámbitoDeFunción
     necesitas no EsNulo: ámbitoMásReciente
-    si EsInstancia: ast, AST#NodoFunción
-        variables ámbitoDeAST, parámetros, callbacks, nombresLibres
-        fijar ámbitoDeAST a NombresDefinídos: ast
-        fijar parámetros a Conjunto#desdeArreglo: (Mapear: ast#parámetros, funcion: param
-            si EsInstancia: param, AST#NodoIdentificador
-                devolver RN#NombreResueltoDe: param
-            sino
-                devolver RN#NombreResueltoDe: param#interno
-            finsi
-        finfuncion)
-        fijar nombresLibres a Conjunto#vacío
-        funcion EsLibre: binding, ámbito
-            devolver (no EsLocalEntre: ámbitoDeFunción, ámbito, binding)
-                     ||
-                     ((Contiene: ámbitoDeFunción#todosLosBindingsLocales, binding)
-                      &&
-                      (no parámetros#contiene: binding))
-            [ No se si se lee mejor lo anterior o: ]
-            [si no EsLocalEntre: ámbitoDeFunción, ámbito, binding
-                devolver VERDADERO
-            sino
-                si Contiene: ámbitoDeFunción#todosLosBindingsLocales, binding
-                    devolver no parámetros#contiene: binding
-                sino
-                    devolver FALSO
-                finsi
-            finsi]
-        finfuncion
-        fijar callbacks a Concatenar: callbacksParaNoLocales, (Arreglo#crearCon: funcion: ámbito, binding
-            si EsLibre: binding, ámbito
-                fijar nombresLibres a nombresLibres#unión: (Conjunto#crearCon: binding)
-            finsi
-        finfuncion)
-        ParaCadaElemento: ast#cuerpo, procedimiento: instr
-            devolver DefuncionalizarImpl: instr, ámbitoDeAST, ámbitoDeAST, callbacks
+    si (EsInstancia: ast, AST#NodoFunción)
+        || (EsInstancia: ast, AST#NodoFunciónAnónima)
+        || (EsInstancia: ast, AST#NodoMétodo)
+        devolver DefuncionalizaFunción: ast, ámbitoDeFunción, ámbitoMásReciente, callbacksParaNoLocales
+    finsi
+    si EsInstancia: ast, AST#NodoSi
+        DefuncionalizarImpl: ast#condicional, ámbitoDeFunción, ámbitoMásReciente, callbacksParaNoLocales
+        variables ámbitoSiVerdadero, ámbitoSiFalso
+        fijar ámbitoSiVerdadero a ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiVerdadero}
+        fijar ámbitoSiFalso a ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiFalso}
+        ParaCadaElemento: ast#siVerdadero, procedimiento: instr
+            devolver DefuncionalizarImpl: instr, ámbitoDeFunción, ámbitoSiVerdadero, callbacksParaNoLocales
         finprocedimiento
-        ast#fijarMetadato: LLAVE_DEFUNCIONALIZACIÓN, {nombresLibres}, nombresLibres
+        ParaCadaElemento: ast#siFalso, procedimiento: instr
+            devolver DefuncionalizarImpl: instr, ámbitoDeFunción, ámbitoSiFalso, callbacksParaNoLocales
+        finprocedimiento
         devolver NULO
+    finsi
+    si EsInstancia: ast, AST#NodoMientras
+        DefuncionalizarImpl: ast#condicional, ámbitoDeFunción, ámbitoMásReciente, callbacksParaNoLocales
+        variable ámbito
+        fijar ámbito a ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiVerdadero}
+        ParaCadaElemento: ast#cuerpo, procedimiento: instr
+            devolver DefuncionalizarImpl: instr, ámbitoDeFunción, ámbito, callbacksParaNoLocales
+        finprocedimiento
+        devolver NULO
+    finsi
+    si EsInstancia: ast, AST#NodoIdentificador
+        si no ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+            devolver ParaCadaElemento: callbacksParaNoLocales, procedimiento: callback
+                devolver %callback: ámbitoMásReciente, (RN#NombreResueltoDe: ast)
+            finprocedimiento
+        sino
+            devolver NULO
+        finsi
     finsi
     si EsInstancia: ast, AST#NodoLlamarProcedimiento
         devolver ParaCadaElemento: ast#argumentos, procedimiento: arg
             necesitas EsInstancia: arg, AST#NodoIdentificador
-            ParaCadaElemento: callbacksParaNoLocales, procedimiento: callback
-                devolver %callback: ámbitoMásReciente, (RN#NombreResueltoDe: arg)
-            finprocedimiento
+            devolver DefuncionalizarImpl: arg, ámbitoDeFunción, ámbitoMásReciente, callbacksParaNoLocales
         finprocedimiento
     finsi
     devolver NULO
+finprocedimiento
+
+[ Defuncionaliza una función, función anónima o método (que está en `ast`). ]
+procedimiento DefuncionalizaFunción: ast, ámbitoDeFunción, ámbitoMásReciente, callbacksParaNoLocales
+    variables ámbitoDeAST, parámetros, callbacks, nombresLibres
+    fijar ámbitoDeAST a NombresDefinídos: ast
+    fijar parámetros a Conjunto#desdeArreglo: (Mapear: ast#parámetros, funcion: param
+        si EsInstancia: param, AST#NodoIdentificador
+            devolver RN#NombreResueltoDe: param
+        sino
+            devolver RN#NombreResueltoDe: param#interno
+        finsi
+    finfuncion)
+    LlamarConEC: procedimiento: noTieneYo
+        si EsInstancia: ast, AST#NodoFunciónAnónima
+            si no ast#esMétodo
+                %noTieneYo: NULO
+            finsi
+        sino
+            si no EsInstancia: ast, AST#NodoMétodo
+                %noTieneYo: NULO
+            finsi
+        finsi
+        variable nombreYo
+        fijar nombreYo a ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
+        fijar parámetros a parámetros#unión: (Conjunto#crearCon: nombreYo)
+    finprocedimiento
+    fijar nombresLibres a Conjunto#vacío
+    funcion EsLibre: binding, ámbito
+        si no EsLocalEntre: ámbitoDeFunción, ámbito, binding
+            devolver VERDADERO
+        sino
+            si Contiene: ámbito#todosLosBindings, binding
+                devolver no EsLocalEntre: ámbitoDeAST, ámbito, binding
+            sino
+                devolver FALSO
+            finsi
+        finsi
+    finfuncion
+    fijar callbacks a Concatenar: callbacksParaNoLocales, (Arreglo#crearCon: funcion: ámbito, binding
+        si EsLibre: binding, ámbito
+            fijar nombresLibres a nombresLibres#unión: (Conjunto#crearCon: binding)
+        finsi
+    finfuncion)
+    ParaCadaElemento: ast#cuerpo, procedimiento: instr
+        devolver DefuncionalizarImpl: instr, ámbitoDeAST, ámbitoDeAST, callbacks
+    finprocedimiento
+    ast#fijarMetadato: LLAVE_DEFUNCIONALIZACIÓN, {nombresLibres}, nombresLibres
 finprocedimiento
 
 [DOCUMENTA
