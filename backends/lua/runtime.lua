@@ -740,7 +740,7 @@ function M.enviarMensaje(obj, mensaje, ...)
       local tbl = PRIM_DISPATCH_TABLE[type(obj)]
       if tbl[mensaje] == nil then
          error(("Mensaje %q no encontrado en la instancia %s de %s"):format(
-               mensaje, self, LUA_TYPE_TO_PRIM_CLASS[type(obj)]))
+               mensaje, obj, LUA_TYPE_TO_PRIM_CLASS[type(obj)]))
       else
          return tbl[mensaje](obj, ...)
       end
