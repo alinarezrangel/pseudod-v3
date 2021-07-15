@@ -274,11 +274,13 @@ procedimiento DefuncionalizarImpl: ast, ámbitoDeFunción, ámbitoMásReciente, 
     finsi
     necesitas no EsNulo: ámbitoDeFunción
     necesitas no EsNulo: ámbitoMásReciente
+
     si (EsInstancia: ast, AST#NodoFunción)
         || (EsInstancia: ast, AST#NodoFunciónAnónima)
         || (EsInstancia: ast, AST#NodoMétodo)
         devolver DefuncionalizaFunción: ast, ámbitoDeFunción, ámbitoMásReciente, callbacksParaNoLocales
     finsi
+
     si EsInstancia: ast, AST#NodoSi
         DefuncionalizarImpl: ast#condicional, ámbitoDeFunción, ámbitoMásReciente, callbacksParaNoLocales
         variables ámbitoSiVerdadero, ámbitoSiFalso
@@ -292,30 +294,127 @@ procedimiento DefuncionalizarImpl: ast, ámbitoDeFunción, ámbitoMásReciente, 
         finprocedimiento
         devolver NULO
     finsi
+
     si EsInstancia: ast, AST#NodoMientras
         DefuncionalizarImpl: ast#condicional, ámbitoDeFunción, ámbitoMásReciente, callbacksParaNoLocales
         variable ámbito
-        fijar ámbito a ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiVerdadero}
+        fijar ámbito a ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídos}
         ParaCadaElemento: ast#cuerpo, procedimiento: instr
             devolver DefuncionalizarImpl: instr, ámbitoDeFunción, ámbito, callbacksParaNoLocales
         finprocedimiento
         devolver NULO
     finsi
-    si EsInstancia: ast, AST#NodoIdentificador
-        si no ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
-            devolver ParaCadaElemento: callbacksParaNoLocales, procedimiento: callback
-                devolver %callback: ámbitoMásReciente, (RN#NombreResueltoDe: ast)
-            finprocedimiento
-        sino
-            devolver NULO
-        finsi
+
+    funcion Visitar: nodo
+        devolver DefuncionalizarImpl: nodo, ámbitoDeFunción, ámbitoMásReciente, callbacksParaNoLocales
+    finfuncion
+
+    si EsInstancia: ast, AST#NodoFijar
+        Visitar: ast#objetivo
+        Visitar: ast#valor
+        devolver NULO
     finsi
-    si EsInstancia: ast, AST#NodoLlamarProcedimiento
-        devolver ParaCadaElemento: ast#argumentos, procedimiento: arg
-            necesitas EsInstancia: arg, AST#NodoIdentificador
-            devolver DefuncionalizarImpl: arg, ámbitoDeFunción, ámbitoMásReciente, callbacksParaNoLocales
+
+    si EsInstancia: ast, AST#NodoEscribir
+        devolver Visitar: ast#valor
+    finsi
+
+    si EsInstancia: ast, AST#NodoClase
+        si no EsNulo: ast#claseBase
+            Visitar: ast#claseBase
+        finsi
+        ParaCadaElemento: ast#extiendeClases, &Visitar
+        ParaCadaElemento: ast#implementaClases, &Visitar
+        devolver NULO
+    finsi
+
+    si EsInstancia: ast, AST#NodoDefineMétodoEnClase
+        NoImplementado
+    finsi
+
+    si EsInstancia: ast, AST#NodoNecesitas
+        devolver Visitar: ast#expresión
+    finsi
+
+    si EsInstancia: ast, AST#NodoDevolver
+        devolver Visitar: ast#expresión
+    finsi
+
+
+    si EsInstancia: ast, AST#NodoIdentificador
+        devolver ParaCadaElemento: callbacksParaNoLocales, procedimiento: callback
+            devolver %callback: ámbitoMásReciente, (RN#NombreResueltoDe: ast)
         finprocedimiento
     finsi
+
+    si EsInstancia: ast, AST#NodoLlamarProcedimiento
+        Visitar: ast#proc
+        ParaCadaElemento: ast#argumentos, procedimiento: arg
+            si EsInstancia: arg, AST#NodoVariadic
+                devolver Visitar: arg#interno
+            sino
+                devolver Visitar: arg
+            finsi
+        finprocedimiento
+        devolver NULO
+    finsi
+
+    si EsInstancia: ast, AST#NodoEnviarMensaje
+        Visitar: ast#objeto
+        ParaCadaElemento: ast#argumentos, procedimiento: arg
+            si EsInstancia: arg, AST#NodoVariadic
+                devolver Visitar: arg#interno
+            sino
+                devolver Visitar: arg
+            finsi
+        finprocedimiento
+        devolver NULO
+    finsi
+
+    si EsInstancia: ast, AST#NodoOperador
+        Visitar: ast#lhs
+        Visitar: ast#rhs
+        devolver NULO
+    finsi
+
+    si EsInstancia: ast, AST#NodoNoLlamar
+        devolver Visitar: ast#base
+    finsi
+
+    si EsInstancia: ast, AST#NodoAutoejecutar
+        Visitar: ast#expr
+        ParaCadaElemento: ast#argumentos, procedimiento: arg
+            si EsInstancia: arg, AST#NodoVariadic
+                devolver Visitar: arg#interno
+            sino
+                devolver Visitar: arg
+            finsi
+        finprocedimiento
+        devolver NULO
+    finsi
+
+    si EsInstancia: ast, AST#NodoSonIguales
+        Visitar: ast#lhs
+        Visitar: ast#rhs
+        devolver NULO
+    finsi
+
+    si EsInstancia: ast, AST#NodoReferenciar
+        devolver Visitar: ast#nombre
+    finsi
+
+    si EsInstancia: ast, AST#NodoNo
+        devolver Visitar: ast#expresión
+    finsi
+
+    si EsInstancia: ast, AST#NodoClonar
+        Visitar: ast#expresiónAClonar
+        ParaCadaElemento: ast#campos, procedimiento: par
+            devolver Visitar: (par#en: 1)
+        finprocedimiento
+        devolver NULO
+    finsi
+
     devolver NULO
 finprocedimiento
 

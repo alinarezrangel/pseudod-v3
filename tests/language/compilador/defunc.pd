@@ -183,6 +183,16 @@ funcion F5: A
     finsi
 finfuncion
 
+funcion F6: A, B
+    variables C, D
+    mientras C < X
+        A#\llamar\: (clonar (B * Y) con
+            hola: ($: 1, 2)
+            adios: ($: 3, 4)
+        finclonar)
+    finmientras
+finfuncion
+
 }
 
 funcion ParsearYDefunc: programa
@@ -204,14 +214,21 @@ finfuncion
 variable ast
 fijar ast a ParsearYDefunc: programa
 
-procedimiento Test_F1
+variables X, Y, $, XY$s
+
+si VERDADERO
     variable prog
     fijar prog a PExpr: {NodoPrograma>instrucciones}, ast
 
-    variables X, Y, XYs
     fijar X a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, prog
     fijar Y a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/1}, prog
-    fijar XYs a Conjunto#crearCon: X, Y
+    fijar $ a PExpr: {NodoFunción/0/>nombre/>>RN>nombreResuelto}, prog
+    fijar XY$s a Conjunto#crearCon: X, Y, $
+finsi
+
+procedimiento Test_F1
+    variable prog
+    fijar prog a PExpr: {NodoPrograma>instrucciones}, ast
 
     variables F1, F1_1, F1_2, F1_3, F1_4
     fijar F1 a PExpr: {NodoFunción/1}, prog
@@ -234,21 +251,16 @@ procedimiento Test_F1
     fijar F1_3n a PExpr: {>>DEFUN>nombresLibres}, F1_3
     fijar F1_4n a PExpr: {>>DEFUN>nombresLibres}, F1_4
 
-    necesitas F1n = XYs
-    necesitas F1_1n = (F1p#unión: XYs)
-    necesitas F1_2n = F1p
-    necesitas F1_3n = Conjunto#vacío
-    necesitas F1_4n = Conjunto#vacío
+    necesitas F1n = XY$s
+    necesitas F1_1n = (F1p#unión: XY$s)
+    necesitas F1_2n = (F1p#unión: (Conjunto#crearCon: $))
+    necesitas F1_3n = (Conjunto#crearCon: $)
+    necesitas F1_4n = (Conjunto#crearCon: $)
 finprocedimiento
 
 procedimiento Test_F2
     variable prog
     fijar prog a PExpr: {NodoPrograma>instrucciones}, ast
-
-    variables X, Y, XYs
-    fijar X a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, prog
-    fijar Y a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/1}, prog
-    fijar XYs a Conjunto#crearCon: X, Y
 
     variables F2, F2_1, F2_2, F2_3, F2_4
     fijar F2 a PExpr: {NodoFunción/2}, prog
@@ -277,21 +289,16 @@ procedimiento Test_F2
     fijar F2_3n a PExpr: {>>DEFUN>nombresLibres}, F2_3
     fijar F2_4n a PExpr: {>>DEFUN>nombresLibres}, F2_4
 
-    necesitas F2n = XYs
-    necesitas F2_1n = ((F2p#unión: (Conjunto#crearCon: X))#unión: QWEs)
-    necesitas F2_2n = ((F2p#unión: XYs)#unión: QWEs)
-    necesitas F2_3n = QWEs
-    necesitas F2_4n = Conjunto#vacío
+    necesitas F2n = XY$s
+    necesitas F2_1n = ((F2p#unión: (Conjunto#crearCon: X, $))#unión: QWEs)
+    necesitas F2_2n = ((F2p#unión: XY$s)#unión: QWEs)
+    necesitas F2_3n = (QWEs#unión: (Conjunto#crearCon: $))
+    necesitas F2_4n = (Conjunto#crearCon: $)
 finprocedimiento
 
 procedimiento Test_F3
     variable prog
     fijar prog a PExpr: {NodoPrograma>instrucciones}, ast
-
-    variables X, Y, XYs
-    fijar X a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, prog
-    fijar Y a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/1}, prog
-    fijar XYs a Conjunto#crearCon: X, Y
 
     variables F3, F3_1, F3_1_1
     fijar F3 a PExpr: {NodoFunción/3}, prog
@@ -314,31 +321,25 @@ procedimiento Test_F3
     fijar F3_1n a PExpr: {>>DEFUN>nombresLibres}, F3_1
     fijar F3_1_1n a PExpr: {>>DEFUN>nombresLibres}, F3_1_1
 
-    necesitas F3n = XYs
-    necesitas F3_1n = ((F3p#unión: XYs)#unión: (Conjunto#crearCon: Z))
-    necesitas F3_1_1n = (((F3p#unión: XYs)#unión: (Conjunto#crearCon: Z, W))#unión: F3_1p)
+    necesitas F3n = XY$s
+    necesitas F3_1n = ((F3p#unión: XY$s)#unión: (Conjunto#crearCon: Z))
+    necesitas F3_1_1n = (((F3p#unión: XY$s)#unión: (Conjunto#crearCon: Z, W))#unión: F3_1p)
 finprocedimiento
 
 procedimiento Test_F4
-    variables prog, F4, X, Y, XYs, A, B, F4n
+    variables prog, F4, A, B, F4n
     fijar prog a PExpr: {NodoPrograma>instrucciones}, ast
-    fijar X a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, prog
-    fijar Y a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/1}, prog
-    fijar XYs a Conjunto#crearCon: X, Y
     fijar F4 a PExpr: {NodoFunción/4}, prog
     fijar F4n a PExpr: {>>DEFUN>nombresLibres}, F4
     fijar A a PExpr: {>parámetros/>>RN>nombreResuelto/0}, F4
     fijar B a PExpr: {>cuerpo/NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, F4
 
-    necesitas F4n = XYs
+    necesitas F4n = XY$s
 finprocedimiento
 
 procedimiento Test_F5
-    variables prog, F5, X, Y, XYs, F5n
+    variables prog, F5, F5n
     fijar prog a PExpr: {NodoPrograma>instrucciones}, ast
-    fijar X a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/0}, prog
-    fijar Y a PExpr: {NodoVariable/0/>nombres/>>RN>nombreResuelto/1}, prog
-    fijar XYs a Conjunto#crearCon: X, Y
     fijar F5 a PExpr: {NodoFunción/5}, prog
     fijar F5n a PExpr: {>>DEFUN>nombresLibres}, F5
 
@@ -360,9 +361,17 @@ procedimiento Test_F5
     fijar F5_1n a PExpr: {>>DEFUN>nombresLibres}, F5_1
     fijar F5_2n a PExpr: {>>DEFUN>nombresLibres}, F5_2
 
-    necesitas F5n = XYs
-    necesitas F5_1n = (XYs#unión: AQWs)
-    necesitas F5_2n = (XYs#unión: AQZs)
+    necesitas F5n = XY$s
+    necesitas F5_1n = (XY$s#unión: AQWs)
+    necesitas F5_2n = (XY$s#unión: AQZs)
+finprocedimiento
+
+procedimiento Test_F6
+    variables prog, F6, F6n
+    fijar prog a PExpr: {NodoPrograma>instrucciones}, ast
+    fijar F6 a PExpr: {NodoFunción/5}, prog
+    fijar F6n a PExpr: {>>DEFUN>nombresLibres}, F6
+    necesitas F6n = XY$s
 finprocedimiento
 
 
@@ -371,3 +380,4 @@ Test_F2
 Test_F3
 Test_F4
 Test_F5
+Test_F6
