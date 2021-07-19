@@ -1041,7 +1041,7 @@ metodo CompiladorSimpleALua#compilarInstrucciones: nodos
     variable cods
     fijar cods a Mapear: nodos, funcion: nodo
         si EsInstancia: nodo, AST#NodoExpresion
-            devolver Em#Formatear: nodo, {rt.ignore(~p);~%}, (yo#visitar: nodo)
+            devolver Em#Formatear: nodo, {rt_ignore(~p);~%}, (yo#visitar: nodo)
         sino
             devolver Em#Formatear: nodo, {~p;~%}, (yo#visitar: nodo)
         finsi
@@ -1073,7 +1073,7 @@ funcion CompilarALua: moddb, llaveDeMódulo, ast, ámbito, compilador
     fijar builtins a comp#registrarBuiltins
     fijar código a Em#Formatear:
         ast,
-        {local rt = require "backends.lua.runtime";~%local rt_enviarMensaje, rt_enviarMensajeV = rt.enviarMensaje, rt.enviarMensajeV;~%~p~%~p~%~p~%},
+        {local rt = require "backends.lua.runtime";~%local rt_enviarMensaje, rt_enviarMensajeV, rt_ignore = rt.enviarMensaje, rt.enviarMensajeV, rt.ignore;~%~p~%~p~%~p~%},
         ini,
         builtins,
         (comp#visitar: ast)
