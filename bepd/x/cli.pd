@@ -1,0 +1,262 @@
+utilizar bepd/builtins
+utilizar bepd/x/adhoc (ObjetoAdHoc)
+utilizar bepd/x/enum (Enum)
+
+
+procedimiento ParaCadaElementoSaltando: arr, proc
+    variable i
+    fijar i a 0
+    mientras i < arr#longitud
+        variable inc
+        fijar inc a LlamarConEC: procedimiento: saltar
+            %proc: (arr#en: i), i, saltar
+            devolver i + 1
+        finprocedimiento
+        fijar i a inc
+    finmientras
+finprocedimiento
+
+variable OPCIÓN_PROCESADA
+fijar OPCIÓN_PROCESADA a Enum: {OPCIÓN_PROCESADA}, {CORTA}, {LARGA}
+
+funcion ParsearOpciones: númeroDeArgumentosDe, acumulaValores, argv
+    variables opciones, argumentos, idxArgumentos
+    fijar opciones a Diccionario#vacío
+    procedimiento agregarValoresAOpción: opt, tipoOpt, valores
+        si %acumulaValores: opt, tipoOpt
+            variable valoresAnteriores
+            si opciones#contiene: opt
+                fijar valoresAnteriores a opciones#en: opt
+            sino
+                fijar valoresAnteriores a Arreglo#vacio
+            finsi
+            opciones#fijarEn: opt, (Concatenar: valoresAnteriores, valores)
+        sino
+            si opciones#contiene: opt
+                __FallarConMensaje: ({La opción ~t~t ya fue especificada}#formatear: ((tipoOpt = OPCIÓN_PROCESADA#CORTA)#escojer: {-}, {--}), opt)
+            sino
+                opciones#fijarEn: opt, valores
+            finsi
+        finsi
+    finprocedimiento
+    fijar idxArgumentos a LlamarConEC: procedimiento: salir
+        ParaCadaElementoSaltando: argv, procedimiento: argumento, i, saltarHasta
+            si argumento = {-}
+                %salir: i
+            finsi
+            si argumento#longitud = 0
+                %salir: i
+            finsi
+            si ((argumento#subTexto: 0, 2) = {--}) && (argumento#longitud > 2)
+                variables argYValor, sep, arg, valor, numArgs, valores
+                fijar argYValor a argumento#subTexto: 2, argumento#longitud
+                fijar sep a argYValor#buscar: 0, {=}
+                si no EsNulo: sep
+                    fijar arg a argYValor#parteDelTexto: 0, sep
+                    fijar valor a argYValor#parteDelTexto: (sep + 1), argYValor#longitud
+                sino
+                    fijar arg a argYValor
+                    fijar valor a NULO
+                finsi
+                fijar numArgs a %númeroDeArgumentosDe: arg, OPCIÓN_PROCESADA#LARGA
+                si no EsNulo: valor
+                    si no numArgs = 1
+                        __FallarConMensaje: ({Se especificó un argumento pero se esperaban ~t para la opción --~t}#formatear: numArgs, arg)
+                    finsi
+                    fijar valores a Arreglo#crearCon: valor
+                    agregarValoresAOpción: arg, OPCIÓN_PROCESADA#LARGA, valores
+                    %saltarHasta: (i + 1)
+                sino
+                    si numArgs = 0
+                        agregarValoresAOpción: arg, OPCIÓN_PROCESADA#LARGA, VERDADERO
+                    sino
+                        fijar valores a PedazoDeArreglo: argv, (i + 1), (i + 1 + numArgs)
+                        si no (valores#longitud = numArgs)
+                            __FallarConMensaje: ({Se esperaban ~t argumentos pero se obtuvieron ~t para la opción --~t}#formatear: numArgs, valores#longitud, arg)
+                        finsi
+                        agregarValoresAOpción: arg, OPCIÓN_PROCESADA#LARGA, valores
+                    finsi
+                    %saltarHasta: (i + 1 + numArgs)
+                finsi
+            finsi
+            si (argumento#en: 0) = {-}
+                variables finDeOpts, args
+                fijar finDeOpts a FALSO
+                fijar args a argumento#subTexto: 1, (argumento#longitud - 1)
+                ParaCadaElemento: args, procedimiento: opt
+                    si opt = {-}
+                        fijar finDeOpts a VERDADERO
+                    sino
+                        variable nArgs
+                        fijar nArgs a %númeroDeArgumentosDe: opt, OPCIÓN_PROCESADA#CORTA
+                        si nArgs = 0
+                            agregarValoresAOpción: opt, OPCIÓN_PROCESADA#CORTA, VERDADERO
+                        sino
+                            variable valores
+                            fijar valores a PedazoDeArreglo: argv, (i + 1), (i + 1 + nArgs)
+                            si no (valores#longitud = nArgs)
+                                __FallarConMensaje: ({Se esperaban ~t argumentos pero se obtuvieron ~t para la opción -~t}#formatear: nArgs, valores#longitud, opt)
+                            finsi
+                            agregarValoresAOpción: opt, OPCIÓN_PROCESADA#CORTA, valores
+                            fijar i a i + nArgs
+                        finsi
+                    finsi
+                finprocedimiento
+                si finDeOpts
+                    %salir: (i + 1)
+                sino
+                    %saltarHasta: (i + 1)
+                finsi
+            finsi
+            %salir: i
+        finprocedimiento
+        devolver argv#longitud
+    finprocedimiento
+    fijar argumentos a PedazoDeArreglo: argv, idxArgumentos, -1
+    devolver ObjetoAdHoc: {opciones}, opciones, {argumentos}, argumentos
+finfuncion
+
+
+clase Opción
+    atributos opCorta, opLarga, númArgumentos, acumular, callback
+finclase
+
+metodo Opción#inicializar: opCorta, opLarga, númArgumentos, acumular, callback
+    fijar yo#opCorta a opCorta
+    fijar yo#opLarga a opLarga
+    fijar yo#númArgumentos a númArgumentos
+    fijar yo#acumular a acumular
+    fijar yo#callback a callback
+finmetodo
+
+metodo Opción#comoTexto
+    devolver {(Opción corta = ~t, larga = ~t, nargs = ~t, acumular = ~t, callback = ~t)}#formatear: yo#opCorta, yo#opLarga, yo#númArgumentos, yo#acumular, yo#callback
+finmetodo
+
+
+funcion CLI: opciones, númArgumentos, argv
+    variables res, resOpciones, argumentos
+    ParaCadaElemento: opciones, procedimiento: opt
+        si no EsNulo: opt#opCorta
+            necesitas opt#opCorta#longitud = 1
+        finsi
+        si no EsNulo: opt#opLarga
+            necesitas opt#opLarga#longitud > 1
+        finsi
+    finprocedimiento
+    funcion númeroDeArgumentosDe: optTexto, optLeída
+        devolver LlamarConEC: procedimiento: dev
+            ParaCadaElemento: opciones, procedimiento: opt
+                si (EnviarMensaje: opt, ((optLeída = OPCIÓN_PROCESADA#CORTA)#escojer: {opCorta}, {opLarga})) = optTexto
+                    %dev: opt#númArgumentos
+                finsi
+            finprocedimiento
+            __FallarConMensaje: ({No existe la opción ~t~t}#formatear: ((optLeída = OPCIÓN_PROCESADA#CORTA)#escojer: {-}, {--}), optTexto)
+        finprocedimiento
+    finfuncion
+    funcion acumulaValores: optTexto, optLeída
+        devolver LlamarConEC: procedimiento: dev
+            ParaCadaElemento: opciones, procedimiento: opt
+                si (EnviarMensaje: opt, ((optLeída = OPCIÓN_PROCESADA#CORTA)#escojer: {opCorta}, {opLarga})) = optTexto
+                    %dev: opt#acumular
+                finsi
+            finprocedimiento
+            __FallarConMensaje: ({No existe la opción ~t~t}#formatear: ((optLeída = OPCIÓN_PROCESADA#CORTA)#escojer: {-}, {--}), optTexto)
+        finprocedimiento
+    finfuncion
+    fijar res a ParsearOpciones: &númeroDeArgumentosDe, &acumulaValores, argv
+    fijar resOpciones a res#opciones
+    fijar argumentos a res#argumentos
+    si (no EsNulo: númArgumentos) && (argumentos#longitud = númArgumentos)
+        __FallarConMensaje: ({Se esperaban ~t argumentos posicionales pero se obtuvieron ~t}#formatear: númArgumentos, argumentos#longitud)
+    finsi
+    resOpciones#paraCadaPar: procedimiento: opt, valores
+        ParaCadaElemento: opciones, procedimiento: opción
+            si (opción#opCorta = opt) || (opción#opLarga = opt)
+                %(opción#callback): opción, ...((EsInstancia: valores, Boole)#escojer: (Arreglo#crearCon: valores), valores)
+            finsi
+        finprocedimiento
+    finprocedimiento
+    devolver argumentos
+finfuncion
+
+funcion ProcesarCLIDelCompilador: númArgs, argumentosDelCLI
+    variable opciones
+    fijar opciones a Diccionario#vacío
+
+    procedimiento Callback: txt
+        devolver procedimiento: opt, ...valores
+            si (opt#númArgumentos =< 1) && (no opt#acumular)
+                opciones#fijarEn: txt, (valores#en: 0)
+            sino
+                opciones#fijarEn: txt, valores
+            finsi
+            Escribir: txt, (opciones#en: txt)
+        finprocedimiento
+    finprocedimiento
+
+    variable opts
+    fijar opts a Arreglo#crearCon:
+        [ ===== Ayuda e información ===== ]
+        (Opción#crear: {h},  {help},                 0, FALSO,     (Callback: {ayuda})),
+        (Opción#crear: {a},  {ayuda},                0, FALSO,     (Callback: {ayuda})),
+        (Opción#crear: {?},  NULO,                   0, FALSO,     (Callback: {ayuda})),
+
+        (Opción#crear: {v},  {version},              0, FALSO,     (Callback: {version})),
+        (Opción#crear: NULO, {solo-version},         0, FALSO,     (Callback: {soloVersion})),
+
+        (Opción#crear: {I},  {inspeccionar},         1, FALSO,     (Callback: {inspeccionar})),
+
+        (Opción#crear: {V},  {verboso},              0, VERDADERO, (Callback: {verboso})),
+        (Opción#crear: NULO, {sin-mensajes},         0, FALSO,     (Callback: {sinMensajes})),
+        (Opción#crear: NULO, {sin-readline},         0, FALSO,     (Callback: {sinReadline})),
+        (Opción#crear: NULO, {color},                1, FALSO,     (Callback: {color})),
+
+        [ ===== Experimentos ===== ]
+        (Opción#crear: {X},  {experimento},          1, VERDADERO, (Callback: {experimentos})),
+
+        [ ===== Tokenizador ===== ]
+        (Opción#crear: NULO, {tokenizar-v3},         0, FALSO,     (Callback: {tokenizar})),
+        (Opción#crear: NULO, {Mtokenizar-v3},        1, VERDADERO, (Callback: {opcionesParaTokenizar})),
+
+        [ ===== Entrada, salida y archivos temporales ===== ]
+        (Opción#crear: {o},  {salida},               1, FALSO,     (Callback: {salida})),
+        (Opción#crear: NULO, {escribir-salida},      0, FALSO,     (Callback: {escribirSalida})),
+        (Opción#crear: NULO, {leer-entrada},         0, FALSO,     (Callback: {leerEntrada})),
+        (Opción#crear: {c},  {codigo},               1, FALSO,     (Callback: {código})),
+        (Opción#crear: NULO, {código},               1, FALSO,     (Callback: {código})),
+
+        [ ===== Backend y sus opciones ===== ]
+        (Opción#crear: NULO, {backend},              1, FALSO,     (Callback: {backend})),
+        (Opción#crear: NULO, {Mbackend},             1, VERDADERO, (Callback: {opcionesParaBackend})),
+        (Opción#crear: {O},  {optimizar},            1, FALSO,     (Callback: {optimizar})),
+
+        [ ===== Advertencias, errores y demás opciones de calidad de código ===== ]
+        (Opción#crear: {W},  {advertencia},          1, VERDADERO, (Callback: {advertencias})),
+        (Opción#crear: NULO, {manejar-advertencias}, 1, FALSO,     (Callback: {manejarAdvertencias})),
+        (Opción#crear: NULO, {solo-valida},          0, FALSO,     (Callback: {soloValida})),
+
+        [ ===== Base de datos de módulos ===== ]
+        (Opción#crear: NULO, {Mbase-de-datos},       1, VERDADERO, (Callback: {opcionesParaLaBaseDeDatos})),
+        (Opción#crear: NULO, {guardar-db},           1, FALSO,     (Callback: {guardarBaseDeDatos})),
+        (Opción#crear: NULO, {cargar-db},            1, VERDADERO, (Callback: {cargarBasesDeDatos})),
+
+        [ ===== REPL y el intérprete ===== ]
+        (Opción#crear: {i},  {interactivo},          0, FALSO,     (Callback: {interactivo})),
+
+        [ ===== Opciones de compatibilidad ===== ]
+        (Opción#crear: {b},  NULO,                   1, FALSO,     (Callback: {rutaBepd})),
+        (Opción#crear: {B},  NULO,                   1, FALSO,     (Callback: {rutaBepd})),
+        (Opción#crear: {l},  NULO,                   1, FALSO,     (Callback: {rutaNea})),
+
+        [ ===== Bibliotecas y librerías ===== ]
+        (Opción#crear: {L},  {ruta-bib},             1, VERDADERO, (Callback: {rutasDeBibliotecas}))
+
+    variables opcs, pos
+    fijar pos a CLI: opts, númArgs, argumentosDelCLI
+    fijar opcs a ObjetoAdHoc: ...(Aplanar: opciones#comoArreglo)
+    devolver ObjetoAdHoc: {opciones}, opcs, {argumentos}, pos
+finfuncion
+
+Escribir: (ProcesarCLIDelCompilador: NULO, __Argv)
+
