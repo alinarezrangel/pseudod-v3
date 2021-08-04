@@ -1,0 +1,189 @@
+utilizar bepd/builtins
+utilizar bepd/datos/conjunto (Conjunto)
+utilizar bepd/x/puerto/conPosición (PosiciónTextual)
+utilizar bepd/utilidades/texto
+
+utilizar tokens como Tokens
+utilizar ast como AST
+utilizar parser como Parser
+utilizar resoluciónDeNombres como RN
+utilizar defuncionalización como Defun
+
+
+[ Nombre código del backend. Véase también la variable __Impl. ]
+variable PSEUDOD_IMPL
+fijar PSEUDOD_IMPL a {Wasm Bootstrap}
+
+
+funcion TextoWasm: txt
+    necesitas no TextoContiene: txt, {"} ["}]
+    necesitas no TextoContiene: txt, {~%}#formatear
+    necesitas no TextoContiene: txt, {\}
+    devolver {"~t"}#formatear: txt
+finfuncion
+
+
+clase Compilado
+    atributos instrucciones, declaraciones
+finclase
+
+metodo estatico Compilado#crear: i, d
+    devolver clonar yo#_crear con
+        instrucciones: i
+        declaraciones: d
+    finclonar
+finmetodo
+
+metodo estatico Compilado#deInstrucciónes: i
+    devolver Compilado#crear: i, {}
+finmetodo
+
+metodo estatico Compilado#deDeclaraciones: d
+    devolver Compilado#crear: {}, d
+finmetodo
+
+metodo estatico Compilado#vacío
+    devolver Compilado#crear: {}, {}
+finmetodo
+
+metodo Compilado#operador_++: otro
+    devolver Compilado#crear:
+        ({~t~%~t}#formatear: yo#instrucciones, otro#instrucciones),
+        ({~t~%~t}#formatear: yo#declaraciones, otro#declaraciones)
+finmetodo
+
+funcion UnirCompilados: partes
+    devolver Reducir: Compilado#vacío, funcion: acc, el
+        devolver acc ++ el
+    finfuncion, partes
+finfuncion
+
+
+funcion NombresDefinídosSinParámetros: ast
+    devolver ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSinParámetros}
+finfuncion
+
+
+funcion NombreEnWasm: identOBinding
+    si EsInstancia: identOBinding, AST#NodoIdentificador
+        fijar identOBinding a RN#NombreResueltoDe: identOBinding
+    finsi
+    devolver {$r_}#concatenar: identOBinding#comoTexto
+finfuncion
+
+funcion CompilarBloqueAWasm: subámbito, instrucciones
+    variables is, ds
+    fijar is a Arreglo#vacio
+    fijar ds a Arreglo#vacio
+    ParaCadaElemento: subámbito#todosLosBindingsLocales, procedimiento: binding
+        variable id
+        fijar id a NombreEnWasm: binding
+        is#agregarAlFinal: (Compilado#deInstrucciónes: ({(local ~t i64)}#formatear: id))
+    finprocedimiento
+    ParaCadaElemento: instrucciones, procedimiento: instr
+        is#agregarAlFinal: (CompilarAWasm: instr)
+        si EsInstancia: instr, AST#NodoExpresion
+            is#agregarAlFinal: (Compilado#deInstrucciónes: {(call $printi)})
+        finsi
+    finprocedimiento
+    devolver UnirCompilados: (Concatenar: is, ds)
+finfuncion
+
+funcion CompilarAWasm: ast
+    si EsInstancia: ast, AST#NodoPrograma
+        variable subámbito
+        fijar subámbito a RN#ObtenerNombresDefinídos: ast
+        devolver CompilarBloqueAWasm: subámbito, ast#instrucciones
+    finsi
+    si EsInstancia: ast, AST#NodoNumeroLiteral
+        devolver Compilado#deInstrucciónes: ({(i64.const ~t)~%(call $rt_lit_int)}#formatear: ast#valor)
+    finsi
+    si EsInstancia: ast, AST#NodoOperador
+        variable lhs, rhs
+        fijar lhs a CompilarAWasm: ast#lhs
+        fijar rhs a CompilarAWasm: ast#rhs
+        si ast#op#op = {+}
+            devolver lhs ++ rhs ++ (Compilado#deInstrucciónes: {(i64.add)})
+        finsi
+        si ast#op#op = {-}
+            devolver lhs ++ rhs ++ (Compilado#deInstrucciónes: {(i64.sub)})
+        finsi
+        si ast#op#op = {*}
+            devolver lhs ++ rhs ++ (Compilado#deInstrucciónes: {(i64.mul)})
+        finsi
+        si ast#op#op = {/}
+            devolver lhs ++ rhs ++ (Compilado#deInstrucciónes: {(i64.div_s)})
+        finsi
+        NoImplementado
+    finsi
+    si EsInstancia: ast, AST#NodoIdentificador
+        variable id
+        fijar id a NombreEnWasm: ast
+        si ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+            devolver Compilado#deInstrucciónes: ({(call ~t)}#formatear: id)
+        sino
+            devolver Compilado#deInstrucciónes: ({(local.get ~t)}#formatear: id)
+        finsi
+    finsi
+    si EsInstancia: ast, AST#NodoVariable
+        devolver Compilado#deInstrucciónes: {}
+    finsi
+    si EsInstancia: ast, AST#NodoFijar
+        variables id, val
+        fijar id a NombreEnWasm: ast#objetivo
+        fijar val a CompilarAWasm: ast#valor
+        devolver val ++ (Compilado#deInstrucciónes: ({(local.set ~t)}#formatear: id))
+    finsi
+    si EsInstancia: ast, AST#NodoFunción
+        variables id, cuerpo, fn
+        fijar id a NombreEnWasm: ast#nombre
+        fijar cuerpo a CompilarBloqueAWasm: (NombresDefinídosSinParámetros: ast), ast#cuerpo
+        fijar fn a {(func ~t (result i64)~%~t~%(i64.const 1))}#formatear: id, cuerpo#instrucciones
+        devolver Compilado#deDeclaraciones: ({~t~%~t}#formatear: cuerpo#declaraciones, fn)
+    finsi
+    Inalcanzable
+finfuncion
+
+funcion ParsearYDefunc: programa
+    variable ast
+    fijar ast a Parser#CrearAST: programa
+
+    variable ámbitoPrincipal
+    fijar ámbitoPrincipal a RN#ResolverNombres:
+        ast,
+        procedimiento: nombreDelMódulo
+            Inalcanzable
+        finprocedimiento,
+        procedimiento: ámbito finprocedimiento,
+        procedimiento: ámbito finprocedimiento
+    Defun#Defuncionalizar: ast
+    devolver ast
+finfuncion
+
+variables ast, programa, cc
+fijar programa a {
+
+funcion Q
+    2 * 3 - 20 / 4
+finfuncion
+
+variables X, Y, Z
+fijar X a 4
+fijar Y a X * 2 - Q * 2
+fijar Z a Y * Y
+Z / 2
+Q
+
+}
+
+fijar ast a ParsearYDefunc: programa
+fijar cc a CompilarAWasm: ast
+
+Escribir: ({(module
+(import "host" "print" (func $printi (param i64)))
+(memory 1)
+(func $rt_lit_int (param $x i64) (result i64)
+  (local.get $x))
+~t
+(func $main ~t)
+(export "main" (func $main)))}#formatear: cc#declaraciones, cc#instrucciones)
