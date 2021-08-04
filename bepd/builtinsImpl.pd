@@ -47,16 +47,6 @@ funcion EsInstancia: obj, _clase
 finfuncion
 
 [DOCUMENTA
-@brief{Convierte @param{valor} a texto y lo escribe.}
-
-A diferencia de @pd{escribir} esta función siempre escribe un fin de línea.
-DOCUMENTA]
-procedimiento Escribir: valor
-    escribir valor#comoTexto
-    nl
-finprocedimiento
-
-[DOCUMENTA
 @brief{Determina si el arreglo @param{arr} contiene un valor igual a @param{valor}.}
 
 Realiza una búsqueda lineal sobre @param{arr} buscando un valor igual a
@@ -237,6 +227,24 @@ end}, arr, proc
             fijar i a i + 1
         finmientras
     finsi
+finprocedimiento
+
+[DOCUMENTA
+@brief{Escribe los valores separados por tabuladores.}
+
+Escribe todos los @pd{valores} convertidos a un texto con el mensaje
+@code{comoTexto} y separados con tabuladores. A diferencia de @pd{escribir}
+esta función siempre escribe un fin de línea.
+DOCUMENTA]
+procedimiento Escribir: ...valores
+    ParaCadaElementoConÍndice: valores, procedimiento: valor, i
+        si i > 0
+            [ Nota: el siguiente es un tabulador literal. ¡No lo cambies! ]
+            escribir {	}
+        finsi
+        escribir valor#comoTexto
+    finprocedimiento
+    nl
 finprocedimiento
 
 [DOCUMENTA
