@@ -719,6 +719,22 @@ procedimiento Aplicar'i: proc, ...argsYFinal
 finprocedimiento
 
 [DOCUMENTA
+@brief{Envía un mensaje a un objeto.}
+
+Es como @pd{__EnviarMensaje} pero en vez de tener tres parámetros (el objeto,
+el mensaje y un arreglo con los argumentos), es @italic{variadic} lo que lo
+hace ligeramente más fácil de usar.
+
+@ejemplo|{
+necesitas (EnviarMensaje: 2, {operador_+}, 3) = 5
+necesitas (EnviarMensaje: Arreglo, {crearCon}, 1, 2, 3) = (Arreglo#crearCon: 1, 2, 3)
+}|
+DOCUMENTA]
+procedimiento EnviarMensaje: obj, mensaje, ...args
+    devolver __EnviarMensaje: obj, mensaje, args
+finprocedimiento
+
+[DOCUMENTA
 @brief{Devuelve el resto de dividir @param{n} por @param{m}.}
 
 @params(
