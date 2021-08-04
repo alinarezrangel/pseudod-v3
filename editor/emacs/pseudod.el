@@ -596,6 +596,11 @@ Suitable for use with `completion-at-point-functions'."
   (setq-local indent-line-function #'pseudod-indent-function)
   (setq-local tab-width pseudod-indentation-level)
   (setq-local electric-indent-inhibit t)
+  (setq-local comment-start "[")
+  (setq-local comment-end "]")
+  (setq-local comment-padding " ")
+  (setq-local comment-start-skip nil)
+  (setq-local comment-use-syntax t)
   (add-hook 'completion-at-point-functions
             #'pseudod-tags--complete-at-point-function
             nil
