@@ -8,7 +8,7 @@ local function help()
 Uso:
   lua5.4 ./tools/profiler/main.lua [<FREC> [<PROF>]] -- <PROGRAMA A EJECUTAR> <ARGUMENTOS>...
 
-Este programa implementa un perfilador estadístico de rendimiento (tiempo de
+Este programa implementa un perfilador estadístico de rendimiento (de tiempo de
 ejecución, para ser específico) para PseudoD. Utiliza una versión ligeramente
 modificada de ELProfiler de ImagicTheCat.
 
@@ -75,6 +75,11 @@ do
 end
 
 assert(program, "El primer argumento debe ser el programa a ejecutar")
+
+local old_exit = os.exit
+os.exit = function()
+   return
+end
 
 prof.start(freq, depth)
 
