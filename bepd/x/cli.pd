@@ -405,4 +405,3 @@ funcion ProcesarCLIDelCompilador: númArgs, argumentosDelCLI
 finfuncion
 
 Escribir: (ProcesarCLIDelCompilador: NULO, __Argv)
-
