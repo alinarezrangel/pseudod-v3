@@ -2,7 +2,25 @@ utilizar bepd/builtins
 utilizar bepd/x/adhoc (ObjetoAdHoc)
 utilizar bepd/x/enum (Enum)
 
+[DOCUMENTA
+@brief{Itera sobre un arreglo con intervalos variables.}
 
+Llama @pd{proc} sobre cada elemento del arreglo @pd{arr}. A diferencia de
+@pd{ParaCadaElemento}, @pd{proc} no solo es llamado con cada elemento, sino
+también con dos valores más:
+
+@itemlist(
+@item{Un índice, tal como @pd{ParaCadaElementoConÍndice}.}
+@item{Un procedimiento @pd{saltar}, que te permite ir a un índice dado.}
+)
+
+Es decir, @pd{proc} será llamado con tres valores al final.
+
+El procedimiento @pd{saltar} pide un argumento (un número entero) que será el
+nuevo índice para la iteración. Nota que @pd{saltar} es una @bold{salida no
+local}: luego de llamar a @pd{saltar} la ejecución saldrá de tu procedimiento
+(tal como, por ejemplo, llamar a la continuación de @pd{LlamarConEC}).
+DOCUMENTA]
 procedimiento ParaCadaElementoSaltando: arr, proc
     variable i
     fijar i a 0
@@ -16,9 +34,69 @@ procedimiento ParaCadaElementoSaltando: arr, proc
     finmientras
 finprocedimiento
 
+[DOCUMENTA
+@brief{Tipo de opción procesada por el parser del CLI.}
+
+Las opciones pueden ser cortas (como @code{-X}) o largas (como
+@code{--sin-mensajes}). Esta enumeración indica cual de estos tipos se está
+procesando.
+DOCUMENTA]
 variable OPCIÓN_PROCESADA
 fijar OPCIÓN_PROCESADA a Enum: {OPCIÓN_PROCESADA}, {CORTA}, {LARGA}
 
+[DOCUMENTA
+@brief{Parsea las opciones de una línea de comandos.}
+
+@params(
+@defparam(númeroDeArgumentosDe){Un procedimiento que se llamará de la forma
+@pd{númeroDeArgumentosDe: textoOpt, tipoOpt} y debe devolver el número de
+argumentos que la opción @pd{textoOpt} (un texto: la opción sin guiones, como
+@code{X} para @code{-X} o @code{ayuda} para @code{--ayuda})
+requiere. @pd{tipoOpt} es el tipo de la opción (un @pd{OPCIÓN_PROCESADA})}
+
+@defparam(acumulaValores){Otro procedimiento, se llamará como
+@pd{acumulaValores: textoOpt, tipoOpt} (@pd{textoOpt} y @pd{tipoOpt} tienen el
+mismo formato y significado que en @pd{númeroDeArgumentosDe}) y debe devolver
+@pd{VERDADERO} o @pd{FALSO} dependiendo de si esta opción "acumula" sus
+valores. Por ejemplo, @code{-X} en el compilador acumula sus valores ya que es
+posible especificarla varias veces, mientras que @code{-h} no acumula sus
+valores.}
+
+@defparam(argv){Lista de los argumentos de la línea de comandos.}
+)
+
+Algunos detalles importantes de esta función:
+
+@itemlist(
+@item{Todos los argumentos después del primero que no sea una opción serán
+considerados "posicionales" (es decir, no serán opciones). Esto significa que
+patrones comunes en ciertos programas como por ejemplo GCC con @code{gcc FILE
+-o OUT} no funcionan: el @code{-o} está después de un argumento posicional lo
+que significa que es posicional también. Este comportamiento es consistente con
+POSIX pero no con muchos de los programas de GNU.}
+
+@item{Las opciones cortas pueden "combinarse". Si estas piden argumentos serán
+leídos en el órden en el que se combinaron (por ejemplo, asumiendo que todas
+las opciones menos @code{h} piden un argumento entonces @code{-ahbc 1 2 3}
+leerá @code{a} con @code{1}, @code{h}, @code{b} con @code{2} y @code{c} con
+@code{3}).}
+
+@item{Los argumentos de una opción nunca son procesados como opciones. Por
+ejemplo, si @code{-o} pide un argumento entonces @code{-o -h} leerá @code{-h}
+como el valor de @code{-o}, no como otra opción.}
+
+@item{@code{--} está implementada como una opción @code{-}, no como un
+argumento especial. Por ejemplo, si las opciones @code{a} y @code{b} piden un
+argumento entonces @code{-a-b 1 2 -h} va a leer @code{a} con @code{1}, la
+opción @code{-} que termina el procesamiento de opciones, @code{b} con @code{2}
+y @code{-h} como un argumento posicional. @code{-h} fue posicional en este
+ejemplo porque @code{-} terminó de procesar las opciones.}
+)
+
+@devuelve{Un objeto con dos atributos, @code{opciones} que es un diccionario
+con las opciones sin guiones (como @code{h} o @code{salida}) y sus valores y
+@code{argumentos} que son los argumentos posicionales del CLI.}
+DOCUMENTA]
 funcion ParsearOpciones: númeroDeArgumentosDe, acumulaValores, argv
     variables opciones, argumentos, idxArgumentos
     fijar opciones a Diccionario#vacío
@@ -117,8 +195,57 @@ funcion ParsearOpciones: númeroDeArgumentosDe, acumulaValores, argv
 finfuncion
 
 
+[DOCUMENTA
+@brief{Una opción de la línea de comandos.}
+
+Esta clase es usada por el procedimiento @pd{CLI} para almacenar la información
+y llamar automáticamente a @pd{ParsearOpciones}.
+DOCUMENTA]
 clase Opción
-    atributos opCorta, opLarga, númArgumentos, acumular, callback
+    [DOCUMENTA
+    @brief{La forma corta de la opción.}
+
+    Debe ser un texto de un solo carácter máximo o @pd{NULO}. Si es @pd{NULO}
+    la opción no tiene forma corta.
+    DOCUMENTA]
+    atributo opCorta
+
+    [DOCUMENTA
+    @brief{La forma larga de la opción.}
+
+    Debe ser un texto de al menos un carácter o @pd{NULO}. Si es @pd{NULO} la
+    opción no tiene forma larga, esto sin embargo no es recomendable ya que las
+    opciones largas son consideradas más legibles y portables (además, ciertas
+    guías y organizaciones como la GNU recomiendan explicitamente que todas las
+    opciones tengan una forma larga).
+    DOCUMENTA]
+    atributo opLarga
+
+    [DOCUMENTA
+    @brief{El número de argumentos de esta opción.}
+    DOCUMENTA]
+    atributo númArgumentos
+
+    [DOCUMENTA
+    @brief{Si esta opción acumula sus argumentos.}
+
+    Véase la documentación de @pd{ParsearOpciones} para ver que significa esto.
+    DOCUMENTA]
+    atributo acumular
+
+    [DOCUMENTA
+    @brief{El callback de la opción.}
+
+    Este debe ser una función (de la forma @pd{callback: opt, ...valores}) que
+    se llamará con esta misma instancia de @pd{Opción} y sus valores cuando se
+    encuentre.
+    DOCUMENTA]
+    atributo callback
+
+    [DOCUMENTA
+    @brief{Convierte esta opción a un texto.}
+    DOCUMENTA]
+    metodo comoTexto
 finclase
 
 metodo Opción#inicializar: opCorta, opLarga, númArgumentos, acumular, callback
@@ -134,6 +261,25 @@ metodo Opción#comoTexto
 finmetodo
 
 
+[DOCUMENTA
+@brief{Parsea una línea de comandos, pero es más fácil de usar que
+@pd{ParsearOpciones}.}
+
+@pd{opciones} debe ser un arreglo de instancias de @pd{Opción} que se
+procesarán, mientras que @pd{argv} tiene el mismo significado que en
+@pd{ParsearOpciones} y que el builtin @pd{__Argv}.
+
+@pd{númArgumentos} es el número de argumentos posicionales que se
+esperan. Puede ser @pd{NULO} para indicar que cualquier número de argumentos
+posicionales es aceptable.
+
+@devuelve{El arreglo con los argumentos posicionales leídos.}
+
+Nota que a diferencia de @pd{ParsearOpciones} esta función no devuelve nada
+relacionado a las opciones procesadas, solo a los argumentos posicionales. La
+forma recomendada de obtener los valores de las opciones es haciendo que los
+callbacks de @pd{opciones} almacenen estos valores en otra variable local.
+DOCUMENTA]
 funcion CLI: opciones, númArgumentos, argv
     variables res, resOpciones, argumentos
     ParaCadaElemento: opciones, procedimiento: opt
