@@ -8,8 +8,6 @@ local function asserteq(a, b)
 end
 
 
-asserteq(1, 2)
-
 asserteq(rt.pdformat(""), "")
 asserteq(rt.pdformat("~~~~"), "~~")
 asserteq(rt.pdformat("hello world\n\n"), "hello world\n\n")
