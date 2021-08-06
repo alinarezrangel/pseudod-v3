@@ -810,6 +810,10 @@ local METODOS_ARREGLO = {
       return self:getAttribute(ARREGLO_ATTRS_IDX)[i]
    end,
 
+   _en = function(self, i)
+      return self:getAttribute(ARREGLO_ATTRS_IDX)[i]
+   end,
+
    fijarEn = function(self, i, nv)
       M.pdasserttype(i, "numero", "Arreglo#fijarEn requiere un número como argumento")
       self:getAttribute(ARREGLO_ATTRS_IDX)[i] = nv
@@ -1191,13 +1195,14 @@ function M.mkclase()
             inst:newAttributes(nattrs)
          end
          assert(mets.__pd_arreglo)
-         local n = M.enviarMensaje(mets, "longitud")
+         local n = METODOS_ARREGLO["longitud"](mets)
          for i = 0, (n - 1) do
-            local pair = METODOS_ARREGLO["en"](mets, i)
+            local pair = METODOS_ARREGLO["_en"](mets, i)
             assert(pair.__pd_arreglo)
+            assert(METODOS_ARREGLO["longitud"](pair) == 2)
             local name, proc
-            name = METODOS_ARREGLO["en"](pair, 0)
-            proc = METODOS_ARREGLO["en"](pair, 1)
+            name = METODOS_ARREGLO["_en"](pair, 0)
+            proc = METODOS_ARREGLO["_en"](pair, 1)
             M.pdasserttype(name, "texto")
             inst.methods[name] = proc
          end
