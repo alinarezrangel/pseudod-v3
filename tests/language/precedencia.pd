@@ -1,0 +1,11 @@
+{
+    "nombre": "Precedencia de Operadores",
+    "espera": "éxito"
+}
+====================
+[ * y / tienen mayor precedencia que + y - ]
+necesitas (1 + 2 * 3 - 4) = (1 + (2 * 3) - 4)
+necesitas (1 + (2 * 3) - 4) = ((1 + (2 * 3)) - 4)
+[ Comparar tiene mayor precedencia que && y || ]
+necesitas (1 > 2 || 5 < 7) = ((1 > 2) || (5 < 7))
+necesitas (3 = 3 && 2 =< 6) = ((3 = 3) && (2 =< 6))
