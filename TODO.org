@@ -1,0 +1,132 @@
+* Experimentación
+** v3y
+*** Tipos de suma con metaprogramación, similar a `Enum`.
+*** Literales de objeto.
+    Esto es /fundamental/, debo agregarlo lo antes posible, quizán incluso antes
+    que las demás características de ~v3y~.
+*** Mejor manejo de excepciones.
+    Solo después de agregar continuaciones.
+*** Eliminación de tail-calls.
+    Existe en el backend de Lua, falta en el de C++.
+** v3z
+*** Métodos léxicos.
+    Pensé que eran buena idea pero si ves a los objetos como funciones no tienen
+    sentido.
+*** ~hacer~ y ~finhacer~
+    Importantes, pero no tanto. Parte de abstraer el control de flujo con
+    funciones (y por ende, objetos).
+*** Continuaciones.
+*** ~implementa~ y ~finimplementa~.
+    No estoy seguro de que sea buena idea, sobre todo teniendo en cuenta a los
+    /comportamientos/.
+** v3a
+*** Comportamientos e interfaces
+    Debo agregarlos.
+
+    Las interfaces pueden ser como en Racket, los comportamientos aún debo
+    diseñarlos mejor.
+*** /Traits/.
+    No, mejor /comportamientos/.
+*** Objetos como funciones con múltiples puntos de entrada.
+    Esto significa que los objetos deberían ser usados como un sistema
+    distribuído.
+
+    1. Similar a la filosofía UNIX.
+    2. Ver el trabajo en OSH/Oil.
+    3. Los objetos solo deben ser usados cuando hay invariantes que mantener.
+    4. Objetos como ~DatosDeVariable~ son /cuestionables/.
+    5. Objetos como ~Ámbito~ son mejores, aunque no perfectos.
+    6. Objetos como ~CaminaNodos~ son /horribles/.
+* Eficiencia
+** TODO Optimizar tokenizador.
+   En especial ~PuertoConPosiciónTextual~.
+** TODO Optimizar el Parser.
+   Actualmente el parser es una de las partes más lentas del compilador.
+** TODO Optimizar la lectura/escritura de S-exprs.
+   Si crees que el parser es lento, espera a ver el parser de expresiones S.
+
+   Nota 2021-03-25: Aparentemente, al optimizar ~Diccionario~ el
+   lector/escritor de expresiones S se hizo como 2 veces más rápido, así que no
+   se si debería optimizarlo manualmente ahora.
+
+   Nota 2021-06-17: Nop, a pesar de que es 2 veces más rápido, aún es demasiado
+   lento para programar de forma cómoda. Mis pruebas al implementar una versión
+   en Lua no fueron exitosas y creo que tendré que hacer una implementación en
+   C o ir a un formato más eficiente (¿Quizás binario? ¿Con ~string.pack~?).
+** DONE Optimizar estructuras básicas.
+   Los diccionarios, ~Resultado~ y demás no están muy optimizados.
+** DONE Optimizar ámbitos.
+   Solo usa ~_s~ si es necesario.
+* Correctitud
+** FIXED ~__Lua~ no puede ser usada en la posición de una instrucción.
+** FIXED En general, expresiones que no sean llamadas a funciones generarán código mal compilado.
+   Lua solo permite llamadas a funciones como instrucciones, la solución es
+   compilar todas las expresiones en posición de instrucción a ~_ = expr~.
+** TODO Ciertas banderas del CLI aún no están implementadas.
+** TODO Usar una biblioteca real del CLI
+   ¿Quizás ~bepd/x/cli~?
+** FIXED El CLI aún no utiliza las variables de entorno.
+** FIXED ~__Argv~ no debería necesitar un archivo ~.lua~ especial.
+** FIXME Los espacios de nombres no actualizan sus valores.
+   Por ejemplo, si la variable ~X~, que es un número, es exportada, fijar ~X~ a
+   otro valor dentro del módulo que la exportó debería cambiar el valor visto
+   por los demás módulos, sin embargo, esto no sucede. La solución es hacer que
+   ~rt.ns~ pida un ~rt.scope~ y la lista de nombres a exportar, en vez de los
+   valores mismos.
+** FIXED El parser de expresiones S no maneja de forma adecuada los textos con ~\~.
+   Por ejemplo, el texto ~"hola \\" mundo"~ erróneamente será parseado como
+   ~hola \" mundo~ en vez de ~hola \\~.
+** FIXED ~Diccionario~ no puede clonarse ni compararse.
+   Esto es debido a que faltan implementaciones de ~HashMap#...~,
+   ~DiccionarioHashMap#...~ y ~DiccionarioAlist#...~.
+
+   Incluso así, ~Diccionario~ tendría que implementar sus propias operaciones.
+** FIXME ~NULO~ es falso en condicionales.
+   Solo ~FALSO~ debe ser falso.
+** FIXME ~SonElMismoObjeto~ debe ser un builtin.
+** TODO Termina el pase de defuncionalización.
+** FIXED ~tags~ no genera etiquetas para atributos dentro de clases.
+* Builds y Seguridad
+** Builds reproducibles. [0/2]
+   Si mal no recuerdo, la única parte actual que no permite un build
+   completamente reproducible es que ~Ámbito~ usa un ~Diccionario~ (que usa un
+   hash map) para almacenar los nombres y luego el /prólogo de ámbito/ cuando
+   las variables se iteran en-órden para emitir las declaraciones de Lua, su
+   órden está indeterminado.
+
+   Nota 2021-06-18: Los nombres de los archivos de los módulos también están en
+   el compilado, así que eso tampoco es reproducible.
+*** TODO Compilación a Lua reproducible.
+*** TODO Base de módulos reproducible.
+    La base de datos de módulos no es reproducible debido a que almacena
+    información de los nombres de archivos y compilación (que no es
+    reproducible).
+* UX/UI
+** DONE Todos los mensajes de error que no son del parser son bastante malos.
+   Como mínimo, deberían indicar en que parte del programa sucedió el error.
+** TODO Mejora mensajes de error de la resolución de nombres.
+** DONE Los mensajes de "logging" del compilador deberían ser opcionales.
+   Nota 2021-08-12: Ahora se pueden quitar con ~--sin-mensajes~. Aún es un
+   sistema bastante feo, sin embargo.
+* Soporte de IDE
+** TODO Corrige la identación en ~pseudod-mode~.
+** DONE Agrega soporte de autocompletar.
+   Nota 2021-08-12: Parcial con PDTAGS.
+** TODO Agrega REPL y funcionalidad típica (recargar módulos, solicitar información, etc de forma que una IDE simple pueda simplemente usar el REPL).
+** TODO Crea un servidor LSP.
+** Crea módulos que lean los archivos PDTAGS para Emacs, VSCode y Atom. [1/4]
+*** DONE Soporte de Emacs
+*** TODO Soporte de VSCode
+*** TODO Soporte de Atom
+*** TODO Soporte de vi/vim/neovim/etc
+* Herramientas
+** TODO Depurador.
+** TODO Generador de documentación.
+** TODO Agrega soporte de compilación incremental.
+* Paquetes
+** TODO Crear la estructura de los paquetes.
+** TODO Sistema de paquetes.
+** TODO Manejador de paquetes.
+* Distribución
+** TODO Es necesaria una manera de empaquetar programas en PseudoD.
+** DONE Cambia la distribución del makefile a un script separado.
