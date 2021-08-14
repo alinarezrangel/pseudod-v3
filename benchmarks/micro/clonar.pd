@@ -1,0 +1,19 @@
+utilizar bepd/builtins
+
+clase Ejemplo
+    atributos A, B, C, D
+finclase
+
+metodo Ejemplo#inicializar: A, B, C, D
+    fijar yo#A a A
+    fijar yo#B a B
+    fijar yo#C a C
+    fijar yo#D a D
+finmetodo
+
+variable ejemplo
+fijar ejemplo a Ejemplo#crear: 1, 2, 3, 4
+
+ParaCadaNúmero: 0, 500000, procedimiento: _i
+    clonar ejemplo con finclonar
+finprocedimiento
