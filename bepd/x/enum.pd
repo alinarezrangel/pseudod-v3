@@ -76,6 +76,9 @@ funcion EnumConValores: nombre, ...camposYValores
         metodo inicializar: nombre, valor
         metodo comoTexto
 
+        metodo nombre
+        metodo valor
+
         metodo estatico comoTexto
         metodo estatico desdeValor: valor
         metodo estatico metodoNoEncontrado: mensaje, argumentos
@@ -87,6 +90,9 @@ funcion EnumConValores: nombre, ...camposYValores
         fijar yo#_nombre a nombre
         fijar yo#_valor a valor
     finmetodo
+
+    metodo Enumeración#nombre devolver yo#_nombre finmetodo
+    metodo Enumeración#valor devolver yo#_valor finmetodo
 
     metodo Enumeración#comoTexto
         devolver {(~t: ~t ~t)}#formatear: (TipoDe: yo), yo#_nombre, yo#_valor
