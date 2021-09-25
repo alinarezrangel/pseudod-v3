@@ -10,7 +10,7 @@ Una vez que descargues el compilador de la [página de
 versiones][pseudod-v3-releases], puedes ejecutarlo usando [Lua 5.4][lua-54]:
 
 ```sh
-lua5.4 pseudod.lua --help
+lua5.4 bootstrapped/stage1/inicio.lua --help
 ```
 
 Abajo se encuentran las instrucciones para compilar el compilador por ti mismo,
@@ -26,7 +26,7 @@ El directorio `ejemplos/` contiene algunos ejemplos. Para compilar uno puedes
 usar:
 
 ```sh
-lua5.4 pseudod.lua ejemplos/HolaMundo.pd -o HolaMundo.lua
+lua5.4 bootstrapped/stage1/inicio.lua -o HolaMundo.lua ejemplos/HolaMundo.pd
 lua5.4 HolaMundo.lua
 ```
 
@@ -65,6 +65,7 @@ tan sencillo como ejecutar `./instalar-pseudod --local`/`./instalar-pseudod
 - Lua 5.4.
 - Opcionalmente: [PseudoD (original en C++)][pseudod-orig].
 - Python 3.8 o superior es necesario para ejecutar las pruebas.
+- Fish 3.1 para generar el archivo de distribución (`dist.zip`).
 
 ## Documentación ##
 
@@ -74,7 +75,31 @@ archivos y la arquitectura del compilador.
 El directorio `docs/` contiene documentación adicional.
 
 Todos los archivos de PseudoD (y el runtime de Lua) están documentados con
-comentarios. Estoy trabajando en la documentación "real" en HTML.
+comentarios. Estoy trabajando en la documentación "final" en HTML.
+
+## Bugs conocidos ##
+
+La implementación actual tiene los siguientes bugs conocidos:
+
+- El compilador acepta instrucciones `devolver` fuera de funciones.
+- La opción `-I` no está implementada.
+- Las variables de entorno `RUTA_PSEUDOD`, `RUTA_PSEUDOD_LIB` y
+  `RUTA_PSEUDOD_BEPD` no son respetadas.
+- En el backend de Lua, `NULO` es considerado falso en los condicionales
+  (debería ser un error).
+- Los espacios de nombres no actualizan sus valores cuando se fijan variables.
+- El experimento `v3x` no está implementado.
+- El REPL no está implementado.
+- Los números de línea y columna del compilador con el backend a Lua a veces
+  están mal por 1 o 2.
+
+Además, el lenguaje tiene los siguientes problemas conocidos:
+
+- Las palabras clave `hacer`/`finhacer` no están implementadas.
+- No existe palabra clave `super` como en Python/Ruby/SmallTalk/etc.
+- Las palabras clave `implementa`/`finimplementa` no están implementadas.
+- Las interfaces y fragmentos no están implementados.
+- La sintaxis de las clases aún no está lista.
 
 [pseudod-orig]: https://github.com/alinarezrangel/PseudoD
 [pseudod-v3-releases]: https://github.com/alinarezrangel/pseudod-v3/releases

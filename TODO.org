@@ -58,6 +58,7 @@
 ** DONE Optimizar ámbitos.
    Solo usa ~_s~ si es necesario.
 * Correctitud
+** TODO Los mensajes de error a veces están mal por uno (1) al principio o final de un archivo.
 ** FIXED ~__Lua~ no puede ser usada en la posición de una instrucción.
 ** FIXED En general, expresiones que no sean llamadas a funciones generarán código mal compilado.
    Lua solo permite llamadas a funciones como instrucciones, la solución es

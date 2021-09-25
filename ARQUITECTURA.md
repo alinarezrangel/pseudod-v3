@@ -20,7 +20,7 @@
   `CaminaNodos` de `caminaNodos.pd` es utilizada. Esta clase te permite
   realizar operaciones en el AST de forma conveniente.
 - La primera operación es la resolución de nombres. Este "pase" anota cada
-  identificador y nodo del AST con un identificador único (el "binding") que
+  identificador en el AST con un identificador único (el "binding") que
   siguientes pases pueden utilizar para distinguir un nombre de otro (piensa en
   como es posible tener dos variables con el mismo nombre en ámbitos
   distintos). El pase se encuentra en `resoluciónDeNombres.pd`.
@@ -28,13 +28,22 @@
   es útil tener una estructura que represente los ámbitos léxicos del
   programa. En vez de implementar lo mismo una y otra vez, todos los pases
   utilizar la clase `Ámbito` del archivo `ámbito.pd`.
+- La segunda operación (que no todos los backends realizan) sobre el AST es la
+  *desfuncionalización*. Esta operación marca todos los *closures* (funciones,
+  métodos o procedimientos) que "capturan" variables de su entorno con
+  anotaciones que permiten a los siguientes pases saber cuales variables son
+  capturadas y por quién. Esto se encuentra en el archivo
+  `defuncionalización.pd`.
+- El compilador tiene múltiples *backends*. Cada *backend* puede compilar
+  PseudoD a un *objetivo* (del inglés *target*) distínto. Por ejemplo, el
+  backend de Lua puede compilar PseudoD a Lua 5.4. Los backends se encuentran
+  en el directorio `backends/`. Más abajo hay más información en la sección
+  *"Backends"* de este documento.
 - La base de datos de módulos se encarga de administrar todos los módulos ya
   compilados. De esta forma es trivial resolver dependencias y ubicar
   archivos. Se encuentra en `módulos.pd`.
-- Finalmente, el compilador (cuya interfaz está en `compilador.pd` y los
-  backends en `backends/`) utiliza el AST con los nombres "resueltos" y la base
-  de datos de módulos para compilar el archivo y todas sus dependencias. El
-  resultado es un archivo que puede ser ejecutado.
+- Finalmente, el compilador (cuya interfaz está en `compilador.pd`) junto al
+  backend seleccionado por el usuario compilan el AST al objetivo dado.
 - Todo este proceso es iniciado y administrado por `inicio.pd`, el punto de
   inicio del programa. Este archivo también se encarga de leer la línea de
   comandos.
@@ -72,7 +81,7 @@ responsabilidad de compilar a un único "objetivo" (*target*). Actualmente el
 
 El backend de lua es muy sencillo, compilando cada estructura de PseudoD a su
 equivalente en Lua. Debido a esto es el más fácil de entender, pero también es
-el más ineficiente.
+el menos eficiente.
 
 ### WebAssembly ###
 

@@ -3,6 +3,10 @@
 PseudoD viene con un [`Makefile`](https://es.wikipedia.org/wiki/Make) que
 administra muchas tareas relacionadas al proyecto.
 
+**A menos que se indique lo contrario, todos los archivos compilados están en
+el directorio `outputs/`**. Este directorio es temporal: el makefile lo borrará
+como parte del objetivo `clean`.
+
 ## Variables Importantes ##
 
 El makefile define varias variables relacionadas al proyecto, puedes leerlo
@@ -20,12 +24,15 @@ para verlas todas pero algunas de las más importantes son:
   tu instalación de Lua.
 - `PYTHON3`: Nombre del ejecutable de Python 3.8 o superior. Cámbialo
   dependiendo de tu instalación de Python.
+- `FISH`: Nombre del ejecutable de Fish a utilizar. De nuevo, cámbialo
+  dependiendo de tu instalación de Fish. Solo es necesario para distribuir
+  PseudoD.
 - `PDINT`: Nombre del intérprete en C++ de PseudoD. Si no lo tienes instalado
   no es necesario cambiar esta variable. Si lo tienes instalado entonces
   cámbiala a donde instalastes el intérprete.
 - `OUTPUTS`: Directorio donde se guardarán los archivos compilados. De forma
   predeterminada es `outputs`.
-- `FISH`: Ruta al ejecutable de fish. Solo es necesario para distribuir
+- `DIST_EXTRA_FILES`: Archivos adicionales a agregar cuando se distribuya
   PseudoD.
 
 ## Compilando PseudoD ##
@@ -85,9 +92,7 @@ El objetivo `tools` compila todas las herramientas (en `tools/`). Por ahora, la
 única herramienta que requiere compilación es `tags.pd` que genera los archivos
 PDTAGS (`tags.pd` también puede ser compilado con el objetivo `tool_tags`).
 
-El resultado de compilar `tags.pd` estará en `outputs/tags.lua`. **A menos que
-se indique lo contrario, todos los archivos compilados están en el directorio
-`outputs/`**.
+El resultado de compilar `tags.pd` estará en `outputs/tags.lua`.
 
 ## Distribución ##
 

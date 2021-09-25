@@ -21,7 +21,7 @@ pseudod - El nuevo compilador de PseudoD.
 # OPCIONES #
 
 **-\-**
-: Todos los argumentos después de este no serán procesados como opciones, incluso si comienzan con **-**.
+: Ningúno de los argumentos después de este serán procesados como opciones, incluso si comienzan con **-**.
 
 **-h**, **-a**, **-?**, **-\-help**, **-\-ayuda**
 : Muestra la ayuda y termina el programa.
@@ -48,8 +48,6 @@ pseudod - El nuevo compilador de PseudoD.
 : Activa una extensión del lenguaje. La lista de extensiones es:
 
 - **v3x**: Nombre experimental para las primeras versiones de PseudoD 3. Este compilador únicamente acepta PseudoD 3 y por ende, esta extensión es ignorada.
-- **v3**: Alias de **v3x**.
-- **v3y**: Nombre de PseudoD 3, revisión 1. Actualmente este compilador no soporta toda la especificación, así que al especificar esta opción se terminará la compilación de forma inmediata.
 
 **-i**, **-\-interactivo**
 : En vez de compilar un archivo, inicia el REPL. Si **-i** es especificado, no se puede indicar un *archivo* a compilar.
@@ -120,7 +118,7 @@ El REPL en un futuro guardará el historial del REPL en `$HOME/.pseudod_history`
 
 En la medida posible, traté de hacer que el nuevo compilador aquí documentado fuese lo más parecido de usar que el intérprete en C++ anterior. Este es el motivo por el cual incluso acepta opciones solo para ignorarlas (como **-l**).
 
-A nivel de lenguaje, de forma predeterminada este compilador compila únicamente PseudoD v3 revisión 0, tal como el intérprete con la opción **-X v3x**. Sin embargo, revisiones posteriores (como PseudoD 3 -- revisión 1) no están soportadas: invocar el compilador con la opción **-X v3y** va a fallar.
+A nivel de lenguaje, de forma predeterminada este compilador compila únicamente PseudoD v3 revisión 0, tal como el intérprete con la opción **-X v3x**. Sin embargo, revisiones posteriores (como PseudoD 3 -- revisión 1) no están soportadas: invocar el compilador con la opción **-X v3r1** va a fallar.
 
 Este compilador no soporta las versiones anteriores de PseudoD. Si necesitas utilizar código en PseudoD 2 tendrás que usar el intérprete.
 
@@ -155,4 +153,4 @@ Por favor, reporta cualquier defecto o error en <https://github.com/alinarezrang
 
 # VÉASE TAMBIÉN #
 
-**lua**(1), **lua5.4**(1), **wasm-interp**(1), **wasm2c**(1)
+**lua**(1), **lua5.4**(1), **wasm-interp**(1), **wasm2c**(1), **gcc**(1), **cc**(1), **clang**(1)

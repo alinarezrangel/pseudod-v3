@@ -13,10 +13,14 @@ La siguiente lista contiene una referencia rápida de que archivo hace que:
 - `disttmp/` y `dist.zip`: Distribución creada con `make dist`. Contiene todo
   lo necesario para ejecutar el compilador excluyendo el código fuente. También
   incluye la documentación, README y la licencia.
+- `scripts/`: Algunos *scripts* (guiones de línea de comandos) de soporte para
+  el Makefile. Cada uno realiza una acción sencilla.
+  - `scripts/make-dist.fish`: Véase el objetivo `dist` en el Makefile para un
+    uso de ejemplo, este guión es usado para generar el archivo de distribución
+    de PseudoD (`dist.zip`).
 - `docs/`: La documentación del proyecto.
-- `benchmarks/`: Los benchmarks. Comparan el compilador bootstrapeado (stage 0)
+- `benchmarks/`: Los benchmarks. Comparan el compilador bootstrapeado (stage 1)
   con el original en C++.
-- `tools/`: Herramientas útiles adicionales.
 
 ## Bibliotecas de PseudoD ##
 
@@ -24,6 +28,7 @@ La siguiente lista contiene una referencia rápida de que archivo hace que:
   - `bepd/x/`: Contiene las partes experimentales de la biblioteca
     estándar. Las APIs provistas no son estables.
   - `bepd/datos/`: Estructuras de datos.
+  - `bepd/utilidades/`: Funciones de utilidad para algunos tipos de datos.
 - `bindings/`: Bindings a distintas bibliotecas externas.
 
 ## Partes del compilador ##
@@ -90,3 +95,16 @@ TODO
       ejemplo, `ámbito/` contiene todos los tests de ámbitos, `control/` de las
       estructuras de control (bucles, condicionales, funciones, métodos, etc) y
       `clases/` contiene las pruebas de las clases.
+
+## Herramientas ##
+
+- `tools/`: Herramientas útiles para trabajar con PseudoD.
+  - `tools/tags.pd`: *tags* es una herramienta clásica de C que genera un
+    archivo (conocido como archivo TAG) con todas las declaraciones (variables,
+    macros, funciones, tipos, etc) de un archivo, de forma que tu editor luego
+    pueda leer este archivo y logre autocompletar identificadores, implementar
+    la funcionalidad de "ir a definición", etc de forma
+    eficiento. `tools/tags.pd` es similar, pero para PseudoD. Véase
+    `docs/pdtags.md` para más información.
+  - `tools/profiler/main.lua`: Un perfilador de rendimiento estadístico para
+    PseudoD.
