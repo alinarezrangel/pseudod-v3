@@ -30,13 +30,15 @@ tokenizador.pd tokens.pd defuncionalización.pd backends/lua.pd					\
 backends/lua/emisor.pd backends/wasm.pd
 
 DOCS=docs
+EXAMPLES=ejemplos
 
 DIST_EXTRA_FILES=README.md $(DOCS)/man/pseudod.1 $(DOCS)/man/pseudod.html	\
 $(DOCS)/man/pseudod.md
 LUA_RUNTIME_FILES=backends/lua/b64.lua backends/lua/errloc.lua backends/lua/runtime.lua backends/lua/exts.lua
 EDITOR_FILES_DIR=editor
 EDITOR_FILES=$(EDITOR_FILES_DIR)/emacs/pseudod.el $(EDITOR_FILES_DIR)/emacs/pseudod-profiler.el
-DIST_FILES=$(DIST_EXTRA_FILES) $(BEPD_FILES) $(STAGE1_FILES) $(LUA_RUNTIME_FILES) $(EDITOR_FILES) $(TOOLS)/tags.lua
+EXAMPLE_FILES=$(EXAMPLES)/HolaMundo.pd $(EXAMPLES)/Condicional.pd $(EXAMPLES)/Tablas.pd $(EXAMPLES)/MejoresTablas.pd
+DIST_FILES=$(DIST_EXTRA_FILES) $(BEPD_FILES) $(STAGE1_FILES) $(LUA_RUNTIME_FILES) $(EDITOR_FILES) $(TOOLS)/tags.lua $(EXAMPLE_FILES)
 DIST_ZIP=dist.zip
 
 .PHONY: all
