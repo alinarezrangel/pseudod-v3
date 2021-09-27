@@ -1,0 +1,380 @@
+utilizar bepd/builtins
+utilizar bepd/datos/conjunto (Conjunto)
+utilizar bepd/datos/diccionario (Diccionario)
+utilizar bepd/x/puerto/conPosición (PosiciónTextual)
+utilizar bepd/utilidades/texto
+utilizar bepd/x/enum (Enum, EnumConValores)
+
+utilizar tokens como Tokens
+utilizar ast como AST
+utilizar parser como Parser
+utilizar resoluciónDeNombres como RN
+utilizar defuncionalización como Defun
+
+
+
+[ Pase de anotación de capturas
+
+  Anota cada identificador en su punto de declaración con un metadato
+  `capturado` (boole) que indica si el identificador fue capturado o no.
+
+]
+
+[ Nombre código del backend. Véase también la variable __Impl. ]
+variable PSEUDOD_IMPL
+fijar PSEUDOD_IMPL a {Tupla (IR) Bootstrap}
+
+funcion NombreEnIR: identOBinding
+    si EsInstancia: identOBinding, AST#NodoIdentificador
+        fijar identOBinding a RN#NombreResueltoDe: identOBinding
+    finsi
+    devolver identOBinding
+finfuncion
+
+funcion LocalDelEntorno
+    devolver {E}
+finfuncion
+
+
+clase Tupla
+    atributos opcode, argumentos
+
+    metodo estatico crear: op, ...args
+    metodo es: op
+    metodo en: n
+    metodo comoTexto
+finclase
+
+metodo estatico Tupla#crear: op, ...args
+    variable inst
+    fijar inst a yo#_crear
+    fijar inst#opcode a op
+    fijar inst#argumentos a args
+    devolver inst
+finmetodo
+
+metodo Tupla#es: op
+    devolver yo#op = op
+finmetodo
+
+metodo Tupla#en: n
+    devolver yo#argumentos#en: n
+finmetodo
+
+metodo Tupla#comoTexto
+    devolver {(Tupla ~t ~t)}#formatear:
+        yo#opcode#nombre,
+        (Unir:
+         (Mapear: yo#argumentos, funcion: x
+              devolver x#comoTexto
+          finfuncion),
+         {, })
+finmetodo
+
+variable Opcode
+fijar Opcode a EnumConValores: {Opcode},
+    {SUM}, 0,
+    {SUB}, 1,
+    {MUL}, 2,
+    {DIV}, 3,
+    {LSET}, 4,
+    {LGET}, 5,
+    {CONST}, 6,
+    {LOCAL}, 7,
+    {CALL}, 8,
+    {RT_LIT}, 9,
+    {PRINTT}, 10,
+    {MKCLZ}, 11,
+    {EGET}, 12,
+    {ESET}, 13,
+    {MKENV}, 14,
+    {MK0CLZ}, 15,
+    {DYNCALL}, 16,
+    {ECALL}, 17
+
+metodo Opcode#bytecode
+    devolver yo#valor
+finmetodo
+
+variable OP
+si VERDADERO
+    clase I
+        metodo metodoNoEncontrado: mensaje, argumentos
+    finclase
+
+    metodo I#metodoNoEncontrado: mensaje, argumentos
+        devolver Tupla#crear: (EnviarMensaje: Opcode, mensaje), ...argumentos
+    finmetodo
+
+    fijar OP a I#crear
+finsi
+
+clase DeclrFunción
+    atributos nombre, parámetros, cuerpo
+finclase
+
+metodo estatico DeclrFunción#crear: nom, par, cuer
+    devolver clonar yo#_crear con
+        nombre: nom
+        parámetros: par
+        cuerpo: cuer
+    finclonar
+finmetodo
+
+metodo DeclrFunción#comoTexto
+    devolver {(DeclrFunción ~t con ~t es ~t)}#formatear: yo#nombre, yo#parámetros, yo#cuerpo
+finmetodo
+
+
+clase Compilado
+    atributos instrucciones, declaraciones
+finclase
+
+metodo estatico Compilado#crear: i, d
+    devolver clonar yo#_crear con
+        instrucciones: i
+        declaraciones: d
+    finclonar
+finmetodo
+
+metodo estatico Compilado#deInstrucciónes: i
+    devolver Compilado#crear: i, Arreglo#vacio
+finmetodo
+
+metodo estatico Compilado#deDeclaraciones: d
+    devolver Compilado#crear: Arreglo#vacio, d
+finmetodo
+
+metodo estatico Compilado#vacío
+    devolver Compilado#crear: Arreglo#vacio, Arreglo#vacio
+finmetodo
+
+metodo Compilado#operador_>>: otro
+    devolver Compilado#crear:
+        (Concatenar: yo#instrucciones, otro#instrucciones),
+        (Concatenar: yo#declaraciones, otro#declaraciones)
+finmetodo
+
+metodo Compilado#comoTexto
+    devolver {(Compilado ds = ~t, is = ~t)}#formatear: yo#declaraciones, yo#instrucciones
+finmetodo
+
+
+procedimiento Listado: compilado
+    Escribir: {===== Code:}
+    ParaCadaElementoConÍndice: compilado#instrucciones, procedimiento: tupla, i
+        Escribir: ({#~t}#formatear: i), {}, ({[~t] ~t}#formatear: tupla#opcode#bytecode, tupla#opcode#nombre), ...(tupla#argumentos)
+    finprocedimiento
+    Escribir: {===== Declr:}
+    ParaCadaElementoConÍndice: compilado#declaraciones, procedimiento: declr, i
+        necesitas EsInstancia: declr, DeclrFunción
+        Escribir: ({#~t}#formatear: i), {proc}, declr#nombre
+        ParaCadaElementoConÍndice: declr#parámetros, procedimiento: p, j
+            Escribir: {}, {}, ({#~t}#formatear: j), p
+        finprocedimiento
+        ParaCadaElementoConÍndice: declr#cuerpo, procedimiento: tupla, i
+            Escribir: {}, ({#~t}#formatear: i), {}, ({[~t] ~t}#formatear: tupla#opcode#bytecode, tupla#opcode#nombre), ...(tupla#argumentos)
+        finprocedimiento
+        Escribir: {}, {end}
+    finprocedimiento
+finprocedimiento
+
+
+funcion BinOp: op
+    devolver funcion: lhs, rhs
+        devolver EnviarMensaje: lhs, ({operador_}#concatenar: op), rhs
+    finfuncion
+finfuncion
+
+funcion UnirCompilados: partes
+    devolver Reducir: Compilado#vacío, (BinOp: {>>}), partes
+finfuncion
+
+
+funcion NombresDefinídosSinParámetros: ast
+    devolver ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSinParámetros}
+finfuncion
+
+funcion NombresDeLosParámetros: ast
+   devolver Mapear: ast#parámetros, &(RN#NombreResueltoDe)
+finfuncion
+
+
+funcion CompilarBloqueAWasm: subámbito, instrucciones, bindingsCapturados
+    variables is, ds
+    fijar is a Arreglo#vacio
+    fijar ds a Arreglo#vacio
+    ParaCadaElemento: subámbito#todosLosBindingsLocales, procedimiento: binding
+        variable id
+        fijar id a NombreEnIR: binding
+        is#agregarAlFinal: (Arreglo#crearCon: (OP#LOCAL: id))
+    finprocedimiento
+    ParaCadaElemento: instrucciones, procedimiento: instr
+        variable subc
+        fijar subc a CompilarAWasm: instr, bindingsCapturados
+        is#agregarAlFinal: subc#instrucciones
+        ds#agregarAlFinal: subc#declaraciones
+        si EsInstancia: instr, AST#NodoExpresion
+            is#agregarAlFinal: (Arreglo#crearCon: OP#PRINTT)
+        finsi
+    finprocedimiento
+    devolver Compilado#crear: (Aplanar: is), (Aplanar: ds)
+finfuncion
+
+funcion CompilarAWasm: ast, bindingsCapturados
+    funcion IDDeIR: binding
+        variable ir
+        fijar ir a NombreEnIR: binding
+        si bindingsCapturados#contiene: ir
+            devolver bindingsCapturados#en: ir
+        sino
+            devolver ir
+        finsi
+    finfuncion
+    si EsInstancia: ast, AST#NodoPrograma
+        variable subámbito
+        fijar subámbito a RN#ObtenerNombresDefinídos: ast
+        devolver CompilarBloqueAWasm: subámbito, ast#instrucciones, bindingsCapturados
+    finsi
+    si EsInstancia: ast, AST#NodoNumeroLiteral
+        devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#CONST: ast#valor), OP#RT_LIT)
+    finsi
+    si EsInstancia: ast, AST#NodoOperador
+        variable lhs, rhs
+        fijar lhs a CompilarAWasm: ast#lhs, bindingsCapturados
+        fijar rhs a CompilarAWasm: ast#rhs, bindingsCapturados
+        si ast#op#op = {+}
+            devolver lhs >> rhs >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#SUM))
+        finsi
+        si ast#op#op = {-}
+            devolver lhs >> rhs >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#SUB))
+        finsi
+        si ast#op#op = {*}
+            devolver lhs >> rhs >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#MUL))
+        finsi
+        si ast#op#op = {/}
+            devolver lhs >> rhs >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#DIV))
+        finsi
+        NoImplementado
+    finsi
+    si EsInstancia: ast, AST#NodoIdentificador
+        variables id, nombreIR, esCaptura
+        fijar nombreIR a NombreEnIR: ast
+        si bindingsCapturados#contiene: nombreIR
+            fijar id a bindingsCapturados#en: nombreIR
+            fijar esCaptura a VERDADERO
+        sino
+            fijar id a nombreIR
+            fijar esCaptura a FALSO
+        finsi
+        si ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+            si esCaptura
+                devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#ECALL: LocalDelEntorno, id, 0, 1))
+            sino
+                devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#CALL: id, 0, 1))
+            finsi
+        sino
+            si esCaptura
+                devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#EGET: LocalDelEntorno, id))
+            sino
+                devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGET: id))
+            finsi
+        finsi
+    finsi
+    si EsInstancia: ast, AST#NodoVariable
+        devolver Compilado#vacío
+    finsi
+    si EsInstancia: ast, AST#NodoFijar
+        variables id, val
+        fijar id a IDDeIR: ast#objetivo
+        fijar val a CompilarAWasm: ast#valor, bindingsCapturados
+        devolver val >> (Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LSET: id)))
+    finsi
+    si EsInstancia: ast, AST#NodoFunción
+        variables id, parámetros, cuerpo, fn, nombresLibres, remapeos, i, nuevasCapturas, inicDeClosure
+        fijar id a IDDeIR: ast#nombre
+        fijar parámetros a Mapear: (NombresDeLosParámetros: ast), &IDDeIR
+        fijar cuerpo a Compilado#vacío
+        fijar nombresLibres a ast#obtenerMetadato: Defun#LLAVE_DEFUNCIONALIZACIÓN, {nombresLibres}
+        fijar i a 0
+        fijar nuevasCapturas a Arreglo#vacio
+        fijar remapeos a Diccionario#desdeArreglo: (nombresLibres#mapear: funcion: binding
+            variable nuevoBinding
+            fijar nuevoBinding a i
+            fijar i a i + 1
+            nuevasCapturas#agregarAlFinal: nuevoBinding
+            devolver Arreglo#crearCon: (NombreEnIR: binding), nuevoBinding
+        finfuncion)#comoArreglo
+        si nombresLibres#longitud > 0
+            fijar parámetros a Concatenar: (Arreglo#crearCon: LocalDelEntorno), parámetros
+            [ fijar cuerpo a (Compilado#deInstrucciónes: (Mapear: nuevasCapturas, funcion: ir ]
+            [     devolver OP#LOCAL: ir ]
+            [ finfuncion)) >> cuerpo ]
+            fijar inicDeClosure a
+                (Compilado#deInstrucciónes: (Arreglo#crearCon:
+                    (OP#MKENV: LocalDelEntorno)))
+                >> (Compilado#deInstrucciónes: (Aplanar: (Mapear: nombresLibres#comoArreglo, funcion: binding
+                    devolver Arreglo#crearCon:
+                        (OP#ESET: LocalDelEntorno, (remapeos#en: binding), (NombreEnIR: binding))
+                finfuncion)))
+                >> (Compilado#deInstrucciónes: (Arreglo#crearCon:
+                    (OP#MKCLZ: LocalDelEntorno, id)))
+        sino
+            fijar inicDeClosure a Compilado#vacío
+        finsi
+        fijar cuerpo a cuerpo >> CompilarBloqueAWasm: (NombresDefinídosSinParámetros: ast), ast#cuerpo, remapeos
+        fijar fn a DeclrFunción#crear: id, parámetros, cuerpo#instrucciones
+        devolver inicDeClosure >> (Compilado#deDeclaraciones: cuerpo#declaraciones) >> (Compilado#deDeclaraciones: (Arreglo#crearCon: fn))
+    finsi
+    Inalcanzable
+finfuncion
+
+funcion ParsearYDefunc: programa
+    variable ast
+    fijar ast a Parser#CrearAST: programa
+
+    variable ámbitoPrincipal
+    fijar ámbitoPrincipal a RN#ResolverNombres:
+        ast,
+        procedimiento: nombreDelMódulo
+            Inalcanzable
+        finprocedimiento,
+        procedimiento: ámbito finprocedimiento,
+        procedimiento: ámbito finprocedimiento
+    Defun#Defuncionalizar: ast
+    devolver ast
+finfuncion
+
+variables ast, programa, cc
+fijar programa a {
+
+funcion Q
+    2 * 3 - 20 / 4
+finfuncion
+
+funcion W: X, Y
+    funcion J: K
+        funcion Ñ: L
+            L - K - X
+        finfuncion
+        K + X + Y
+    finfuncion
+    X + Y
+finfuncion
+
+variables X, Y, Z
+fijar X a 4
+fijar Y a X * 2 - Q * 2
+fijar Z a Y * Y
+Z / 2
+Q
+
+}
+
+fijar ast a ParsearYDefunc: programa
+fijar cc a CompilarAWasm: ast, Diccionario#vacío
+
+Escribir: ({~t :: ~t :: ~t}#formatear: (TipoDe: cc), (TipoDe: cc#declaraciones), (TipoDe: cc#instrucciones))
+Escribir: ({~t~%~t}#formatear: cc#declaraciones, cc#instrucciones)
+Listado: cc
+[__Lua: {rt.inspectobj}, cc]

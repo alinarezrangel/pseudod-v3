@@ -46,16 +46,20 @@ metodo estatico Compilado#vacío
     devolver Compilado#crear: {}, {}
 finmetodo
 
-metodo Compilado#operador_++: otro
+metodo Compilado#operador_>>: otro
     devolver Compilado#crear:
         ({~t~%~t}#formatear: yo#instrucciones, otro#instrucciones),
         ({~t~%~t}#formatear: yo#declaraciones, otro#declaraciones)
 finmetodo
 
+funcion BinOp: op
+    devolver funcion: lhs, rhs
+        devolver EnviarMensaje: lhs, ({operador_}#concatenar: op), rhs
+    finfuncion
+finfuncion
+
 funcion UnirCompilados: partes
-    devolver Reducir: Compilado#vacío, funcion: acc, el
-        devolver acc ++ el
-    finfuncion, partes
+    devolver Reducir: Compilado#vacío, (BinOp: {>>}), partes
 finfuncion
 
 
@@ -103,16 +107,16 @@ funcion CompilarAWasm: ast
         fijar lhs a CompilarAWasm: ast#lhs
         fijar rhs a CompilarAWasm: ast#rhs
         si ast#op#op = {+}
-            devolver lhs ++ rhs ++ (Compilado#deInstrucciónes: {(i64.add)})
+            devolver lhs >> rhs >> (Compilado#deInstrucciónes: {(i64.add)})
         finsi
         si ast#op#op = {-}
-            devolver lhs ++ rhs ++ (Compilado#deInstrucciónes: {(i64.sub)})
+            devolver lhs >> rhs >> (Compilado#deInstrucciónes: {(i64.sub)})
         finsi
         si ast#op#op = {*}
-            devolver lhs ++ rhs ++ (Compilado#deInstrucciónes: {(i64.mul)})
+            devolver lhs >> rhs >> (Compilado#deInstrucciónes: {(i64.mul)})
         finsi
         si ast#op#op = {/}
-            devolver lhs ++ rhs ++ (Compilado#deInstrucciónes: {(i64.div_s)})
+            devolver lhs >> rhs >> (Compilado#deInstrucciónes: {(i64.div_s)})
         finsi
         NoImplementado
     finsi
@@ -132,14 +136,14 @@ funcion CompilarAWasm: ast
         variables id, val
         fijar id a NombreEnWasm: ast#objetivo
         fijar val a CompilarAWasm: ast#valor
-        devolver val ++ (Compilado#deInstrucciónes: ({(local.set ~t)}#formatear: id))
+        devolver val >> (Compilado#deInstrucciónes: ({(local.set ~t)}#formatear: id))
     finsi
     si EsInstancia: ast, AST#NodoFunción
         variables id, cuerpo, fn
         fijar id a NombreEnWasm: ast#nombre
         fijar cuerpo a CompilarBloqueAWasm: (NombresDefinídosSinParámetros: ast), ast#cuerpo
         fijar fn a {(func ~t (result i64)~%~t~%(i64.const 1))}#formatear: id, cuerpo#instrucciones
-        devolver Compilado#deDeclaraciones: ({~t~%~t}#formatear: cuerpo#declaraciones, fn)
+        devolver (Compilado#deDeclaraciones: cuerpo) >> (Compilado#deDeclaraciones: fn)
     finsi
     Inalcanzable
 finfuncion
