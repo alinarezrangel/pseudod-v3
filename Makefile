@@ -135,7 +135,7 @@ tools: tool_tags
 .PHONY: tool_tags
 tool_tags: $(OUTPUTS)/tags.lua $(TOOLS)/tags.lua
 
-$(OUTPUTS)/tags.lua: $(OUTPUTS) $(TOOLS)/tags.pd $(OUTPUTS) stage1 $(STAGE1)/inicio.sdb
+$(OUTPUTS)/tags.lua: $(OUTPUTS) $(TOOLS)/tags.pd stage1 $(STAGE1)/inicio.sdb
 	$(PDC) $(TOOLS)/tags.pd --cargar-db $(STAGE1)/inicio.sdb -o $(OUTPUTS)/tags.lua
 
 # Documentación
