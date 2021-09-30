@@ -20,6 +20,211 @@ utilizar defuncionalización como Defun
 
 ]
 
+funcion Parcial: proc, ...argumentos
+    devolver funcion: ...másArgumentos
+        devolver %proc: ...argumentos, ...másArgumentos
+    finfuncion
+finfuncion
+
+funcion MétodoComoFunción: ...args
+    si args#longitud = 1
+        devolver funcion: obj, ...resto
+            devolver EnviarMensaje: obj, (args#en: 0), ...resto
+        finfuncion
+    sino
+        necesitas args#longitud = 2
+        devolver funcion: ...resto
+            devolver EnviarMensaje: (args#en: 0), (args#en: 1), ...resto
+        finfuncion
+    finsi
+finfuncion
+
+funcion Caminar: nodo, filtro, cuerpo
+    si %filtro: nodo
+        devolver %cuerpo: nodo, funcion: cont
+            devolver Caminar: cont, filtro, cuerpo
+        finfuncion
+    finsi
+
+    funcion recur: nodo
+        devolver Caminar: nodo, filtro, cuerpo
+    finfuncion
+
+    si EsInstancia: nodo, AST#NodoPrograma
+        devolver ParaCadaElemento: nodo#instrucciones, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoVariable
+        devolver ParaCadaElemento: nodo#nombres, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoFijar
+        recur: nodo#objetivo
+        devolver recur: nodo#valor
+    finsi
+    si EsInstancia: nodo, AST#NodoEscribir
+        devolver recur: nodo#valor
+    finsi
+    si EsInstancia: nodo, AST#NodoNl
+        devolver NULO
+    finsi
+    si EsInstancia: nodo, AST#NodoClase
+        recur: nodo#nombre
+        si no EsNulo: nodo#claseBase
+            recur: nodo#claseBase
+        finsi
+        ParaCadaElemento: nodo#extiendeClases, &recur
+        ParaCadaElemento: nodo#implementaClases, &recur
+        devolver ParaCadaElemento: nodo#declaraciones, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoDeclaraciónDeAtributosEnClase
+        devolver ParaCadaElemento: nodo#nombres, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoDeclaraciónDeMétodoEnClase
+        recur: nodo#nombre
+        devolver ParaCadaElemento: nodo#parámetros, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoImplementa
+        recur: nodo#nombre
+        devolver ParaCadaElemento: nodo#definiciones, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoDefineAtributosEnClase
+        devolver ParaCadaElemento: nodo#nombres, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoDefineMétodoEnClase
+        recur: nodo#nombre
+        ParaCadaElemento: nodo#parámetros, &recur
+        devolver ParaCadaElemento: nodo#cuerpo, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoFunción
+        recur: nodo#nombre
+        ParaCadaElemento: nodo#parámetros, &recur
+        devolver ParaCadaElemento: nodo#cuerpo, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoNecesitas
+        devolver recur: nodo#expresión
+    finsi
+    si EsInstancia: nodo, AST#NodoDevolver
+        devolver recur: nodo#expresión
+    finsi
+    si EsInstancia: nodo, AST#NodoSi
+        recur: nodo#condicional
+        ParaCadaElemento: nodo#siVerdadero, &recur
+        devolver ParaCadaElemento: nodo#siFalso, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoMientras
+        recur: nodo#condicional
+        devolver ParaCadaElemento: nodo#cuerpo, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoMétodo
+        si no EsNulo: nodo#deClase
+            recur: nodo#deClase
+        finsi
+        recur: nodo#nombre
+        ParaCadaElemento: nodo#parámetros, &recur
+        devolver ParaCadaElemento: nodo#cuerpo, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoAtributos
+        recur: nodo#deClase
+        devolver ParaCadaElemento: nodo#nombres, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoUtilizar
+        NoImplementado
+    finsi
+
+    si EsInstancia: nodo, AST#NodoIdentificador
+        devolver NULO
+    finsi
+    si EsInstancia: nodo, AST#NodoNumeroLiteral
+        devolver NULO
+    finsi
+    si EsInstancia: nodo, AST#NodoTextoLiteral
+        devolver NULO
+    finsi
+    si EsInstancia: nodo, AST#NodoLlamarProcedimiento
+        recur: nodo#proc
+        devolver ParaCadaElemento: nodo#argumentos, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoEnviarMensaje
+        recur: nodo#objeto
+        devolver ParaCadaElemento: nodo#argumentos, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoOperador
+        recur: nodo#lhs
+        devolver recur: nodo#rhs
+    finsi
+    si EsInstancia: nodo, AST#NodoNoLlamar
+        devolver recur: nodo#base
+    finsi
+    si EsInstancia: nodo, AST#NodoAutoejecutar
+        recur: nodo#expr
+        devolver ParaCadaElemento: nodo#argumentos, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoFunciónAnónima
+        ParaCadaElemento: nodo#parámetros, &recur
+        devolver ParaCadaElemento: nodo#cuerpo, &recur
+    finsi
+    si EsInstancia: nodo, AST#NodoSonIguales
+        recur: nodo#lhs
+        devolver recur: nodo#rhs
+    finsi
+    si EsInstancia: nodo, AST#NodoReferenciar
+        devolver recur: nodo#nombre
+    finsi
+    si EsInstancia: nodo, AST#NodoNo
+        devolver recur: nodo#expresión
+    finsi
+    si EsInstancia: nodo, AST#NodoClonar
+        recur: nodo#expresiónAClonar
+        devolver ParaCadaElemento: nodo#campos, funcion: campo
+            devolver recur: (campo#en: 1)
+        finfuncion
+    finsi
+
+    si EsInstancia: nodo, AST#NodoVariadic
+        devolver recur: nodo#interno
+    finsi
+
+    [ Nunca se llega hasta aquí. ]
+    Escribir: ({Caminar no implementado para ~t}#formatear: (TipoDe: nodo))
+    Inalcanzable
+finfuncion
+
+clase LlaveAnotaciónDeCapturas
+    metodo comoTexto
+finclase
+
+metodo LlaveAnotaciónDeCapturas#comoTexto
+    devolver {LLAVE_ANOTACIÓN_DE_CAPTURAS}
+finmetodo
+
+variable LLAVE_ANOTACIÓN_DE_CAPTURAS
+fijar LLAVE_ANOTACIÓN_DE_CAPTURAS a LlaveAnotaciónDeCapturas#crear
+
+funcion AnotaciónDeCapturas: ast
+    variable nombresCapturadosAcc, nombresCapturados
+    fijar nombresCapturadosAcc a Arreglo#vacio
+    Caminar: ast, funcion: nodo
+        variable declaraciones
+        fijar declaraciones a Arreglo#crearCon:
+            AST#NodoVariable, AST#NodoFunción, AST#NodoClase, AST#NodoMétodo, AST#NodoFunciónAnónima
+        devolver Algún: (Mapear: declaraciones, (Parcial: &EsInstancia, nodo))
+    finfuncion, funcion: nodo, recur
+        si EsInstancia: nodo, AST#NodoFunción
+            nombresCapturadosAcc#agregarAlFinal: (nodo#obtenerMetadato: Defun#LLAVE_DEFUNCIONALIZACIÓN, {nombresLibres})
+            ParaCadaElemento: nodo#cuerpo, funcion: cn
+                devolver %recur: cn
+            finfuncion
+            devolver NULO
+        finsi
+    finfuncion
+    fijar nombresCapturados a Reducir: Conjunto#vacío, (MétodoComoFunción: {unión}), nombresCapturadosAcc
+    Caminar: ast, funcion: nodo
+        devolver EsInstancia: nodo, AST#NodoIdentificador
+    finfuncion, funcion: nodo, recur
+        nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}, (nombresCapturados#contiene: (RN#NombreResueltoDe: nodo))
+    finfuncion
+finfuncion
+
+
 [ Nombre código del backend. Véase también la variable __Impl. ]
 variable PSEUDOD_IMPL
 fijar PSEUDOD_IMPL a {Tupla (IR) Bootstrap}
@@ -348,6 +553,19 @@ finfuncion
 variables ast, programa, cc
 fijar programa a {
 
+variable X, Y
+funcion Q: W, E
+    fijar X a W
+    funcion A: S
+        fijar E a S
+        fijar X a S
+    finfuncion
+finfuncion
+
+}
+
+[{
+
 funcion Q
     2 * 3 - 20 / 4
 finfuncion
@@ -369,12 +587,15 @@ fijar Z a Y * Y
 Z / 2
 Q
 
-}
+}]
 
 fijar ast a ParsearYDefunc: programa
-fijar cc a CompilarAWasm: ast, Diccionario#vacío
+Escribir: {ast=}, ast
+AnotaciónDeCapturas: ast
+Escribir: {res=}, ast
+[fijar cc a CompilarAWasm: ast, Diccionario#vacío
 
 Escribir: ({~t :: ~t :: ~t}#formatear: (TipoDe: cc), (TipoDe: cc#declaraciones), (TipoDe: cc#instrucciones))
 Escribir: ({~t~%~t}#formatear: cc#declaraciones, cc#instrucciones)
-Listado: cc
+Listado: cc]
 [__Lua: {rt.inspectobj}, cc]
