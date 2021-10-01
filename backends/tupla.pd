@@ -188,6 +188,7 @@ funcion Caminar: nodo, filtro, cuerpo
     Inalcanzable
 finfuncion
 
+
 clase LlaveAnotaciónDeCapturas
     metodo comoTexto
 finclase
@@ -519,9 +520,9 @@ funcion CompilarAWasm: ast, bindingsCapturados
                 (Compilado#deInstrucciónes: (Arreglo#crearCon:
                     (OP#MKENV: LocalDelEntorno)))
                 >> (Compilado#deInstrucciónes: (Aplanar: (Mapear: nombresLibres#comoArreglo, funcion: binding
-                    devolver Arreglo#crearCon:
-                        (OP#ESET: LocalDelEntorno, (remapeos#en: binding), (NombreEnIR: binding))
-                finfuncion)))
+                        devolver Arreglo#crearCon:
+                            (OP#ESET: LocalDelEntorno, (remapeos#en: binding), (NombreEnIR: binding))
+                    finfuncion)))
                 >> (Compilado#deInstrucciónes: (Arreglo#crearCon:
                     (OP#MKCLZ: LocalDelEntorno, id)))
         sino
