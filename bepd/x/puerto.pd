@@ -263,6 +263,10 @@ finprocedimiento
 [DOCUMENTA
 @brief{Lee de @pd{puerto} hasta que se encuentre el texto @pd{hasta}.}
 
+Si se encuentra el fin del puerto después de haber leído algo, devuelve lo
+leído. Si por el contrario se encuentra el fin del puerto antes de leer
+cualquier cosa, devuelve @pd{EOF}.
+
 @devuelve{El texto leído. No incluye @pd{hasta}.}
 DOCUMENTA]
 procedimiento LeerHasta: puerto, hasta
@@ -271,6 +275,13 @@ procedimiento LeerHasta: puerto, hasta
     mientras no TerminaCon: res, hasta
         variable car
         fijar car a puerto#leerCarácter
+        si car = EOF
+            si res = {}
+                devolver EOF
+            sino
+                devolver res
+            finsi
+        finsi
         fijar res a res#concatenar: car
     finmientras
     devolver res#subTexto: 0, (res#longitud - hasta#longitud)
