@@ -1,0 +1,88 @@
+utilizar bepd/builtins
+utilizar bepd/x/puerto como Puerto
+utilizar bepd/x/puerto/conPosición como PuertoConPos
+utilizar bepd/utilidades/texto/ascii como ASCII
+utilizar bepd/x/sexpr como SExpr
+utilizar tokens como Tokens
+utilizar tokenizador como Tokenizador
+
+
+procedimiento LeerScribbleSimplificado: puerto
+    variables c
+    fijar c a puerto#leerCarácter
+    si c = Puerto#EOF
+        devolver Puerto#EOF
+    finsi
+    si c = {@}
+        devolver Leer@: puerto
+    sino
+        variable texto
+        fijar texto a c#concatenar: (Puerto#LeerHasta: puerto, {@})
+        si no (SiguienteCarácter: puerto) = Puerto#EOF
+            puerto#desleerCarácter
+        finsi
+        devolver texto
+    finsi
+finprocedimiento
+
+procedimiento LeerScribble: puerto
+    variables acc, p
+    fijar acc a Arreglo#vacio
+    fijar p a LeerScribbleSimplificado: puerto
+    mientras no p = Puerto#EOF
+        acc#agregarAlFinal: p
+        fijar p a LeerScribbleSimplificado: puerto
+    finmientras
+    devolver acc
+finprocedimiento
+
+procedimiento SiguienteCarácter: puerto
+    variable ch
+    fijar ch a puerto#leerCarácter
+    si no (ch = Puerto#EOF)
+        puerto#desleerCarácter
+    finsi
+    devolver ch
+finprocedimiento
+
+procedimiento Leer@: puerto
+    variable el
+    fijar el a Tokenizador#LeerLexema: puerto
+    si (EsInstancia: el, Tokens#TokenIdentificador) || (EsInstancia: el, Tokens#TokenPalabraClave)
+        fijar el a SExpr#Símbolo#desdeTexto: el#texto
+    finsi
+    si (SiguienteCarácter: puerto) = "("
+        puerto#leerCarácter
+        variable contenido
+        fijar contenido a Puerto#LeerHasta: puerto, ")"
+        fijar el a Arreglo#crearCon: el, contenido
+    sino
+        si (SiguienteCarácter: puerto) = "{"
+            fijar el a Arreglo#crearCon: el
+        finsi
+    finsi
+    si (SiguienteCarácter: puerto) = "{"
+        necesitas EsInstancia: el, Arreglo
+        puerto#leerCarácter
+        variable contenido
+        fijar contenido a Puerto#LeerHasta: puerto, "}"
+        el#agregarAlFinal: contenido
+    finsi
+    devolver el
+finprocedimiento
+
+
+variable ejemplo
+fijar ejemplo a «@etiqueta{con más contenido}.
+
+En vez de corchetes, usa @paren(tesis){}.
+
+@pero(mira esto otro) que termina.
+otra línea.
+  con identación.
+
+»
+variable ps
+fijar ps a Puerto#PuertoParaTexto
+SExpr#DesparsearDato: ps, (LeerScribble: (PuertoConPos#PuertoConPosiciónTextual#crear: (Puerto#TextoComoPuerto: ejemplo)))
+Escribir: (Puerto#TextoDePuertoDeEscritura: ps)
