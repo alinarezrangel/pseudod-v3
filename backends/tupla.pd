@@ -1,4 +1,5 @@
 utilizar bepd/builtins
+utilizar bepd/x/adhoc (ObjetoAdHoc)
 utilizar bepd/datos/conjunto (Conjunto)
 utilizar bepd/datos/diccionario (Diccionario)
 utilizar bepd/x/puerto/conPosición (PosiciónTextual)
@@ -38,6 +39,13 @@ funcion MétodoComoFunción: ...args
         finfuncion
     finsi
 finfuncion
+
+funcion BinOp: op
+    devolver funcion: lhs, rhs
+        devolver EnviarMensaje: lhs, ({operador_}#concatenar: op), rhs
+    finfuncion
+finfuncion
+
 
 funcion Caminar: nodo, filtro, cuerpo
     si %filtro: nodo
@@ -200,7 +208,7 @@ finmetodo
 variable LLAVE_ANOTACIÓN_DE_CAPTURAS
 fijar LLAVE_ANOTACIÓN_DE_CAPTURAS a LlaveAnotaciónDeCapturas#crear
 
-funcion AnotaciónDeCapturas: ast
+procedimiento AnotaciónDeCapturas: ast
     variable nombresCapturadosAcc, nombresCapturados
     fijar nombresCapturadosAcc a Arreglo#vacio
     Caminar: ast, funcion: nodo
@@ -208,22 +216,116 @@ funcion AnotaciónDeCapturas: ast
         fijar declaraciones a Arreglo#crearCon:
             AST#NodoVariable, AST#NodoFunción, AST#NodoClase, AST#NodoMétodo, AST#NodoFunciónAnónima
         devolver Algún: (Mapear: declaraciones, (Parcial: &EsInstancia, nodo))
-    finfuncion, funcion: nodo, recur
+    finfuncion, procedimiento: nodo, recur
         si EsInstancia: nodo, AST#NodoFunción
             nombresCapturadosAcc#agregarAlFinal: (nodo#obtenerMetadato: Defun#LLAVE_DEFUNCIONALIZACIÓN, {nombresLibres})
-            ParaCadaElemento: nodo#cuerpo, funcion: cn
+            ParaCadaElemento: nodo#cuerpo, procedimiento: cn
                 devolver %recur: cn
-            finfuncion
+            finprocedimiento
             devolver NULO
         finsi
-    finfuncion
+    finprocedimiento
     fijar nombresCapturados a Reducir: Conjunto#vacío, (MétodoComoFunción: {unión}), nombresCapturadosAcc
     Caminar: ast, funcion: nodo
         devolver EsInstancia: nodo, AST#NodoIdentificador
-    finfuncion, funcion: nodo, recur
+    finfuncion, procedimiento: nodo, recur
         nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}, (nombresCapturados#contiene: (RN#NombreResueltoDe: nodo))
+    finprocedimiento
+finprocedimiento
+
+procedimiento EnumeraciónDeCapturas: ast, informaciónDeCapturas
+    variables acc, DECLARACIONES, asoc
+    fijar DECLARACIONES a Arreglo#crearCon: AST#NodoVariable, AST#NodoFunción, AST#NodoIdentificador
+    fijar acc a 0
+    fijar asoc a Diccionario#vacío
+
+    procedimiento marcarÍndiceCapturaEnDeclaración: nid
+        nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}, 0
+        nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}, acc
+        asoc#fijarEn: nid#nombre, acc
+        fijar acc a acc + 1
+    finprocedimiento
+
+    funcion miInformaciónDeCapturas: nid
+        si asoc#contiene: nid#nombre
+            devolver ObjetoAdHoc: {altura}, 0, {índiceDeCaptura}, (asoc#en: nid#nombre)
+        sino
+            variable dt
+            fijar dt a %informaciónDeCapturas: nid
+            devolver clonar dt con
+                altura: dt#altura + 1
+            finclonar
+        finsi
     finfuncion
-finfuncion
+
+    funcion marcarÍndiceCapturaEnUso: nid
+        variable dt
+        fijar dt a miInformaciónDeCapturas: nid
+        nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}, dt#altura
+        nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}, dt#índiceDeCaptura
+    finfuncion
+
+    Caminar: ast, funcion: nodo
+        devolver Algún: (Mapear: DECLARACIONES, (Parcial: &EsInstancia, nodo))
+    finfuncion, procedimiento: nodo, recur
+        si (EsInstancia: nodo, AST#NodoFunción) && (Defun#SonElMismoObjeto: nodo, ast)
+            ParaCadaElemento: nodo#parámetros, &marcarÍndiceCapturaEnDeclaración
+            ParaCadaElemento: nodo#cuerpo, recur
+            devolver NULO
+        finsi
+        si EsInstancia: nodo, AST#NodoVariable
+            ParaCadaElemento: nodo#nombres, &marcarÍndiceCapturaEnDeclaración
+            devolver NULO
+        finsi
+        si EsInstancia: nodo, AST#NodoFunción
+            marcarÍndiceCapturaEnDeclaración: nodo#nombre
+            EnumeraciónDeCapturas: nodo, &miInformaciónDeCapturas
+            devolver NULO
+        finsi
+        si EsInstancia: nodo, AST#NodoIdentificador
+            marcarÍndiceCapturaEnUso: nodo
+            devolver NULO
+        finsi
+        Inalcanzable
+    finprocedimiento
+
+    ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {númeroDeCapturas}, acc
+finprocedimiento
+
+procedimiento AnotarÍndiceEnEntorno: ast, capturasAnteriores
+    variables númeroDeCapturas, caps
+    fijar númeroDeCapturas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {númeroDeCapturas}
+    fijar caps a clonar capturasAnteriores con finclonar
+    caps#agregarAlFinal: númeroDeCapturas
+    funcion obtenerÍndiceEnEntorno: nid
+        variables altura, índice
+        fijar altura a nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
+        fijar índice a nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
+        devolver (Reducir: 0, (BinOp: {+}), (PedazoDeArreglo: caps, 0, ((caps#longitud - altura) - 1))) + índice
+    finfuncion
+    procedimiento marcarÍndice: nid
+        nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceEnEntorno}, (obtenerÍndiceEnEntorno: nid)
+    finprocedimiento
+    Caminar: ast, funcion: nodo
+        devolver (EsInstancia: nodo, AST#NodoIdentificador) || (EsInstancia: nodo, AST#NodoFunción)
+    finfuncion, procedimiento: nodo, recur
+        si EsInstancia: nodo, AST#NodoIdentificador
+            marcarÍndice: nodo
+            devolver NULO
+        finsi
+        si EsInstancia: nodo, AST#NodoFunción
+            si Defun#SonElMismoObjeto: nodo, ast
+                ParaCadaElemento: nodo#parámetros, &marcarÍndice
+                ParaCadaElemento: nodo#cuerpo, recur
+            sino
+                marcarÍndice: nodo#nombre
+                AnotarÍndiceEnEntorno: nodo, caps
+            finsi
+            devolver NULO
+        finsi
+        Inalcanzable
+    finprocedimiento
+finprocedimiento
 
 
 [ Nombre código del backend. Véase también la variable __Impl. ]
@@ -277,26 +379,39 @@ metodo Tupla#comoTexto
          {, })
 finmetodo
 
+funcion EnumConValoresIncrementales: nombre, ...valores
+    variable pares
+    fijar pares a Diccionario#vacío
+    ParaCadaElementoConÍndice: valores, procedimiento: valor, i
+        pares#fijarEn: valor, i
+    finprocedimiento
+    devolver EnumConValores: nombre, ...(Aplanar: pares#comoArreglo)
+finfuncion
+
 variable Opcode
-fijar Opcode a EnumConValores: {Opcode},
-    {SUM}, 0,
-    {SUB}, 1,
-    {MUL}, 2,
-    {DIV}, 3,
-    {LSET}, 4,
-    {LGET}, 5,
-    {CONST}, 6,
-    {LOCAL}, 7,
-    {CALL}, 8,
-    {RT_LIT}, 9,
-    {PRINTT}, 10,
-    {MKCLZ}, 11,
-    {EGET}, 12,
-    {ESET}, 13,
-    {MKENV}, 14,
-    {MK0CLZ}, 15,
-    {DYNCALL}, 16,
-    {ECALL}, 17
+fijar Opcode a EnumConValoresIncrementales: {Opcode},
+    {SUM},    [ SUM ]
+    {SUB},    [ SUB ]
+    {MUL},    [ MUL ]
+    {DIV},    [ DIV ]
+    {LSET},   [ LSET Lx ]
+    {LGET},   [ LGET Lx ]
+    {CONST},  [ CONST Cx ]
+    {ICONST}, [ ICONST Na ]
+    {FCONST}, [ FCONST Fa ]
+    {LOCAL},  [ LOCAL Lx  (Solo al principio de un procedimiento) ]
+    {PARAM},  [ PARAM Lx  (Solo antes que LOCAL en un procedimiento) ]
+    {CALL},   [ CALL Px, Na, Nb ]
+    {RT_LIT}, [ RT_LIT ]
+    {PRINTT}, [ PRINTT ]
+    {MKCLZ},  [ MKCLZ Px ]
+    {EGET},   [ EGET Lx, Na ]
+    {ESET},   [ ESET Lx, Na ]
+    {EGETC},  [ EGETC Lx, Na, Nb ]
+    {ESETC},  [ ESETC Lx, Na, Nb ]
+    {MKENV},  [ MKENV Na ]
+    {MK0CLZ}, [ MK0CLZ Px ]
+    {DYNCALL} [ DYNCALL Na, Nb ]
 
 metodo Opcode#bytecode
     devolver yo#valor
@@ -386,12 +501,6 @@ procedimiento Listado: compilado
 finprocedimiento
 
 
-funcion BinOp: op
-    devolver funcion: lhs, rhs
-        devolver EnviarMensaje: lhs, ({operador_}#concatenar: op), rhs
-    finfuncion
-finfuncion
-
 funcion UnirCompilados: partes
     devolver Reducir: Compilado#vacío, (BinOp: {>>}), partes
 finfuncion
@@ -446,7 +555,7 @@ funcion CompilarAWasm: ast, bindingsCapturados
         devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#CONST: ast#valor), OP#RT_LIT)
     finsi
     si EsInstancia: ast, AST#NodoOperador
-        variable lhs, rhs
+        variables lhs, rhs
         fijar lhs a CompilarAWasm: ast#lhs, bindingsCapturados
         fijar rhs a CompilarAWasm: ast#rhs, bindingsCapturados
         si ast#op#op = {+}
@@ -593,7 +702,11 @@ Q
 fijar ast a ParsearYDefunc: programa
 Escribir: {ast=}, ast
 AnotaciónDeCapturas: ast
+EnumeraciónDeCapturas: ast, funcion: nid Inalcanzable finfuncion
+AnotarÍndiceEnEntorno: ast, (Arreglo#crearCon: 0)
 Escribir: {res=}, ast
+[fijar cc a CompilarAWasm: ast, Diccionario#vacío
+Listado: cc]
 [fijar cc a CompilarAWasm: ast, Diccionario#vacío
 
 Escribir: ({~t :: ~t :: ~t}#formatear: (TipoDe: cc), (TipoDe: cc#declaraciones), (TipoDe: cc#instrucciones))
