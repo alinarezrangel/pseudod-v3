@@ -23,44 +23,50 @@ están en su entorno.
 Esta sección usará la siguiente notación:
 
 - Los operandos con `L` como `Lx` o `Ly` son índices de registros locales.
+- `E` indica un *entorno* (un local o los valores `EACT`/`ESUP`).
 - `P` es el índice de un procedimiento.
 - `N` es un número.
 - `U` es un número no negativo (0 o positivo).
 - `C` es el índice de un constante en la lista de constantes.
 - `F` es un número con coma flotante (float).
+- `I` es un número entero.
+- `?` antes de un argumento indica que puede ser `NIL`.
+- El "tipo" `U` se suele mezclar con las letras `a` (de *altura*) e `i` (de
+  *índice*) para indicar un índice en el entorno.
 
-Los opcodes de la máquina virtual son:
-
-- `SUM`, `SUB`, `MUL`, `DIV`: Operaciones aritméticas básicas.
-- `LSET Lx`: Saca un valor de la pila, asignándolo al local `Lx`.
-- `LGET Lx`: Empuja en la pila el valor del local `Lx`.
-- `CONST Cx`: Obtén el valor de la constante `Cx` y empújala en la pila.
-- `ICONST Na`: Empuja un entero a la pila.
-- `FCONST Fa`: Empuja un float a la pila.
-- `CALL Px, Ua, Ub`: Llama al procedimiento `Px`, pasándo `Ua` valores de
-  entrada y aceptando `Ub` valores de regreso.
-- `MKENV Ua`: Crea un entorno con `Ua` elementos.
-- `ESET Lx, Na`: Saca un valor de la pila, asignándolo al elemento `Na` del
-  entorno en el local `Lx`.
-- `EGET Lx, Na`: Obtén el valor del elemento `Na` del local `Lx` (que debe ser
-  un entorno) y empújalo en la pila.
-- `EGETC Lx, Na, Nb`: Accede a través de los primeros `Na` entornos en
-  `Lx`. Luego accede al elemento `Nb`. `Lx` debe ser un registro que contenga
-  un entorno, cuyo elemento 0 debe ser siempre un entorno (y así
-  recursivamente).
-- `ESETC Lx, Na, Nb`: Como `EGETC`, pero fija al elemento seleccionado en el
-  entorno.
-- `MKCLZ Px`: Saca un entorno de la pila y úsalo para crear una *closure* con
-  el procedimiento `Px`.
-- `MK0CLZ Px`: Simplificación de `MKCLZ`. Crea una *closure* con un entorno
-  vacío.
-- `DYNCALL Ua, Ub`: Es como `CALL`, pero en vez de llamar a un procedimiento,
-  llama al *closure* en la cima de la pila (sacándola de la pila en el
-  proceso).
-
-Además, los siguientes opcodes tienen significado en posiciones específicas:
+### Especiales ###
 
 - `LOCAL Lx`: Declara un registro local. Solo puede aparecer al principio del
   bloque `"code"` o al principio de un procedimiento.
 - `PARAM Lx`: Declara el registro de un parámetro de un procedimiento. Solo
   puede aparecer al principio de un procedimiento antes de los opcodes `LOCAL`.
+
+### Mixtos ###
+
+- `SUM`, `MUL`, `SUB`, `DIV`
+- `POP`
+
+### Constantes ###
+
+- `ICONST Ix`
+- `FCONST Fx`
+- `LCONST Cx`
+
+### Lectura y Escritura ###
+
+- `LSET Lx`
+- `LGET Lx`
+- `LSETC Ex, Ua, Ui`
+- `LGETC Ex, Ua, Ui`
+
+### Marcos y *Closures* ###
+
+- `OPNFRM Ex, ?Ey, Ux`
+- `EINIT Ex, Ui, Lx`
+- `CLSFRM Ex`
+- `MKCLZ Ex, Px`
+- `MK0CLZ Px`
+
+### Procedimientos ###
+
+- `DYNCALL Ux, Uy`

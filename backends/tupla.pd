@@ -431,32 +431,24 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {SUB},     [ SUB ]
     {MUL},     [ MUL ]
     {DIV},     [ DIV ]
-    {LSET},    [ LSET Lx ]
-    {LGET},    [ LGET Lx ]
-    {LSETC},   [ LSETC Ua, Ub ]
-    {LGETC},   [ LGETC Ua, Ub ]
-    {CONST},   [ CONST Cx ]
+    {POP},     [ POP ]
+    {LCONST},  [ LCONST Cx ]
     {ICONST},  [ ICONST Na ]
     {FCONST},  [ FCONST Fa ]
     {LOCAL},   [ LOCAL Lx  (Solo al principio de un procedimiento) ]
     {PARAM},   [ PARAM Lx  (Solo antes que LOCAL en un procedimiento) ]
-    {CALL},    [ CALL Px, Ua, Ub ]
-    {ECALL},   [ ECALL Lx, Ua, Ub, Uc ]
-    {RT_LIT},  [ RT_LIT ]
-    {PRINTT},  [ PRINTT ]
-    {MKCLZ},   [ MKCLZ Px ]
+    {MKCLZ},   [ MKCLZ Ex, Px ]
+    {MK0CLZ},  [ MK0CLZ Px ]
+    {LSET},    [ LSET Lx ]
+    {LGET},    [ LGET Lx ]
     {EGET},    [ EGET Lx, Na ]
     {ESET},    [ ESET Lx, Na ]
-    {EGETC},   [ EGETC Lx, Na, Nb ]
-    {ESETC},   [ ESETC Lx, Na, Nb ]
+    {LSETC},   [ LSETC Ex, Ua, Ub ]
+    {LGETC},   [ LGETC Ex, Ua, Ub ]
+    {DYNCALL}, [ DYNCALL Ua, Ub ]
     {EINIT},   [ EINIT Lx, Ua, Ly ]
-    {EINITC},  [ EINITC Lx, Ua, Ub ]
-    {ECALLC},  [ ECALLC Lx, Ua, Ub, Uc, Ud ]
-    {MKENV},   [ MKENV Na ]
-    {MK0CLZ},  [ MK0CLZ Px ]
-    {DYNCALL}, [ DYNCALL Na, Nb ]
-    {IFRAME},  [ IFRAME Lx, Ly ]
-    {EFRAME}   [ EFRAME Lx ]
+    {OPNFRM},  [ OPNFRM Ex, ?Ey, Ly ]
+    {CLSFRM}   [ CLSFRM Ex ]
 
 metodo Opcode#bytecode
     devolver yo#valor
@@ -580,18 +572,13 @@ funcion CompilarBloqueAWasm: subámbito, instrucciones, bindingsCapturados
     variables is, ds
     fijar is a Arreglo#vacio
     fijar ds a Arreglo#vacio
-    [ ParaCadaElemento: subámbito#todosLosBindingsLocales, procedimiento: binding ]
-    [     variable id ]
-    [     fijar id a NombreEnIR: binding ]
-    [     is#agregarAlFinal: (Arreglo#crearCon: (OP#LOCAL: id)) ]
-    [ finprocedimiento ]
     ParaCadaElemento: instrucciones, procedimiento: instr
         variable subc
         fijar subc a CompilarAWasm: instr, bindingsCapturados
         is#agregarAlFinal: subc#instrucciones
         ds#agregarAlFinal: subc#declaraciones
         si EsInstancia: instr, AST#NodoExpresion
-            is#agregarAlFinal: (Arreglo#crearCon: OP#PRINTT)
+            is#agregarAlFinal: (Arreglo#crearCon: OP#POP)
         finsi
     finprocedimiento
     devolver Compilado#crear: (Aplanar: is), (Aplanar: ds)
@@ -615,7 +602,7 @@ funcion CompilarAWasm: ast, bindingsCapturados
         devolver CompilarBloqueAWasm: subámbito, ast#instrucciones, bindingsCapturados
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
-        devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#CONST: ast#valor), OP#RT_LIT)
+        devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#ICONST: ast#valor))
     finsi
     si EsInstancia: ast, AST#NodoOperador
         variables lhs, rhs
@@ -643,7 +630,7 @@ funcion CompilarAWasm: ast, bindingsCapturados
         fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
         fijar esCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
         si esCaptura || (altura > 0)
-            fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#EGETC: LocalDelEntornoActual, altura, índiceDeCaptura))
+            fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGETC: LocalDelEntornoActual, altura, índiceDeCaptura))
         sino
             fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGET: índiceDeCaptura))
         finsi
@@ -669,44 +656,13 @@ funcion CompilarAWasm: ast, bindingsCapturados
         si esCaptura || (altura > 0)
             fijar op a OP#LSETC: LocalDelEntornoActual, altura, índiceDeCaptura
         sino
-            fijar op a OP#LSET: LocalDelEntornoActual, índiceDeCaptura
+            fijar op a OP#LSET: índiceDeCaptura
         finsi
         fijar val a CompilarAWasm: ast#valor, bindingsCapturados
         devolver val >> (Compilado#deInstrucciónes: (Arreglo#crearCon: op))
     finsi
     si EsInstancia: ast, AST#NodoFunción
         variables id, parámetros, preludio, cuerpo, fn, remapeos, nombresLibres, inicDeClosure, locales, capturas
-        [ fijar id a IDDeIR: ast#nombre ]
-        [ fijar locales a LocalesDelBloque: ast ]
-        [ fijar nombresLibres a NombresLibres: ast ]
-        [ fijar remapeos a RemapeosDelBloque: locales, nombresLibres ]
-        [ fijar parámetros a Mapear: ast#parámetros, funcion: nid ]
-        [     devolver remapeos#en: (NombreEnIR: (RN#NombreResueltoDe: nid)) ]
-        [ finfuncion ]
-        [ fijar preludio a (Compilado#deInstrucciónes: ]
-        [     (Arreglo#crearCon: ]
-        [         (OP#IFRAME: LocalDelEntornoActual, LocalDelEntornoSuperior), ]
-        [         ...(Mapear: (Únicos: (Filtrar: locales, (MétodoComoFunción: {esLocal}))), ]
-        [                     funcion: metalocal ]
-        [                         devolver OP#EINIT: LocalDelEntornoActual, metalocal#índiceDeCaptura, (remapeos#en: (NombreEnIR: metalocal#binding)) ]
-        [                     finfuncion), ]
-        [         (OP#MKCLZ: {DONE}))) ]
-        [ si (locales#longitud > 0) || VERDADERO ]
-        [     fijar parámetros a Concatenar: (Arreglo#crearCon: LocalDelEntornoSuperior), parámetros ]
-        [     fijar inicDeClosure a ]
-        [         (Compilado#deInstrucciónes: (Arreglo#crearCon: ]
-        [             (OP#MKENV: {EL}))) ]
-        [         >> (Compilado#deInstrucciónes: ]
-        [             (Aplanar: (Mapear: (Únicos: (Filtrar: locales, funcion: obj devolver no obj#esLocal finfuncion)), ]
-        [                                funcion: metalocal ]
-        [                                    devolver Arreglo#crearCon: ]
-        [                                        (OP#ESET: {EL}, metalocal#índiceDeCaptura, (bindingsCapturados#en: (NombreEnIR: metalocal#binding))) ]
-        [                                finfuncion))) ]
-        [         >> (Compilado#deInstrucciónes: (Arreglo#crearCon: ]
-        [             (OP#MKCLZ: {EL}, id))) ]
-        [ sino ]
-        [     fijar inicDeClosure a Compilado#vacío ]
-        [ finsi ]
         fijar id a NombreEnIR: ast#nombre
 
         fijar preludio a Arreglo#vacio
@@ -729,17 +685,26 @@ funcion CompilarAWasm: ast, bindingsCapturados
         fijar capturas a Únicos: (Filtrar: locales, funcion: metalocal
             devolver metalocal#esLocal && metalocal#esCapturado
         finfuncion)
-        preludio#agregarAlFinal: (OP#IFRAME: LocalDelEntornoActual, LocalDelEntornoSuperior)
+        preludio#agregarAlFinal: (OP#OPNFRM: LocalDelEntornoActual, LocalDelEntornoSuperior, capturas#longitud)
         preludio#agregarAlFinal: (Mapear: capturas, funcion: metalocal
             devolver OP#EINIT: LocalDelEntornoActual, metalocal#índiceDeCaptura, metalocal#índiceDeCaptura
         finfuncion)
-        preludio#agregarAlFinal: (OP#EFRAME: LocalDelEntornoActual)
+        preludio#agregarAlFinal: (OP#CLSFRM: LocalDelEntornoActual)
 
         fijar nombresLibres a NombresLibres: ast
         fijar remapeos a RemapeosDelBloque: locales, nombresLibres
 
-        fijar inicDeClosure a Compilado#deInstrucciónes: (Arreglo#crearCon:
-            (OP#MKCLZ: LocalDelEntornoActual, id, (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}), (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura})))
+        fijar inicDeClosure a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#MKCLZ: LocalDelEntornoActual, id))
+        si (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado})
+            fijar inicDeClosure a inicDeClosure >> (Compilado#deInstrucciónes: (Arreglo#crearCon:
+                (OP#LSETC:
+                    LocalDelEntornoActual,
+                    (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}),
+                    (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}))))
+        sino
+            fijar inicDeClosure a inicDeClosure >> (Compilado#deInstrucciónes: (Arreglo#crearCon:
+                (OP#LSET: (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}))))
+        finsi
 
         fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: (NombresDefinídosSinParámetros: ast), ast#cuerpo, remapeos)
         fijar fn a DeclrFunción#crear: id, parámetros, cuerpo#instrucciones
@@ -772,6 +737,7 @@ funcion Q: W, E
     funcion A: S
         fijar E a S
         fijar X a S
+        A
     finfuncion
     fijar X a W
     A
