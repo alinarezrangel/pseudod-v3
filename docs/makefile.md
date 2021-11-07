@@ -99,3 +99,20 @@ El resultado de compilar `tags.pd` estará en `outputs/tags.lua`.
 El objetivo `dist` crea un archivo ZIP listo para ser distribuido. Actualmente
 el script tiene muchos bugs y no te recomiendo usarlo hasta que lo reemplace
 por una mejor versión en Python.
+
+## Generar los enlaces al compilador ##
+
+El objetivo `binlink` (`make binlink`) crea un directorio `bin/` con dos
+archivos dentro de este: `pdc` y `pdcjit`. Estos son guiones para `/usr/bin/sh`
+que actúan como "envolturas" para el compilador. La gracia de estos es que, a
+diferencia del compilador, pueden ser ejecutados fuera del directorio
+fuente. Sin embargo, estos enlaces vienen con varias advertencias y notas:
+
+- El makefile crea estas envolturas copiando la ruta al repositorio en
+  estos. Por esto, si mueves el directorio que contiene al compilador tendrás
+  que regenerar los archivos.
+- Similarmente estos archivos también tienen rutas completas a los ejecutables
+  de Lua y LuaJIT. Si deseas usar otros ejecutables de Lua/LuaJIT tendrás que
+  modificar los archivos manualmente. Los ejecutables de Lua y LuaJIT son
+  extraídos del PATH, así que si tienes Lua o LuaJIT instalados pero no en tu
+  PATH `make binlink` fallará.

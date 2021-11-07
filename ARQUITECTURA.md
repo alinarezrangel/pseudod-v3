@@ -75,7 +75,8 @@ mientras que "bindings" (FFI) a algunas bibliotecas externas están en
 El compilador funciona con diversos "backends". Cada backend tiene la
 responsabilidad de compilar a un único "objetivo" (*target*). Actualmente el
 único backend funcional es el backend a Lua 5.4 que se encuentra en
-`backends/lua/`, pero estoy trabajando en un backend a [WebAssembly][wasm].
+`backends/lua/`, pero estoy trabajando en un backend a [WebAssembly][wasm] y en
+un backend de "tuplas" que compilará a una máquina virtual o a C.
 
 ### Lua ###
 
@@ -86,5 +87,10 @@ el menos eficiente.
 ### WebAssembly ###
 
 El nuevo backend a WebAssembly. Aún no está listo. Estará en `backends/wasm/`.
+
+### Tuplas ###
+
+El backend de tuplas compila PseudoD a un bytecode que después es ejecutado en
+una máquina virtual o compilado (de nuevo) a C. Está en `backends/tupla.pd`
 
 [wasm]: https://webassembly.org

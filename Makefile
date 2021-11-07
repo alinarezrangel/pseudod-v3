@@ -32,6 +32,8 @@ backends/lua/emisor.pd backends/wasm.pd
 DOCS=docs
 EXAMPLES=ejemplos
 
+BIN_DIR=bin
+
 DIST_EXTRA_FILES=README.md $(DOCS)/man/pseudod.1 $(DOCS)/man/pseudod.html	\
 $(DOCS)/man/pseudod.md
 LUA_RUNTIME_FILES=backends/lua/b64.lua backends/lua/errloc.lua backends/lua/runtime.lua backends/lua/exts.lua
@@ -55,7 +57,7 @@ $(BTDIR):
 .PHONY: dist
 dist: $(DIST_ZIP)
 
-$(DIST_ZIP): $(DIST_FILES)
+$(DIST_ZIP): $(DIST_FILES) scripts/make-dist.fish
 	mkdir -p $(DIST_TMP)
 	$(FISH) scripts/make-dist.fish $(DIST_ZIP) $(DIST_FILES)
 	mv $(DIST_TMP)/$(DIST_ZIP) $(DIST_ZIP)
@@ -137,6 +139,22 @@ tool_tags: $(OUTPUTS)/tags.lua $(TOOLS)/tags.lua
 
 $(OUTPUTS)/tags.lua: $(OUTPUTS) $(TOOLS)/tags.pd stage1 $(STAGE1)/inicio.sdb
 	$(PDC) $(TOOLS)/tags.pd --cargar-db $(STAGE1)/inicio.sdb -o $(OUTPUTS)/tags.lua
+
+# Binarios `pdc` y `pdcjit`
+
+.PHONY: binlink
+binlink: $(BIN_DIR)/pdc $(BIN_DIR)/pdcjit
+
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+$(BIN_DIR)/pdc: $(BIN_DIR) stage1 scripts/make-bin.fish
+	$(FISH) scripts/make-bin.fish puc-lua > $@
+	chmod +x $@
+
+$(BIN_DIR)/pdcjit: $(BIN_DIR) stage1 scripts/make-bin.fish
+	$(FISH) scripts/make-bin.fish luajit > $@
+	chmod +x $@
 
 # Documentación
 

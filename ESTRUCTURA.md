@@ -13,11 +13,14 @@ La siguiente lista contiene una referencia rápida de que archivo hace que:
 - `disttmp/` y `dist.zip`: Distribución creada con `make dist`. Contiene todo
   lo necesario para ejecutar el compilador excluyendo el código fuente. También
   incluye la documentación, README y la licencia.
-- `scripts/`: Algunos *scripts* (guiones de línea de comandos) de soporte para
-  el Makefile. Cada uno realiza una acción sencilla.
+- `scripts/`: Algunos *scripts* de soporte para el Makefile. Cada uno realiza
+  una acción sencilla.
   - `scripts/make-dist.fish`: Véase el objetivo `dist` en el Makefile para un
     uso de ejemplo, este guión es usado para generar el archivo de distribución
     de PseudoD (`dist.zip`).
+  - `scripts/make-bin.fish`: Véase el objetivo `bin` en el Makefile, este guión
+    crea los archivos `pdc` y `pdcjit` que puedes usar para ejecutar el
+    compilador.
 - `docs/`: La documentación del proyecto.
 - `benchmarks/`: Los benchmarks. Comparan el compilador bootstrapeado (stage 1)
   con el original en C++.
@@ -36,8 +39,8 @@ La siguiente lista contiene una referencia rápida de que archivo hace que:
 - `inicio.pd`: Punto de inicio del compilador.
 - `tokens.pd`, `tokenizador.pd`: El tokenizador.
 - `combinadores.pd`: Una biblioteca de combinadores de parsers ("parser
-  combinators") sencilla. Fue hecha para el parser y también incluye el manejo
-  de errores de parseo.
+  combinators") sencilla. Fue hecha para el parser del compilador y también
+  incluye el manejo de errores de parseo.
 - `ast.pd`, `parser.pd`: El parser y la estructura del AST.
 - `ámbito.pd`: Implementa un ámbito léxico.
 - `módulos.pd`: La base de datos de módulos.
@@ -78,6 +81,10 @@ La siguiente lista contiene una referencia rápida de que archivo hace que:
 ### WebAssembly ###
 
 TODO
+
+### Tuplas ###
+
+- `backends/tuplas.pd`: El backend principal para la máquina virtual.
 
 ## Tests ##
 

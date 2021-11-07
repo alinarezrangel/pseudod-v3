@@ -21,6 +21,9 @@ bootstrapped/
 disttmp/
 dist.zip
 
+# Binarios de enlace
+bin/
+
 # Compilados de la documentación
 
 ## Generados con pandoc al crear los manuales

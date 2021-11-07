@@ -11,9 +11,10 @@ Los tests del lenguaje prueban todo el compilador. Para ejecutarlos puedes usar
 es el nombre de la implementación de PseudoD a probar (`stage0`, `stage1` o
 `interpreter`).
 
-Todos los archivos con las extensiones `.pd`, `.psd`, `.pseudo` y `.pseudod`
-que estén en el directorio `tests/language/` o subdirectorios son ejecutados
-como tests. Cada uno de estos archivos debe tener el formato:
+Todos los archivos con las extensiones `.pd`, `.psd`, `.pseudo`, `.pseudod`,
+`.test.pd`, `.test.psd`, `.test.pseudo` o `.test.pseudod` que estén en el
+directorio `tests/language/` o subdirectorios son ejecutados como tests. Cada
+uno de estos archivos debe tener el formato:
 
 ```
 CABECERA-JSON
