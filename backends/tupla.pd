@@ -559,7 +559,6 @@ finfuncion
 funcion RemapeosDelBloque: locales, nombresLibres
     variable i
     fijar i a 0
-    Escribir: {$$}, locales, {::}, nombresLibres
     devolver Diccionario#desdeArreglo: (Mapear: locales, funcion: metalocal
         variable nuevoBinding
         fijar nuevoBinding a i
@@ -568,13 +567,13 @@ funcion RemapeosDelBloque: locales, nombresLibres
     finfuncion)
 finfuncion
 
-funcion CompilarBloqueAWasm: subámbito, instrucciones, bindingsCapturados
+funcion CompilarBloqueAWasm: subámbito, instrucciones
     variables is, ds
     fijar is a Arreglo#vacio
     fijar ds a Arreglo#vacio
     ParaCadaElemento: instrucciones, procedimiento: instr
         variable subc
-        fijar subc a CompilarAWasm: instr, bindingsCapturados
+        fijar subc a CompilarAWasm: instr
         is#agregarAlFinal: subc#instrucciones
         ds#agregarAlFinal: subc#declaraciones
         si EsInstancia: instr, AST#NodoExpresion
@@ -584,30 +583,48 @@ funcion CompilarBloqueAWasm: subámbito, instrucciones, bindingsCapturados
     devolver Compilado#crear: (Aplanar: is), (Aplanar: ds)
 finfuncion
 
-funcion CompilarAWasm: ast, bindingsCapturados
-    funcion IDDeIR: binding
-        variable ir
-        fijar ir a NombreEnIR: binding
-        si bindingsCapturados#contiene: ir
-            devolver bindingsCapturados#en: ir
-        sino
-            Escribir: {remapeo no encontrado para}, ir
-            devolver ir
-        finsi
-    finfuncion
+funcion CompilarLocalesYClosure: locales, capturas, parámetros, exísteMarcoSuperior
+    variable preludio
+    fijar preludio a Arreglo#vacio
+    [ Inicializa las locales ]
+    preludio#agregarAlFinal: (Mapear: (Únicos:
+        (Filtrar: (Filtrar: locales, (MétodoComoFunción: {esLocal})), funcion: meta
+            devolver no Contiene: parámetros, meta#índiceDeCaptura
+        finfuncion)),
+        funcion: metalocal
+            devolver OP#LOCAL: metalocal#índiceDeCaptura
+        finfuncion)
+    [ Crea el entorno de este procedimiento ]
+    preludio#agregarAlFinal: (OP#OPNFRM: LocalDelEntornoActual, (exísteMarcoSuperior#escojer: LocalDelEntornoSuperior, {NIL}), capturas#longitud)
+    preludio#agregarAlFinal: (Mapear: capturas, funcion: metalocal
+        devolver OP#EINIT: LocalDelEntornoActual, metalocal#índiceDeCaptura, metalocal#índiceDeCaptura
+    finfuncion)
+    preludio#agregarAlFinal: (OP#CLSFRM: LocalDelEntornoActual)
+    devolver preludio
+finfuncion
 
+funcion Inspeccionar: A, B
+    Escribir: A, B
+    devolver B
+finfuncion
+
+funcion CompilarAWasm: ast
     si EsInstancia: ast, AST#NodoPrograma
-        variable subámbito
+        variables locales, capturas, subámbito
         fijar subámbito a RN#ObtenerNombresDefinídos: ast
-        devolver CompilarBloqueAWasm: subámbito, ast#instrucciones, bindingsCapturados
+        fijar locales a LocalesDelBloque: ast
+        fijar capturas a Únicos: (Filtrar: locales, funcion: metalocal
+            devolver metalocal#esLocal && metalocal#esCapturado
+        finfuncion)
+        devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, capturas, Arreglo#vacio, FALSO))) >> (CompilarBloqueAWasm: subámbito, ast#instrucciones)
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
         devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#ICONST: ast#valor))
     finsi
     si EsInstancia: ast, AST#NodoOperador
         variables lhs, rhs
-        fijar lhs a CompilarAWasm: ast#lhs, bindingsCapturados
-        fijar rhs a CompilarAWasm: ast#rhs, bindingsCapturados
+        fijar lhs a CompilarAWasm: ast#lhs
+        fijar rhs a CompilarAWasm: ast#rhs
         si ast#op#op = {+}
             devolver lhs >> rhs >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#SUM))
         finsi
@@ -638,18 +655,12 @@ funcion CompilarAWasm: ast, bindingsCapturados
             fijar res a res >> Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#DYNCALL: 0, 1))
         finsi
         devolver res
-        [ si ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable} ]
-        [     devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#ECALLC: LocalDelEntornoActual, altura, índiceDeCaptura, 0, 1)) ]
-        [ sino ]
-        [     devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#EGETC: LocalDelEntornoActual, altura, índiceDeCaptura)) ]
-        [ finsi ]
     finsi
     si EsInstancia: ast, AST#NodoVariable
         devolver Compilado#vacío
     finsi
     si EsInstancia: ast, AST#NodoFijar
-        variables id, val, altura, índiceDeCaptura, op, esCaptura
-        fijar id a IDDeIR: ast#objetivo
+        variables val, altura, índiceDeCaptura, op, esCaptura
         fijar altura a ast#objetivo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
         fijar índiceDeCaptura a ast#objetivo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
         fijar esCaptura a ast#objetivo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
@@ -658,7 +669,7 @@ funcion CompilarAWasm: ast, bindingsCapturados
         sino
             fijar op a OP#LSET: índiceDeCaptura
         finsi
-        fijar val a CompilarAWasm: ast#valor, bindingsCapturados
+        fijar val a CompilarAWasm: ast#valor
         devolver val >> (Compilado#deInstrucciónes: (Arreglo#crearCon: op))
     finsi
     si EsInstancia: ast, AST#NodoFunción
@@ -674,22 +685,10 @@ funcion CompilarAWasm: ast, bindingsCapturados
         preludio#agregarAlFinal: (Mapear: parámetros, funcion: idx devolver OP#PARAM: idx finfuncion)
         [ locales ]
         fijar locales a LocalesDelBloque: ast
-        preludio#agregarAlFinal: (Mapear: (Únicos:
-            (Filtrar: (Filtrar: locales, (MétodoComoFunción: {esLocal})), funcion: meta
-                devolver no Contiene: parámetros, meta#índiceDeCaptura
-            finfuncion)),
-            funcion: metalocal
-                devolver OP#LOCAL: metalocal#índiceDeCaptura
-            finfuncion)
-        [ envinit ]
         fijar capturas a Únicos: (Filtrar: locales, funcion: metalocal
             devolver metalocal#esLocal && metalocal#esCapturado
         finfuncion)
-        preludio#agregarAlFinal: (OP#OPNFRM: LocalDelEntornoActual, LocalDelEntornoSuperior, capturas#longitud)
-        preludio#agregarAlFinal: (Mapear: capturas, funcion: metalocal
-            devolver OP#EINIT: LocalDelEntornoActual, metalocal#índiceDeCaptura, metalocal#índiceDeCaptura
-        finfuncion)
-        preludio#agregarAlFinal: (OP#CLSFRM: LocalDelEntornoActual)
+        fijar preludio a Concatenar: preludio, (CompilarLocalesYClosure: locales, capturas, parámetros, VERDADERO)
 
         fijar nombresLibres a NombresLibres: ast
         fijar remapeos a RemapeosDelBloque: locales, nombresLibres
@@ -794,7 +793,7 @@ EnumeraciónDeLocalesDeProcedimiento: ast, funcion: nid
     finclonar
 finfuncion
 Escribir: {ast=}, ast
-fijar cc a CompilarAWasm: ast, (RemapeosDelBloque: (LocalesDelBloque: ast), (NombresLibres: ast))
+fijar cc a CompilarAWasm: ast [(RemapeosDelBloque: (LocalesDelBloque: ast), (NombresLibres: ast))]
 Listado: cc
 [fijar cc a CompilarAWasm: ast, Diccionario#vacío
 
