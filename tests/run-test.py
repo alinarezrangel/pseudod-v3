@@ -88,7 +88,7 @@ def get_pseudod_exec(pseudod_impl):
     Esta línea devuelta leerá el programa de la entrada estándar y lo
     ejecutará, escribiendo el resultado a la salida estándar.
     """
-    assert pseudod_impl in {"interpreter", "stage0", "stage1"}
+    assert pseudod_impl in {"interpreter", "stage0", "stage1", "jit"}
     if pseudod_impl == "interpreter":
         return [
             search_in_path("pseudod"),
@@ -114,6 +114,14 @@ def get_pseudod_exec(pseudod_impl):
             "--sin-mensajes",
             "--escribir-salida",
             "-",
+        ]
+    elif pseudod_impl == "jit":
+        return [
+            search_in_path('luajit'),
+            from_project_root("outputs/jitdemo/jitnodebug.lua"),
+            '--sin-mensajes',
+            '--escribir-salida',
+            '-',
         ]
 
 
@@ -732,6 +740,21 @@ def run_all_pseudod_tests(report_style, dirname, pseudod_impl, verbose):
     print_report_stats(report_style, verbose, runs)
 
 
+def run_single_pseudod_test(report_style, filename, pseudod_impl, verbose):
+    """Ejecuta una única prueba de PseudoD.
+
+    Tal como `run_all_pseudod_tests()`, pero solo ejecuta la prueba en el
+    archivo `filename`.
+    """
+    with open(filename, "r") as fl:
+        spec, code = get_test_file_data(fl, filename)
+    cli = get_pseudod_exec(pseudod_impl)
+    print_report_header(report_style, verbose, spec, cli)
+    test_run = run_test(True, cli, spec, code)
+    print_report(report_style, verbose, test_run)
+    print_report_stats(report_style, verbose, [test_run])
+
+
 def run_lua_tests(path):
     """Ejecuta `path` como una prueba del runtime de Lua."""
     cmd = [search_in_path("lua5.4"), os.path.join(path, "all.lua")]
@@ -793,14 +816,19 @@ def main():
     )
     pseudod_impl = args.pseudod_impl
     if args.language:
+        styles = {
+            "simple": ReportStyle.SIMPLE,
+            "compacto": ReportStyle.COMPACT,
+        }
+        report_style = styles.get(args.format, ReportStyle.SIMPLE)
         if args.run_test is not None:
-            raise Exception("TODO")
+            run_single_pseudod_test(
+                report_style,
+                args.run_test,
+                pseudod_impl,
+                args.verbose,
+            )
         else:
-            styles = {
-                "simple": ReportStyle.SIMPLE,
-                "compacto": ReportStyle.COMPACT,
-            }
-            report_style = styles.get(args.format, ReportStyle.SIMPLE)
             run_all_pseudod_tests(
                 report_style,
                 os.path.join(TESTS_DIR, "language"),

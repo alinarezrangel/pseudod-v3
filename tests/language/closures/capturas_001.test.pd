@@ -1,0 +1,21 @@
+{
+    "nombre": "Capturas: Función captura globales y locales",
+    "espera": "éxito",
+    "salida contiene": "3\nNULO\n"
+}
+====================
+variables X, Y
+funcion Q: W, E
+    fijar X a W
+    funcion A: S
+        fijar E a S
+        fijar X a S
+    finfuncion
+    A: 3
+finfuncion
+
+Q: 1, 2
+escribir X#comoTexto
+nl
+escribir Y#comoTexto
+nl

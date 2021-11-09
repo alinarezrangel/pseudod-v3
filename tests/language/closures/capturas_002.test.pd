@@ -1,0 +1,24 @@
+{
+    "nombre": "Capturas: Función se captura a si misma",
+    "espera": "éxito",
+    "salida contiene": "1\nNULO\n"
+}
+====================
+variables X, Y
+funcion Q: W, E
+    fijar X a W
+    funcion A: S
+        fijar E a S
+        fijar X a S
+        si S > 1
+            A: (S - 1)
+        finsi
+    finfuncion
+    A: 3
+finfuncion
+
+Q: 1, 2
+escribir X#comoTexto
+nl
+escribir Y#comoTexto
+nl
