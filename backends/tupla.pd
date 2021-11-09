@@ -610,7 +610,12 @@ funcion CompilarLocalesYClosure: locales, capturas, parámetros, exísteMarcoSup
             devolver OP#LOCAL: metalocal#índiceDeCaptura
         finfuncion)
     [ Crea el entorno de este procedimiento ]
-    preludio#agregarAlFinal: (OP#OPNFRM: LocalDelEntornoActual, (exísteMarcoSuperior#escojer: LocalDelEntornoSuperior, {NIL}), capturas#longitud)
+    fijar máximoÍndiceDeLocalCapturado a Reducir: -1, &Max, (Mapear: capturas, (MétodoComoFunción: {índiceDeCaptura}))
+    [ máximoÍndiceDeLocalCapturado es el máximo ind. de los locales capturados,
+      o -1 si no hay ninguno. De esta forma, máximoÍndiceDeLocalCapturado + 1
+      es el tamaño mínimo necesario para el marco de activación ("marco de
+      llamada" o "call-frame") ]
+    preludio#agregarAlFinal: (OP#OPNFRM: LocalDelEntornoActual, (exísteMarcoSuperior#escojer: LocalDelEntornoSuperior, {NIL}), (máximoÍndiceDeLocalCapturado + 1))
     preludio#agregarAlFinal: (Mapear: capturas, funcion: metalocal
         devolver OP#EINIT: LocalDelEntornoActual, metalocal#índiceDeCaptura, metalocal#índiceDeCaptura
     finfuncion)
@@ -745,14 +750,14 @@ fijar programa a {
 variable X, Y
 funcion Q: W, E
     funcion A: S
-        fijar E a S
-        fijar X a S
+        fijar W a S
+        fijar Y a S
         A
     finfuncion
-    fijar X a W
-    A
+    fijar Y a E
+    A: W
 finfuncion
-Q
+Q: 1, 2
 
 }
 
