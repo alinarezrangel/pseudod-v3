@@ -583,8 +583,23 @@ funcion CompilarBloqueAWasm: subámbito, instrucciones
     devolver Compilado#crear: (Aplanar: is), (Aplanar: ds)
 finfuncion
 
+funcion CompilarIdentificador: ast
+    variables id, nombreIR, esCaptura, índiceEnEntorno, altura, índiceDeCaptura, res
+    fijar nombreIR a NombreEnIR: ast
+    fijar índiceEnEntorno a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceEnEntorno}
+    fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
+    fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
+    fijar esCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
+    si esCaptura || (altura > 0)
+        fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGETC: LocalDelEntornoActual, altura, índiceDeCaptura))
+    sino
+        fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGET: índiceDeCaptura))
+    finsi
+    devolver res
+finfuncion
+
 funcion CompilarLocalesYClosure: locales, capturas, parámetros, exísteMarcoSuperior
-    variable preludio
+    variables preludio, máximoÍndiceDeLocalCapturado
     fijar preludio a Arreglo#vacio
     [ Inicializa las locales ]
     preludio#agregarAlFinal: (Mapear: (Únicos:
@@ -640,21 +655,17 @@ funcion CompilarAWasm: ast
         NoImplementado
     finsi
     si EsInstancia: ast, AST#NodoIdentificador
-        variables id, nombreIR, esCaptura, índiceEnEntorno, altura, índiceDeCaptura, res
-        fijar nombreIR a NombreEnIR: ast
-        fijar índiceEnEntorno a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceEnEntorno}
-        fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
-        fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
-        fijar esCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
-        si esCaptura || (altura > 0)
-            fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGETC: LocalDelEntornoActual, altura, índiceDeCaptura))
-        sino
-            fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGET: índiceDeCaptura))
-        finsi
+        variable res
+        fijar res a CompilarIdentificador: ast
         si ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
             fijar res a res >> Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#DYNCALL: 0, 1))
         finsi
         devolver res
+    finsi
+    si EsInstancia: ast, AST#NodoLlamarProcedimiento
+        variable cod
+        fijar cod a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#DYNCALL: ast#argumentos#longitud, 1))
+        devolver (UnirCompilados: (Mapear: ast#argumentos, &CompilarAWasm)) >> (CompilarIdentificador: ast#proc) >> cod
     finsi
     si EsInstancia: ast, AST#NodoVariable
         devolver Compilado#vacío
