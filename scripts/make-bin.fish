@@ -1,5 +1,15 @@
 #!/usr/bin/env fish
 
+# Crea un guión en bash que ejecuta el compilador, incluso fuera del
+# repositorio.
+#
+# Se debe llamar con la opción `puc-lua` o `luajit`, indicando cual se desea
+# usar. Este programa inserta la ruta absoluta al repositorio en el guión
+# generado, así que después de ejecutarlo no podrás mover el repo. sin
+# regenerar los guiones.
+#
+# Escribe el programa generado a la salida estándar.
+
 function luaver
     if [ (count $argv) -lt 1 ]
         echo "invalid"

@@ -1,5 +1,12 @@
 #!/usr/bin/env fish
 
+# Crea un archivo ZIP con todos los archivos especificados en $argv,
+# manteniendo sus rutas (y creando directorios "intermediarios" en el proceso).
+#
+# El primer argumento debe ser el nombre del ZIP a generar, mientras que todos
+# los demás serán los archivos a agregar. Utiliza el directorio temporal
+# `disttmp/`.
+
 set dist_file_name $argv[1]
 set files $argv[2..-1]
 
