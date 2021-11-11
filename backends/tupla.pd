@@ -453,7 +453,11 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {CHOOSE},  [ CHOOSE Tx, Ty ]
     {JMP},     [ JMP Tx ]
     {NAME},    [ NAME Tx ]
-    {MTRUE}    [ MTRUE ]
+    {MTRUE},   [ MTRUE ]
+    {CMPEQ},   [ CMPEQ ]
+    {CMPNEQ},  [ CMPNEQ ]
+    {NOT},     [ NOT ]
+    {MSG}      [ MSG Cx, Ua, Ub ]
 
 metodo Opcode#bytecode
     devolver yo#valor
@@ -679,7 +683,8 @@ funcion CompilarAWasm: ast
         fijar capturas a Únicos: (Filtrar: locales, funcion: metalocal
             devolver metalocal#esLocal && metalocal#esCapturado
         finfuncion)
-        devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, capturas, Arreglo#vacio, FALSO))) >> (CompilarBloqueAWasm: ast#instrucciones)
+        devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, capturas, Arreglo#vacio, FALSO)))
+              >> (CompilarBloqueAWasm: ast#instrucciones)
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
         devolver Instrucciones: (OP#ICONST: ast#valor)
@@ -707,7 +712,11 @@ funcion CompilarAWasm: ast
         si ast#op#op = {/}
             devolver lhs >> rhs >> (Instrucciones: OP#DIV)
         finsi
-        NoImplementado
+        variables cid, optxt
+        fijar cid a GenerarIdDeConstante
+        fijar optxt a {operador_}#concatenar: ast#op#op
+        devolver (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, optxt)))
+              >> (Instrucciones: (OP#OP: cid))
     finsi
     si EsInstancia: ast, AST#NodoIdentificador
         variable res
@@ -717,10 +726,30 @@ funcion CompilarAWasm: ast
         finsi
         devolver res
     finsi
+    si EsInstancia: ast, AST#NodoNoLlamar
+        si ast#mensajes#longitud = 0
+            devolver CompilarIdentificador: ast#base
+        sino
+            NoImplementado
+        finsi
+    finsi
+    si EsInstancia: ast, AST#NodoEnviarMensaje
+        variable cid
+        fijar cid a GenerarIdDeConstante
+        devolver (CompilarAWasm: ast#objeto)
+              >> (UnirCompilados: (Mapear: ast#argumentos, &CompilarAWasm))
+              >> (Instrucciones: (OP#MSG: cid, ast#argumentos#longitud, 1))
+              >> (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, ast#mensaje)))
+    finsi
     si EsInstancia: ast, AST#NodoLlamarProcedimiento
-        variable cod
-        fijar cod a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#DYNCALL: ast#argumentos#longitud, 1))
-        devolver (UnirCompilados: (Mapear: ast#argumentos, &CompilarAWasm)) >> (CompilarIdentificador: ast#proc) >> cod
+        devolver (CompilarIdentificador: ast#proc)
+              >> (UnirCompilados: (Mapear: ast#argumentos, &CompilarAWasm))
+              >> (Instrucciones: (OP#DYNCALL: ast#argumentos#longitud, 1))
+    finsi
+    si EsInstancia: ast, AST#NodoAutoejecutar
+        devolver (CompilarAWasm: ast#expr)
+              >> (UnirCompilados: (Mapear: ast#argumentos, &CompilarAWasm))
+              >> (Instrucciones: (OP#DYNCALL: ast#argumentos#longitud, 1))
     finsi
     si EsInstancia: ast, AST#NodoVariable
         devolver Compilado#vacío
@@ -811,6 +840,21 @@ funcion CompilarAWasm: ast
              >> (Compilado#deDeclaraciones: (Arreglo#crearCon: fn))
              >> (Compilado#deConstantes: cuerpo#constantes)
     finsi
+    si EsInstancia: ast, AST#NodoSonIguales
+        variable cmp
+        si ast#tipoIgualdad = AST#TipoIgualdad#IGUALES
+            fijar cmp a Instrucciones: OP#CMPEQ
+        sino
+            fijar cmp a Instrucciones: OP#CMPNEQ
+        finsi
+        devolver (CompilarAWasm: ast#lhs)
+              >> (CompilarAWasm: ast#rhs)
+              >> cmp
+    finsi
+    si EsInstancia: ast, AST#NodoNo
+        devolver Instrucciones: OP#NOT
+    finsi
+
     Inalcanzable
 finfuncion
 
@@ -849,6 +893,7 @@ finfuncion
 mientras 2
   Q: 1, «hola mundo»
   Q: 3, 4
+  (&Q)#hola: 1, 2
 finmientras
 
 }
