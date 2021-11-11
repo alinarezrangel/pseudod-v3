@@ -5,8 +5,9 @@ utilizar bepd/datos/diccionario (Diccionario)
 @brief{Un conjunto de valores únicos.}
 
 Los conjuntos son inmutables, y no importa cuantas veces se les agrege el mismo
-elemento, siempre poseerán una única referencia a dicho. Sus elementos se
-comparan con @code{operador_=}.
+elemento, siempre poseerán una única referencia a dicho. Usa un
+@pd{Diccionario} internamente, así que puede contener valores tanto hasheables
+(para mayor rendimiento) como simplemente comparables con @pd{\operador_=\}.
 
 @codeblock|{
 variable c
@@ -134,9 +135,6 @@ clase Conjunto
     DOCUMENTA]
     metodo comoTexto
 finclase
-
-[ La implementación actual utiliza diccionarios para almacenar los elementos,
-  dando así un beneficio de rendimiento enorme para los elementos hasheables. ]
 
 atributo Conjunto#_elementos
 

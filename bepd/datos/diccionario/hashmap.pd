@@ -210,7 +210,7 @@ metodo DiccionarioHashMap#igualA: otro
 
       Por ejemplo: (a -> 1, b -> 2, c -> 3) y (a -> 1, b -> 3, d -> 5)
 
-      Como tienen el mismo tamaño sabemos que de ser diferentes en algún
+      Como tienen el mismo tamaño, sabemos que de ser diferentes en algún
       momento encontraremos una llave que sea diferente o que no exísta, de
       otra forma (si falta una llave, o si "sobra" una en el segundo dic. y no
       la veremos porque solo iteramos sobre el primero) entonces no tendrían el

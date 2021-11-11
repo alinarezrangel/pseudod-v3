@@ -33,6 +33,14 @@ clase Diccionario hereda IDiccionario
     metodo estatico desdePares: ...valores
 finclase
 
+[ Sobre la implementación: Las llaves hasheables se mantienen en `_hash`
+  mientras que todas las demás están en `_alist`. Esto requiere un poco de
+  cuidado en todas las operaciones, pero funciona muy bien.
+
+  El único problema es que los diccionarios hash no están disponibles en el
+  intérprete: en ese caso `_hash` siempre será `NULO`. De nuevo, esto requiere
+  cuidado. ]
+
 atributos Diccionario#_hash, Diccionario#_alist
 
 metodo estatico Diccionario#_crearDesdeImpls: hash, alist

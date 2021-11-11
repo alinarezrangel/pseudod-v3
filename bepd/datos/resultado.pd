@@ -51,12 +51,12 @@ clase Resultado
     metodo fijar_error: v
 
     [DOCUMENTA
-    @brief{Determina si este resultado es "ok".}
+    @brief{Determina si este resultado es un "ok".}
     DOCUMENTA]
     metodo esOk
 
     [DOCUMENTA
-    @brief{Determina si este resultado es "error".}
+    @brief{Determina si este resultado es un "error".}
     DOCUMENTA]
     metodo esError
 

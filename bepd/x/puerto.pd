@@ -314,7 +314,10 @@ funcion TextoDePuertoDeEscritura: puertoDeEscritura
     devolver puertoDeEscritura#texto
 finfuncion
 
-[ Puertos estándar: ]
+[ Puertos estándar:
+
+  Los dos puertos estándares están implementados como instancias de una misma
+  clase, pero esto es un detalle de la implementación. ]
 
 clase PuertoEstándar
     metodo leerCarácter

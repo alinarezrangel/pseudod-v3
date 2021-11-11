@@ -1,3 +1,15 @@
+[DOCUMENTA
+@brief{Preludio de PseudoD.}
+
+Este módulo re-exporta varios módulos importantes para programar en
+PseudoD. Debería incluirse en cada archivo.
+
+@modulo(
+@exporta-modulo{bepd/builtinsImpl}
+@exporta-ids("Diccionario" "Resultado" "Pila")
+)
+DOCUMENTA]
+
 utilizar bepd/builtinsImpl
 
 utilizar bepd/datos/diccionario (Diccionario)

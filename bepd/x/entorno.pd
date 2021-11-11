@@ -1,6 +1,5 @@
 utilizar bepd/builtins
 
-
 [DOCUMENTA
 @brief{Determina si se pueden leer las variables de entorno.}
 

@@ -1,4 +1,5 @@
-[ No importes ni exportes nada. Quizás solo renombra algunos builtins. ]
+[ Este módulo no debería importar nada y solo debería exportar lo mínimo
+  necesario. ]
 
 [DOCUMENTA
 @brief{Verifica en tiempo de ejecución si se está en la implementación dada.}

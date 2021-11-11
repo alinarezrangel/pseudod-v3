@@ -28,7 +28,20 @@ un detalle de implementación y podría cambiar en cualquier momento.
 DOCUMENTA]
 clase DiccionarioAlist hereda IDiccionario
     metodo estatico vacío
+
+    [DOCUMENTA
+    @brief{Crea un diccionario alist desde un arreglo.}
+
+    Tal como el método del mismo nombre en @pd{IDiccionario}, sin embargo, una
+    nota muy importante aplica: @bold{nunca debes modificar el arreglo @pd{arr}
+    después de llamar a esta función}. Por motivos de rendimiento, combinados
+    con el hecho de que el argumento de @code{desdeArreglo} casi nunca es
+    reutilizado, este método simplemente asigna @pd{arr} a la representación
+    interna del diccionario. Si @pd{arr} fuese a ser mutado, los efectos serían
+    indeterminados.
+    DOCUMENTA]
     metodo estatico desdeArreglo: arr
+
     metodo estatico desdePares: ...valores
 finclase
 
@@ -74,10 +87,10 @@ metodo DiccionarioAlist#fijarEn: llave, nuevoValor
     finfuncion, VERDADERO
 finmetodo
 
-metodo DiccionarioAlist#transformarPar: llave, proc
-    devolver yo#_transformarParImpl: llave, proc, FALSO
-finmetodo
-
+[ Transforma el valor de la llave `llave` con `proc`. Si `crearSiNoExíste` es
+  verdadero y la llave no exíste, la inserta en el diccionario con un valor de
+  `%proc: NULO`. Nota que esto deja ambiguo el caso donde la llave si se
+  encontró, pero su valor era nulo. ]
 metodo DiccionarioAlist#_transformarParImpl: llave, proc, crearSiNoExíste
     variable i
     fijar i a 0
@@ -97,6 +110,10 @@ metodo DiccionarioAlist#_transformarParImpl: llave, proc, crearSiNoExíste
     sino
         yo#_pares#agregarAlFinal: (Arreglo#crearCon: llave, (%proc: NULO))
     finsi
+finmetodo
+
+metodo DiccionarioAlist#transformarPar: llave, proc
+    devolver yo#_transformarParImpl: llave, proc, FALSO
 finmetodo
 
 metodo DiccionarioAlist#eliminar: llave

@@ -44,6 +44,7 @@ metodo estatico PuertoDeArchivoDeLectura#desdeArchivo: archivo
 finmetodo
 
 metodo estatico PuertoDeArchivoDeLectura#abrir: nombre
+    [ modo 10 = lectura, binario, no truncar. ]
     devolver yo#crear: (__AbrirArchivo: nombre, 10)
 finmetodo
 
@@ -128,6 +129,10 @@ metodo estatico PuertoDeArchivoDeEscritura#desdeArchivo: archivo
 finmetodo
 
 metodo estatico PuertoDeArchivoDeEscritura#abrir: nombre
+    [ modo 11 = escritura, binario, no-truncar. ]
+    [ NOTA: Debido a un bug, abrir un archivo como escritura siempre lo abre
+      truncado, así que a pesar de que el bit de truncar no está fijo, en
+      realidad esto si trunca el archivo. ]
     devolver yo#crear: (__AbrirArchivo: nombre, 11)
 finmetodo
 

@@ -8,9 +8,9 @@ Un diccionario mapea elementos únicos (las llaves) a valores.
 @warn{
 @warntitle{Advertencia de iteración}
 
-Diversos métodos de la clase @pd{Diccionario} iteran sobre una instancia de
-dicho. La iteración sobre un diccionario tiene algunas restricciones que
-son muy importantes a la hora de escribir código correcto:
+Diversos métodos de la interfaz @pd{IDiccionario} iteran sobre una instancia de
+dicho. La iteración sobre un diccionario tiene algunas restricciones que son
+muy importantes a la hora de escribir código correcto:
 
 @itemlist(
 @item{@bold{El order no está garantizado}. Ni siquiera atravez de llamadas en

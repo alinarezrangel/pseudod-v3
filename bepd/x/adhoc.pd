@@ -1,14 +1,57 @@
 utilizar bepd/builtins
 
+[DOCUMENTA
+@brief{Crea un objeto ad-hoc.}
+
+Los objetos ad-hoc son objetos con una serie de atributos personalizados. Se
+llamar objetos ad-hoc porque no tienen clase ni les puedes agregar métodos, son
+simplemente contenedores de datos.
+
+Para evitarte el problema de crear una clase con varios atributos, esta función
+crea este objeto por ti. Un ejemplo de su uso sería:
+
+@codeblock|{
+variable obj
+fijar obj a ObjetoAdHoc: {hola}, 1, {mundo}, 2
+}|
+
+Este ejemplo crea un objeto @pd{obj} que responderá a 2 mensajes: @code{hola}
+(que devolverá @pd{1}) y @code{mundo} (que devolverá @pd{2}):
+
+@codeblock|{
+necesitas obj#hola = 1
+necesitas obj#mundo = 2
+}|
+
+Los atributos de los objetos ad-hoc son asignables: puedes @pd{fijar} todos los
+campos:
+
+@codeblock|{
+fijar obj#hola a 3
+necesitas obj#hola = 3
+necesitas obj#mundo = 2
+}|
+
+No los puedes, sin embargo, comparar por igualdad: los objetos ad-hoc no
+responden a ninguno de los mensajes @code{operador_=} ni @code{igualA}. Sin
+embargo, los objetos ad-hoc si se pueden clonar. También se pueden convertir a
+texto con @code{comoTexto}.
+
+La sintáxis de esta función es sencilla, similar a la de
+@pd{Diccionario#desdePares}: sus argumentos (@pd{...pares}) deben ser
+secuencias de textos y valores, donde los textos son los nombres de los
+atributos y sus valores correspondientes. Por ejemplo @pd{ObjetoAdHoc:
+{atributo1}, valor1, {atributo2}, valor2}, etc.
+DOCUMENTA]
 funcion ObjetoAdHoc: ...pares
     variable dic
-    fijar dic a __EnviarMensaje: Diccionario, {desdePares}, pares
+    fijar dic a Diccionario#desdePares: ...pares
 
     clase ClaseAdHoc finclase
     metodo ClaseAdHoc#metodoNoEncontrado: mensaje, argumentos
         si (mensaje = {operador_=}) || (mensaje = {igualA})
             necesitas argumentos#longitud = 1
-            devolver __CompararObjeto: yo, (argumentos#en: 0)
+            __FallarConMensaje: {No se pueden comparar los objetos ad-hoc por igualdad.}
         finsi
         si mensaje = {clonar}
             necesitas argumentos#longitud = 0

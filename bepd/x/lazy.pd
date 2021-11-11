@@ -1,11 +1,28 @@
 utilizar bepd/builtins
 
+[DOCUMENTA
+@brief{Una valor sin evaluar.}
 
+Estos valores son opacos: solo puedes manipularlos con las
+funciones/procedimientos de este módulo. Los thunks siempre son distintos de
+todos los demás excepto de si mismos.
+DOCUMENTA]
 clase Thunk
 finclase
 
 atributos Thunk#_proc, Thunk#_mem, Thunk#_tieneMem
 
+[DOCUMENTA
+@brief{Crea un @pd{Thunk} desde una función.}
+
+Cuando se trate de extraer el valor del thunk se llamará a @pd{proc}. El
+resultado será el valor del thunk. El valor devuelto por @pd{proc} será
+recordado de forma que @pd{proc} no será llamado más de una vez.
+
+A diferencia de Scheme, si @pd{proc} lanza un error al ser llamado este error
+no será recordado por el thunk y @pd{proc} podría ser re-evaluado. Esto es un
+bug y será corregido en futuras versiones.
+DOCUMENTA]
 funcion DesdeFunción: proc
     devolver clonar Thunk#_crear con
         _proc: proc
@@ -14,6 +31,11 @@ funcion DesdeFunción: proc
     finclonar
 finfuncion
 
+[DOCUMENTA
+@brief{Crea un @pd{Thunk} desde un valor constante.}
+
+Crea un thunk cuyo valor es @pd{valor}.
+DOCUMENTA]
 funcion Constante: valor
     variable th
     fijar th a DesdeFunción: funcion devolver valor finfuncion
@@ -21,6 +43,19 @@ funcion Constante: valor
     devolver th
 finfuncion
 
+[DOCUMENTA
+@brief{Evalúa un @pd{Thunk}.}
+
+Si @pd{thunk} no es un thunk creado con @pd{Constante} o @pd{DesdeFunción}
+simplemente lo devuelve y no hace nada.
+
+Si @pd{thunk} es un thunk, lo evalúa. Evaluar un thunk obtiene su valor
+llamando a su función interna. Esto nunca es realizado más de una vez: los
+thunks recuerdan cual valor fue devuelto la última vez que fueron evaluados y
+siempre lo devuelven.
+
+Devuelve el valor contenido en el thunk.
+DOCUMENTA]
 funcion Evaluar: thunk
     si no EsUnThunk: thunk
         devolver thunk
@@ -35,6 +70,13 @@ funcion Evaluar: thunk
     finsi
 finfuncion
 
+[DOCUMENTA
+@brief{Determina si un thunk fue evaluado.}
+
+Esta función devuelve @pd{VERDADERO} o @pd{FALSO} dependiendo si @pd{valor} es
+un thunk que ya fue evaluado (con @pd{Evaluar}) o no. Si @pd{valor} no es un
+thunk, devuelve @pd{VERDADERO}.
+DOCUMENTA]
 funcion EstáEvaluado: valor
     si EsUnThunk: valor
         devolver valor#_tieneMem
@@ -43,6 +85,9 @@ funcion EstáEvaluado: valor
     finsi
 finfuncion
 
+[DOCUMENTA
+@brief{Determina si @pd{valor} es un @pd{Thunk} o no.}
+DOCUMENTA]
 funcion EsUnThunk: valor
     devolver EsInstancia: valor, Thunk
 finfuncion
