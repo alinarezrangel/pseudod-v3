@@ -490,8 +490,8 @@ finfuncion
 @italic{entorno} y un @italic{código}. El entorno contiene las variables
 capturadas y por esto lo primero que hay que hacer es encontrarlas. Existen dos
 algoritmos para "encontrar" estas variables capturadas (véase nota 1):
-@italic{lambda lifting} (en inglés: @italic{levantamiento de lambdas}) y
-@italic{closure conversion} (en inglés: @italic{conversión de closures}). El
+@italic{levantamiento de lambdas} (en inglés: @italic{lambda lifting}) y
+@italic{conversión de closures} (en inglés: @italic{closure conversion}). El
 algoritmo usado por este pase es el segundo.
 
 El metadato @pd{"nombresLibres"} (del inglés @italic{free names}) será agregado

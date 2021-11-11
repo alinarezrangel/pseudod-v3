@@ -274,6 +274,7 @@ como la entrada estándar.
 DOCUMENTA]
 funcion ObtenerArchivoDesdeCLI: argumentoDelCLI
     si argumentoDelCLI = {-}
+        [ FIXME: Solo funciona en *NIX. ]
         devolver {/dev/stdin}
     sino
         devolver argumentoDelCLI
@@ -386,7 +387,8 @@ finprocedimiento
 
 La sintáxis de las opciones aceptadas por el parser es:
 
-@itemlist( @item{Opciones cortas: un signo "menos" @code{-} seguido de una sola
+@itemlist(
+@item{Opciones cortas: un signo "menos" @code{-} seguido de una sola
 letra.  Pueden o no aceptar argumentos adicionales. Actualmente no es posible
 "encadenar" varias de estas opciones como en otros CLIs (por ejemplo,
 @code{-ijk} en vez de @code{-i -j -k})}
@@ -453,6 +455,10 @@ finfuncion
 
 Con el contexto del CLI @pd{ctx}, compila @pd{programa} (que debe ser un
 texto).
+
+Debido a que este procedimiento puede evaluar al programa, proceso que puede
+reiniciar el runtime, nada debería ejecutarse después de llamar a este
+procedimiento.
 DOCUMENTA]
 procedimiento Compilar: ctx, programa
     ctx#mostrarMensaje: {-- Inicio}

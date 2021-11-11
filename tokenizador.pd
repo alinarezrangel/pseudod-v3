@@ -65,14 +65,14 @@ finfuncion
 [ " ]
 
 [DOCUMENTA
-@brief{Si @pd{car} es un espacio en blanco.}
+@brief{Determina si @pd{car} es un espacio en blanco.}
 DOCUMENTA]
 funcion EsEspacioEnBlanco: car
     devolver (car = { }) || (car = {~%}#formatear)
 finfuncion
 
 [DOCUMENTA
-@brief{Si @pd{car} es un carácter válido para un operador.}
+@brief{Determina si @pd{car} es un carácter válido para un operador.}
 DOCUMENTA]
 funcion EsOperador: car
     devolver (TextoNS#TextoContiene: {<>=+-*/!|^&~}, car)

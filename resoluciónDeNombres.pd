@@ -67,6 +67,10 @@ finfuncion
   "caminante" una instancia de "ResoluciónDeNombresCNImpl". ]
 clase ResoluciónDeNombresCNImpl hereda CN#CaminaNodos
     metodo inicializar
+    metodo crearSubámbito
+    metodo resolverFunciónOMétodoAnónimo: nodo, esMétodo
+    metodo resolverArgumentos: argumentos
+    metodo resolverParámetros: parámetros
 
     metodo finalizar: nodo, llave
 finclase
@@ -472,7 +476,7 @@ contiene el binding de esa variable. También son anotados con
 @code{esAutoejecutable}, un boole que indica si la variable es o no
 autoejecutable; @code{importadoDe} que contiene la llave del módulo del que fue
 importado (o @pd{NULO}) y @code{seLlamaba}, un texto que es el nombre que la
-variable tenía antes de ser importada.}
+variable tenía antes de ser importada (o @pd{NULO}).}
 
 @item{Los nodos @pd{AST#NodoMientras}, @pd{AST#NodoFunción},
 @pd{AST#NodoPrograma} @pd{AST#NodoMétodo} y @pd{AST#NodoFunciónAnónima} tienen

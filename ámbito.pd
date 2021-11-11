@@ -10,7 +10,7 @@ clase DatosDeVariable
     @brief{El binding de una variable.}
 
     El binding es un identificador único que todas las variables tienen. Es el
-    verdadero identificador de las variables en tiempo de ejecución.
+    verdadero identificador de las variables.
 
     Es un entero.
     DOCUMENTA]
@@ -43,7 +43,7 @@ clase DatosDeVariable
     [DOCUMENTA
     @brief{Inicializa los datos con los valores dados.}
     DOCUMENTA]
-    metodo inicializar: binding, esAutoejecutable
+    metodo inicializar: binding, esAutoejecutable, importadoDe, seLlamaba
 
     [DOCUMENTA
     @brief{Devuelve una representación textual simple de los datos.}
@@ -307,7 +307,7 @@ finclase
 atributos Ámbito#_mapeo, Ámbito#_todosLosBindings, Ámbito#_númeroDeBindings
 
 [ #_númeroDeBindings es el número de bindings de este ámbito y sus
-  subámbitos. Incrementalo con #_incrementarNumBindings. ]
+  subámbitos. Increméntalo con #_incrementarNumBindings. ]
 
 metodo estatico Ámbito#vacío
     devolver yo#crear

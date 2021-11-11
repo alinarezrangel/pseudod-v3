@@ -77,6 +77,11 @@ clase Tokens
     metodo irAPunto: punto
 finclase
 
+[ `tokenizador` contiene al tokenizador, `tokens` al arreglo de tokens ya
+  leídos y `punto` al punto actual.
+
+  Si `tokens` está vacío entonces `punto` será 0 (en vez del `-1` que podrías
+  esperar). Este es un caso especial que hay que tener en cuenta. ]
 atributos Tokens#tokenizador, Tokens#tokens, Tokens#punto
 
 metodo estatico Tokens#desdeTokenizador: tokenizador
@@ -143,21 +148,21 @@ textual). Pero este procedimiento trata de aproximarlo (dandole prioridad a la
 posición @bold{después} del punto actual). Es utilizada para algunos mensajes
 de error.
 
-@devuelve{Una @pd{PuertoConPos#PosiciónTextual}.}
+@devuelve{Una @pd{PuertoConPos#PosiciónTextual}, o @pd{NULO} si no se pudo
+aproximar una posición textual.}
 DOCUMENTA]
 funcion AproximarPosiciónActual: tokens
     variables p, tk, inicio
     fijar p a tokens#puntoActual
     tokens#retroceder
     fijar tk a tokens#leerToken
-    [ TODO: Hacer que esto no dependa de que `puntoActual` devuelva un número ]
     fijar inicio a tokens#puntoActual > p
-    tokens#irAPunto: p
     [ A simple vista, puede parecer redundante `tokens#irAPunto: p`, digo,
       `leerToken` ya avanza el token y dado que habíamos retrocedido, ¿no
       nos debería dejar esto justo donde empezamos? Pero hay que tener en
       cuenta que `retroceder` no hace nada si ya está al principio del
       programa. ]
+    tokens#irAPunto: p
     si tk = Puerto#EOF
         [ El programa está "vacío" ]
         devolver NULO
@@ -171,7 +176,7 @@ funcion AproximarPosiciónActual: tokens
 finfuncion
 
 [DOCUMENTA
-@brief{Un error de parsing/compilación.}
+@brief{Un error de parseo/compilación.}
 
 Estos errores consisten de un mensaje de error (que es un texto), un lugar (una
 posición textual que indica en que parte del archivo sucedio el error) y una
@@ -185,7 +190,7 @@ clase Error
     @brief{Inicializa el error.}
 
     No es recomendable crear instancias de @pd{Error} con @code{#crear}, en
-    cambio, prefiere los otros distíntos métodos estáticos.
+    cambio, prefiere los otros métodos estáticos.
     DOCUMENTA]
     metodo inicializar: mensaje, lugar, causa
 

@@ -34,7 +34,7 @@ variable PSEUDOD_IMPL
 fijar PSEUDOD_IMPL a {Lua Bootstrap}
 
 [DOCUMENTA
-@brief{Escapa un texto a Lua válido.}
+@brief{Escapa un texto a un string de Lua válido.}
 
 @pd{texto} es una instancia de @pd{Texto}. Escapa todos los carácteres
 especiales de @pd{texto} y lo envuelve en comillas, de forma que el texto
@@ -199,7 +199,7 @@ metadato que será leído. Este parámetro es configurable ya que los
 condicionales "si" tienen dos llaves "nombresDefinídosSiVerdadero" y
 "nombresDefinídosSiFalso" en vez de "nombresDefinídos" (que es el común).
 
-Devuelve el subámbito (otra instancia de @pd{CompiladorSimpleALua}).
+@devuelve{El subámbito (otra instancia de @pd{CompiladorSimpleALua}).}
 DOCUMENTA]
 metodo CompiladorSimpleALua#crearSubámbitoDesdeNombreEnNodo: nodo, llave
     devolver CompiladorSimpleALua#crear:
@@ -834,11 +834,13 @@ metodo CompiladorSimpleALua#enviarMensaje: objeto, mensaje, argumentos
     fijar funciónParaEnviarMensaje a NULO
     si args#longitud = 1
         si EsInstancia: (args#en: 0), Arreglo
+            [ No tiene argumentos variadic: solo llama a enviarMensaje ]
             fijar argsComoTexto a CompilarArgumentosSimples: (args#en: 0)
             fijar funciónParaEnviarMensaje a {rt_enviarMensaje}
         finsi
     finsi
     si EsNulo: funciónParaEnviarMensaje
+        [ Tiene al menos un argumento variadic: usa enviarMensajeV ]
         fijar funciónParaEnviarMensaje a {rt_enviarMensajeV}
         fijar argsComoTexto a Em#Unir: NULO, (Mapear: args, funcion: arg
             si EsInstancia: arg, AST#NodoVariadic

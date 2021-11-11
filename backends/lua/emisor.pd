@@ -184,6 +184,17 @@ funcion EmitirCódigo: parte
     devolver Tx#Unir: res, {}
 finfuncion
 
+[DOCUMENTA
+@brief{Emite toda la información de depuración para el backend de Lua.}
+
+Devuelve un texto que contiene las instrucciones de Lua que registran la
+información de depuración (números de líneas, columnas, etc) de la parte
+@pd{parte}.
+
+@pd{rutaAlMódulo} debe ser el nombre completo del archivo (un texto) que fue
+compilado, mientras que @pd{escaparALua} debe ser una función que escapa un
+texto a un string de Lua.
+DOCUMENTA]
 funcion EmitirInformaciónDeDepuración: rutaAlMódulo, parte, escaparALua
     [ Crear una variable con este valor es más eficiente que recalcularlo en
       cada iteración. ]

@@ -87,6 +87,7 @@ metodo estatico ConfiguraciónGlobal#predeterminado: usarVariablesDeEntorno
         DesdeVariable: {RUTA_PSEUDOD_BEPD}
         DesdeVariable: {RUTA_PSEUDOD_LIBS}
     finsi
+    [ FIXME: Solo funciona en *NIX. ]
     devolver yo#crear:
         (Concatenar:
             (Arreglo#crearCon: {.}),

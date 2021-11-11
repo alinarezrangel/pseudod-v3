@@ -11,7 +11,20 @@ una @italic{"clase"}. La clase debe ser única por cada pase e idealmente
 debería compararse como igual solo con sigo misma.
 DOCUMENTA]
 clase Nodo
+    [DOCUMENTA
+    @brief{Área textual de este token.}
+
+    Es una instancia de @pd{AreaTextual}.
+    DOCUMENTA]
     atributo areaTextual
+
+    [DOCUMENTA
+    @brief{Los metadatos del token.}
+
+    Un diccionario de diccionarios. No debes modificar este atributo
+    directamente, en cambio utiliza los métodos @pd{#fijarMetadato} y
+    @pd{#obtenerMetadato}.
+    DOCUMENTA]
     atributo metadatos
 
     [DOCUMENTA
