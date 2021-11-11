@@ -446,12 +446,14 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {LSETC},   [ LSETC Ex, Ua, Ub ]
     {LGETC},   [ LGETC Ex, Ua, Ub ]
     {DYNCALL}, [ DYNCALL Ua, Ub ]
+    {RETN},    [ RETN Ua ]
     {EINIT},   [ EINIT Lx, Ua, Ly ]
     {OPNFRM},  [ OPNFRM Ex, ?Ey, Ly ]
     {CLSFRM},  [ CLSFRM Ex ]
     {CHOOSE},  [ CHOOSE Tx, Ty ]
     {JMP},     [ JMP Tx ]
-    {NAME}     [ NAME Tx ]
+    {NAME},    [ NAME Tx ]
+    {MTRUE}    [ MTRUE ]
 
 metodo Opcode#bytecode
     devolver yo#valor
@@ -486,42 +488,67 @@ metodo DeclrFunción#comoTexto
     devolver {(DeclrFunción ~t con ~t es ~t)}#formatear: yo#nombre, yo#parámetros, yo#cuerpo
 finmetodo
 
-
-clase Compilado
-    atributos instrucciones, declaraciones
+clase Constante
+    atributos id, valor
 finclase
 
-metodo estatico Compilado#crear: i, d
+metodo estatico Constante#crear: id, valor
+    devolver clonar yo#_crear con
+        id: id
+        valor: valor
+    finclonar
+finmetodo
+
+metodo Constante#comoTexto
+    devolver {(Constante#crear: ~t, ~t)}#formatear: yo#id, yo#valor
+finmetodo
+
+
+clase Compilado
+    atributos instrucciones, declaraciones, constantes
+finclase
+
+metodo estatico Compilado#crear: i, d, c
     devolver clonar yo#_crear con
         instrucciones: i
         declaraciones: d
+        constantes: c
     finclonar
 finmetodo
 
 metodo estatico Compilado#deInstrucciónes: i
-    devolver Compilado#crear: i, Arreglo#vacio
+    devolver Compilado#crear: i, Arreglo#vacio, Arreglo#vacio
 finmetodo
 
 metodo estatico Compilado#deDeclaraciones: d
-    devolver Compilado#crear: Arreglo#vacio, d
+    devolver Compilado#crear: Arreglo#vacio, d, Arreglo#vacio
+finmetodo
+
+metodo estatico Compilado#deConstantes: c
+    devolver Compilado#crear: Arreglo#vacio, Arreglo#vacio, c
 finmetodo
 
 metodo estatico Compilado#vacío
-    devolver Compilado#crear: Arreglo#vacio, Arreglo#vacio
+    devolver Compilado#crear: Arreglo#vacio, Arreglo#vacio, Arreglo#vacio
 finmetodo
 
 metodo Compilado#operador_>>: otro
     devolver Compilado#crear:
         (Concatenar: yo#instrucciones, otro#instrucciones),
-        (Concatenar: yo#declaraciones, otro#declaraciones)
+        (Concatenar: yo#declaraciones, otro#declaraciones),
+        (Concatenar: yo#constantes, otro#constantes)
 finmetodo
 
 metodo Compilado#comoTexto
-    devolver {(Compilado ds = ~t, is = ~t)}#formatear: yo#declaraciones, yo#instrucciones
+    devolver {(Compilado ds = ~t, is = ~t, cs = ~t)}#formatear: yo#declaraciones, yo#instrucciones, yo#constantes
 finmetodo
 
 
 procedimiento Listado: compilado
+    Escribir: {===== Constants:}
+    ParaCadaElementoConÍndice: compilado#constantes, procedimiento: const, i
+        Escribir: ({#~t}#formatear: i), {}, ({~t => ~t}#formatear: const#id, const#valor)
+    finprocedimiento
     Escribir: {===== Code:}
     ParaCadaElementoConÍndice: compilado#instrucciones, procedimiento: tupla, i
         Escribir: ({#~t}#formatear: i), {}, ({[~t] ~t}#formatear: tupla#opcode#bytecode, tupla#opcode#nombre), ...(tupla#argumentos)
@@ -570,20 +597,30 @@ funcion RemapeosDelBloque: locales, nombresLibres
     finfuncion)
 finfuncion
 
+variable ContadorDeEtiquetas
+fijar ContadorDeEtiquetas a 0
+procedimiento GenerarEtiqueta
+    fijar ContadorDeEtiquetas a ContadorDeEtiquetas + 1
+    devolver ContadorDeEtiquetas
+finprocedimiento
+
+variable ContadorDeConstantes
+fijar ContadorDeConstantes a 0
+procedimiento GenerarIdDeConstante
+    fijar ContadorDeConstantes a ContadorDeConstantes + 1
+    devolver ContadorDeConstantes
+finprocedimiento
+
 funcion CompilarBloqueAWasm: instrucciones
-    variables is, ds
-    fijar is a Arreglo#vacio
-    fijar ds a Arreglo#vacio
+    variable res
+    fijar res a Compilado#vacío
     ParaCadaElemento: instrucciones, procedimiento: instr
-        variable subc
-        fijar subc a CompilarAWasm: instr
-        is#agregarAlFinal: subc#instrucciones
-        ds#agregarAlFinal: subc#declaraciones
+        fijar res a res >> (CompilarAWasm: instr)
         si EsInstancia: instr, AST#NodoExpresion
-            is#agregarAlFinal: (Arreglo#crearCon: OP#POP)
+            fijar res a res >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#POP))
         finsi
     finprocedimiento
-    devolver Compilado#crear: (Aplanar: is), (Aplanar: ds)
+    devolver res
 finfuncion
 
 funcion CompilarIdentificador: ast
@@ -631,14 +668,11 @@ funcion Inspeccionar: A, B
     devolver B
 finfuncion
 
-variable ContadorDeEtiquetas
-fijar ContadorDeEtiquetas a 0
-procedimiento GenerarEtiqueta
-    fijar ContadorDeEtiquetas a ContadorDeEtiquetas + 1
-    devolver ContadorDeEtiquetas
-finprocedimiento
-
 funcion CompilarAWasm: ast
+    funcion Instrucciones: ...Is
+        devolver Compilado#deInstrucciónes: Is
+    finfuncion
+
     si EsInstancia: ast, AST#NodoPrograma
         variables locales, capturas
         fijar locales a LocalesDelBloque: ast
@@ -648,23 +682,30 @@ funcion CompilarAWasm: ast
         devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, capturas, Arreglo#vacio, FALSO))) >> (CompilarBloqueAWasm: ast#instrucciones)
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
-        devolver Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#ICONST: ast#valor))
+        devolver Instrucciones: (OP#ICONST: ast#valor)
+    finsi
+    si EsInstancia: ast, AST#NodoTextoLiteral
+        variable cid
+        fijar cid a GenerarIdDeConstante
+        Escribir: {const}, cid, ast
+        devolver (Instrucciones: (OP#LCONST: cid))
+              >> (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, ast#valor)))
     finsi
     si EsInstancia: ast, AST#NodoOperador
         variables lhs, rhs
         fijar lhs a CompilarAWasm: ast#lhs
         fijar rhs a CompilarAWasm: ast#rhs
         si ast#op#op = {+}
-            devolver lhs >> rhs >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#SUM))
+            devolver lhs >> rhs >> (Instrucciones: OP#SUM)
         finsi
         si ast#op#op = {-}
-            devolver lhs >> rhs >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#SUB))
+            devolver lhs >> rhs >> (Instrucciones: OP#SUB)
         finsi
         si ast#op#op = {*}
-            devolver lhs >> rhs >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#MUL))
+            devolver lhs >> rhs >> (Instrucciones: OP#MUL)
         finsi
         si ast#op#op = {/}
-            devolver lhs >> rhs >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#DIV))
+            devolver lhs >> rhs >> (Instrucciones: OP#DIV)
         finsi
         NoImplementado
     finsi
@@ -672,7 +713,7 @@ funcion CompilarAWasm: ast
         variable res
         fijar res a CompilarIdentificador: ast
         si ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
-            fijar res a res >> Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#DYNCALL: 0, 1))
+            fijar res a res >> (Instrucciones: (OP#DYNCALL: 0, 1))
         finsi
         devolver res
     finsi
@@ -695,22 +736,40 @@ funcion CompilarAWasm: ast
             fijar op a OP#LSET: índiceDeCaptura
         finsi
         fijar val a CompilarAWasm: ast#valor
-        devolver val >> (Compilado#deInstrucciónes: (Arreglo#crearCon: op))
+        devolver val >> (Instrucciones: op)
     finsi
     si EsInstancia: ast, AST#NodoSi
-        funcion Instrucciones: ...Is
-            devolver Compilado#deInstrucciónes: Is
-        finfuncion
         variables etiqSi, etiqSino, etiqFinsi
         fijar etiqSi a GenerarEtiqueta
         fijar etiqSino a GenerarEtiqueta
         fijar etiqFinsi a GenerarEtiqueta
         devolver (CompilarAWasm: ast#condicional)
-              >> (Instrucciones: (OP#CHOOSE: etiqSi, etiqSino), (OP#NAME: etiqSi))
+              >> (Instrucciones: (OP#CHOOSE: etiqSi, etiqSino),
+                                 (OP#NAME: etiqSi))
               >> (CompilarBloqueAWasm: ast#siVerdadero)
-              >> (Instrucciones: (OP#JMP: etiqFinsi), (OP#NAME: etiqSino))
+              >> (Instrucciones: (OP#JMP: etiqFinsi),
+                                 (OP#NAME: etiqSino))
               >> (CompilarBloqueAWasm: ast#siFalso)
               >> (Instrucciones: (OP#NAME: etiqFinsi))
+    finsi
+    si EsInstancia: ast, AST#NodoMientras
+        variables etiqInicio, etiqCont, etiqFinmientras
+        fijar etiqInicio a GenerarEtiqueta
+        fijar etiqCont a GenerarEtiqueta
+        fijar etiqFinmientras a GenerarEtiqueta
+        devolver (Instrucciones: (OP#NAME: etiqInicio))
+              >> (CompilarAWasm: ast#condicional)
+              >> (Instrucciones: (OP#CHOOSE: etiqCont, etiqFinmientras),
+                                 (OP#NAME: etiqCont))
+              >> (CompilarBloqueAWasm: ast#cuerpo)
+              >> (Instrucciones: (OP#JMP: etiqInicio),
+                                 (OP#NAME: etiqFinmientras))
+    finsi
+    si EsInstancia: ast, AST#NodoNecesitas
+        devolver (CompilarAWasm: ast#expresión) >> (Instrucciones: OP#MTRUE)
+    finsi
+    si EsInstancia: ast, AST#NodoDevolver
+        devolver (CompilarAWasm: ast#expresión) >> (Instrucciones: (OP#RETN: 1))
     finsi
     si EsInstancia: ast, AST#NodoFunción
         variables id, parámetros, preludio, cuerpo, fn, remapeos, nombresLibres, inicDeClosure, locales, capturas
@@ -733,21 +792,24 @@ funcion CompilarAWasm: ast
         fijar nombresLibres a NombresLibres: ast
         fijar remapeos a RemapeosDelBloque: locales, nombresLibres
 
-        fijar inicDeClosure a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#MKCLZ: LocalDelEntornoActual, id))
+        fijar inicDeClosure a Instrucciones: (OP#MKCLZ: LocalDelEntornoActual, id)
         si (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado})
-            fijar inicDeClosure a inicDeClosure >> (Compilado#deInstrucciónes: (Arreglo#crearCon:
+            fijar inicDeClosure a inicDeClosure >> (Instrucciones:
                 (OP#LSETC:
                     LocalDelEntornoActual,
                     (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}),
-                    (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}))))
+                    (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura})))
         sino
-            fijar inicDeClosure a inicDeClosure >> (Compilado#deInstrucciónes: (Arreglo#crearCon:
-                (OP#LSET: (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}))))
+            fijar inicDeClosure a inicDeClosure >> (Instrucciones:
+                (OP#LSET: (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura})))
         finsi
 
         fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo, remapeos)
         fijar fn a DeclrFunción#crear: id, parámetros, cuerpo#instrucciones
-        devolver inicDeClosure >> (Compilado#deDeclaraciones: cuerpo#declaraciones) >> (Compilado#deDeclaraciones: (Arreglo#crearCon: fn))
+        devolver inicDeClosure
+             >> (Compilado#deDeclaraciones: cuerpo#declaraciones)
+             >> (Compilado#deDeclaraciones: (Arreglo#crearCon: fn))
+             >> (Compilado#deConstantes: cuerpo#constantes)
     finsi
     Inalcanzable
 finfuncion
@@ -776,15 +838,18 @@ funcion Q: W, E
     fijar X a W
     funcion A: S
         fijar E a S
-        fijar X a S
+        fijar X a «que tal»
         si S
             A: (S - 1)
         finsi
     finfuncion
-    A: 3
+    A: «adios mundo»
 finfuncion
 
-Q: 1, 2
+mientras 2
+  Q: 1, «hola mundo»
+  Q: 3, 4
+finmientras
 
 }
 
@@ -835,7 +900,6 @@ EnumeraciónDeLocalesDeProcedimiento: ast, funcion: nid
         esLocal: (nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}) = 0
     finclonar
 finfuncion
-Escribir: {ast=}, ast
 fijar cc a CompilarAWasm: ast [(RemapeosDelBloque: (LocalesDelBloque: ast), (NombresLibres: ast))]
 Listado: cc
 [fijar cc a CompilarAWasm: ast, Diccionario#vacío
