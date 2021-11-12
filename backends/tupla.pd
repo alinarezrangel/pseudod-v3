@@ -431,6 +431,10 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {SUB},     [ SUB ]
     {MUL},     [ MUL ]
     {DIV},     [ DIV ]
+    {LT},      [ LT ]
+    {GT},      [ GT ]
+    {LE},      [ LE ]
+    {GE},      [ GE ]
     {POP},     [ POP ]
     {LCONST},  [ LCONST Cx ]
     {ICONST},  [ ICONST Na ]
@@ -445,6 +449,7 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {ESET},    [ ESET Lx, Na ]
     {LSETC},   [ LSETC Ex, Ua, Ub ]
     {LGETC},   [ LGETC Ex, Ua, Ub ]
+    {ROT},     [ ROT Ua ]
     {DYNCALL}, [ DYNCALL Ua, Ub ]
     {RETN},    [ RETN Ua ]
     {EINIT},   [ EINIT Lx, Ua, Ly ]
@@ -692,7 +697,6 @@ funcion CompilarAWasm: ast
     si EsInstancia: ast, AST#NodoTextoLiteral
         variable cid
         fijar cid a GenerarIdDeConstante
-        Escribir: {const}, cid, ast
         devolver (Instrucciones: (OP#LCONST: cid))
               >> (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, ast#valor)))
     finsi
@@ -711,6 +715,18 @@ funcion CompilarAWasm: ast
         finsi
         si ast#op#op = {/}
             devolver lhs >> rhs >> (Instrucciones: OP#DIV)
+        finsi
+        si ast#op#op = {<}
+            devolver lhs >> rhs >> (Instrucciones: OP#LT)
+        finsi
+        si ast#op#op = {=<}
+            devolver lhs >> rhs >> (Instrucciones: OP#LE)
+        finsi
+        si ast#op#op = {>}
+            devolver lhs >> rhs >> (Instrucciones: OP#GT)
+        finsi
+        si ast#op#op = {>=}
+            devolver lhs >> rhs >> (Instrucciones: OP#GE)
         finsi
         variables cid, optxt
         fijar cid a GenerarIdDeConstante
@@ -738,18 +754,21 @@ funcion CompilarAWasm: ast
         fijar cid a GenerarIdDeConstante
         devolver (CompilarAWasm: ast#objeto)
               >> (UnirCompilados: (Mapear: ast#argumentos, &CompilarAWasm))
-              >> (Instrucciones: (OP#MSG: cid, ast#argumentos#longitud, 1))
+              >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
+                                 (OP#MSG: cid, ast#argumentos#longitud, 1))
               >> (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, ast#mensaje)))
     finsi
     si EsInstancia: ast, AST#NodoLlamarProcedimiento
         devolver (CompilarIdentificador: ast#proc)
               >> (UnirCompilados: (Mapear: ast#argumentos, &CompilarAWasm))
-              >> (Instrucciones: (OP#DYNCALL: ast#argumentos#longitud, 1))
+              >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
+                                 (OP#DYNCALL: ast#argumentos#longitud, 1))
     finsi
     si EsInstancia: ast, AST#NodoAutoejecutar
         devolver (CompilarAWasm: ast#expr)
               >> (UnirCompilados: (Mapear: ast#argumentos, &CompilarAWasm))
-              >> (Instrucciones: (OP#DYNCALL: ast#argumentos#longitud, 1))
+              >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
+                                 (OP#DYNCALL: ast#argumentos#longitud, 1))
     finsi
     si EsInstancia: ast, AST#NodoVariable
         devolver Compilado#vacío
@@ -877,24 +896,15 @@ finfuncion
 variables ast, programa, cc
 fijar programa a {
 
-variable X, Y
-funcion Q: W, E
-    fijar X a W
-    funcion A: S
-        fijar E a S
-        fijar X a «que tal»
-        si S
-            A: (S - 1)
-        finsi
-    finfuncion
-    A: «adios mundo»
+funcion Fib: N
+    si N < 2
+        devolver 1
+    sino
+        devolver (Fib: (N - 1)) + (Fib: (N - 2))
+    finsi
 finfuncion
 
-mientras 2
-  Q: 1, «hola mundo»
-  Q: 3, 4
-  (&Q)#hola: 1, 2
-finmientras
+Fib: 7
 
 }
 
