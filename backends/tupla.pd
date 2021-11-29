@@ -462,7 +462,9 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {CMPEQ},   [ CMPEQ ]
     {CMPNEQ},  [ CMPNEQ ]
     {NOT},     [ NOT ]
-    {MSG}      [ MSG Cx, Ua, Ub ]
+    {MSG},     [ MSG Cx, Ua, Ub ]
+    {PRN},     [ PRN ]
+    {NL}       [ NL ]
 
 metodo Opcode#bytecode
     devolver yo#valor
@@ -873,6 +875,12 @@ funcion CompilarAWasm: ast
     si EsInstancia: ast, AST#NodoNo
         devolver Instrucciones: OP#NOT
     finsi
+    si EsInstancia: ast, AST#NodoEscribir
+        devolver (CompilarAWasm: ast#valor) >> (Instrucciones: OP#PRN)
+    finsi
+    si EsInstancia: ast, AST#NodoNl
+        devolver Instrucciones: OP#NL
+    finsi
 
     Inalcanzable
 finfuncion
@@ -904,7 +912,8 @@ funcion Fib: N
     finsi
 finfuncion
 
-Fib: 7
+escribir (Fib: 7)#comoTexto
+nl
 
 }
 
