@@ -1,0 +1,29 @@
+{
+    "nombre": "Capturas: Captura contador dentro de un bucle",
+    "espera": "éxito",
+    "salida contiene": "2\n5\n2\n10\n"
+}
+====================
+variables i, A, B
+fijar i a 0
+mientras i < 2
+    variable j
+    fijar i a i + 1
+    fijar j a i * 5
+
+    funcion EscribirIJ
+        escribir i#comoTexto
+        nl
+        escribir j#comoTexto
+        nl
+    finfuncion
+
+    si i = 1
+        fijar A a &EscribirIJ
+    sino
+        fijar B a &EscribirIJ
+    finsi
+finmientras
+
+A#\llamar\
+B#\llamar\
