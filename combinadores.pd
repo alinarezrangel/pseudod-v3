@@ -387,7 +387,7 @@ funcion PalabraClave: pal
     finfuncion
     funcion genMensjError: tk, pos
         devolver Error#conMensajeYLugar:
-            ({Se esperaba la palabra clave [~t] pero se obtuvo ~t}#formatear: pal, (ComoTextoBonito: tk))
+            ({Se esperaba la palabra clave [~t] pero se obtuvo ~t}#formatear: pal, (ComoTextoBonito: tk)),
             pos
     finfuncion
     devolver Token: &pred, &genMensjError
