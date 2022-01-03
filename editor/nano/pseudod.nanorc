@@ -1,0 +1,50 @@
+## Syntax highlighting for PseudoD 3
+#
+## Author: Alejandro Linarez Rangel
+## Inspired by the Lua nanorc by Matthew Wild <mwild1 (at) gmail.com>
+## License: GPL 3 or later
+
+
+syntax pseudod "\.(pd|psd|pseudo|pseudod)$"
+comment "[|]"
+
+# Trailing whitespace
+color black,yellow "[ 	]+$"
+
+# Operators
+color brightyellow "[-+*/<>=^&|~!]"
+
+# Keywords
+color brightblue "\<(utilizar|como|funcion|metodo|procedimiento|finfuncion|finmetodo|finprocedimiento|si|sino|finsi|mientras|finmientras|llamar|finargs|con|de|y|o|e|u|tanto|algun|clase|hereda|extiende|implementa|finclase|atributo|atributos|variable|variables|finimplementa|adquirir|liberar|escribir|nl|leer|necesitas|ref|no|fijar|a|estatico|son|sean|iguales|diferentes|clonar|finclonar|devolver|instancia)\>"
+
+# Builtins (types)
+color green "\<(Objeto|Numero|Texto|Procedimiento|Arreglo|EspacioDeNombres|Boole|Referencia|TipoNulo)\>"
+# Builtins (functions)
+color green "\<(Aplicar|ProcedimientoVarargs|TipoDe|__(EnviarMensaje|FallarConMensaje|ClonarObjeto|CompararObjeto|AbrirArchivo|ByteATexto|TextoAByte|ByteEof|Capturar|LeerCaracter|Impl|Lua))\>"
+# Builtins (constants)
+color green "\<(VERDADERO|FALSO|NULO)\>"
+
+# BEPD (types)
+color green "\<(Caja|Conjunto|Diccionario(Alist|HashMap)?|Resultado|Pila)\>"
+# BEPD (procs)
+color green "\<(Aplicar'|Aplicar'i|Contiene|ArregloConFinal|ParaCada(Elemento(ConÍndice)?|Número(ConPaso)?)|EsSubclase|EsInstancia|EsNulo|Escribir|Identidad|Mapear|Reducir|Bucle|Filtrar|Todos|DígitoAEntero|Suma|ConcatenarTextos|Algún|Elevar|ConvertirA(Entero|Número)|EsNúmero(Entero)?|Concatenar|Resto|Abs|Mod|Es(Par|Impar)|Aplanar|AplanarTodo|PedazoDeArreglo|ÚltimoElemento|Max|Min|NoImplementado|MétodoAbstracto|Necesitas|Inalcanzable|LlamarConEC|EliminarElementoEnÍndice|LeerLínea|LeerNúmero|ObjetoAdHoc)\>"
+# BEPD (constants)
+color green "\<(ALFABETO_ASCII|EOF|EntradaEstándar|SalidaEstándar)\>"
+
+# Numbers
+color red "\<[0-9]+(\.[0-9]+)?\>"
+
+# Op Keywords
+color brightmagenta "\(|\)|\.\.\.|%|,|:"
+color normal "#"
+
+# Strings
+color red start="\{" end="\}"
+color red start="\"" end="\""
+color red start="«" end="»"
+
+# Comments
+color green start="\[" end="\]"
+
+# Doc Comments
+color brightgreen start="\[DOCUMENTA" end="DOCUMENTA\]"

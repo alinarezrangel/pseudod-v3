@@ -1,0 +1,14 @@
+## Syntax highlighting for PseudoD 3 performance profiles.
+##
+## Author: Alejandro Linarez Rangel
+## License: MIT
+syntax pseudod-profile "\.pdprof$"
+
+color green "[0-9]+\.[0-9]+%"
+color green "[0-9]+\.[0-9]+s"
+color green "[0-9]+ +samples"
+
+color blue start="«" end="»"
+color red "(Lua|C|main):"
+
+color brightblack "\?"
