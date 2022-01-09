@@ -1,0 +1,11 @@
+{
+    "nombre": "Expresión Inválida",
+    "espera": "error",
+    "error en": [10, 9]
+}
+====================
+variables A, B
+escribir A
+escribir B
+escribir nl
+nl

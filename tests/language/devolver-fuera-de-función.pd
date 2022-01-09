@@ -1,7 +1,8 @@
 {
     "nombre": "Devolver fuera de una Función",
     "espera": "error",
-    "tiene que pasar": false
+    "tiene que pasar": false,
+    "error en": [1, 0]
 }
 ====================
 devolver 1

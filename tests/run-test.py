@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
+import pathlib
 import subprocess
 import json
 import os
@@ -210,14 +211,31 @@ class ContainsErrorCondition:
     error_message: ...  # str | None
     at_line: int
     at_column: int
+    in_file: str
 
     def satisfied_by(self, subproc):
-        for match in re.finditer(r"«[^:]*:([0-9]+):([0-9]+)»", subproc.stdout):
+        for match in re.finditer(r"«([^:]*):([0-9]+):([0-9]+)( +@ +[0-9]+)?»", subproc.stdout):
             if not match:
                 return False
-            matched_line = int(match.group(1))
-            matched_column = int(match.group(2))
-            if self.at_line == matched_line or self.at_column == matched_column:
+            if match.group(1) != "" and match.group(1) != self.in_file and match.group(1) != "././dev/stdin":
+                # FIXME: Actualmente el compilador siempre marca los errores
+                # del archivo que se está compilado como si su nombre estuviese
+                # vacío: es decir, un error al compilar el archivo hola.pd se
+                # reportará con `«:1:2 @ 3»` (nota como el nombre del archivo
+                # está vacío). Por eso, para asegurarnos que el error ocurrió
+                # en la posición indicada verificamos que el archivo indicado
+                # es el correcto o está vacío.
+                #
+                # Sin embargo, en tiempo de ejecución el runtime emitirá el
+                # nombre real del archivo, que, como las pruebas se ejecutan
+                # desde stdin, será ././dev/stdin
+                #
+                # La solución real sería tener de antemano el nombre real del
+                # archivo y utilizarlo en los mensajes.
+                continue
+            matched_line = int(match.group(2))
+            matched_column = int(match.group(3))
+            if self.at_line == matched_line and self.at_column == matched_column:
                 return True
         return False
 
@@ -265,15 +283,21 @@ class TestSpec:
                 ContainsTextCondition(contains="\n".join(output_lines))
             )
 
+        if obj.get("error durante", "ejecución") == "compilación":
+            error_during = ct_conditions
+        else:
+            error_during = rt_conditions
+
         if error_contains := obj.get("error contiene"):
-            ct_conditions.append(ContainsTextCondition(contains=error_contains))
+            error_during.append(ContainsTextCondition(contains=error_contains))
 
         if error_at := obj.get("error en"):
-            ct_conditions.append(
+            error_during.append(
                 ContainsErrorCondition(
                     error_message=None,
                     at_line=error_at[0],
                     at_column=error_at[1],
+                    in_file=full_filename,
                 )
             )
 
