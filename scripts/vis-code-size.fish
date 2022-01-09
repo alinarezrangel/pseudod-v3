@@ -27,5 +27,6 @@ pr -mtw (tput cols) $locDataFile $locDataBepdFile $locDataParserFile $locDataEve
 if [ $keepTmpFiles = yes ]
     printf "clobbered files:\n%s\n%s\n%s\n%s\n" $locDataFile $locDataBepdFile $locDataParserFile $locDataEverythingElseFile
 else
+    printf "removed:\n%s\n%s\n%s\n%s\n" $locDataFile $locDataBepdFile $locDataParserFile $locDataEverythingElseFile
     rm $locDataFile $locDataBepdFile $locDataParserFile $locDataEverythingElseFile
 end
