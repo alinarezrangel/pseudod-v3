@@ -379,7 +379,7 @@ metodo Ámbito#eliminarNombreYBinding: nombre
         devolver NULO
     finprocedimiento
     necesitas no EsNulo: idx
-    fijar yo#_todosLosBindings a EliminarElementoEnÍndice: yo#_todosLosBindings, idx
+    fijar yo#_todosLosBindings a ArregloSinElementoEnÍndice: yo#_todosLosBindings, idx
 finmetodo
 
 metodo Ámbito#_obtener: nombre

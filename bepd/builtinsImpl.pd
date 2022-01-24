@@ -1096,11 +1096,12 @@ funcion LlamarConEC: proc
 finfuncion
 
 [DOCUMENTA
-@brief{Elimina el elemento en el índice @pd{idx}.}
+@brief{Devuelve un arreglo como @pd{arr} pero sin el elemento en @pd{idx}.}
 
-Devuelve una copia de @pd{arr} sin el elemento en el índice @pd{idx}.
+Devuelve un segundo arreglo con los mismos elementos que @pd{arr} pero sin el
+elemento en el índice @pd{idx}.
 DOCUMENTA]
-procedimiento EliminarElementoEnÍndice: arr, idx
+procedimiento ArregloSinElementoEnÍndice: arr, idx
     necesitas arr#longitud > 0
     variables elementosAntes, elementosDespués
     fijar elementosAntes a PedazoDeArreglo: arr, 0, idx
@@ -1143,3 +1144,82 @@ procedimiento LeerNúmero
         devolver lin#comoNumeroReal
     finsi
 finprocedimiento
+
+[DOCUMENTA
+@brief{Aplica parcialmente una función a unos argumentos.}
+
+Devuelve una nueva función que, al llamarse con otros argumentos, llamará a
+@pd{proc} con los argumentos adicionales de @pd{Parcial} y los argumentos de
+dicha. Por ejemplo:
+
+@ejemplo|{
+variable P
+fijar P a Parcial: &Escribir, 1, 2
+%P: 3, 4
+}|
+
+Escribirá los números 1, 2, 3 y 4.
+DOCUMENTA]
+funcion Parcial: proc, ...argumentos
+    devolver funcion: ...másArgumentos
+        devolver %proc: ...argumentos, ...másArgumentos
+    finfuncion
+finfuncion
+
+[DOCUMENTA
+@brief{Devuelve una función que accede a un método.}
+
+Esta función tiene 2 formas principales:
+
+@itemlist(
+@item{@pd|{MétodoComoFunción: {nombre del método}}|: Devuelve una función que
+se puede llamar como @pd{devuelto: objeto, ...argumentos} y es equivalente a
+@pd|{__EnviarMensaje: objeto, {nombre del método}, ...argumentos}|.}
+
+@item{@pd|{MétodoComoFunción: objeto, {nombre del método}}|: Devuelve una
+función que se puede llamar como @pd{devuelto: ...argumentos} y es equivalente
+a @pd|{__EnviarMensaje: objeto, {nombre del método}, ...argumentos}|.}
+)
+
+Algunos ejemplos son:
+
+@ejemplos|{
+
+variables A, B
+fijar A a Arreglo#crearCon:
+    (funcion devolver 1 finfuncion),
+    (funcion devolver 2 finfuncion),
+    (funcion devolver 3 finfuncion)
+Escribir: (Mapear: A, (MétodoComoFunción: {llamar}))
+
+fijar B a MétodoComoFunción: Arreglo, {crearCon}
+Escribir: (%(Aplicar: B, 1, 2): 3, 4)
+
+}|
+DOCUMENTA]
+funcion MétodoComoFunción: ...args
+    si args#longitud = 1
+        devolver funcion: obj, ...resto
+            devolver EnviarMensaje: obj, (args#en: 0), ...resto
+        finfuncion
+    sino
+        necesitas args#longitud = 2
+        devolver funcion: ...resto
+            devolver EnviarMensaje: (args#en: 0), (args#en: 1), ...resto
+        finfuncion
+    finsi
+finfuncion
+
+[DOCUMENTA
+@brief{Obtiene un operador binario como una función.}
+
+Similar a @pd{MétodoComoFunción}, @pd{OperadorBinario} devuelve una función de
+dos argumentos que es equivalente a usar el operador binario @pd{op} en estos
+dos argumentos. Por ejemplo: @pd|{OperadorBinario: {+}}| es equivalente a
+@pd{funcion: A, B devolver A + B finfuncion}.
+DOCUMENTA]
+funcion OperadorBinario: op
+    devolver funcion: lhs, rhs
+        devolver EnviarMensaje: lhs, ({operador_}#concatenar: op), rhs
+    finfuncion
+finfuncion
