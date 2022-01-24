@@ -509,22 +509,353 @@ finprocedimiento
 variable PSEUDOD_IMPL
 fijar PSEUDOD_IMPL a {Tupla (IR) Bootstrap}
 
+[ El IR:
 
+  El IR esta compuesto de 3 "partes": las instrucciones, las declaraciones y
+  las constantes. Se asume que el órden de las instrucciones importa pero el de
+  las constantes y las declaraciones no.
+
+  Las instrucciones consisten de un arreglo de "tuplas": cada tupla es como un
+  arreglo de tamaño mayor a 1, donde el primer elemento es la instrucción u
+  opcode y los demás elementos son los argumentos. Cada opcode requiere sus
+  propios argumentos con tipos específicos.
+
+  Las constantes son un diccionario de un CID ("constant-ID") a la constante
+  dada. El IR solo puede representar constantes numéricas (como instancias de
+  números) y textuales (como instancias de textos).
+
+  Las declaraciones actualmente solo incluyen la declaración de función, la
+  cual consiste del ID de la función, sus parámetros y las instrucciones de su
+  cuerpo.
+
+  Estas 3 partes están agrupadas en una estructura llamada `Compilado`. La
+  operación más fundamental de un compilado es secuenciar (`A >> B`) pero
+  también tienen otras.
+
+Semanticas:
+
+  El IR tiene un número ilimitado de registros o variables locales (o solo
+  "locales") por cada marco de activación de cada función. También tiene una
+  pila que es compartida entre marcos de activación: cada función debe tener
+  cuidado de mantener la pila en un estado apropiado (las funciones no pueden
+  leer los elementos de la pila que fueron agregados antes de entrar a
+  esta). Finalmente, una última pila, la pila de ámbitos, es usada para
+  compilar `si`-`finsi` y `mientras`-`finmientras`. A diferencia de la pila
+  general, esta segunda pila no es compartida por los marcos de activación lo
+  que significa que no es importante asegurarse de que esté en un estado válido
+  al final de la función.
+
+  Todo esto hace que el IR sea bastante fácil de usar: variables e
+  instrucciones pueden usar directamente los registros mientras que las
+  expresiones utilizan la pila para guardar los valores intermediarios. Nota
+  que la pila no es completamente dinámica: siempre está vacía entre
+  instrucciones. Esto es importante porque es posible que para mayor eficiencia
+  que pases posteriores del compilador "desapilen" el código eliminando la pila
+  y convirtiendo todo el código a registros.
+
+  Finalmente: exísten algunos opcodes para saltar tanto como incondicional como
+  condicionalmente. Todos están intencionalmente hechos para que los únicos
+  objetivos de un salto sean etiquetas. Por ejemplo, en vez de una instrucción
+  "salta si es falso" `BR <etiqueta>` hay una "salta de acuerdo a una
+  condición" `CHOOSE <siVerdadero>, <siFalso>`. Gracias a esto es posible
+  convertir el IR a un grafo de bloques básicos y todos los bloques con bordes
+  entrantes comenzarán con una etiqueta.
+
+  Los tipos de objetos manejados por el IR son, en su mayoría, los mismos que
+  los builtins de PseudoD: números, textos y booleanos. Además, 2 tipos
+  adicionales (objetos y closures) son utilizados para implementar los
+  demás. Tal como el intérprete, todos los objetos en la VM son "reales":
+  puedes enviar mensajes a números o closures sin problemas.
+
+  Las closures están implementadas como un puntero a una función y un
+  entorno. Los objetos son como funciones pero su puntero a función apunta a la
+  función que recibirá los mensajes y su entorno contiene los atributos del
+  objeto.
+
+  Un entorno consiste de un puntero a un entorno "superior" y una lista de
+  registros almacenados. Los entornos son usados para implementar closures y
+  objetos. Puedes crear un entorno con las instrucciones de "marco" (*frame
+  instructions*, se llaman así porque siempre aparecen al principio de las
+  funciones, "reificando" los marcos de activación). Para acceder a un valor en
+  un entorno necesitas una altura (el número de entornos a "saltar" desde el
+  actual) y un índice (el objeto dentro del entorno seleccionado a acceder).
+
+  Cuando se llama a una closure, su entorno es pasado como primer argumento.
+
+  Los registros especiales `ESUP` y `EACT` representan el entorno "superior" al
+  actual y el entorno actual, respectivamente. `EACT` tiene que ser
+  inicializado manualmente. `ESUP` es el entorno pasado a esta función
+  (recuerda, el primer argumento es especial).
+
+  Como durante la compilación cada ámbito pasa a ser un entorno, un sistema es
+  necesario para prevenir que las variables `EACT` y `ESUP` se confundan (por
+  ejemplo, si tienes un `si` dentro de un `mientras`, el `EACT` del mientras
+  debe ser distínto del `EACT` del `si`). Para esto existe la pila de ámbitos:
+  cada ámbito guarda sus entornos (`EACT`) en la pila de ámbitos.
+
+Instrucciones:
+
+  Los prefijos significan:
+
+  1. `C`: Índice de constante de la lista de constantes.
+  2. `N`: Constante numérica.
+  3. `F`: Constante real.
+  4. `L`: Índice de registro local.
+  5. `E`: Entorno: un registro local o alguna de las variables especiales
+     `EACT` o `ESUP`.
+  6. `U`: Número positivo (mayor o igual a 0).
+  7. `T`: Etiqueta.
+  8. `P`: ID de un procedimiento.
+  9. `?`: Combinado con `E` o `L` indica que el argumento puede ser el valor
+     especial `NIL`.
+
+  SUM    {a b -- c}
+  SUB    {a b -- c}
+  MUL    {a b -- c}
+  DIV    {a b -- c}
+    Operaciones aritméticas básicas. Operan en la pila.
+
+  LT     {a b -- c}
+  GT     {a b -- c}
+  LE     {a b -- c}
+  GE     {a b -- c}
+    Menor/mayor que, mayor/menor o igual a. Operan en la pila.
+
+  POP    {a --}
+    Saca e ignora el elemento en la cima de la pila.
+
+  LCONST Cx    {-- a}
+    Carga la constante con el índice `Cx` y la empuja en la pila.
+
+  ICONST Na    {-- a}
+  FCONST Fa    {-- a}
+    Empuja una constante numérica.
+
+  LOCAL Lx
+    Declara un registro local. Solo puede estár al principio de una
+    lista de instrucciones.
+
+  PARAM Lx
+    Declara un parámetro. `Lx` será el registro local que contenga al parámetro
+    (`Lx` es declarado automáticamente, no es necesario declararlo de nuevo con
+    `LOCAL`). Solo puede estar antes que `LOCAL` en un procedimiento.
+
+  MKCLZ Ex, Px    {-- c}
+  MK0CLZ Px    {-- c}
+    Crea una closure mezclando un procedimiento (`Px`) y un entorno
+    (`Ex`). `MK0CLZ` es como `MKCLZ` pero utiliza un entorno vacío.
+
+  LSET Lx    {v --}
+    Saca un elemento de la pila y lo asigna a la local `Lx`.
+
+  LGET Lx    {-- v}
+    Obtiene y empuja en la pila el valor de la local `Lx`.
+
+  LSETC Ex, Ua, Ub    {v --}
+    Saca un elemento de la pila y lo asigna a la variable dada del
+    entorno. `Ex` es el entorno, `Ua` es la altura de la variable y `Ub` es el
+    índice de la variable.
+
+  LGETC Ex, Ua, Ub    {-- v}
+    Obtiene la variable dada del entorno y empuja su valor en la pila. `Ex` es
+    el entorno, `Ua` es la altura de la variable y `Ub` es el índice de la
+    variable.
+
+  ROT Ua
+    Rota los primeros `Ua` elementos en la cima de la pila. Por ejemplo si la
+    pila tenía 4 elementos:
+
+      <-----T
+      A B C D
+
+    (La flecha apunta a la base de la pila.)
+    Entonces ejecutar `ROT 4` dejará la pila como:
+
+      <-----T
+      B C D A
+
+    Esto es muy útil, por ejemplo, al compilar `obj#mensaje: 1, 2, 3`: el orden
+    en el que compilan las partes de la expresión anterior es:
+
+      <-------T
+      obj 1 2 3
+
+    Pero necesitamos `1 2 3 obj` para poder invocar el mensaje con `MSG`.
+
+  MSG Cx, Ua, Ub
+    Saca un elemento, el objeto que recibirá el mensaje. Luego le envía a este
+    el mensaje indicado por la constante `Cx`. Este mensaje es llamado con `Ua`
+    argumentos y se espera que devuelva `Ub` resultados.
+
+  DYNCALL Ua, Ub
+    Envía el mensaje `llamar` al objeto en la cima de la pila. Similar a `MSG`.
+
+  RETN Ua
+    Devuelve `Ua` objetos (que deben estar en la pila) del procedimiento
+    actual.
+
+  OPNFRM Ex, ?Ey, Ua    {--}
+    Inicializa un entorno. El nuevo entorno es guardado en `Ex`. Si `Ey` es
+    especificado será el entorno superior. `Ua` es el tamaño del entorno, es
+    decir, el número de variables que contiene.
+
+  EINIT Ex, Ua, Ly    {--}
+    Inicializa una variable dentro del entorno. La variable en el índice `Ua`
+    del entorno `Ex` será fijada al valor del registro `Ly`.
+
+  CLSFRM Ex    {--}
+    "Cierra" un entorno. Luego de cerrarlo, no puedes usar `EINIT` con `Ex`. En
+    cambio, cualquier cambio al entorno tendrá que pasar por `LSETC`.
+
+  NAME Tx
+    Declara `Tx` como una etiqueta. `Tx` debe ser único en el procedimiento
+    actual.
+
+  CHOOSE Tx, Ty    {x --}
+    Saca un elemento de la pila, si es verdadero salta a `Tx`, si no salta a
+    `Ty`.
+
+  JMP Tx    {--}
+    Salta incondicionalmente a `Tx`.
+
+  MTRUE    {x --}
+    Saca un objeto de la pila y falla con un error si no es verdadero. Este
+    opcode implementa la instrucción `necesitas`.
+
+  CMPEQ    {a b -- c}
+  CMPNEQ    {a b -- c}
+    Compara si dos objetos de la pila son iguales/diferentes, empujando
+    verdadero o falso.
+
+  NOT    {a -- b}
+    Niega el boole en la cima de la pila.
+
+  PRN    {a --}
+    Escribe el texto en la cima de la pila.
+
+  NL    {--}
+    Escribe el fin de línea.
+
+  SPUSH EACT, ESUP
+  SPOP EACT, ESUP
+    Empuja/saca y reorganiza `EACT`/`ESUP` en la pila de ámbitos. Luego de es
+    `SPUSH EACT, ESUP` `EACT` estará en la pila de ámbitos y `EACT`/`ESUP`
+    serán "rotados", de forma que `EACT` será el entorno superior de `EACT` y
+    `ESUP` será el entorno superior de `ESUP`.
+
+    `SPOP EACT, ESUP` revierte esto, sacando y rotando de nuevo las variables.
+
+Ejemplo:
+
+  Equivalente (más o menos) en PseudoD:
+
+    variable X
+    funcion Y: v
+        devolver (v + 4) * X
+    finfuncion
+    fijar X a 5
+    escribir Y: 3
+    nl
+
+  En bytecode:
+
+    Instrucciones:
+      LOCAL 3
+      LOCAL 4
+      OPNFRM EACT, NIL, 1
+      EINIT EACT, 0, 3
+      CLSFRM EACT
+      MKCLZ EACT, 1
+      LSET 4
+      ICONST 5
+      LSETC EACT, 0, 0
+      LGET 4
+      ICONST 3
+      ROT 1
+      DYNCALL 1, 1
+      PRN
+      NL
+
+    Procedimientos:
+      PROC 1
+        PARAM ESUP
+        PARAM 2
+        OPNFRM EACT, ESUP, 0
+        CLSFRM EACT
+        LGET 2
+        ICONST 4
+        SUM
+        LGETC EACT, 1, 0
+        MUL
+        RETN 1
+      ENDPROC
+
+    Constantes:
+      (nada)
+
+]
+
+[DOCUMENTA
+@brief{Variable local que contiene al entorno superior.}
+
+Es la constante @code{ESUP} del bytecode.
+DOCUMENTA]
 funcion LocalDelEntornoSuperior
     devolver {ESUP}
 finfuncion
 
+[DOCUMENTA
+@brief{Variable local que contiene al entorno actual.}
+
+Es la constante @code{EACT} del bytecode.
+DOCUMENTA]
 funcion LocalDelEntornoActual
     devolver {EACT}
 finfuncion
 
 
-clase Tupla
-    atributos opcode, argumentos
+[DOCUMENTA
+@brief{Una tupla de opcode y los argumentos.}
 
+La tupla tiene más de un elemento: el primero siempre es el opcode, mientras
+que los demás son los argumentos.
+DOCUMENTA]
+clase Tupla
+    [DOCUMENTA
+    @brief{El opcode de esta tupla.}
+    DOCUMENTA]
+    atributo opcode
+
+    [DOCUMENTA
+    @brief{Los argumentos de esta tupla.}
+
+    Es un arreglo.
+    DOCUMENTA]
+    atributo argumentos
+
+    [DOCUMENTA
+    @brief{Crea una nueva tupla.}
+    DOCUMENTA]
     metodo estatico crear: op, ...args
+
+    [DOCUMENTA
+    @brief{Determina si es o no un opcode específico.}
+
+    Devuelve @pd{VERDADERO} o @pd{FALSO} dependiendo de si el opcode de esta
+    tupla es @pd{op}.
+    DOCUMENTA]
     metodo es: op
+
+    [DOCUMENTA
+    @brief{Obtiene un argumento de la tupla.}
+
+    Devuelve el argumento número @pd{n} de esta tupla, contando desde 0.
+    DOCUMENTA]
     metodo en: n
+
+    [DOCUMENTA
+    @brief{Devuelve una representación textual de la tupla.}
+    DOCUMENTA]
     metodo comoTexto
 finclase
 
@@ -554,6 +885,22 @@ metodo Tupla#comoTexto
          {, })
 finmetodo
 
+[DOCUMENTA
+@brief{Crea una enumeración con valores incrementales.}
+
+Como @pd{Enum} pero los valores de las enumeraciones no son su nombre si no un
+número que se va incrementando de 1 en 1. Por ejemplo:
+
+@ejemplo|{
+variable X
+fijar X a EnumConValoresIncrementales: {X},
+    {A}, {B}, {C}, {D}
+necesitas X#A#valor = 0
+necesitas X#B#valor = 1
+necesitas X#C#valor = 2
+necesitas X#D#valor = 3
+}|
+DOCUMENTA]
 funcion EnumConValoresIncrementales: nombre, ...valores
     variable pares
     fijar pares a Diccionario#vacío
@@ -563,6 +910,16 @@ funcion EnumConValoresIncrementales: nombre, ...valores
     devolver EnumConValores: nombre, ...(Aplanar: pares#comoArreglo)
 finfuncion
 
+[DOCUMENTA
+@brief{Todos los opcodes del bytecode.}
+
+Esta enumeración contiene todos los opcodes del bytecode. El valor de cada
+enumerado es el "código" del opcode.
+
+Como una conveniencia, los enumerados también tienen un método @code{bytecode}
+como un alias de @code{valor} (por ejemplo, @pd{Opcode#SUM#bytecode} es igual
+que @pd{Opcode#SUM#valor}).
+DOCUMENTA]
 variable Opcode
 fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {SUM},     [ SUM ]
@@ -589,7 +946,7 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {DYNCALL}, [ DYNCALL Ua, Ub ]
     {RETN},    [ RETN Ua ]
     {EINIT},   [ EINIT Lx, Ua, Ly ]
-    {OPNFRM},  [ OPNFRM Ex, ?Ey, Ly ]
+    {OPNFRM},  [ OPNFRM Ex, ?Ey, Ua ]
     {CLSFRM},  [ CLSFRM Ex ]
     {CHOOSE},  [ CHOOSE Tx, Ty ]
     {JMP},     [ JMP Tx ]
@@ -608,6 +965,9 @@ metodo Opcode#bytecode
     devolver yo#valor
 finmetodo
 
+[ El objeto `OP` es un pequeño DSL para construir tuplas. `OP#SUM: 1, 2` es lo
+  mismo que `Tupla#crear: Opcode#SUM, 1, 2` ]
+
 variable OP
 si VERDADERO
     clase I
@@ -621,15 +981,49 @@ si VERDADERO
     fijar OP a I#crear
 finsi
 
+[DOCUMENTA
+@brief{Declaración de función o procedimiento dentro del bytecode.}
+DOCUMENTA]
 clase DeclrFunción
-    atributos nombre, parámetros, cuerpo
+    [DOCUMENTA
+    @brief{Nombre de la función.}
+
+    Debe ser un número único en el programa.
+    DOCUMENTA]
+    atributo nombre
+
+    [DOCUMENTA
+    @brief{Los parámetros de la función.}
+
+    Un arreglo de números: cada número es el ID de un registro local que será
+    el parámetro en la función. Opcionalmente @pd{LocalDelEntornoSuperior}
+    puede aparecer como primer elemento.
+    DOCUMENTA]
+    atributo parámetros
+
+    [DOCUMENTA
+    @brief{Cuerpo de la función.}
+
+    Un arreglo de tuplas.
+    DOCUMENTA]
+    atributo cuerpo
+
+    [DOCUMENTA
+    @brief{Crea una nueva declaración de función.}
+    DOCUMENTA]
+    metodo estatico crear: nombre, parámetros, cuerpo
+
+    [DOCUMENTA
+    @brief{Devuelve una representación textual de la declaración.}
+    DOCUMENTA]
+    metodo comoTexto
 finclase
 
-metodo estatico DeclrFunción#crear: nom, par, cuer
+metodo estatico DeclrFunción#crear: nombre, parámetros, cuerpo
     devolver clonar yo#_crear con
-        nombre: nom
-        parámetros: par
-        cuerpo: cuer
+        nombre: nombre
+        parámetros: parámetros
+        cuerpo: cuerpo
     finclonar
 finmetodo
 
@@ -637,8 +1031,36 @@ metodo DeclrFunción#comoTexto
     devolver {(DeclrFunción ~t con ~t es ~t)}#formatear: yo#nombre, yo#parámetros, yo#cuerpo
 finmetodo
 
+[DOCUMENTA
+@brief{Una constante en el IR.}
+
+Representa un mapeo de un ID de constante a la constante.
+
+Aunque nada te lo prohibe, no deberías usar constantes para representar números
+"pequeños" (menores a 2^32). Para estos usa el opcode @code{ICONST}.
+DOCUMENTA]
 clase Constante
-    atributos id, valor
+    [DOCUMENTA
+    @brief{Id de la constante.}
+    DOCUMENTA]
+    atributo id
+
+    [DOCUMENTA
+    @brief{Valor de la constante.}
+
+    Solo puede ser un número o un texto.
+    DOCUMENTA]
+    atributo valor
+
+    [DOCUMENTA
+    @brief{Crea una nueva constante y la devuelve.}
+    DOCUMENTA]
+    metodo estatico crear: id, valor
+
+    [DOCUMENTA
+    @brief{Devuelve una representación textual del mapeo de la constante.}
+    DOCUMENTA]
+    metodo comoTexto
 finclase
 
 metodo estatico Constante#crear: id, valor
@@ -653,8 +1075,71 @@ metodo Constante#comoTexto
 finmetodo
 
 
+[DOCUMENTA
+@brief{Un fragmento de compilación.}
+
+Un compilado representa un fragmento de la compilación. Contiene un arreglo de
+instrucciones, una secuencia de declaraciones y una secuencia de constantes. El
+orden de las declaraciones y constantes no importa, pero el de las
+instrucciones sí.
+DOCUMENTA]
 clase Compilado
-    atributos instrucciones, declaraciones, constantes
+    [DOCUMENTA
+    @brief{Arreglo de tuplas, que son las instrucciones de este compilado.}
+    DOCUMENTA]
+    atributo instrucciones
+
+    [DOCUMENTA
+    @brief{Arreglo de declaraciones.}
+
+    Actualmente la única declaración válida es @pd{DeclrFunción}.
+    DOCUMENTA]
+    atributo declaraciones
+
+    [DOCUMENTA
+    @brief{Constantes de este compilado.}
+
+    Arreglo de @pd{Constante}.
+    DOCUMENTA]
+    atributo constantes
+
+    [DOCUMENTA
+    @brief{Crea un compilado con los datos dados.}
+    DOCUMENTA]
+    metodo estatico crear: instrucciones, declaraciones, constantes
+
+    [DOCUMENTA
+    @brief{Crea un compilado sin constantes ni declaraciones.}
+    DOCUMENTA]
+    metodo estatico deInstrucciónes: instrucciones
+
+    [DOCUMENTA
+    @brief{Crea un compilado sin instrucciones ni constantes.}
+    DOCUMENTA]
+    metodo estatico deDeclaraciones: declaraciones
+
+    [DOCUMENTA
+    @brief{Crea un compilado sin instrucciones ni declaraciones.}
+    DOCUMENTA]
+    metodo estatico deConstantes: constantes
+
+    [DOCUMENTA
+    @brief{Secuencia dos compilados.}
+
+    Mezcla las declaraciones y constantes de los compilados @pd{yo} y
+    @pd{otro}. Además, las instrucciones de @pd{yo} son concatenadas
+    @bold{antes} que las de @pd{otro}.
+
+    El resultado de esto es un nuevo compilado cuyas instrucciones son primero
+    las de @pd{yo} y después las de @pd{otro}, con todo lo demás en un orden no
+    especificado.
+    DOCUMENTA]
+    metodo \operador_>>\: otro
+
+    [DOCUMENTA
+    @brief{Devuelve una representación textual del compilado.}
+    DOCUMENTA]
+    metodo comoTexto
 finclase
 
 metodo estatico Compilado#crear: i, d, c
@@ -693,6 +1178,12 @@ metodo Compilado#comoTexto
 finmetodo
 
 
+[DOCUMENTA
+@brief{Escribe una versión "descompilada" de un compilado.}
+
+Escribe todos los datos de un compilado de forma "bonita", como si fuese un
+"assembly listing" (de allí el nombre "listado").
+DOCUMENTA]
 procedimiento Listado: compilado
     Escribir: {===== Constants:}
     ParaCadaElementoConÍndice: compilado#constantes, procedimiento: const, i
@@ -717,28 +1208,83 @@ procedimiento Listado: compilado
 finprocedimiento
 
 
+[DOCUMENTA
+@brief{Secuencia todos los compilados.}
+
+@pd{partes} debe ser un arreglo de compilados que serán secuenciados con
+@code{>>} en orden. Devuelve el resultado de secuenciarlos.
+DOCUMENTA]
 funcion UnirCompilados: partes
     devolver Reducir: Compilado#vacío, (OperadorBinario: {>>}), partes
 finfuncion
 
 
+[DOCUMENTA
+@brief{Obtiene los nombres definídos sin parámetros de una
+función/método/procedimiento.}
+
+Devuelve el valor del metadato @code{nombresDefinídosSinParámetros} (con llave
+@pd{RN#LLAVE_RESOLUCIÓN_DE_NOMBRES}).
+DOCUMENTA]
 funcion NombresDefinídosSinParámetros: ast
     devolver ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSinParámetros}
 finfuncion
 
+[DOCUMENTA
+@brief{Obtiene los nombres resueltos de los parámetros de un
+método/función/procedimiento.}
+
+@pd{ast} debe ser un @pd{AST#NodoFunción}, @pd{AST#NodoFunciónAnónima},
+@pd{AST#NodoMétodo} o @pd{AST#NodoDefineMétodoEnClase}. Devuelve un arreglo con
+los nombres resueltos de los parámetros (en orden).
+DOCUMENTA]
 funcion NombresDeLosParámetros: ast
     devolver Mapear: ast#parámetros, &(RN#NombreResueltoDe)
 finfuncion
 
 
+[DOCUMENTA
+@brief{Obtiene las locales del procedimiento.}
+
+A pesar de lo que su nombre indica, solo funciona con nodos con el metadato
+@code{localesDelProcedimiento} (funciones, métodos, procedimientos y
+@pd{AST#NodoPrograma}).
+DOCUMENTA]
 funcion LocalesDelBloque: nodo
     devolver nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelProcedimiento}
 finfuncion
 
+[DOCUMENTA
+@brief{Obtiene los bindings locales del procedimiento.}
+
+Solo funciona con los mismos nodos que @pd{LocalesDelBloque}.
+DOCUMENTA]
 funcion BindingsLocalesDelBloque: nodo
     devolver nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {bindingsLocalesDelProcedimiento}
 finfuncion
 
+[DOCUMENTA
+@brief{Obtiene los remapeos del procedimiento/programa.}
+
+Cada registro local del IR requiere un ID. Podría parecer que el metadato
+@code{índiceDeCaptura}, que es un número que va desde 0 por cada local del
+ámbito podría ser usado para esto, pero @code{índiceDeCaptura} es local por
+cada ámbito del programa, mientras que nosotros estamos compilando cada
+función/método/procedimiento individualmente. Para esto un diccionario (el
+diccionario de remapeos) "mapea" cada binding a un ID único local.
+
+@params(
+@defparam(locales){Los locales de la función, método, procedimiento o programa
+que se esta compilando. Nota que con locales me refiero a todas las variables
+de todos los ámbitos excepto subfunciones (véase
+@pd{EnumeraciónDeLocalesDeProcedimiento})}
+
+@defparam(nombresLibres){El @pd{Conjunto} con los nombres libres del bloque
+(véase el pase de desfuncionalización).}
+)
+
+@devuelve{El diccionario que mapea cada binding a su ID de registro local.}
+DOCUMENTA]
 funcion RemapeosDelBloque: locales, nombresLibres
     variable i
     fijar i a 0
@@ -746,12 +1292,18 @@ funcion RemapeosDelBloque: locales, nombresLibres
         variable nuevoBinding
         fijar nuevoBinding a i
         fijar i a i + 1
-        devolver Arreglo#crearCon: metalocal#índiceDeCaptura, nuevoBinding
+        devolver Arreglo#crearCon: metalocal#binding, nuevoBinding
     finfuncion)
 finfuncion
 
 variable ContadorDeEtiquetas
 fijar ContadorDeEtiquetas a 0
+[DOCUMENTA
+@brief{Devuelve una nueva etiqueta.}
+
+Devuelve un número único que sirve como etiqueta para las instrucciones de
+control de flujo (@code{JMP} y @code{CHOOSE}).
+DOCUMENTA]
 procedimiento GenerarEtiqueta
     fijar ContadorDeEtiquetas a ContadorDeEtiquetas + 1
     devolver ContadorDeEtiquetas
@@ -759,11 +1311,26 @@ finprocedimiento
 
 variable ContadorDeConstantes
 fijar ContadorDeConstantes a 0
+[DOCUMENTA
+@brief{Devuelve un nuevo ID de constante.}
+
+Devuelve un número único que sirve como ID de constante.
+DOCUMENTA]
 procedimiento GenerarIdDeConstante
     fijar ContadorDeConstantes a ContadorDeConstantes + 1
     devolver ContadorDeConstantes
 finprocedimiento
 
+[ TODO: Renombra todas las funciones de compilación de "WASM" a "Tuplas". ]
+
+[DOCUMENTA
+@brief{Compila un arreglo de instrucciones a un compilado.}
+
+@pd{instrucciones} debe ser un arreglo de
+@pd{AST#NodoInstrucción}. @pd{remapeos} debe ser los remapeos de este
+bloque. Esta función automaticamente se encarga de dejar la pila en un estado
+apropiado cuando se encuentra a una expresión en una posición de instrucción.
+DOCUMENTA]
 funcion CompilarBloqueAWasm: instrucciones, remapeos
     variable res
     fijar res a Compilado#vacío
@@ -776,20 +1343,47 @@ funcion CompilarBloqueAWasm: instrucciones, remapeos
     devolver res
 finfuncion
 
+[DOCUMENTA
+@brief{Compila un identificador.}
+
+@pd{ast} debe ser el @pd{AST#NodoIdentificador} y @pd{remapeos} los remapeos
+del bloque.
+
+Devuelve un compilado que obtiene la variable @pd{ast} y la empuja en la pila.
+DOCUMENTA]
 funcion CompilarIdentificador: ast, remapeos
-    variables id, esCaptura, altura, índiceDeCaptura, esLocal, res
+    variables id, esCaptura, altura, índiceDeCaptura, esLocal, res, binding
     fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
     fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
     fijar esCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
     fijar esLocal a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}
+    fijar binding a RN#NombreResueltoDe: ast
     si esCaptura || no esLocal
         fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGETC: LocalDelEntornoActual, altura, índiceDeCaptura))
     sino
-        fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGET: (remapeos#en: índiceDeCaptura)))
+        fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGET: (remapeos#en: binding)))
     finsi
     devolver res
 finfuncion
 
+[DOCUMENTA
+@brief{Compila las declaraciones de las locales de un procedimiento.}
+
+Devuelve un arreglo con todas las declaraciones @code{LOCAL} necesarias.
+
+@params(
+@defparam(locales){Arreglo de las variables locales (generado con
+@pd{EnumeraciónDeLocalesDeProcedimiento}) del bloque.}
+
+@defparam(parámetros){Los parámetros del método, función o procedimiento como
+un arreglo de bindings. Si se esta compilando un bloque que no es uno de estos,
+@pd{parámetros} debería ser un arreglo vacío. Este parámetro es necesario
+porque los parámetros son locales pero no deberían estar declarados con
+@code{LOCAL} si no con @code{PARAM}.}
+
+@defparam(remapeos){Los remapeos del bloque.}
+)
+DOCUMENTA]
 funcion CompilarLocales: locales, parámetros, remapeos
     devolver
         Mapear:
@@ -797,12 +1391,30 @@ funcion CompilarLocales: locales, parámetros, remapeos
                 (Mapear: (Filtrar: locales, funcion: meta
                               devolver meta#esLocal && (no Contiene: parámetros, meta#índiceDeCaptura)
                           finfuncion),
-                        (MétodoComoFunción: {índiceDeCaptura}))),
-            funcion: índiceDeCaptura
-                devolver OP#LOCAL: (remapeos#en: índiceDeCaptura)
+                        (MétodoComoFunción: {binding}))),
+            funcion: binding
+                devolver OP#LOCAL: (remapeos#en: binding)
             finfuncion
 finfuncion
 
+[DOCUMENTA
+@brief{Compila las instrucciones @code{OPNFRM}...@code{CLSFRM} de un bloque.}
+
+Devuelve un arreglo de instrucciones que crea e inicializa el entorno del
+bloque actual, asignándolo a @code{EACT} apropiadamente.
+
+@params(
+@defparam(capturas){Un arreglo con las variables locales (producidas por
+@pd{EnumeraciónDeLocalesDeProcedimiento}) que son capturadas (su atributo
+@code{#esCapturado} debe ser verdadero). Puedes obtener este arreglo con
+@pd{VariablesLocalesCapturadas}.}
+
+@defparam(exísteMarcoSuperior){@pd{Boole} que indica si exíste
+@code{ESUP}. Determina si el entorno tendrá marco superior.}
+
+@defparam(remapeos){Los remapeos del bloque.}
+)
+DOCUMENTA]
 funcion CompilarEntornoDelÁmbito: capturas, exísteMarcoSuperior, remapeos
     variables ops, máximoÍndiceDeLocalCapturado
     fijar ops a Arreglo#vacio
@@ -812,13 +1424,31 @@ funcion CompilarEntornoDelÁmbito: capturas, exísteMarcoSuperior, remapeos
       es el tamaño mínimo necesario para el marco de activación ("marco de
       llamada" o "call-frame") ]
     ops#agregarAlFinal: (OP#OPNFRM: LocalDelEntornoActual, (exísteMarcoSuperior#escojer: LocalDelEntornoSuperior, {NIL}), (máximoÍndiceDeLocalCapturado + 1))
-    ops#agregarAlFinal: (Mapear: (Únicos: (Mapear: capturas, (MétodoComoFunción: {índiceDeCaptura}))), funcion: índiceDeCaptura
-        devolver OP#EINIT: LocalDelEntornoActual, índiceDeCaptura, (remapeos#en: índiceDeCaptura)
+    ops#agregarAlFinal: (Mapear: capturas, funcion: captura
+        devolver OP#EINIT: LocalDelEntornoActual, captura#índiceDeCaptura, (remapeos#en: captura#binding)
     finfuncion)
     ops#agregarAlFinal: (OP#CLSFRM: LocalDelEntornoActual)
     devolver ops
 finfuncion
 
+[DOCUMENTA
+@brief{Filtra un arreglo de locales para obtener las capturas de un bloque.}
+
+Devuelve un arreglo con las variables locales capturadas.
+DOCUMENTA]
+funcion VariablesLocalesCapturadas: locales
+    devolver Únicos: (Filtrar: locales, funcion: metalocal
+        devolver metalocal#esCapturado
+    finfuncion)
+finfuncion
+
+[DOCUMENTA
+@brief{Compila los locales y el entorno de un bloque.}
+
+Llama a @pd{CompilarLocales} y @pd{CompilarEntornoDelÁmbito}, acumulando sus
+resultados. Devuelve un arreglo de instrucciones que sirve como "inicio" o
+"preludio" de un bloque.
+DOCUMENTA]
 funcion CompilarLocalesYClosure: locales, capturas, parámetros, exísteMarcoSuperior, remapeos
     devolver Concatenar:
         (CompilarLocales: locales, parámetros, remapeos),
@@ -830,6 +1460,16 @@ funcion Inspeccionar: A, B
     devolver B
 finfuncion
 
+[DOCUMENTA
+@brief{Compila una instrucción o expresión a un compilado.}
+
+Devuelve un @pd{Compilado} con el resultado de compilar @pd{ast}. Si @pd{ast}
+es un @pd{AST#NodoExpresion} entonces el compilado dejará en la pila el
+resultado de la expresión. Si es un @pd{AST#NodoInstrucción} entonces no dejará
+valores en la pila.
+
+@pd{remapeos} son los remapeos del bloque.
+DOCUMENTA]
 funcion CompilarAWasm: ast, remapeos
     funcion Instrucciones: ...Is
         devolver Compilado#deInstrucciónes: Is
@@ -838,9 +1478,7 @@ funcion CompilarAWasm: ast, remapeos
     si EsInstancia: ast, AST#NodoPrograma
         variables locales, capturas
         fijar locales a LocalesDelBloque: ast
-        fijar capturas a Únicos: (Filtrar: locales, funcion: metalocal
-            devolver metalocal#esCapturado || no metalocal#esLocal
-        finfuncion)
+        fijar capturas a VariablesLocalesCapturadas: locales
         Escribir: {locales=}, locales
         Escribir: {capturas=}, capturas
         devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, capturas, Arreglo#vacio, FALSO, remapeos)))
@@ -941,14 +1579,15 @@ funcion CompilarAWasm: ast, remapeos
         devolver Compilado#vacío
     finsi
     si EsInstancia: ast, AST#NodoFijar
-        variables val, altura, índiceDeCaptura, op, esCaptura
+        variables val, altura, índiceDeCaptura, op, esCaptura, binding
         fijar altura a ast#objetivo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
         fijar índiceDeCaptura a ast#objetivo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
         fijar esCaptura a ast#objetivo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
+        fijar binding a RN#NombreResueltoDe: ast#objetivo
         si esCaptura || (altura > 0)
             fijar op a OP#LSETC: LocalDelEntornoActual, altura, índiceDeCaptura
         sino
-            fijar op a OP#LSET: (remapeos#en: índiceDeCaptura)
+            fijar op a OP#LSET: (remapeos#en: binding)
         finsi
         fijar val a CompilarAWasm: ast#valor, remapeos
         devolver val >> (Instrucciones: op)
@@ -960,13 +1599,9 @@ funcion CompilarAWasm: ast, remapeos
         fijar etiqFinsi a GenerarEtiqueta
 
         fijar localesSiVerdadero a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesSiVerdadero}
-        fijar capturasSiVerdadero a Únicos: (Filtrar: localesSiVerdadero, funcion: metalocal
-            devolver metalocal#esCapturado
-        finfuncion)
+        fijar capturasSiVerdadero a VariablesLocalesCapturadas: localesSiVerdadero
         fijar localesSiFalso a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesSiFalso}
-        fijar capturasSiFalso a Únicos: (Filtrar: localesSiFalso, funcion: metalocal
-            devolver metalocal#esCapturado
-        finfuncion)
+        fijar capturasSiFalso a VariablesLocalesCapturadas: localesSiFalso
 
         devolver (CompilarAWasm: ast#condicional, remapeos)
               >> (Instrucciones: (OP#CHOOSE: etiqSi, etiqSino),
@@ -990,9 +1625,7 @@ funcion CompilarAWasm: ast, remapeos
         fijar etiqFinmientras a GenerarEtiqueta
 
         fijar locales a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelNodo}
-        fijar capturas a Únicos: (Filtrar: locales, funcion: metalocal
-            devolver metalocal#esCapturado
-        finfuncion)
+        fijar capturas a VariablesLocalesCapturadas: locales
 
         devolver (Instrucciones: (OP#NAME: etiqInicio))
               >> (CompilarAWasm: ast#condicional, remapeos)
@@ -1024,9 +1657,7 @@ funcion CompilarAWasm: ast, remapeos
         preludio#agregarAlFinal: (Mapear: parámetros, funcion: idx devolver OP#PARAM: idx finfuncion)
         [ locales ]
         fijar locales a LocalesDelBloque: ast
-        fijar capturas a Únicos: (Filtrar: locales, funcion: metalocal
-            devolver metalocal#esCapturado || no metalocal#esLocal
-        finfuncion)
+        fijar capturas a VariablesLocalesCapturadas: locales
         Escribir: {proc locales=}, locales
         Escribir: {proc capturas=}, capturas
         fijar preludio a Concatenar: preludio, (CompilarLocalesYClosure: locales, capturas, parámetros, VERDADERO, remapeos)
