@@ -4,6 +4,7 @@ utilizar bepd/utilidades/texto
 utilizar bepd/x/puerto como Puerto
 utilizar bepd/x/puerto/deArchivo como PDA
 utilizar bepd/x/sistemaDeArchivos/archivo como Archivos
+utilizar bepd/x/entorno como Entorno
 utilizar tokenizador como Tokenizador
 utilizar parser como Parser
 utilizar compilador como Compilador
@@ -465,7 +466,13 @@ procedimiento Compilar: ctx, programa
     variables comp, db, conf, llave, módulo, compilado
 
     ctx#mostrarMensaje: {-- Inicializando la base de datos de módulos...}
-    fijar conf a Módulos#ConfiguraciónGlobal#predeterminado: VERDADERO
+    ctx#mostrarMensaje: {--- Soporta variables de entorno?}
+    si Entorno#SoportaVariablesDeEntorno
+        ctx#mostrarMensaje: {---- Si}
+    sino
+        ctx#mostrarMensaje: {---- No}
+    finsi
+    fijar conf a Módulos#ConfiguraciónGlobal#predeterminado: Entorno#SoportaVariablesDeEntorno
     fijar db a Módulos#BaseDeDatos#conConfiguración: conf
     ParaCadaElemento: ctx#cargaBasesDeDatos, procedimiento: nombreDelArchivo
         ctx#mostrarMensaje: ({Cargando ~t}#formatear: nombreDelArchivo)
