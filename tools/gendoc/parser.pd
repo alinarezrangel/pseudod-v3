@@ -75,7 +75,7 @@ finprocedimiento
 variable ejemplo
 fijar ejemplo a «@etiqueta{con más contenido}.
 
-En vez de corchetes, usa @paren(tesis){}.
+En vez de corchetes, usa @paren(te){sis}.
 
 @pero(mira esto otro) que termina.
 otra línea.
