@@ -768,8 +768,8 @@ Instrucciones:
 
   SPUSH EACT, ESUP
   SPOP EACT, ESUP
-    Empuja/saca y reorganiza `EACT`/`ESUP` en la pila de ámbitos. Luego de es
-    `SPUSH EACT, ESUP` `EACT` estará en la pila de ámbitos y `EACT`/`ESUP`
+    Empuja/saca y reorganiza `EACT`/`ESUP` en la pila de ámbitos. Luego de
+    `SPUSH EACT, ESUP`, `EACT` estará en la pila de ámbitos y `EACT`/`ESUP`
     serán "rotados", de forma que `EACT` será el entorno superior de `EACT` y
     `ESUP` será el entorno superior de `ESUP`.
 
@@ -898,7 +898,7 @@ metodo estatico Tupla#crear: op, ...args
 finmetodo
 
 metodo Tupla#es: op
-    devolver yo#op = op
+    devolver yo#opcode = op
 finmetodo
 
 metodo Tupla#en: n
@@ -1167,6 +1167,11 @@ clase Compilado
     metodo \operador_>>\: otro
 
     [DOCUMENTA
+    @brief{Devuelve el valor de la constante con ID @pd{idDeConstante}.}
+    DOCUMENTA]
+    metodo valorDeConstante: idDeConstante
+
+    [DOCUMENTA
     @brief{Devuelve una representación textual del compilado.}
     DOCUMENTA]
     metodo comoTexto
@@ -1201,6 +1206,15 @@ metodo Compilado#operador_>>: otro
         (Concatenar: yo#instrucciones, otro#instrucciones),
         (Concatenar: yo#declaraciones, otro#declaraciones),
         (Concatenar: yo#constantes, otro#constantes)
+finmetodo
+
+metodo Compilado#valorDeConstante: idDeConstante
+    variable encontrados
+    fijar encontrados a Filtrar: yo#constantes, funcion: const
+        devolver const#id = idDeConstante
+    finfuncion
+    necesitas encontrados#longitud = 1
+    devolver (encontrados#en: 0)#valor
 finmetodo
 
 metodo Compilado#comoTexto
@@ -1797,6 +1811,54 @@ funcion CompilarAWasm: ast, remapeos
     Inalcanzable
 finfuncion
 
+[DOCUMENTA
+@brief{Normaliza los IDs de las constantes de un compilado.}
+
+El proceso de compilación puede generar muchas constantes duplicadas, esto pone
+estrés en el backend que asume que las constantes son únicas. Esta función
+devuelve un nuevo @pd{Compilado} que es como @pd{compilado}, pero no solo no
+tiene constantes duplicadas, si no que también tiene "parches" que arreglan
+todas las referencias ya existentes a constantes. El resultado es un compilado
+que es semánticamente identico al original pero con menos constantes.
+DOCUMENTA]
+funcion NormalizaLosIdsDeConstantes: compilado
+    variable constantes
+    fijar constantes a Diccionario#vacío
+
+    procedimiento normalizarInstrucciones: instrs
+        devolver Mapear: instrs, procedimiento: tupla
+            si (tupla#es: Opcode#LCONST) || (tupla#es: Opcode#MSG)
+                [ Tanto LCONST como MSG tienen su CID en el primer argumento. ]
+                variables cid, cv, clon
+                fijar cid a tupla#en: 0
+                fijar cv a compilado#valorDeConstante: cid
+                fijar clon a clonar tupla con finclonar
+                clon#argumentos#fijarEn: 0, cid [ <= parchea el CID ]
+                si no (constantes#contiene: cv)
+                    constantes#fijarEn: cv, cid
+                finsi
+                devolver clon
+            sino
+                [ Ningun otro opcode tiene un CID. ]
+                devolver tupla
+            finsi
+        finprocedimiento
+    finprocedimiento
+
+    variables nuevasInstrs, nuevasConstantes, nuevasDeclrs
+    fijar nuevasInstrs a normalizarInstrucciones: compilado#instrucciones
+    fijar nuevasDeclrs a Mapear: compilado#declaraciones, funcion: declr
+        devolver clonar declr con
+            cuerpo: normalizarInstrucciones: declr#cuerpo
+        finclonar
+    finfuncion
+    fijar nuevasConstantes a Arreglo#vacio
+    constantes#paraCadaPar: procedimiento: constv, cid
+        nuevasConstantes#agregarAlFinal: (Constante#crear: cid, constv)
+    finprocedimiento
+    devolver Compilado#crear: nuevasInstrs, nuevasDeclrs, nuevasConstantes
+finfuncion
+
 funcion ParsearYDefunc: programa
     variable ast
     fijar ast a Parser#CrearAST: programa
@@ -1899,7 +1961,7 @@ EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast), f
     finclonar
 finfuncion
 fijar cc a CompilarAWasm: ast, (RemapeosDelBloque: (LocalesDelBloque: ast), (NombresLibres: ast))
-Listado: cc
+Listado: (NormalizaLosIdsDeConstantes: cc)
 [fijar cc a CompilarAWasm: ast, Diccionario#vacío
 
 Escribir: ({~t :: ~t :: ~t}#formatear: (TipoDe: cc), (TipoDe: cc#declaraciones), (TipoDe: cc#instrucciones))
