@@ -1,0 +1,46 @@
+{
+    "nombre": "Operaciones aritméticas básicas",
+    "espera": "éxito"
+}
+====================
+[ Enteros: ]
+necesitas (3 + 2) = 5
+necesitas (-8 + -4) = -12
+necesitas (-5 + 2) = -3
+necesitas (8 + -3) = 5
+
+necesitas (7 - 4) = 3
+necesitas (10 - 15) = -5
+necesitas (-5 - 2) = -7
+necesitas (3 - -2) = 5
+
+necesitas (4 * 2) = 8
+necesitas (-3 * -6) = 18
+necesitas (4 * -5) = -20
+necesitas (-2 * 5) = -10
+
+[ Reales: ]
+necesitas (3.3 + 0.7) = 4.0
+necesitas (-5.6 + 0.3) = -5.3
+necesitas (0.2 + -0.1) = 0.1
+necesitas (-3.7 + -0.3) = -4.0
+
+necesitas (2.4 - 0.4) = 2.0
+necesitas (-3.5 - 1.6) = -5.1
+necesitas (0.3 - -0.8) = 1.1
+necesitas (-0.7 - -0.1) = -0.6
+
+necesitas (0.5 * 14.6) = 7.3
+necesitas ((-1 / 3) * 30.6) = -10.2
+necesitas (20.8 * -0.25) = -5.2
+necesitas (-4.0 * -5.1) = 20.4
+
+[ División: ]
+necesitas (15 / 3) = 5
+necesitas (3 / 9) = (1 / 3)
+necesitas ((5 * 10) / 10) = 5
+necesitas (-4 / 2) = -2
+necesitas (8 / -4) = -2
+necesitas (-1 / -4) = 0.25
+necesitas (1 / 2) = 0.5
+necesitas (0.25 * (7 * 4)) = ((7 * 4) / 4)

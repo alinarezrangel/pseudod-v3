@@ -1,6 +1,7 @@
 {
     "nombre": "Error en capturar",
     "espera": "error",
+    "tiene que pasar": false,
     "error en": [9, 4]
 }
 ====================
