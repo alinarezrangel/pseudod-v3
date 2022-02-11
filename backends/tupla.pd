@@ -766,6 +766,8 @@ Instrucciones:
   NL    {--}
     Escribe el fin de línea.
 
+  TODO: Documenta como SPUSH debe estar seguido de OPNFRM.
+
   SPUSH EACT, ESUP
   SPOP EACT, ESUP
     Empuja/saca y reorganiza `EACT`/`ESUP` en la pila de ámbitos. Luego de
