@@ -1,5 +1,6 @@
 utilizar bepd/builtins
 utilizar bepd/x/puerto como Puerto
+utilizar bepd/utilidades/texto (MapearTexto)
 utilizar bepd/utilidades/texto/ascii como ASCII
 
 [DOCUMENTA
@@ -32,21 +33,6 @@ finmetodo
 metodo Símbolo#comoTexto
     devolver yo#valor
 finmetodo
-
-[DOCUMENTA
-@brief{Mapea cada carácter de un texto.}
-
-Devuelve un nuevo texto en el que cada carácter es el resultado de llamar
-@pd{func} en el carácter de la misma posición en @pd{texto}.
-DOCUMENTA]
-funcion MapearTexto: texto, func
-    variable res
-    fijar res a {}
-    ParaCadaElemento: texto, procedimiento: car
-        fijar res a res#concatenar: (%func: car)
-    finprocedimiento
-    devolver res
-finfuncion
 
 [DOCUMENTA
 @brief{Escapa el texto para una expresión S.}

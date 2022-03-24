@@ -179,3 +179,18 @@ funcion RepetirTexto: txt, n
     finmientras
     devolver acc
 finfuncion
+
+[DOCUMENTA
+@brief{Mapea cada carácter de un texto.}
+
+Devuelve un nuevo texto en el que cada carácter es el resultado de llamar
+@pd{func} en el carácter de la misma posición en @pd{texto}.
+DOCUMENTA]
+funcion MapearTexto: texto, func
+    variable res
+    fijar res a {}
+    ParaCadaElemento: texto, procedimiento: car
+        fijar res a res#concatenar: (%func: car)
+    finprocedimiento
+    devolver res
+finfuncion
