@@ -1397,39 +1397,6 @@ funcion BindingsLocalesDelBloque: nodo
     devolver nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {bindingsLocalesDelProcedimiento}
 finfuncion
 
-[DOCUMENTA
-@brief{Obtiene los remapeos del procedimiento/programa.}
-
-Cada registro local del IR requiere un ID. Podría parecer que el metadato
-@code{índiceDeCaptura}, que es un número que va desde 0 por cada local del
-ámbito podría ser usado para esto, pero @code{índiceDeCaptura} es local por
-cada ámbito del programa, mientras que nosotros estamos compilando cada
-función/método/procedimiento individualmente. Para esto un diccionario (el
-diccionario de remapeos) "mapea" cada binding a un ID único local.
-
-@params(
-@defparam(locales){Los locales de la función, método, procedimiento o programa
-que se esta compilando. Nota que con locales me refiero a todas las variables
-de todos los ámbitos excepto subfunciones (véase
-@pd{EnumeraciónDeLocalesDeProcedimiento})}
-
-@defparam(nombresLibres){El @pd{Conjunto} con los nombres libres del bloque
-(véase el pase de desfuncionalización).}
-)
-
-@devuelve{El diccionario que mapea cada binding a su ID de registro local.}
-DOCUMENTA]
-funcion RemapeosDelBloque: locales, nombresLibres
-    variable i
-    fijar i a 0
-    devolver Diccionario#desdeArreglo: (Mapear: locales, funcion: metalocal
-        variable nuevoBinding
-        fijar nuevoBinding a i
-        fijar i a i + 1
-        devolver Arreglo#crearCon: metalocal#binding, nuevoBinding
-    finfuncion)
-finfuncion
-
 variable ContadorDeEtiquetas
 fijar ContadorDeEtiquetas a 0
 [DOCUMENTA
@@ -1460,16 +1427,15 @@ finprocedimiento
 [DOCUMENTA
 @brief{Compila un arreglo de instrucciones a un compilado.}
 
-@pd{instrucciones} debe ser un arreglo de
-@pd{AST#NodoInstrucción}. @pd{remapeos} debe ser los remapeos de este
-bloque. Esta función automaticamente se encarga de dejar la pila en un estado
-apropiado cuando se encuentra a una expresión en una posición de instrucción.
+@pd{instrucciones} debe ser un arreglo de @pd{AST#NodoInstrucción}. Esta
+función automaticamente se encarga de dejar la pila en un estado apropiado
+cuando se encuentra a una expresión en una posición de instrucción.
 DOCUMENTA]
-funcion CompilarBloqueAWasm: instrucciones, remapeos
+funcion CompilarBloqueAWasm: instrucciones
     variable res
     fijar res a Compilado#vacío
     ParaCadaElemento: instrucciones, procedimiento: instr
-        fijar res a res >> (CompilarAWasm: instr, remapeos)
+        fijar res a res >> (CompilarAWasm: instr)
         si EsInstancia: instr, AST#NodoExpresion
             fijar res a res >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#POP))
         finsi
@@ -1480,12 +1446,11 @@ finfuncion
 [DOCUMENTA
 @brief{Compila un identificador.}
 
-@pd{ast} debe ser el @pd{AST#NodoIdentificador} y @pd{remapeos} los remapeos
-del bloque.
+@pd{ast} debe ser el @pd{AST#NodoIdentificador} del bloque.
 
 Devuelve un compilado que obtiene la variable @pd{ast} y la empuja en la pila.
 DOCUMENTA]
-funcion CompilarIdentificador: ast, remapeos
+funcion CompilarIdentificador: ast
     variables altura, índiceDeCaptura, res, binding
     fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
     fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
@@ -1493,7 +1458,7 @@ funcion CompilarIdentificador: ast, remapeos
     si EstáEnElEntorno: ast
         fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGETC: LocalDelEntornoActual, altura, índiceDeCaptura))
     sino
-        fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGET: (remapeos#en: binding)))
+        fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGET: binding))
     finsi
     devolver res
 finfuncion
@@ -1512,11 +1477,9 @@ un arreglo de bindings. Si se esta compilando un bloque que no es uno de estos,
 @pd{parámetros} debería ser un arreglo vacío. Este parámetro es necesario
 porque los parámetros son locales pero no deberían estar declarados con
 @code{LOCAL} si no con @code{PARAM}.}
-
-@defparam(remapeos){Los remapeos del bloque.}
 )
 DOCUMENTA]
-funcion CompilarLocales: locales, parámetros, remapeos
+funcion CompilarLocales: locales, parámetros
     devolver
         Mapear:
             (Únicos:
@@ -1525,7 +1488,7 @@ funcion CompilarLocales: locales, parámetros, remapeos
                                        devolver meta#esLocal && (no Contiene: parámetros, meta#índiceDeCaptura)
                                    finfuncion),
                          funcion: local
-                             devolver remapeos#en: local#binding
+                             devolver local#binding
                          finfuncion)),
             funcion: registro
                 devolver OP#LOCAL: registro
@@ -1594,10 +1557,11 @@ bloque actual, asignándolo a @code{EACT} apropiadamente.
 @defparam(exísteMarcoSuperior){@pd{Boole} que indica si exíste
 @code{ESUP}. Determina si el entorno tendrá marco superior.}
 
-@defparam(remapeos){Los remapeos del bloque.}
+@defparam(profundidad){Profundidad en el programa en la que el ámbito se
+encuentra.}
 )
 DOCUMENTA]
-funcion CompilarEntornoDelÁmbito: localesEnElEntorno, exísteMarcoSuperior, remapeos, profundidad
+funcion CompilarEntornoDelÁmbito: localesEnElEntorno, exísteMarcoSuperior, profundidad
     variables ops, máximoÍndiceDeLocalEnElEntorno
     fijar ops a Arreglo#vacio
     fijar máximoÍndiceDeLocalEnElEntorno a Reducir: -1, &Max, (Mapear: localesEnElEntorno, (MétodoComoFunción: {índiceDeCaptura}))
@@ -1609,8 +1573,8 @@ funcion CompilarEntornoDelÁmbito: localesEnElEntorno, exísteMarcoSuperior, rem
     ops#agregarAlFinal: (MapearÚnicos: (Filtrar: localesEnElEntorno, funcion: l devolver l#profundidad = profundidad finfuncion), funcion: local
         devolver local#binding
     finfuncion, funcion: local
-        Escribir: {->}, local, (remapeos#en: local#binding)
-        devolver OP#EINIT: LocalDelEntornoActual, local#índiceDeCaptura, (remapeos#en: local#binding)
+        Escribir: {->}, local, local#binding
+        devolver OP#EINIT: LocalDelEntornoActual, local#índiceDeCaptura, local#binding
     finfuncion)
     ops#agregarAlFinal: (OP#CLSFRM: LocalDelEntornoActual)
     devolver ops
@@ -1638,10 +1602,10 @@ Llama a @pd{CompilarLocales} y @pd{CompilarEntornoDelÁmbito}, acumulando sus
 resultados. Devuelve un arreglo de instrucciones que sirve como "inicio" o
 "preludio" de un bloque.
 DOCUMENTA]
-funcion CompilarLocalesYClosure: locales, localesEnElEntorno, parámetros, exísteMarcoSuperior, remapeos, profundidad
+funcion CompilarLocalesYClosure: locales, localesEnElEntorno, parámetros, exísteMarcoSuperior, profundidad
     devolver Concatenar:
-        (CompilarLocales: locales, parámetros, remapeos),
-        (CompilarEntornoDelÁmbito: localesEnElEntorno, exísteMarcoSuperior, remapeos, profundidad)
+        (CompilarLocales: locales, parámetros),
+        (CompilarEntornoDelÁmbito: localesEnElEntorno, exísteMarcoSuperior, profundidad)
 finfuncion
 
 funcion Inspeccionar: A, B
@@ -1656,10 +1620,8 @@ Devuelve un @pd{Compilado} con el resultado de compilar @pd{ast}. Si @pd{ast}
 es un @pd{AST#NodoExpresion} entonces el compilado dejará en la pila el
 resultado de la expresión. Si es un @pd{AST#NodoInstrucción} entonces no dejará
 valores en la pila.
-
-@pd{remapeos} son los remapeos del bloque.
 DOCUMENTA]
-funcion CompilarAWasm: ast, remapeos
+funcion CompilarAWasm: ast
     funcion Instrucciones: ...Is
         devolver Compilado#deInstrucciónes: Is
     finfuncion
@@ -1671,8 +1633,8 @@ funcion CompilarAWasm: ast, remapeos
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
         Escribir: {locales=}, locales
         Escribir: {localesEnElEntorno=}, localesEnElEntorno
-        devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, localesEnElEntorno, Arreglo#vacio, FALSO, remapeos, profundidad)))
-              >> (CompilarBloqueAWasm: ast#instrucciones, remapeos)
+        devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, localesEnElEntorno, Arreglo#vacio, FALSO, profundidad)))
+              >> (CompilarBloqueAWasm: ast#instrucciones)
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
         devolver Instrucciones: (OP#ICONST: ast#valor)
@@ -1685,8 +1647,8 @@ funcion CompilarAWasm: ast, remapeos
     finsi
     si EsInstancia: ast, AST#NodoOperador
         variables lhs, rhs
-        fijar lhs a CompilarAWasm: ast#lhs, remapeos
-        fijar rhs a CompilarAWasm: ast#rhs, remapeos
+        fijar lhs a CompilarAWasm: ast#lhs
+        fijar rhs a CompilarAWasm: ast#rhs
         si ast#op#op = {+}
             devolver lhs >> rhs >> (Instrucciones: OP#SUM)
         finsi
@@ -1721,7 +1683,7 @@ funcion CompilarAWasm: ast, remapeos
     finsi
     si EsInstancia: ast, AST#NodoIdentificador
         variable res
-        fijar res a CompilarIdentificador: ast, remapeos
+        fijar res a CompilarIdentificador: ast
         si ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
             fijar res a res >> (Instrucciones: (OP#DYNCALL: 0, 1))
         finsi
@@ -1729,7 +1691,7 @@ funcion CompilarAWasm: ast, remapeos
     finsi
     si EsInstancia: ast, AST#NodoNoLlamar
         si ast#mensajes#longitud = 0
-            devolver CompilarIdentificador: ast#base, remapeos
+            devolver CompilarIdentificador: ast#base
         sino
             NoImplementado
         finsi
@@ -1737,33 +1699,33 @@ funcion CompilarAWasm: ast, remapeos
     si EsInstancia: ast, AST#NodoEnviarMensaje
         variable cid
         fijar cid a GenerarIdDeConstante
-        devolver (CompilarAWasm: ast#objeto, remapeos)
+        devolver (CompilarAWasm: ast#objeto)
               >> (UnirCompilados: (Mapear: ast#argumentos, funcion: nodos
-                      devolver CompilarAWasm: nodos, remapeos
+                      devolver CompilarAWasm: nodos
                   finfuncion))
               >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
                                  (OP#MSG: cid, ast#argumentos#longitud, 1))
               >> (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, ast#mensaje)))
     finsi
     si EsInstancia: ast, AST#NodoLlamarProcedimiento
-        devolver (CompilarIdentificador: ast#proc, remapeos)
+        devolver (CompilarIdentificador: ast#proc)
               >> (UnirCompilados: (Mapear: ast#argumentos, funcion: nodos
-                      devolver CompilarAWasm: nodos, remapeos
+                      devolver CompilarAWasm: nodos
                   finfuncion))
               >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
                                  (OP#DYNCALL: ast#argumentos#longitud, 1))
     finsi
     si EsInstancia: ast, AST#NodoAutoejecutar
-        devolver (CompilarAWasm: ast#expr, remapeos)
+        devolver (CompilarAWasm: ast#expr)
               >> (UnirCompilados: (Mapear: ast#argumentos, funcion: nodos
-                      devolver CompilarAWasm: nodos, remapeos
+                      devolver CompilarAWasm: nodos
                   finfuncion))
               >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
                                  (OP#DYNCALL: ast#argumentos#longitud, 1))
     finsi
     si EsInstancia: ast, AST#NodoNoLlamar
         necesitas ast#mensajes#longitud = 0
-        devolver CompilarIdentificador: ast, remapeos
+        devolver CompilarIdentificador: ast
     finsi
     si EsInstancia: ast, AST#NodoVariable
         devolver Compilado#vacío
@@ -1776,9 +1738,9 @@ funcion CompilarAWasm: ast, remapeos
         si EstáEnElEntorno: ast#objetivo
             fijar op a OP#LSETC: LocalDelEntornoActual, altura, índiceDeCaptura
         sino
-            fijar op a OP#LSET: (remapeos#en: binding)
+            fijar op a OP#LSET: binding
         finsi
-        fijar val a CompilarAWasm: ast#valor, remapeos
+        fijar val a CompilarAWasm: ast#valor
         devolver val >> (Instrucciones: op)
     finsi
     si EsInstancia: ast, AST#NodoSi
@@ -1793,18 +1755,18 @@ funcion CompilarAWasm: ast, remapeos
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
         fijar localesEnElEntornoSiFalso a VariablesEnElEntorno: localesSiFalso
 
-        devolver (CompilarAWasm: ast#condicional, remapeos)
+        devolver (CompilarAWasm: ast#condicional)
               >> (Instrucciones: (OP#CHOOSE: etiqSi, etiqSino),
                                  (OP#NAME: etiqSi),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
-              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: localesEnElEntornoSiVerdadero, VERDADERO, remapeos, profundidad)))
-              >> (CompilarBloqueAWasm: ast#siVerdadero, remapeos)
+              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: localesEnElEntornoSiVerdadero, VERDADERO, profundidad)))
+              >> (CompilarBloqueAWasm: ast#siVerdadero)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#JMP: etiqFinsi),
                                  (OP#NAME: etiqSino),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
-              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: localesEnElEntornoSiFalso, VERDADERO, remapeos, profundidad)))
-              >> (CompilarBloqueAWasm: ast#siFalso, remapeos)
+              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: localesEnElEntornoSiFalso, VERDADERO, profundidad)))
+              >> (CompilarBloqueAWasm: ast#siFalso)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#NAME: etiqFinsi))
     finsi
@@ -1819,24 +1781,24 @@ funcion CompilarAWasm: ast, remapeos
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
 
         devolver (Instrucciones: (OP#NAME: etiqInicio))
-              >> (CompilarAWasm: ast#condicional, remapeos)
+              >> (CompilarAWasm: ast#condicional)
               >> (Instrucciones: (OP#CHOOSE: etiqCont, etiqFinmientras),
                                  (OP#NAME: etiqCont),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
-              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: localesEnElEntorno, VERDADERO, remapeos, profundidad)))
-              >> (CompilarBloqueAWasm: ast#cuerpo, remapeos)
+              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: localesEnElEntorno, VERDADERO, profundidad)))
+              >> (CompilarBloqueAWasm: ast#cuerpo)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#JMP: etiqInicio),
                                  (OP#NAME: etiqFinmientras))
     finsi
     si EsInstancia: ast, AST#NodoNecesitas
-        devolver (CompilarAWasm: ast#expresión, remapeos) >> (Instrucciones: OP#MTRUE)
+        devolver (CompilarAWasm: ast#expresión) >> (Instrucciones: OP#MTRUE)
     finsi
     si EsInstancia: ast, AST#NodoDevolver
-        devolver (CompilarAWasm: ast#expresión, remapeos) >> (Instrucciones: (OP#RETN: 1))
+        devolver (CompilarAWasm: ast#expresión) >> (Instrucciones: (OP#RETN: 1))
     finsi
     si EsInstancia: ast, AST#NodoFunción
-        variables id, parámetros, preludio, cuerpo, fn, subremapeos, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad
+        variables id, parámetros, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad
         fijar id a RN#NombreResueltoDe: ast#nombre
 
         fijar preludio a Arreglo#vacio
@@ -1851,9 +1813,8 @@ funcion CompilarAWasm: ast, remapeos
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
         fijar nombresLibres a NombresLibres: ast
-        fijar subremapeos a RemapeosDelBloque: locales, nombresLibres
 
-        fijar preludio a Concatenar: preludio, (CompilarLocalesYClosure: locales, localesEnElEntorno, parámetros, VERDADERO, subremapeos, profundidad)
+        fijar preludio a Concatenar: preludio, (CompilarLocalesYClosure: locales, localesEnElEntorno, parámetros, VERDADERO, profundidad)
 
         fijar inicDeClosure a Instrucciones: (OP#MKCLZ: LocalDelEntornoActual, id)
         Escribir: {!!!!!!!!!!}, ast#nombre#nombre, EstáEnElEntorno: ast#nombre
@@ -1866,10 +1827,11 @@ funcion CompilarAWasm: ast, remapeos
         sino
             variable binding
             fijar binding a RN#NombreResueltoDe: ast#nombre
-            fijar inicDeClosure a inicDeClosure >> (Instrucciones: (OP#LSET: (remapeos#en: binding)))
+            [ BUG: Este LSET a veces debería ser un LSETC ]
+            fijar inicDeClosure a inicDeClosure >> (Instrucciones: (OP#LSET: binding))
         finsi
 
-        fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo, subremapeos)
+        fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo)
         fijar fn a DeclrFunción#crear: id, parámetros, cuerpo#instrucciones
         devolver inicDeClosure
              >> (Compilado#deDeclaraciones: cuerpo#declaraciones)
@@ -1883,15 +1845,15 @@ funcion CompilarAWasm: ast, remapeos
         sino
             fijar cmp a Instrucciones: OP#CMPNEQ
         finsi
-        devolver (CompilarAWasm: ast#lhs, remapeos)
-              >> (CompilarAWasm: ast#rhs, remapeos)
+        devolver (CompilarAWasm: ast#lhs)
+              >> (CompilarAWasm: ast#rhs)
               >> cmp
     finsi
     si EsInstancia: ast, AST#NodoNo
         devolver Instrucciones: OP#NOT
     finsi
     si EsInstancia: ast, AST#NodoEscribir
-        devolver (CompilarAWasm: ast#valor, remapeos) >> (Instrucciones: OP#PRN)
+        devolver (CompilarAWasm: ast#valor) >> (Instrucciones: OP#PRN)
     finsi
     si EsInstancia: ast, AST#NodoNl
         devolver Instrucciones: OP#NL
@@ -2194,7 +2156,7 @@ EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast), f
 finfuncion
 MarcaVariablesLocalesEnSubámbitos: ast
 MarcaVariablesQueEstánEnElEntorno: ast
-fijar cc a CompilarAWasm: ast, (RemapeosDelBloque: (LocalesDelBloque: ast), (NombresLibres: ast))
+fijar cc a CompilarAWasm: ast
 variable ncc
 fijar ncc a NormalizaLosIdsDeConstantes: cc
 Listado: ncc
