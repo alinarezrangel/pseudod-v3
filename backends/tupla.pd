@@ -1864,21 +1864,26 @@ todas las referencias ya existentes a constantes. El resultado es un compilado
 que es semánticamente identico al original pero con menos constantes.
 DOCUMENTA]
 funcion NormalizaLosIdsDeConstantes: compilado
-    variable constantes
+    variables constantes, índiceDeConstantes
     fijar constantes a Diccionario#vacío
+    fijar índiceDeConstantes a 0
 
     procedimiento normalizarInstrucciones: instrs
         devolver Mapear: instrs, procedimiento: tupla
             si (tupla#es: Opcode#LCONST) || (tupla#es: Opcode#MSG)
                 [ Tanto LCONST como MSG tienen su CID en el primer argumento. ]
-                variables cid, cv, clon
+                variables cid, cv, clon, cidReal
                 fijar cid a tupla#en: 0
                 fijar cv a compilado#valorDeConstante: cid
                 fijar clon a clonar tupla con finclonar
-                clon#argumentos#fijarEn: 0, cid [ <= parchea el CID ]
                 si no (constantes#contiene: cv)
-                    constantes#fijarEn: cv, cid
+                    fijar cidReal a índiceDeConstantes
+                    constantes#fijarEn: cv, cidReal
+                    fijar índiceDeConstantes a índiceDeConstantes + 1
+                sino
+                    fijar cidReal a constantes#en: cv
                 finsi
+                clon#argumentos#fijarEn: 0, cidReal [ <= parchea el CID ]
                 devolver clon
             sino
                 [ Ningun otro opcode tiene un CID. ]
