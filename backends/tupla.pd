@@ -1463,6 +1463,19 @@ funcion CompilarIdentificador: ast
     devolver res
 finfuncion
 
+funcion CompilarFijarIdentificador: ast
+    variables altura, índiceDeCaptura, op, binding
+    fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
+    fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
+    fijar binding a RN#NombreResueltoDe: ast
+    si EstáEnElEntorno: ast
+        fijar op a OP#LSETC: LocalDelEntornoActual, altura, índiceDeCaptura
+    sino
+        fijar op a OP#LSET: binding
+    finsi
+    devolver Compilado#deInstrucciónes: (Arreglo#crearCon: op)
+finfuncion
+
 [DOCUMENTA
 @brief{Compila las declaraciones de las locales de un procedimiento.}
 
@@ -1731,17 +1744,7 @@ funcion CompilarAWasm: ast
         devolver Compilado#vacío
     finsi
     si EsInstancia: ast, AST#NodoFijar
-        variables val, altura, índiceDeCaptura, op, binding
-        fijar altura a ast#objetivo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
-        fijar índiceDeCaptura a ast#objetivo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
-        fijar binding a RN#NombreResueltoDe: ast#objetivo
-        si EstáEnElEntorno: ast#objetivo
-            fijar op a OP#LSETC: LocalDelEntornoActual, altura, índiceDeCaptura
-        sino
-            fijar op a OP#LSET: binding
-        finsi
-        fijar val a CompilarAWasm: ast#valor
-        devolver val >> (Instrucciones: op)
+        devolver (CompilarAWasm: ast#valor) >> (CompilarFijarIdentificador: ast#objetivo)
     finsi
     si EsInstancia: ast, AST#NodoSi
         variables etiqSi, etiqSino, etiqFinsi, localesEnElEntornoSiVerdadero, localesEnElEntornoSiFalso, localesSiVerdadero, localesSiFalso, profundidad
@@ -1816,20 +1819,8 @@ funcion CompilarAWasm: ast
 
         fijar preludio a Concatenar: preludio, (CompilarLocalesYClosure: locales, localesEnElEntorno, parámetros, VERDADERO, profundidad)
 
-        fijar inicDeClosure a Instrucciones: (OP#MKCLZ: LocalDelEntornoActual, id)
-        Escribir: {!!!!!!!!!!}, ast#nombre#nombre, EstáEnElEntorno: ast#nombre
-        si EstáEnElEntorno: ast#nombre
-            fijar inicDeClosure a inicDeClosure >> (Instrucciones:
-                (OP#LSETC:
-                    LocalDelEntornoActual,
-                    (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}),
-                    (ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura})))
-        sino
-            variable binding
-            fijar binding a RN#NombreResueltoDe: ast#nombre
-            [ BUG: Este LSET a veces debería ser un LSETC ]
-            fijar inicDeClosure a inicDeClosure >> (Instrucciones: (OP#LSET: binding))
-        finsi
+        fijar inicDeClosure a (Instrucciones: (OP#MKCLZ: LocalDelEntornoActual, id))
+                           >> (CompilarFijarIdentificador: ast#nombre)
 
         fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo)
         fijar fn a DeclrFunción#crear: id, parámetros, cuerpo#instrucciones
