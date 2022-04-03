@@ -590,7 +590,11 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
                 Caminar: nodo, funcion: nodo
                     devolver (EsInstancia: nodo, AST#NodoIdentificador) || (EsInstancia: nodo, AST#NodoFunción) || (EsInstancia: nodo, AST#NodoPrograma)
                 finfuncion, procedimiento: nodo, subrecur
-                    si (EsInstancia: nodo, AST#NodoFunción) || (EsInstancia: nodo, AST#NodoPrograma)
+                    si EsInstancia: nodo, AST#NodoFunción
+                        nodo#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}, (bindingsDeEsteÁmbito#contiene: (RN#NombreResueltoDe: nodo#nombre))
+                        devolver MarcaVariablesLocalesEnSubámbitos: nodo
+                    finsi
+                    si EsInstancia: nodo, AST#NodoPrograma
                         devolver MarcaVariablesLocalesEnSubámbitos: nodo
                     finsi
                     si EsInstancia: nodo, AST#NodoIdentificador
