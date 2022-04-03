@@ -588,7 +588,9 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
 
             procedimiento marcarSubidentificadores: nodo
                 Caminar: nodo, funcion: nodo
-                    devolver (EsInstancia: nodo, AST#NodoIdentificador) || (EsInstancia: nodo, AST#NodoFunción) || (EsInstancia: nodo, AST#NodoPrograma)
+                    devolver (EsInstancia: nodo, AST#NodoIdentificador)
+                          || (EsInstancia: nodo, AST#NodoFunción)
+                          || (EsInstancia: nodo, AST#NodoPrograma)
                 finfuncion, procedimiento: nodo, subrecur
                     si EsInstancia: nodo, AST#NodoFunción
                         nodo#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}, (bindingsDeEsteÁmbito#contiene: (RN#NombreResueltoDe: nodo#nombre))
@@ -1711,6 +1713,7 @@ funcion CompilarAWasm: ast
     finsi
     si EsInstancia: ast, AST#NodoNoLlamar
         si ast#mensajes#longitud = 0
+            Escribir: {**************}, ast#base
             devolver CompilarIdentificador: ast#base
         sino
             NoImplementado
@@ -1826,6 +1829,7 @@ funcion CompilarAWasm: ast
 
         fijar preludio a Concatenar: preludio, (CompilarLocalesYClosure: locales, localesEnElEntorno, parámetros, VERDADERO, profundidad)
 
+        Escribir: {*************$}, ast#nombre
         fijar inicDeClosure a (Instrucciones: (OP#MKCLZ: LocalDelEntornoActual, id))
                            >> (CompilarFijarIdentificador: ast#nombre)
 
@@ -2082,7 +2086,7 @@ mientras i < 2
     funcion EscribirIJ
         si 1 = 1
             variable W
-            fijar W a i / j
+            fijar W a i * j
             escribir W
             nl
 
