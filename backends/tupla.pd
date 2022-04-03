@@ -1691,7 +1691,7 @@ funcion CompilarAWasm: ast
         fijar optxt a {operador_}#concatenar: ast#op#op
         devolver (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, optxt)))
               >> lhs >> rhs
-              >> (Instrucciones: (OP#ROT: 2),
+              >> (Instrucciones: (OP#ROT: 1),
                                  (OP#MSG: cid, 2, 1))
     finsi
     si EsInstancia: ast, AST#NodoIdentificador
