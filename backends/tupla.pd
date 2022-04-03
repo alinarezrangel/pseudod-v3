@@ -570,7 +570,10 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
             variables bindings, locales, localesReales
             fijar bindings a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {bindingsLocalesDelProcedimiento}
             fijar locales a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelProcedimiento}
-            fijar localesReales a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelNodo'}
+            fijar localesReales a Filtrar: (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelNodo'}),
+                                           funcion: local
+                                               devolver local#profundidad = (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad})
+                                           finfuncion
 
             [ localesReales contiene las variables declaradas directamente en
               `nodo`, mientras que `locales` y `bindings` contienen las locales
