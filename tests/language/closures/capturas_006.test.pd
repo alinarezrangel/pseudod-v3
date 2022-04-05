@@ -1,0 +1,38 @@
+{
+    "nombre": "Capturas: Capturas en una función que tiene parámetros",
+    "espera": "éxito",
+    "salida contiene": "3\n3\n8\n"
+}
+====================
+variables A, B
+variable C
+
+fijar A a 1
+fijar B a 2
+fijar C a 1 = 1
+
+mientras C
+    variable D
+    variable E
+    fijar D a 3
+    fijar E a 4
+
+    escribir D#comoTexto
+    nl
+    escribir (A + B)#comoTexto
+    nl
+
+    funcion alfa: param
+        variable F
+        variable G
+        fijar F a 5
+        fijar G a 6
+
+        escribir ((G - D) + (A * param))#comoTexto
+        nl
+    finfuncion
+
+    alfa: 5
+
+    fijar C a 0 = 1
+finmientras
