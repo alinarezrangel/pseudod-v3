@@ -1,0 +1,37 @@
+{
+    "nombre": "Capturas: Captura algunas variables en un bucle",
+    "espera": "éxito",
+    "salida contiene": "10\n20\n"
+}
+====================
+variables i, A, B
+fijar i a 0
+mientras i < 2
+    variable j
+    fijar i a i + 1
+    fijar j a i * 5
+
+    funcion EscribirIJ
+        si 1 = 1
+            variable W
+            fijar W a i * j
+            escribir W#comoTexto
+            nl
+
+            funcion CapturaW
+                W
+            finfuncion
+
+            CapturaW
+        finsi
+    finfuncion
+
+    si (i - 1) = 0
+        fijar A a &EscribirIJ
+    sino
+        fijar B a &EscribirIJ
+    finsi
+finmientras
+
+A#\llamar\
+B#\llamar\

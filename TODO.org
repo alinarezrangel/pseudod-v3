@@ -69,6 +69,7 @@
 ** TODO Los mensajes de error a veces están mal por uno (1) al principio o final de un archivo.
    Solo pasa cuando la instrucción es una llamada a función/método.
 ** TODO Al cerrar un método fuera de clase con ~finfuncion~ en vez de ~finmetodo~, el mensaje de error no tiene la ubicación del error en el archivo.
+** TODO No es posible crear un programa vacío.
 ** FIXED ~__Lua~ no puede ser usada en la posición de una instrucción.
 ** FIXED En general, expresiones que no sean llamadas a funciones generarán código mal compilado.
    Lua solo permite llamadas a funciones como instrucciones, la solución es

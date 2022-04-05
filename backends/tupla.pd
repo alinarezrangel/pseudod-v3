@@ -4,6 +4,7 @@ utilizar bepd/datos/conjunto (Conjunto)
 utilizar bepd/datos/diccionario (Diccionario)
 utilizar bepd/x/puerto (SalidaEstándar)
 utilizar bepd/x/puerto/conPosición (PosiciónTextual)
+utilizar bepd/x/sistemaDeArchivos/archivo como SistemaDeArchivos
 [utilizar bepd/utilidades/arreglo]
 utilizar bepd/utilidades/texto
 utilizar bepd/x/enum (Enum, EnumConValores)
@@ -24,6 +25,20 @@ Devuelve un arreglo como @pd{arr} pero sin elementos duplicados. Además, el
 DOCUMENTA]
 funcion Únicos: arr
     devolver (Conjunto#desdeArreglo: arr)#comoArreglo
+finfuncion
+
+funcion SepararArreglo: arr, cond
+    variables parteVerdadera, parteFalsa
+    fijar parteVerdadera a Arreglo#vacio
+    fijar parteFalsa a Arreglo#vacio
+    ParaCadaElemento: arr, procedimiento: el
+        si %cond: el
+            parteVerdadera#agregarAlFinal: el
+        sino
+            parteFalsa#agregarAlFinal: el
+        finsi
+    finprocedimiento
+    devolver ObjetoAdHoc: {parteVerdadera}, parteVerdadera, {parteFalsa}, parteFalsa
 finfuncion
 
 
@@ -331,24 +346,15 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
     ámbitosLocales#apilar: ámbitoContenedor
     nodosLocales#apilar: (CreaAgregador: ast, {localesDelNodo'})
 
-    Caminar: ast, funcion: nodo
+    funcion filtro: nodo
         devolver (EsInstancia: nodo, AST#NodoIdentificador)
               || (EsInstancia: nodo, AST#NodoFunción)
               || (EsInstancia: nodo, AST#NodoSi)
               || (EsInstancia: nodo, AST#NodoMientras)
-    finfuncion, procedimiento: nodo, recur
-        si (Defun#SonElMismoObjeto: nodo, ast) && (EsInstancia: nodo, AST#NodoFunción)
-            ParaCadaElemento: nodo#parámetros, &(locales#agregarAlFinal)
-            ParaCadaElemento: nodo#cuerpo, recur
-            devolver NULO
-        finsi
-        si (no Defun#SonElMismoObjeto: nodo, ast) && (EsInstancia: nodo, AST#NodoFunción)
-            Escribir: {LOCAL AGREGADA FUNC}, nodo#nombre#nombre
-            Escribir: {####}, locales
-            AgregarLocal: nodo#nombre
-            Escribir: {$$$$}, locales
-            devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), obtenerMetadatosAdicionales
-        finsi
+              || (EsInstancia: nodo, AST#NodoPrograma)
+    finfuncion
+
+    procedimiento interno: nodo, recur
         si EsInstancia: nodo, AST#NodoIdentificador
             si Defun#EsLocalEntre: ámbitoContenedor, ámbitosLocales#últimoValorApilado, nodo
                 AgregarLocal: nodo
@@ -378,17 +384,155 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
             ámbitosLocales#desapilar
             devolver NULO
         finsi
-        Inalcanzable
+        si EsInstancia: nodo, AST#NodoFunción
+            AgregarLocal: nodo#nombre
+            devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), obtenerMetadatosAdicionales
+        finsi
+        si EsInstancia: nodo, AST#NodoPrograma
+            devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), obtenerMetadatosAdicionales
+        finsi
     finprocedimiento
+
+    funcion recurrir: nodo, filtro, cuerpo
+        Caminar': nodo, procedimiento: nodo, K
+            devolver K#llamarConRecursión: nodo, funcion: nodo, K
+                devolver Caminar: nodo, filtro, cuerpo
+            finfuncion
+        finprocedimiento
+    finfuncion
+
+    si EsInstancia: ast, AST#NodoFunción
+        ParaCadaElemento: ast#parámetros, procedimiento: nodo
+            devolver Caminar: nodo, &filtro, &interno
+        finprocedimiento
+        ParaCadaElemento: ast#cuerpo, procedimiento: nodo
+            devolver Caminar: nodo, &filtro, &interno
+        finprocedimiento
+    finsi
+    si EsInstancia: ast, AST#NodoPrograma
+        ParaCadaElemento: ast#instrucciones, procedimiento: nodo
+            devolver Caminar: nodo, &filtro, &interno
+        finprocedimiento
+    finsi
+
+    [ Caminar: ast, funcion: nodo ]
+    [     devolver (EsInstancia: nodo, AST#NodoIdentificador) ]
+    [           || (EsInstancia: nodo, AST#NodoFunción) ]
+    [           || (EsInstancia: nodo, AST#NodoSi) ]
+    [           || (EsInstancia: nodo, AST#NodoMientras) ]
+    [ finfuncion, procedimiento: nodo, recur ]
+    [     si (Defun#SonElMismoObjeto: nodo, ast) && (EsInstancia: nodo, AST#NodoFunción) ]
+    [         ParaCadaElemento: nodo#parámetros, &(locales#agregarAlFinal) ]
+    [         ParaCadaElemento: nodo#cuerpo, recur ]
+    [         devolver NULO ]
+    [     finsi ]
+    [     si (no Defun#SonElMismoObjeto: nodo, ast) && (EsInstancia: nodo, AST#NodoFunción) ]
+    [         [\ Escribir: {LOCAL AGREGADA FUNC}, nodo#nombre#nombre ![\ ]
+    [         [\ Escribir: {####}, locales ![\ ]
+    [         AgregarLocal: nodo#nombre ]
+    [         [\ Escribir: {$$$$}, locales ![\ ]
+    [         devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), obtenerMetadatosAdicionales ]
+    [     finsi ]
+    [     Inalcanzable ]
+    [ finprocedimiento ]
 
     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {bindingsLocalesDelProcedimiento}, (Conjunto#desdeArreglo: (Mapear: locales, &(RN#NombreResueltoDe)))
     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelProcedimiento}, (Mapear: locales, obtenerMetadatosAdicionales)
 
     si EsInstancia: ast, AST#NodoFunción
-        Escribir: {LOCALES DE}, ast#nombre, { SON }, locales
+        [ Escribir: {LOCALES DE}, ast#nombre, { SON }, locales ]
     sino
-        Escribir: {LOCALES DEL PROGRAMA}, locales
+        [ Escribir: {LOCALES DEL PROGRAMA}, locales ]
     finsi
+finprocedimiento
+
+procedimiento AnotarLocalesInmediatas: ast
+    variable NODOS_CON_ÁMBITO
+    fijar NODOS_CON_ÁMBITO a Arreglo#crearCon: AST#NodoPrograma, AST#NodoSi, AST#NodoMientras, AST#NodoFunción
+
+    funcion esBloqueConÁmbito: ast
+        devolver (Algún: (Mapear: NODOS_CON_ÁMBITO, (Parcial: &EsInstancia, ast)))
+    finfuncion
+
+    procedimiento marcarInmediatas: ast, ámbito, recurBloque
+        variable todasLasLocales
+        fijar todasLasLocales a Arreglo#vacio
+        Caminar: ast, funcion: ast
+            devolver (EsInstancia: ast, AST#NodoIdentificador) || (esBloqueConÁmbito: ast)
+        finfuncion, procedimiento: ast, recur
+            si EsInstancia: ast, AST#NodoIdentificador
+                variables nr, inmediata
+                fijar nr a RN#NombreResueltoDe: ast
+                fijar inmediata a Contiene: ámbito#todosLosBindingsLocales, nr
+                Escribir: {ID}, ast
+                Escribir: {ES}, nr, {Y}, inmediata
+                ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localInmediata}, inmediata
+                si inmediata
+                    todasLasLocales#agregarAlFinal: ast
+                finsi
+                devolver NULO
+            finsi
+            si EsInstancia: ast, AST#NodoFunción
+                %recur: ast#nombre
+                devolver %recurBloque: ast
+            finsi
+            devolver %recurBloque: ast
+        finprocedimiento
+        devolver todasLasLocales
+    finprocedimiento
+
+    procedimiento recursión: ast, K
+        si esBloqueConÁmbito: ast
+            procedimiento marcarConÁmbito: ast, ámbito
+                variable locales
+                fijar locales a Arreglo#vacio
+                K#llamarConRecursión: ast, funcion: nodo, K'
+                    variable nuevasLocales
+                    fijar nuevasLocales a marcarInmediatas: nodo, ámbito, funcion: bloque
+                        devolver recursión: bloque, K
+                    finfuncion
+                    fijar locales a Concatenar: locales, nuevasLocales
+                finfuncion
+                devolver locales
+            finprocedimiento
+
+            si EsInstancia: ast, AST#NodoSi
+                variables siVerdadero, siFalso, localesSiVerdadero, localesSiFalso
+                fijar siVerdadero a ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiVerdadero}
+                fijar siFalso a ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombresDefinídosSiFalso}
+                fijar localesSiVerdadero a marcarConÁmbito: ast, siVerdadero
+                ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatasSiVerdadero}, localesSiVerdadero
+                fijar localesSiFalso a marcarConÁmbito: ast, siFalso
+                ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatasSiFalso}, localesSiFalso
+                Escribir: {NodoSi}, ast#areaTextual
+                Escribir: {siVerdadero}, localesSiVerdadero
+                Escribir: {siFalso}, localesSiFalso
+            sino
+                si EsInstancia: ast, AST#NodoFunción
+                    variables ámbito, locales, localInmediata
+                    fijar ámbito a RN#ObtenerNombresDefinídos: ast
+                    fijar localInmediata a ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localInmediata}
+                    fijar locales a marcarConÁmbito: ast, ámbito
+                    ast#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localInmediata}, localInmediata
+                    ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}, locales
+                    Escribir: {NodoFunción}, ast#areaTextual
+                    Escribir: {locales}, locales
+                sino
+                    variables ámbito, locales
+                    fijar ámbito a RN#ObtenerNombresDefinídos: ast
+                    fijar locales a marcarConÁmbito: ast, ámbito
+                    ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}, locales
+                    Escribir: (TipoDe: ast), ast#areaTextual
+                    Escribir: {locales}, locales
+                finsi
+            finsi
+        sino
+            Escribir: ast
+            Inalcanzable
+        finsi
+    finprocedimiento
+
+    Caminar': ast, &recursión
 finprocedimiento
 
 
@@ -676,9 +820,9 @@ Semanticas:
   instrucciones pueden usar directamente los registros mientras que las
   expresiones utilizan la pila para guardar los valores intermediarios. Nota
   que la pila no es completamente dinámica: siempre está vacía entre
-  instrucciones. Esto es importante porque es posible que para mayor eficiencia
-  que pases posteriores del compilador "desapilen" el código eliminando la pila
-  y convirtiendo todo el código a registros.
+  instrucciones. Esto es importante porque es posible que los pases posteriores
+  del compilador "desapilen" el código eliminando la pila y convirtiendo todo
+  el código a registros.
 
   Finalmente: exísten algunos opcodes para saltar tanto como incondicional como
   condicionalmente. Todos están intencionalmente hechos para que los únicos
@@ -714,8 +858,8 @@ Semanticas:
   inicializado manualmente. `ESUP` es el entorno pasado a esta función
   (recuerda, el primer argumento es especial).
 
-  Como durante la compilación cada ámbito pasa a ser un entorno, un sistema es
-  necesario para prevenir que las variables `EACT` y `ESUP` se confundan (por
+  Como durante la compilación cada ámbito pasa a ser un entorno, es necesario
+  un sistema para prevenir que las variables `EACT` y `ESUP` se confundan (por
   ejemplo, si tienes un `si` dentro de un `mientras`, el `EACT` del mientras
   debe ser distínto del `EACT` del `si`). Para esto existe la pila de ámbitos:
   cada ámbito guarda sus entornos (`EACT`) en la pila de ámbitos.
@@ -758,6 +902,10 @@ Instrucciones:
   FCONST Fa    {-- a}
     Empuja una constante numérica.
 
+  BCONST Na    {-- a}
+    Empuja una constante booleana. Si `Na` es 1, empuja `VERDADERO`. Si es
+    0 empuja `FALSO`.
+
   LOCAL Lx
     Declara un registro local. Solo puede estár al principio de una
     lista de instrucciones.
@@ -789,14 +937,14 @@ Instrucciones:
     variable.
 
   ROT Ua
-    Rota los primeros `Ua` elementos en la cima de la pila. Por ejemplo si la
-    pila tenía 4 elementos:
+    Rota los primeros `Ua + 1` elementos en la cima de la pila. Por ejemplo si
+    la pila tenía 4 elementos:
 
       <-----T
       A B C D
 
     (La flecha apunta a la base de la pila.)
-    Entonces ejecutar `ROT 4` dejará la pila como:
+    Entonces ejecutar `ROT 3` dejará la pila como:
 
       <-----T
       B C D A
@@ -808,6 +956,9 @@ Instrucciones:
       obj 1 2 3
 
     Pero necesitamos `1 2 3 obj` para poder invocar el mensaje con `MSG`.
+
+    (Puedes imaginar a este opcode como un "prepara para llamar a una
+    función/método con `Ua` argumentos".)
 
   MSG Cx, Ua, Ub
     Saca un elemento, el objeto que recibirá el mensaje. Luego le envía a este
@@ -826,13 +977,17 @@ Instrucciones:
     especificado será el entorno superior. `Ua` es el tamaño del entorno, es
     decir, el número de variables que contiene.
 
+  ENEW Ex, Ua    {--}
+    Inicializa una variable dentro del entorno. La variable en el índice `Ua`
+    del entorno `Ex` será fijada a `NULO`.
+
   EINIT Ex, Ua, Ly    {--}
     Inicializa una variable dentro del entorno. La variable en el índice `Ua`
     del entorno `Ex` será fijada al valor del registro `Ly`.
 
   CLSFRM Ex    {--}
-    "Cierra" un entorno. Luego de cerrarlo, no puedes usar `EINIT` con `Ex`. En
-    cambio, cualquier cambio al entorno tendrá que pasar por `LSETC`.
+    "Cierra" un entorno. Luego de cerrarlo, no puedes usar `EINIT` o `ENEW` con
+    `Ex`. En cambio, cualquier cambio al entorno tendrá que pasar por `LSETC`.
 
   NAME Tx
     Declara `Tx` como una etiqueta. `Tx` debe ser único en el procedimiento
@@ -1074,6 +1229,7 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {ROT},     [ ROT Ua ]
     {DYNCALL}, [ DYNCALL Ua, Ub ]
     {RETN},    [ RETN Ua ]
+    {ENEW},    [ ENEW Lx, Ua ]
     {EINIT},   [ EINIT Lx, Ua, Ly ]
     {OPNFRM},  [ OPNFRM Ex, ?Ey, Ua ]
     {CLSFRM},  [ CLSFRM Ex ]
@@ -1502,12 +1658,24 @@ porque los parámetros son locales pero no deberían estar declarados con
 )
 DOCUMENTA]
 funcion CompilarLocales: locales, parámetros
+    Escribir: {-=-}
+    ParaCadaElemento: locales, procedimiento: local
+        si EstáEnElEntorno: local#nodo
+            Escribir: {Está en el entorno:}, local
+        finsi
+    finprocedimiento
+    Escribir: {---}
+    funcion índiceDeCaptura: nodo
+        devolver nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
+    finfuncion
+    variable índices
+    fijar índices a (Mapear: parámetros, &índiceDeCaptura)
     devolver
         Mapear:
             (Únicos:
                 (Mapear: (Filtrar: locales,
                                    funcion: meta
-                                       devolver meta#esLocal && (no Contiene: parámetros, meta#índiceDeCaptura)
+                                       devolver (no EstáEnElEntorno: meta#nodo) && (no Contiene: índices, meta#índiceDeCaptura)
                                    finfuncion),
                          funcion: local
                              devolver local#binding
@@ -1583,20 +1751,28 @@ bloque actual, asignándolo a @code{EACT} apropiadamente.
 encuentra.}
 )
 DOCUMENTA]
-funcion CompilarEntornoDelÁmbito: localesEnElEntorno, exísteMarcoSuperior, profundidad
-    variables ops, máximoÍndiceDeLocalEnElEntorno
+funcion CompilarEntornoDelÁmbito: parámetros, localesEnElEntorno, localesInmediatas, exísteMarcoSuperior, profundidad
+    funcion índiceDeCaptura: nid
+        devolver nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
+    finfuncion
+
+    variables ops, máximoÍndiceDeLocalEnElEntorno, localesSiSonParámetros, nrsParámetros
     fijar ops a Arreglo#vacio
-    fijar máximoÍndiceDeLocalEnElEntorno a Reducir: -1, &Max, (Mapear: localesEnElEntorno, (MétodoComoFunción: {índiceDeCaptura}))
+    fijar máximoÍndiceDeLocalEnElEntorno a Reducir: -1, &Max, (Mapear: (Filtrar: localesInmediatas, &EstáEnElEntorno), &índiceDeCaptura)
     [ máximoÍndiceDeLocalEnElEntorno es el máximo ind. de los locales
       capturados, o -1 si no hay ninguno. De esta forma,
       máximoÍndiceDeLocalCapturado + 1 es el tamaño mínimo necesario para el
       marco de activación ("marco de llamada" o "call-frame") ]
     ops#agregarAlFinal: (OP#OPNFRM: LocalDelEntornoActual, (exísteMarcoSuperior#escojer: LocalDelEntornoSuperior, {NIL}), (máximoÍndiceDeLocalEnElEntorno + 1))
-    ops#agregarAlFinal: (MapearÚnicos: (Filtrar: localesEnElEntorno, funcion: l devolver l#profundidad = profundidad finfuncion), funcion: local
-        devolver local#binding
-    finfuncion, funcion: local
-        Escribir: {->}, local, local#binding
-        devolver OP#EINIT: LocalDelEntornoActual, local#índiceDeCaptura, local#binding
+    fijar nrsParámetros a Mapear: parámetros, &(RN#NombreResueltoDe)
+    fijar localesSiSonParámetros a SepararArreglo: localesInmediatas, funcion: local
+        devolver Contiene: nrsParámetros, (RN#NombreResueltoDe: local)
+    finfuncion
+    ops#agregarAlFinal: (Mapear: (Filtrar: localesSiSonParámetros#parteVerdadera, &EstáEnElEntorno), funcion: local
+        devolver OP#EINIT: LocalDelEntornoActual, (índiceDeCaptura: local), (RN#NombreResueltoDe: local)
+    finfuncion)
+    ops#agregarAlFinal: (Mapear: (Filtrar: localesSiSonParámetros#parteFalsa, &EstáEnElEntorno), funcion: local
+        devolver OP#ENEW: LocalDelEntornoActual, (índiceDeCaptura: local)
     finfuncion)
     ops#agregarAlFinal: (OP#CLSFRM: LocalDelEntornoActual)
     devolver ops
@@ -1624,10 +1800,10 @@ Llama a @pd{CompilarLocales} y @pd{CompilarEntornoDelÁmbito}, acumulando sus
 resultados. Devuelve un arreglo de instrucciones que sirve como "inicio" o
 "preludio" de un bloque.
 DOCUMENTA]
-funcion CompilarLocalesYClosure: locales, localesEnElEntorno, parámetros, exísteMarcoSuperior, profundidad
+funcion CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, parámetros, exísteMarcoSuperior, profundidad
     devolver Concatenar:
         (CompilarLocales: locales, parámetros),
-        (CompilarEntornoDelÁmbito: localesEnElEntorno, exísteMarcoSuperior, profundidad)
+        (CompilarEntornoDelÁmbito: parámetros, localesEnElEntorno, localesInmediatas, exísteMarcoSuperior, profundidad)
 finfuncion
 
 funcion Inspeccionar: A, B
@@ -1649,13 +1825,14 @@ funcion CompilarAWasm: ast
     finfuncion
 
     si EsInstancia: ast, AST#NodoPrograma
-        variables locales, localesEnElEntorno, profundidad
+        variables locales, localesEnElEntorno, profundidad, localesInmediatas
         fijar locales a LocalesDelBloque: ast
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
-        Escribir: {locales=}, locales
-        Escribir: {localesEnElEntorno=}, localesEnElEntorno
-        devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, localesEnElEntorno, Arreglo#vacio, FALSO, profundidad)))
+        fijar localesInmediatas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}
+        [ Escribir: {locales=}, locales ]
+        [ Escribir: {localesEnElEntorno=}, localesEnElEntorno ]
+        devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, Arreglo#vacio, FALSO, profundidad)))
               >> (CompilarBloqueAWasm: ast#instrucciones)
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
@@ -1713,7 +1890,7 @@ funcion CompilarAWasm: ast
     finsi
     si EsInstancia: ast, AST#NodoNoLlamar
         si ast#mensajes#longitud = 0
-            Escribir: {**************}, ast#base
+            [ Escribir: {**************}, ast#base ]
             devolver CompilarIdentificador: ast#base
         sino
             NoImplementado
@@ -1757,7 +1934,7 @@ funcion CompilarAWasm: ast
         devolver (CompilarAWasm: ast#valor) >> (CompilarFijarIdentificador: ast#objetivo)
     finsi
     si EsInstancia: ast, AST#NodoSi
-        variables etiqSi, etiqSino, etiqFinsi, localesEnElEntornoSiVerdadero, localesEnElEntornoSiFalso, localesSiVerdadero, localesSiFalso, profundidad
+        variables etiqSi, etiqSino, etiqFinsi, localesEnElEntornoSiVerdadero, localesEnElEntornoSiFalso, localesSiVerdadero, localesSiFalso, localesInmediatasSiVerdadero, localesInmediatasSiFalso, profundidad
         fijar etiqSi a GenerarEtiqueta
         fijar etiqSino a GenerarEtiqueta
         fijar etiqFinsi a GenerarEtiqueta
@@ -1766,31 +1943,34 @@ funcion CompilarAWasm: ast
         fijar localesEnElEntornoSiVerdadero a VariablesEnElEntorno: localesSiVerdadero
         fijar localesSiFalso a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesSiFalso}
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
+        fijar localesInmediatasSiVerdadero a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatasSiVerdadero}
+        fijar localesInmediatasSiFalso a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatasSiFalso}
         fijar localesEnElEntornoSiFalso a VariablesEnElEntorno: localesSiFalso
 
         devolver (CompilarAWasm: ast#condicional)
               >> (Instrucciones: (OP#CHOOSE: etiqSi, etiqSino),
                                  (OP#NAME: etiqSi),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
-              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: localesEnElEntornoSiVerdadero, VERDADERO, profundidad)))
+              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntornoSiVerdadero, localesInmediatasSiVerdadero, VERDADERO, profundidad)))
               >> (CompilarBloqueAWasm: ast#siVerdadero)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#JMP: etiqFinsi),
                                  (OP#NAME: etiqSino),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
-              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: localesEnElEntornoSiFalso, VERDADERO, profundidad)))
+              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntornoSiFalso, localesInmediatasSiFalso, VERDADERO, profundidad)))
               >> (CompilarBloqueAWasm: ast#siFalso)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#NAME: etiqFinsi))
     finsi
     si EsInstancia: ast, AST#NodoMientras
-        variables etiqInicio, etiqCont, etiqFinmientras, locales, localesEnElEntorno, nombresLibres, profundidad
+        variables etiqInicio, etiqCont, etiqFinmientras, locales, localesEnElEntorno, localesInmediatas, nombresLibres, profundidad
         fijar etiqInicio a GenerarEtiqueta
         fijar etiqCont a GenerarEtiqueta
         fijar etiqFinmientras a GenerarEtiqueta
 
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
         fijar locales a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelNodo}
+        fijar localesInmediatas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
 
         devolver (Instrucciones: (OP#NAME: etiqInicio))
@@ -1798,7 +1978,7 @@ funcion CompilarAWasm: ast
               >> (Instrucciones: (OP#CHOOSE: etiqCont, etiqFinmientras),
                                  (OP#NAME: etiqCont),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
-              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: localesEnElEntorno, VERDADERO, profundidad)))
+              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntorno, localesInmediatas, VERDADERO, profundidad)))
               >> (CompilarBloqueAWasm: ast#cuerpo)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#JMP: etiqInicio),
@@ -1811,30 +1991,29 @@ funcion CompilarAWasm: ast
         devolver (CompilarAWasm: ast#expresión) >> (Instrucciones: (OP#RETN: 1))
     finsi
     si EsInstancia: ast, AST#NodoFunción
-        variables id, parámetros, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad
+        variables id, nrsParámetros, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad, localesInmediatas
         fijar id a RN#NombreResueltoDe: ast#nombre
 
         fijar preludio a Arreglo#vacio
         [ params ]
-        fijar parámetros a Mapear: ast#parámetros, funcion: nid
-            devolver nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
-        finfuncion
+        fijar nrsParámetros a NombresDeLosParámetros: ast
         preludio#agregarAlFinal: (OP#PARAM: LocalDelEntornoSuperior)
-        preludio#agregarAlFinal: (Mapear: parámetros, funcion: idx devolver OP#PARAM: idx finfuncion)
+        preludio#agregarAlFinal: (Mapear: nrsParámetros, funcion: nr devolver OP#PARAM: nr finfuncion)
         [ locales ]
         fijar locales a LocalesDelBloque: ast
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
+        fijar localesInmediatas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}
         fijar nombresLibres a NombresLibres: ast
 
-        fijar preludio a Concatenar: preludio, (CompilarLocalesYClosure: locales, localesEnElEntorno, parámetros, VERDADERO, profundidad)
+        fijar preludio a Concatenar: preludio, (CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, ast#parámetros, VERDADERO, profundidad)
 
-        Escribir: {*************$}, ast#nombre
+        [ Escribir: {*************$}, ast#nombre ]
         fijar inicDeClosure a (Instrucciones: (OP#MKCLZ: LocalDelEntornoActual, id))
                            >> (CompilarFijarIdentificador: ast#nombre)
 
         fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo)
-        fijar fn a DeclrFunción#crear: id, parámetros, cuerpo#instrucciones
+        fijar fn a DeclrFunción#crear: id, nrsParámetros, cuerpo#instrucciones
         devolver inicDeClosure
              >> (Compilado#deDeclaraciones: cuerpo#declaraciones)
              >> (Compilado#deDeclaraciones: (Arreglo#crearCon: fn))
@@ -1950,14 +2129,17 @@ funcion NormalizaLosIdsDeLocales: compilado
         nuevasLocales#fijarEn: LocalDelEntornoSuperior, LocalDelEntornoSuperior
         nuevasLocales#fijarEn: {NIL}, {NIL}
 
+        Escribir: {#######}, nuevasLocales
+
         fijar nuevasInstrucciones a Mapear: instrucciones, funcion: tupla
-            Escribir: {%%}, tupla
+            [ Escribir: {%%}, tupla ]
             [ Todos estos opcodes tienen su única referencia a una variable
               local en su primer argumento ]
             si (tupla#es: Opcode#LOCAL) || (tupla#es: Opcode#PARAM)
             || (tupla#es: Opcode#LSET)  || (tupla#es: Opcode#LGET)
             || (tupla#es: Opcode#LSETC) || (tupla#es: Opcode#LGETC)
             || (tupla#es: Opcode#MKCLZ) || (tupla#es: Opcode#CLSFRM)
+            || (tupla#es: Opcode#ENEW)
                 variable clon
                 fijar clon a clonar tupla con finclonar
                 clon#argumentos#fijarEn: 0, (nuevasLocales#en: (clon#argumentos#en: 0))
@@ -1980,7 +2162,7 @@ funcion NormalizaLosIdsDeLocales: compilado
             [ Los demás opcodes no tienen referencias a locales ]
             devolver tupla
         finfuncion
-        fijar nuevosParámetros a Mapear: parámetros, &(nuevosParámetros#en)
+        fijar nuevosParámetros a Mapear: parámetros, &(nuevasLocales#en)
 
         devolver ObjetoAdHoc: {parámetros}, nuevosParámetros,
                               {instrucciones}, nuevasInstrucciones
@@ -2072,44 +2254,6 @@ funcion ParsearYDefunc: programa
     devolver ast
 finfuncion
 
-variables ast, programa, cc
-[ PROGRAMA DE EJEMPLO ]
-fijar programa a {
-
-variables i, A, B
-fijar i a 0
-mientras i < 2
-    variable j
-    fijar i a i + 1
-    fijar j a i * 5
-
-    funcion EscribirIJ
-        si 1 = 1
-            variable W
-            fijar W a i * j
-            escribir W
-            nl
-
-            funcion CapturaW
-                W
-            finfuncion
-
-            CapturaW
-        finsi
-    finfuncion
-
-    si (i - 1) = 0
-        fijar A a &EscribirIJ
-    sino
-        fijar B a &EscribirIJ
-    finsi
-finmientras
-
-A#\llamar\
-B#\llamar\
-
-}
-
 [{
 
 funcion Q
@@ -2136,20 +2280,24 @@ Q
 }]
 
 clase XD
-    atributos esCapturado, binding, índiceDeCaptura, esLocal, altura, profundidad, nodo
+    atributos esCapturado, binding, índiceDeCaptura, esLocal, altura, profundidad, esLocalInmediata, nodo
     metodo comoTexto
 finclase
 
 metodo XD#comoTexto
-    devolver {(XD binding = ~t, índiceDeCaptura = ~t, altura = ~t, profundidad = ~t, esCapturado = ~t, esLocal = ~t, nodo = ~t)}#formatear: yo#binding, yo#índiceDeCaptura, yo#altura, yo#profundidad, yo#esCapturado, yo#esLocal, yo#nodo
+    devolver {(XD binding = ~t, índiceDeCaptura = ~t, altura = ~t, profundidad = ~t, esCapturado = ~t, esLocal = ~t, esLocalInmediata = ~t, nodo = ~t)}#formatear: yo#binding, yo#índiceDeCaptura, yo#altura, yo#profundidad, yo#esCapturado, yo#esLocal, yo#esLocalInmediata, yo#nodo
 finmetodo
 
+variables ast, programa, cc
+Escribir: ({Leyendo: ~t}#formatear: (__Argv#en: 0))
+fijar programa a SistemaDeArchivos#LeerArchivo: (__Argv#en: 0)
 fijar ast a ParsearYDefunc: programa
 AnotaciónDeCapturas: ast
 [AnotarProfundidadDeIdentificadorEnBloque: ast, 0]
 EnumeraciónDeCapturas: ast, EstadoDeEnumeraciónDeCapturas#inicial
 EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast), funcion: nid devolver NULO finfuncion
 AnotarBindingsLocales: ast
+AnotarLocalesInmediatas: ast
 EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast), funcion: nid
     devolver clonar XD#crear con
         esCapturado: nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
@@ -2158,6 +2306,7 @@ EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast), f
         altura: nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
         esLocal: nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}
         profundidad: nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
+        esLocalInmediata: nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localInmediata}
         nodo: nid
     finclonar
 finfuncion
