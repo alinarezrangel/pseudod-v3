@@ -1997,7 +1997,6 @@ funcion CompilarAWasm: ast
         fijar preludio a Arreglo#vacio
         [ params ]
         fijar nrsParámetros a NombresDeLosParámetros: ast
-        preludio#agregarAlFinal: (OP#PARAM: LocalDelEntornoSuperior)
         preludio#agregarAlFinal: (Mapear: nrsParámetros, funcion: nr devolver OP#PARAM: nr finfuncion)
         [ locales ]
         fijar locales a LocalesDelBloque: ast
