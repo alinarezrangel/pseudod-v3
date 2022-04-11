@@ -1,0 +1,16 @@
+{
+    "nombre": "Capturas: Capturas en una función anónima",
+    "espera": "éxito",
+    "salida contiene": "11\n"
+}
+====================
+funcion A: b, c
+    c#\llamar\: b
+finfuncion
+
+variable C
+fijar C a 10
+A: 1, funcion: b
+    escribir (C + b)#comoTexto
+    nl
+finfuncion

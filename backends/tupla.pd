@@ -322,7 +322,9 @@ Todos los metadatos son agregados con la llave de anotación de capturas
 @pd{LLAVE_ANOTACIÓN_DE_CAPTURAS}.
 DOCUMENTA]
 procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obtenerMetadatosAdicionales
-    necesitas (EsInstancia: ast, AST#NodoFunción) || (EsInstancia: ast, AST#NodoPrograma)
+    necesitas (EsInstancia: ast, AST#NodoFunción)
+           || (EsInstancia: ast, AST#NodoFunciónAnónima)
+           || (EsInstancia: ast, AST#NodoPrograma)
     variables locales, ámbitosLocales, nodosLocales
     fijar locales a Arreglo#vacio
     fijar ámbitosLocales a Pila#vacía
@@ -349,6 +351,7 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
     funcion filtro: nodo
         devolver (EsInstancia: nodo, AST#NodoIdentificador)
               || (EsInstancia: nodo, AST#NodoFunción)
+              || (EsInstancia: nodo, AST#NodoFunciónAnónima)
               || (EsInstancia: nodo, AST#NodoSi)
               || (EsInstancia: nodo, AST#NodoMientras)
               || (EsInstancia: nodo, AST#NodoPrograma)
@@ -388,7 +391,7 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
             AgregarLocal: nodo#nombre
             devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), obtenerMetadatosAdicionales
         finsi
-        si EsInstancia: nodo, AST#NodoPrograma
+        si (EsInstancia: nodo, AST#NodoFunciónAnónima) || (EsInstancia: nodo, AST#NodoPrograma)
             devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), obtenerMetadatosAdicionales
         finsi
     finprocedimiento
@@ -401,7 +404,7 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
         finprocedimiento
     finfuncion
 
-    si EsInstancia: ast, AST#NodoFunción
+    si (EsInstancia: ast, AST#NodoFunción) || (EsInstancia: ast, AST#NodoFunciónAnónima)
         ParaCadaElemento: ast#parámetros, procedimiento: nodo
             devolver Caminar: nodo, &filtro, &interno
         finprocedimiento
@@ -415,40 +418,13 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
         finprocedimiento
     finsi
 
-    [ Caminar: ast, funcion: nodo ]
-    [     devolver (EsInstancia: nodo, AST#NodoIdentificador) ]
-    [           || (EsInstancia: nodo, AST#NodoFunción) ]
-    [           || (EsInstancia: nodo, AST#NodoSi) ]
-    [           || (EsInstancia: nodo, AST#NodoMientras) ]
-    [ finfuncion, procedimiento: nodo, recur ]
-    [     si (Defun#SonElMismoObjeto: nodo, ast) && (EsInstancia: nodo, AST#NodoFunción) ]
-    [         ParaCadaElemento: nodo#parámetros, &(locales#agregarAlFinal) ]
-    [         ParaCadaElemento: nodo#cuerpo, recur ]
-    [         devolver NULO ]
-    [     finsi ]
-    [     si (no Defun#SonElMismoObjeto: nodo, ast) && (EsInstancia: nodo, AST#NodoFunción) ]
-    [         [\ Escribir: {LOCAL AGREGADA FUNC}, nodo#nombre#nombre ![\ ]
-    [         [\ Escribir: {####}, locales ![\ ]
-    [         AgregarLocal: nodo#nombre ]
-    [         [\ Escribir: {$$$$}, locales ![\ ]
-    [         devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), obtenerMetadatosAdicionales ]
-    [     finsi ]
-    [     Inalcanzable ]
-    [ finprocedimiento ]
-
     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {bindingsLocalesDelProcedimiento}, (Conjunto#desdeArreglo: (Mapear: locales, &(RN#NombreResueltoDe)))
     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelProcedimiento}, (Mapear: locales, obtenerMetadatosAdicionales)
-
-    si EsInstancia: ast, AST#NodoFunción
-        [ Escribir: {LOCALES DE}, ast#nombre, { SON }, locales ]
-    sino
-        [ Escribir: {LOCALES DEL PROGRAMA}, locales ]
-    finsi
 finprocedimiento
 
 procedimiento AnotarLocalesInmediatas: ast
     variable NODOS_CON_ÁMBITO
-    fijar NODOS_CON_ÁMBITO a Arreglo#crearCon: AST#NodoPrograma, AST#NodoSi, AST#NodoMientras, AST#NodoFunción
+    fijar NODOS_CON_ÁMBITO a Arreglo#crearCon: AST#NodoPrograma, AST#NodoSi, AST#NodoMientras, AST#NodoFunción, AST#NodoFunciónAnónima
 
     funcion esBloqueConÁmbito: ast
         devolver (Algún: (Mapear: NODOS_CON_ÁMBITO, (Parcial: &EsInstancia, ast)))
@@ -622,7 +598,9 @@ en la que se declaró la variable
 DOCUMENTA]
 procedimiento EnumeraciónDeCapturas: ast, estado
     variable DECLARACIONES
-    fijar DECLARACIONES a Arreglo#crearCon: AST#NodoVariable, AST#NodoFunción, AST#NodoIdentificador, AST#NodoSi, AST#NodoMientras, AST#NodoPrograma
+    fijar DECLARACIONES a Arreglo#crearCon: AST#NodoVariable, AST#NodoFunción,
+                                            AST#NodoFunciónAnónima, AST#NodoIdentificador,
+                                            AST#NodoSi, AST#NodoMientras, AST#NodoPrograma
 
     Caminar: ast, funcion: nodo
         devolver Algún: (Mapear: DECLARACIONES, (Parcial: &EsInstancia, nodo))
@@ -636,9 +614,11 @@ procedimiento EnumeraciónDeCapturas: ast, estado
             ParaCadaElemento: nodo#nombres, &(estado#marcarÍndiceCapturaEnDeclaración)
             devolver NULO
         finsi
-        si EsInstancia: nodo, AST#NodoFunción
+        si (EsInstancia: nodo, AST#NodoFunción) || (EsInstancia: nodo, AST#NodoFunciónAnónima)
             variable subestado
-            estado#marcarÍndiceCapturaEnDeclaración: nodo#nombre
+            si EsInstancia: nodo, AST#NodoFunción
+                estado#marcarÍndiceCapturaEnDeclaración: nodo#nombre
+            finsi
             fijar subestado a EstadoDeEnumeraciónDeCapturas#desdeEstado: estado
             ParaCadaElemento: nodo#parámetros, &(subestado#marcarÍndiceCapturaEnDeclaración)
             ParaCadaElemento: nodo#cuerpo, procedimiento: instr
@@ -689,14 +669,23 @@ identificador es "local" a su posición: es decir, si fue declarado en la
 función en la que se encuentra.
 DOCUMENTA]
 procedimiento AnotarBindingsLocales: ast
-    necesitas (EsInstancia: ast, AST#NodoFunción) || (EsInstancia: ast, AST#NodoPrograma)
+    necesitas (EsInstancia: ast, AST#NodoFunción)
+           || (EsInstancia: ast, AST#NodoFunciónAnónima)
+           || (EsInstancia: ast, AST#NodoPrograma)
     variable bindings
     fijar bindings a BindingsLocalesDelBloque: ast
     Caminar: ast, funcion: nodo
-        devolver (no Defun#SonElMismoObjeto: nodo, ast) && ((EsInstancia: nodo, AST#NodoIdentificador) || (EsInstancia: nodo, AST#NodoFunción))
+        devolver (no Defun#SonElMismoObjeto: nodo, ast)
+              && (   (EsInstancia: nodo, AST#NodoIdentificador)
+                  || (EsInstancia: nodo, AST#NodoFunción)
+                  || (EsInstancia: nodo, AST#NodoFunciónAnónima))
     finfuncion, procedimiento: nodo, recur
         si EsInstancia: nodo, AST#NodoIdentificador
             nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo))
+            devolver NULO
+        finsi
+        si EsInstancia: nodo, AST#NodoFunciónAnónima
+            AnotarBindingsLocales: nodo
             devolver NULO
         finsi
         si EsInstancia: nodo, AST#NodoFunción
@@ -710,7 +699,9 @@ finprocedimiento
 
 procedimiento MarcaVariablesLocalesEnSubámbitos: ast
     Caminar': ast, procedimiento: nodo, K
-        si (EsInstancia: nodo, AST#NodoFunción) || (EsInstancia: nodo, AST#NodoPrograma)
+        si (EsInstancia: nodo, AST#NodoFunción)
+        || (EsInstancia: nodo, AST#NodoFunciónAnónima)
+        || (EsInstancia: nodo, AST#NodoPrograma)
             variables bindings, locales, localesReales
             fijar bindings a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {bindingsLocalesDelProcedimiento}
             fijar locales a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelProcedimiento}
@@ -1587,6 +1578,13 @@ procedimiento GenerarIdDeConstante
     devolver ContadorDeConstantes
 finprocedimiento
 
+variable ContadorDeProcedimientos
+fijar ContadorDeProcedimientos a 0
+procedimiento GenerarIdDeProcedimiento
+    fijar ContadorDeProcedimientos a ContadorDeProcedimientos + 1
+    devolver ContadorDeProcedimientos
+finprocedimiento
+
 [ TODO: Renombra todas las funciones de compilación de "WASM" a "Tuplas". ]
 
 [DOCUMENTA
@@ -1990,9 +1988,8 @@ funcion CompilarAWasm: ast
     si EsInstancia: ast, AST#NodoDevolver
         devolver (CompilarAWasm: ast#expresión) >> (Instrucciones: (OP#RETN: 1))
     finsi
-    si EsInstancia: ast, AST#NodoFunción
-        variables id, nrsParámetros, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad, localesInmediatas
-        fijar id a RN#NombreResueltoDe: ast#nombre
+    si (EsInstancia: ast, AST#NodoFunción) || (EsInstancia: ast, AST#NodoFunciónAnónima)
+        variables nrsParámetros, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad, localesInmediatas, procid
 
         fijar preludio a Arreglo#vacio
         [ params ]
@@ -2007,12 +2004,14 @@ funcion CompilarAWasm: ast
 
         fijar preludio a Concatenar: preludio, (CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, ast#parámetros, VERDADERO, profundidad)
 
-        [ Escribir: {*************$}, ast#nombre ]
-        fijar inicDeClosure a (Instrucciones: (OP#MKCLZ: LocalDelEntornoActual, id))
-                           >> (CompilarFijarIdentificador: ast#nombre)
+        fijar procid a GenerarIdDeProcedimiento
+        fijar inicDeClosure a (Instrucciones: (OP#MKCLZ: LocalDelEntornoActual, procid))
+        si EsInstancia: ast, AST#NodoFunción
+            fijar inicDeClosure a inicDeClosure >> (CompilarFijarIdentificador: ast#nombre)
+        finsi
 
         fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo)
-        fijar fn a DeclrFunción#crear: id, nrsParámetros, cuerpo#instrucciones
+        fijar fn a DeclrFunción#crear: procid, nrsParámetros, cuerpo#instrucciones
         devolver inicDeClosure
              >> (Compilado#deDeclaraciones: cuerpo#declaraciones)
              >> (Compilado#deDeclaraciones: (Arreglo#crearCon: fn))
