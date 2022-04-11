@@ -1768,12 +1768,20 @@ funcion CompilarEntornoDelÁmbito: parámetros, localesEnElEntorno, localesInmed
     fijar localesSiSonParámetros a SepararArreglo: localesInmediatas, funcion: local
         devolver Contiene: nrsParámetros, (RN#NombreResueltoDe: local)
     finfuncion
-    ops#agregarAlFinal: (Mapear: (Filtrar: localesSiSonParámetros#parteVerdadera, &EstáEnElEntorno), funcion: local
-        devolver OP#EINIT: LocalDelEntornoActual, (índiceDeCaptura: local), (RN#NombreResueltoDe: local)
-    finfuncion)
-    ops#agregarAlFinal: (Mapear: (Filtrar: localesSiSonParámetros#parteFalsa, &EstáEnElEntorno), funcion: local
-        devolver OP#ENEW: LocalDelEntornoActual, (índiceDeCaptura: local)
-    finfuncion)
+    ops#agregarAlFinal: (MapearÚnicos: (Filtrar: localesSiSonParámetros#parteVerdadera, &EstáEnElEntorno),
+                                       funcion: local
+                                           devolver índiceDeCaptura: local
+                                       finfuncion,
+                                       funcion: local
+                                           devolver OP#EINIT: LocalDelEntornoActual, (índiceDeCaptura: local), (RN#NombreResueltoDe: local)
+                                       finfuncion)
+    ops#agregarAlFinal: (MapearÚnicos: (Filtrar: localesSiSonParámetros#parteFalsa, &EstáEnElEntorno),
+                                       funcion: local
+                                           devolver índiceDeCaptura: local
+                                       finfuncion,
+                                       funcion: local
+                                           devolver OP#ENEW: LocalDelEntornoActual, (índiceDeCaptura: local)
+                                       finfuncion)
     ops#agregarAlFinal: (OP#CLSFRM: LocalDelEntornoActual)
     devolver ops
 finfuncion
@@ -1996,7 +2004,6 @@ funcion CompilarAWasm: ast
         fijar preludio a Arreglo#vacio
         [ params ]
         fijar nrsParámetros a NombresDeLosParámetros: ast
-        preludio#agregarAlFinal: (Mapear: nrsParámetros, funcion: nr devolver OP#PARAM: nr finfuncion)
         [ locales ]
         fijar locales a LocalesDelBloque: ast
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
