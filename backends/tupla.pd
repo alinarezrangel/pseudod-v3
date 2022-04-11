@@ -881,6 +881,7 @@ Instrucciones:
   GT     {a b -- c}
   LE     {a b -- c}
   GE     {a b -- c}
+  OPEQ   {a b -- c}
     Menor/mayor que, mayor/menor o igual a. Operan en la pila.
 
   POP    {a --}
@@ -1205,6 +1206,7 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {GT},      [ GT ]
     {LE},      [ LE ]
     {GE},      [ GE ]
+    {OPEQ},    [ OPEQ ]
     {POP},     [ POP ]
     {LCONST},  [ LCONST Cx ]
     {ICONST},  [ ICONST Na ]
@@ -1828,8 +1830,6 @@ funcion CompilarAWasm: ast
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
         fijar localesInmediatas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}
-        [ Escribir: {locales=}, locales ]
-        [ Escribir: {localesEnElEntorno=}, localesEnElEntorno ]
         devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, Arreglo#vacio, FALSO, profundidad)))
               >> (CompilarBloqueAWasm: ast#instrucciones)
     finsi
@@ -1857,6 +1857,9 @@ funcion CompilarAWasm: ast
         finsi
         si ast#op#op = {/}
             devolver lhs >> rhs >> (Instrucciones: OP#DIV)
+        finsi
+        si ast#op#op = {=}
+            devolver lhs >> rhs >> (Instrucciones: OP#OPEQ)
         finsi
         si ast#op#op = {<}
             devolver lhs >> rhs >> (Instrucciones: OP#LT)
@@ -1888,7 +1891,6 @@ funcion CompilarAWasm: ast
     finsi
     si EsInstancia: ast, AST#NodoNoLlamar
         si ast#mensajes#longitud = 0
-            [ Escribir: {**************}, ast#base ]
             devolver CompilarIdentificador: ast#base
         sino
             NoImplementado
