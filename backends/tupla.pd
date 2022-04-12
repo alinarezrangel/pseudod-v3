@@ -1842,7 +1842,11 @@ funcion CompilarAWasm: ast
               >> (CompilarBloqueAWasm: ast#instrucciones)
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
-        devolver Instrucciones: (OP#ICONST: ast#valor)
+        si EsNúmeroEntero: ast#valor
+            devolver Instrucciones: (OP#ICONST: ast#valor)
+        sino
+            devolver Instrucciones: (OP#FCONST: ast#valor)
+        finsi
     finsi
     si EsInstancia: ast, AST#NodoTextoLiteral
         variable cid
@@ -2135,8 +2139,6 @@ funcion NormalizaLosIdsDeLocales: compilado
         nuevasLocales#fijarEn: LocalDelEntornoActual, LocalDelEntornoActual
         nuevasLocales#fijarEn: LocalDelEntornoSuperior, LocalDelEntornoSuperior
         nuevasLocales#fijarEn: {NIL}, {NIL}
-
-        Escribir: {#######}, nuevasLocales
 
         fijar nuevasInstrucciones a Mapear: instrucciones, funcion: tupla
             [ Escribir: {%%}, tupla ]

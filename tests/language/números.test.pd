@@ -1,0 +1,14 @@
+{
+    "nombre": "Literales numéricas",
+    "espera": "éxito",
+    "salida contiene": "1.2\n523\n-592\n-3.14\n"
+}
+====================
+escribir 1.2#comoTexto
+nl
+escribir 523#comoTexto
+nl
+escribir -592#comoTexto
+nl
+escribir -3.14#comoTexto
+nl
