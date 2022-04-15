@@ -1935,10 +1935,6 @@ funcion CompilarAWasm: ast
               >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
                                  (OP#DYNCALL: ast#argumentos#longitud, 1))
     finsi
-    si EsInstancia: ast, AST#NodoNoLlamar
-        necesitas ast#mensajes#longitud = 0
-        devolver CompilarIdentificador: ast
-    finsi
     si EsInstancia: ast, AST#NodoVariable
         devolver Compilado#vacío
     finsi
@@ -2141,7 +2137,6 @@ funcion NormalizaLosIdsDeLocales: compilado
         nuevasLocales#fijarEn: {NIL}, {NIL}
 
         fijar nuevasInstrucciones a Mapear: instrucciones, funcion: tupla
-            [ Escribir: {%%}, tupla ]
             [ Todos estos opcodes tienen su única referencia a una variable
               local en su primer argumento ]
             si (tupla#es: Opcode#LOCAL) || (tupla#es: Opcode#PARAM)
