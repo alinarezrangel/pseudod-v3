@@ -2042,7 +2042,7 @@ funcion CompilarAWasm: ast
               >> cmp
     finsi
     si EsInstancia: ast, AST#NodoNo
-        devolver Instrucciones: OP#NOT
+        devolver (CompilarAWasm: ast#expresión) >> (Instrucciones: OP#NOT)
     finsi
     si EsInstancia: ast, AST#NodoEscribir
         devolver (CompilarAWasm: ast#valor) >> (Instrucciones: OP#PRN)
