@@ -2046,6 +2046,21 @@ funcion CompilarAWasm: ast
     si EsInstancia: ast, AST#NodoNl
         devolver Instrucciones: OP#NL
     finsi
+    si EsInstancia: ast, AST#NodoClonar
+        NoImplementado
+    finsi
+    si EsInstancia: ast, AST#NodoUtilizar
+        NoImplementado
+    finsi
+    si EsInstancia: ast, AST#NodoMétodo
+        NoImplementado
+    finsi
+    si EsInstancia: ast, AST#NodoClase
+        NoImplementado
+    finsi
+    si EsInstancia: ast, AST#NodoAtributos
+        NoImplementado
+    finsi
 
     Inalcanzable
 finfuncion
