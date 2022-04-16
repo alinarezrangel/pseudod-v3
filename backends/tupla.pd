@@ -3,9 +3,9 @@ utilizar bepd/x/adhoc (ObjetoAdHoc)
 utilizar bepd/datos/conjunto (Conjunto)
 utilizar bepd/datos/diccionario (Diccionario)
 utilizar bepd/x/puerto (SalidaEstándar)
+utilizar bepd/x/puerto/deArchivo como PDA
 utilizar bepd/x/puerto/conPosición (PosiciónTextual)
 utilizar bepd/x/sistemaDeArchivos/archivo como SistemaDeArchivos
-[utilizar bepd/utilidades/arreglo]
 utilizar bepd/utilidades/texto
 utilizar bepd/x/enum (Enum, EnumConValores)
 
@@ -2309,6 +2309,7 @@ finmetodo
 
 variables ast, programa, cc
 Escribir: ({Leyendo: ~t}#formatear: (__Argv#en: 0))
+Escribir: ({Escribiendo: ~t}#formatear: (__Argv#en: 1))
 fijar programa a SistemaDeArchivos#LeerArchivo: (__Argv#en: 0)
 fijar ast a ParsearYDefunc: programa
 AnotaciónDeCapturas: ast
@@ -2336,42 +2337,7 @@ variable ncc
 fijar ncc a NormalizaLosIdsDeConstantes: cc
 Listado: ncc
 Escribir: {====================}
-EmitirCompilado: (NormalizaLosIdsDeLocales: ncc), SalidaEstándar
-
-[ FIXME:
-
-El bug es que las variables solo son consideradas como capturadas si pasan de
-una función a otra, y son consideradas como locales si no son de la función
-actual. Cuando pruebo `esCapturada || no esLocal` para saber si debería usar
-`EACT` o no, no estoy teniendo en cuenta un tercer caso: si una variable está
-declarada en un ámbito que no es el principal del programa/función, esta se
-mueve automáticamente al subentorno creado por `SPUSH`. Como estas variables
-aún son locales y no son capturadas, después trato de accederlas con `LGET` en
-vez de `LGETC`. Creo que la mejor opción sería:
-
-1. Agregar un nuevo pase `MarcaVariablesLocalesEnSubámbitos` que marque todas
-estas variables que son locales (irrelevantemente de si son capturadas o no)
-pero son declaradas en subámbitos en vez de el ámbito principal.
-
-2. Hacer que la condición para que una local esté en el entorno sea
-`esCapturada || no esLocal || esDeclaradaEnUnSubámbito`.
-
- ]
-
-[ FIXME:
-
-El nuevo bug es que las funciones (declaradas con `funcion`) no están siendo
-consideradas locales: conceptualmente no hay diferencia entre una `function X
-... finfuncion` y `variable X fijar X a funcion ... finfuncion` (ignorando
-intencionalmente el sistema de autoejecución). Sin embargo, por algún motivo,
-las funciones no aparecen en la lista de locales (opcode `LOCAL`) incluso
-cuando parece que si son marcadas como locales..
-
- ]
-
-[fijar cc a CompilarAWasm: ast, Diccionario#vacío
-
-Escribir: ({~t :: ~t :: ~t}#formatear: (TipoDe: cc), (TipoDe: cc#declaraciones), (TipoDe: cc#instrucciones))
-Escribir: ({~t~%~t}#formatear: cc#declaraciones, cc#instrucciones)
-Listado: cc]
-[__Lua: {rt.inspectobj}, cc]
+variable ptesc
+fijar ptesc a PDA#PuertoDeArchivoDeEscritura#abrir: (__Argv#en: 1)
+EmitirCompilado: (NormalizaLosIdsDeLocales: ncc), ptesc
+ptesc#cerrar
