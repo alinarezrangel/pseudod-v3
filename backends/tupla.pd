@@ -1070,7 +1070,6 @@ Ejemplo:
 
     Procedimientos:
       PROC 1
-        PARAM ESUP
         PARAM 2
         OPNFRM EACT, ESUP, 0
         CLSFRM EACT
