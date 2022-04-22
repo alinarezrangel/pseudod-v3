@@ -276,7 +276,7 @@ procedimiento AnotaciónDeCapturas: ast
             AST#NodoVariable, AST#NodoFunción, AST#NodoClase, AST#NodoMétodo, AST#NodoFunciónAnónima
         devolver Algún: (Mapear: declaraciones, (Parcial: &EsInstancia, nodo))
     finfuncion, procedimiento: nodo, recur
-        si EsInstancia: nodo, AST#NodoFunción
+        si (EsInstancia: nodo, AST#NodoFunción) || (EsInstancia: nodo, AST#NodoFunciónAnónima)
             nombresCapturadosAcc#agregarAlFinal: (NombresLibres: nodo)
             ParaCadaElemento: nodo#cuerpo, procedimiento: cn
                 devolver %recur: cn
@@ -672,19 +672,26 @@ procedimiento AnotarBindingsLocales: ast
     necesitas (EsInstancia: ast, AST#NodoFunción)
            || (EsInstancia: ast, AST#NodoFunciónAnónima)
            || (EsInstancia: ast, AST#NodoPrograma)
-    variable bindings
+    variables bindings, nombre
     fijar bindings a BindingsLocalesDelBloque: ast
+    si EsInstancia: ast, AST#NodoFunción
+        fijar nombre a ast#nombre
+    sino
+        fijar nombre a NULO
+    finsi
     Caminar: ast, funcion: nodo
         devolver (no Defun#SonElMismoObjeto: nodo, ast)
+              && (no Defun#SonElMismoObjeto: nodo, nombre)
               && (   (EsInstancia: nodo, AST#NodoIdentificador)
                   || (EsInstancia: nodo, AST#NodoFunción)
-                  || (EsInstancia: nodo, AST#NodoFunciónAnónima))
+                  || (EsInstancia: nodo, AST#NodoFunciónAnónima)
+                  || (EsInstancia: nodo, AST#NodoPrograma))
     finfuncion, procedimiento: nodo, recur
         si EsInstancia: nodo, AST#NodoIdentificador
             nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo))
             devolver NULO
         finsi
-        si EsInstancia: nodo, AST#NodoFunciónAnónima
+        si (EsInstancia: nodo, AST#NodoFunciónAnónima) || (EsInstancia: nodo, AST#NodoPrograma)
             AnotarBindingsLocales: nodo
             devolver NULO
         finsi
@@ -702,7 +709,7 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
         si (EsInstancia: nodo, AST#NodoFunción)
         || (EsInstancia: nodo, AST#NodoFunciónAnónima)
         || (EsInstancia: nodo, AST#NodoPrograma)
-            variables bindings, locales, localesReales
+            variables bindings, locales, localesReales, nombre
             fijar bindings a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {bindingsLocalesDelProcedimiento}
             fijar locales a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelProcedimiento}
             fijar localesReales a Filtrar: (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelNodo'}),
@@ -715,6 +722,12 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
               y bindings de `nodo` y todos sus subámbitos excepto
               funciones/métodos/procedimientos. ]
 
+            si EsInstancia: nodo, AST#NodoFunción
+                fijar nombre a nodo#nombre
+            sino
+                fijar nombre a NULO
+            finsi
+
             variables bindingsDeEsteÁmbito, localesDeEsteÁmbito
             fijar bindingsDeEsteÁmbito a Conjunto#desdeArreglo: (Mapear: localesReales, (MétodoComoFunción: {binding}))
             fijar localesDeEsteÁmbito a Filtrar: locales, funcion: local
@@ -723,15 +736,18 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
 
             procedimiento marcarSubidentificadores: nodo
                 Caminar: nodo, funcion: nodo
-                    devolver (EsInstancia: nodo, AST#NodoIdentificador)
-                          || (EsInstancia: nodo, AST#NodoFunción)
-                          || (EsInstancia: nodo, AST#NodoPrograma)
+                    devolver (no Defun#SonElMismoObjeto: nodo, nombre)
+                          && (   (EsInstancia: nodo, AST#NodoIdentificador)
+                              || (EsInstancia: nodo, AST#NodoFunción)
+                              || (EsInstancia: nodo, AST#NodoFunciónAnónima)
+                              || (EsInstancia: nodo, AST#NodoPrograma))
                 finfuncion, procedimiento: nodo, subrecur
                     si EsInstancia: nodo, AST#NodoFunción
                         nodo#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}, (bindingsDeEsteÁmbito#contiene: (RN#NombreResueltoDe: nodo#nombre))
-                        devolver MarcaVariablesLocalesEnSubámbitos: nodo
+                        MarcaVariablesLocalesEnSubámbitos: nodo
+                        devolver NULO
                     finsi
-                    si EsInstancia: nodo, AST#NodoPrograma
+                    si (EsInstancia: nodo, AST#NodoPrograma) || (EsInstancia: nodo, AST#NodoFunciónAnónima)
                         devolver MarcaVariablesLocalesEnSubámbitos: nodo
                     finsi
                     si EsInstancia: nodo, AST#NodoIdentificador
