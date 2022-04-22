@@ -771,11 +771,15 @@ procedimiento MarcaVariablesQueEstánEnElEntorno: ast
         fijar esCapturada a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
         fijar esLocal a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}
         fijar esLocalDirecta a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}
+        Escribir: {! S:}, nodo
+        Escribir: {ES}, (esCapturada || (no esLocal) || (no esLocalDirecta))
         nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}, (esCapturada || (no esLocal) || (no esLocalDirecta))
     finprocedimiento
 finprocedimiento
 
 funcion EstáEnElEntorno: nid
+    Escribir: {# Q:}, nid
+    Escribir: {ES}, (nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno})
     devolver nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}
 finfuncion
 
