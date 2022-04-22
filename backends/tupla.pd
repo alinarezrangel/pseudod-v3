@@ -1616,16 +1616,16 @@ finfuncion
 Devuelve un compilado que obtiene la variable @pd{ast} y la empuja en la pila.
 DOCUMENTA]
 funcion CompilarIdentificador: ast
-    variables altura, índiceDeCaptura, res, binding
+    variables altura, índiceDeCaptura, op, binding
     fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
     fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
     fijar binding a RN#NombreResueltoDe: ast
     si EstáEnElEntorno: ast
-        fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGETC: LocalDelEntornoActual, altura, índiceDeCaptura))
+        fijar op a OP#LGETC: LocalDelEntornoActual, altura, índiceDeCaptura
     sino
-        fijar res a Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#LGET: binding))
+        fijar op a OP#LGET: binding
     finsi
-    devolver res
+    devolver Compilado#deInstrucciónes: (Arreglo#crearCon: op)
 finfuncion
 
 funcion CompilarFijarIdentificador: ast
