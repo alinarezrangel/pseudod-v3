@@ -98,6 +98,11 @@
 ** FIXME ~SonElMismoObjeto~ debe ser un builtin.
 ** TODO Termina el pase de defuncionalización.
 ** FIXED ~tags~ no genera etiquetas para atributos dentro de clases.
+** FIXME No hay un mensaje de error al llamar a una variable que no es autoejecutable.
+** FIXME El mensaje de error de cuando una variable no existe no contiene el lugar del programa en el que se encontró el identificador.
+** FIXED Los ~NodoVariadic~ no tienen metadatos.
+* En el backend de tuplas
+** FIXME Las funciones no pueden tener parámetros variadic.
 * Builds y Seguridad
 ** Builds reproducibles. [0/2]
    Si mal no recuerdo, la única parte actual que no permite un build

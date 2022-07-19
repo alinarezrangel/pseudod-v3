@@ -267,7 +267,7 @@ variable grVariadicArg
 fijar grVariadicArg a
     Comb#Efecto:
         funcion: res
-            devolver clonar AST#NodoVariadic#_crear con
+            devolver clonar AST#NodoVariadic#crear con
                 areaTextual: AreaTotal: ((res#en: 0)#en: 0), (res#en: 1)
                 interno: res#en: 1
             finclonar
@@ -362,7 +362,7 @@ variable grVariadic
 fijar grVariadic a
     Comb#Efecto:
         funcion: res
-            devolver clonar AST#NodoVariadic#_crear con
+            devolver clonar AST#NodoVariadic#crear con
                 areaTextual: AreaTotal: ((res#en: 0)#en: 0), (res#en: 1)
                 interno: res#en: 1
             finclonar
