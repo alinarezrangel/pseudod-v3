@@ -531,6 +531,18 @@ metodo estatico EstadoDeEnumeraciónDeCapturas#inicial
     devolver yo#crear
 finmetodo
 
+metodo estatico EstadoDeEnumeraciónDeCapturas#desdeBuiltins: builtins
+    variables estado, acc
+    fijar estado a yo#crear
+    fijar acc a 0
+    builtins#paraCadaPar: procedimiento: nombre, binding
+        estado#asoc#fijarEn: binding, acc
+        fijar acc a acc + 1
+    finprocedimiento
+    fijar estado#acc a acc
+    devolver estado
+finmetodo
+
 metodo estatico EstadoDeEnumeraciónDeCapturas#desdeEstado: estado
     devolver clonar yo#crear con
         estadoSuperior: estado
@@ -558,6 +570,7 @@ metodo EstadoDeEnumeraciónDeCapturas#informaciónDeLaCaptura: nid
                               {profundidad}, yo#profundidad
     sino
         variable dt
+        necesitas no EsNulo: yo#estadoSuperior
         fijar dt a yo#estadoSuperior#informaciónDeLaCaptura: nid
         devolver clonar dt con
             altura: dt#altura + 1
@@ -904,6 +917,25 @@ Instrucciones:
   OPEQ   {a b -- c}
     Menor/mayor que, mayor/menor o igual a. Operan en la pila.
 
+  SAME   {a b -- c}
+    Determina si `a` y `b` son el mismo objeto.
+
+  Las instrucciones `OBJATTR`, `OBJATTRSET` y `OBJSZ` también se pueden usar en
+  closures. En ese caso manipulan las capturas del entorno del closure.
+
+  OBJATTR       {obj n -- x}
+    Obtiene el atributo #`n` del objeto `obj`.
+
+  OBJATTRSET    {obj n val --}
+    Fija el atributo #`n` del objeto `obj` al valor `val`.
+
+  OBJSZ         {obj -- n}
+    Obtiene el número de atributos de un objeto.
+
+  OBJ2CLZ       {clz -- obj}
+  CLZ2OBJ       {obj -- clz}
+    Convierte un closure a un objeto y viceversa.
+
   POP    {a --}
     Saca e ignora el elemento en la cima de la pila.
 
@@ -1016,10 +1048,15 @@ Instrucciones:
     Saca un objeto de la pila y falla con un error si no es verdadero. Este
     opcode implementa la instrucción `necesitas`.
 
-  CMPEQ    {a b -- c}
+  CMPEQ     {a b -- c}
   CMPNEQ    {a b -- c}
     Compara si dos objetos de la pila son iguales/diferentes, empujando
     verdadero o falso.
+
+  DYNMSG    {obj msj args -- r}
+    Envía el mensaje `msj` al objeto `obj` con los argumentos `args` (un
+    arreglo). A diferencia de `MSG`, siempre recibe 1 valor, el cual devuelve
+    como `r`.
 
   NOT    {a -- b}
     Niega el boole en la cima de la pila.
@@ -1217,46 +1254,54 @@ que @pd{Opcode#SUM#valor}).
 DOCUMENTA]
 variable Opcode
 fijar Opcode a EnumConValoresIncrementales: {Opcode},
-    {SUM},     [ SUM ]
-    {SUB},     [ SUB ]
-    {MUL},     [ MUL ]
-    {DIV},     [ DIV ]
-    {LT},      [ LT ]
-    {GT},      [ GT ]
-    {LE},      [ LE ]
-    {GE},      [ GE ]
-    {OPEQ},    [ OPEQ ]
-    {POP},     [ POP ]
-    {LCONST},  [ LCONST Cx ]
-    {ICONST},  [ ICONST Na ]
-    {FCONST},  [ FCONST Fa ]
-    {LOCAL},   [ LOCAL Lx  (Solo al principio de un procedimiento) ]
-    {PARAM},   [ PARAM Lx  (Solo antes que LOCAL en un procedimiento) ]
-    {MKCLZ},   [ MKCLZ Ex, Px ]
-    {MK0CLZ},  [ MK0CLZ Px ]
-    {LSET},    [ LSET Lx ]
-    {LGET},    [ LGET Lx ]
-    {LSETC},   [ LSETC Ex, Ua, Ub ]
-    {LGETC},   [ LGETC Ex, Ua, Ub ]
-    {ROT},     [ ROT Ua ]
-    {DYNCALL}, [ DYNCALL Ua, Ub ]
-    {RETN},    [ RETN Ua ]
-    {ENEW},    [ ENEW Lx, Ua ]
-    {EINIT},   [ EINIT Lx, Ua, Ly ]
-    {OPNFRM},  [ OPNFRM Ex, ?Ey, Ua ]
-    {CLSFRM},  [ CLSFRM Ex ]
-    {CHOOSE},  [ CHOOSE Tx, Ty ]
-    {JMP},     [ JMP Tx ]
-    {NAME},    [ NAME Tx ]
-    {MTRUE},   [ MTRUE ]
-    {CMPEQ},   [ CMPEQ ]
-    {CMPNEQ},  [ CMPNEQ ]
-    {NOT},     [ NOT ]
-    {MSG},     [ MSG Cx, Ua, Ub ]
-    {PRN},     [ PRN ]
-    {NL},      [ NL ]
-    {SPUSH},   [ SPUSH EACT ]
-    {SPOP}     [ SPOP EACT ]
+    {SUM},        [ SUM ]
+    {SUB},        [ SUB ]
+    {MUL},        [ MUL ]
+    {DIV},        [ DIV ]
+    {LT},         [ LT ]
+    {GT},         [ GT ]
+    {LE},         [ LE ]
+    {GE},         [ GE ]
+    {OPEQ},       [ OPEQ ]
+    {SAME},       [ SAME ]
+    {OBJATTR},    [ OBJATTR ]
+    {OBJATTRSET}, [ OBJATTRSET ]
+    {OBJSZ},      [ OBJSZ ]
+    {OBJ2CLZ},    [ OBJ2CLZ ]
+    {CLZ2OBJ},    [ CLZ2OBJ ]
+    {POP},        [ POP ]
+    {LCONST},     [ LCONST Cx ]
+    {ICONST},     [ ICONST Na ]
+    {BCONST},     [ FCONST Fa ]
+    {FCONST},     [ FCONST Fa ]
+    {LOCAL},      [ LOCAL Lx  (Solo al principio de un procedimiento) ]
+    {PARAM},      [ PARAM Lx  (Solo antes que LOCAL en un procedimiento) ]
+    {MKCLZ},      [ MKCLZ Ex, Px ]
+    {MK0CLZ},     [ MK0CLZ Px ]
+    {LSET},       [ LSET Lx ]
+    {LGET},       [ LGET Lx ]
+    {LSETC},      [ LSETC Ex, Ua, Ub ]
+    {LGETC},      [ LGETC Ex, Ua, Ub ]
+    {ROT},        [ ROT Ua ]
+    {DYNCALL},    [ DYNCALL Ua, Ub ]
+    {RETN},       [ RETN Ua ]
+    {ENEW},       [ ENEW Lx, Ua ]
+    {EINIT},      [ EINIT Lx, Ua, Ly ]
+    {OPNFRM},     [ OPNFRM Ex, ?Ey, Ua ]
+    {CLSFRM},     [ CLSFRM Ex ]
+    {CHOOSE},     [ CHOOSE Tx, Ty ]
+    {JMP},        [ JMP Tx ]
+    {NAME},       [ NAME Tx ]
+    {MTRUE},      [ MTRUE ]
+    {CMPEQ},      [ CMPEQ ]
+    {CMPNEQ},     [ CMPNEQ ]
+    {NOT},        [ NOT ]
+    {MSG},        [ MSG Cx, Ua, Ub ]
+    {DYNMSG},     [ DYNMSG ]
+    {PRN},        [ PRN ]
+    {NL},         [ NL ]
+    {SPUSH},      [ SPUSH EACT ]
+    {SPOP}        [ SPOP EACT ]
 
 metodo Opcode#bytecode
     devolver yo#valor
@@ -1615,11 +1660,11 @@ finprocedimiento
 función automaticamente se encarga de dejar la pila en un estado apropiado
 cuando se encuentra a una expresión en una posición de instrucción.
 DOCUMENTA]
-funcion CompilarBloqueAWasm: instrucciones
+funcion CompilarBloqueAWasm: instrucciones, builtins
     variable res
     fijar res a Compilado#vacío
     ParaCadaElemento: instrucciones, procedimiento: instr
-        fijar res a res >> (CompilarAWasm: instr)
+        fijar res a res >> (CompilarAWasm: instr, builtins)
         si EsInstancia: instr, AST#NodoExpresion
             fijar res a res >> (Compilado#deInstrucciónes: (Arreglo#crearCon: OP#POP))
         finsi
@@ -1846,7 +1891,7 @@ es un @pd{AST#NodoExpresion} entonces el compilado dejará en la pila el
 resultado de la expresión. Si es un @pd{AST#NodoInstrucción} entonces no dejará
 valores en la pila.
 DOCUMENTA]
-funcion CompilarAWasm: ast
+funcion CompilarAWasm: ast, builtins
     funcion Instrucciones: ...Is
         devolver Compilado#deInstrucciónes: Is
     finfuncion
@@ -1858,7 +1903,7 @@ funcion CompilarAWasm: ast
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
         fijar localesInmediatas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}
         devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, Arreglo#vacio, FALSO, profundidad)))
-              >> (CompilarBloqueAWasm: ast#instrucciones)
+              >> (CompilarBloqueAWasm: ast#instrucciones, builtins)
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
         si EsNúmeroEntero: ast#valor
@@ -1875,8 +1920,8 @@ funcion CompilarAWasm: ast
     finsi
     si EsInstancia: ast, AST#NodoOperador
         variables lhs, rhs
-        fijar lhs a CompilarAWasm: ast#lhs
-        fijar rhs a CompilarAWasm: ast#rhs
+        fijar lhs a CompilarAWasm: ast#lhs, builtins
+        fijar rhs a CompilarAWasm: ast#rhs, builtins
         si ast#op#op = {+}
             devolver lhs >> rhs >> (Instrucciones: OP#SUM)
         finsi
@@ -1913,12 +1958,16 @@ funcion CompilarAWasm: ast
                                  (OP#MSG: cid, 2, 1))
     finsi
     si EsInstancia: ast, AST#NodoIdentificador
-        variable res
-        fijar res a CompilarIdentificador: ast
-        si ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
-            fijar res a res >> (Instrucciones: (OP#DYNCALL: 0, 1))
+        si (RN#NombreResueltoDe: ast) = (builtins#en: {__EACT})
+            devolver Instrucciones: (OP#LGET: LocalDelEntornoActual)
+        sino
+            variable res
+            fijar res a CompilarIdentificador: ast
+            si ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+                fijar res a res >> (Instrucciones: (OP#DYNCALL: 0, 1))
+            finsi
+            devolver res
         finsi
-        devolver res
     finsi
     si EsInstancia: ast, AST#NodoNoLlamar
         si ast#mensajes#longitud = 0
@@ -1930,26 +1979,56 @@ funcion CompilarAWasm: ast
     si EsInstancia: ast, AST#NodoEnviarMensaje
         variable cid
         fijar cid a GenerarIdDeConstante
-        devolver (CompilarAWasm: ast#objeto)
+        devolver (CompilarAWasm: ast#objeto, builtins)
               >> (UnirCompilados: (Mapear: ast#argumentos, funcion: nodos
-                      devolver CompilarAWasm: nodos
+                      devolver CompilarAWasm: nodos, builtins
                   finfuncion))
               >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
                                  (OP#MSG: cid, ast#argumentos#longitud, 1))
               >> (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, ast#mensaje)))
     finsi
     si EsInstancia: ast, AST#NodoLlamarProcedimiento
+        variable procnr
+        fijar procnr a RN#NombreResueltoDe: ast#proc
+        funcion ArgumentosCompilados
+            devolver UnirCompilados: (Mapear: ast#argumentos, funcion: nodos
+                         devolver CompilarAWasm: nodos, builtins
+                     finfuncion)
+        finfuncion
+
+        si procnr = (builtins#en: {__SonElMismoObjeto})
+            necesitas ast#argumentos#longitud = 2
+            devolver ArgumentosCompilados >> (Instrucciones: OP#SAME)
+        finsi
+        si procnr = (builtins#en: {__ObtenerAtributo})
+            necesitas ast#argumentos#longitud = 2
+            devolver ArgumentosCompilados >> (Instrucciones: OP#OBJATTR)
+        finsi
+        si procnr = (builtins#en: {__FijarAtributo})
+            necesitas ast#argumentos#longitud = 3
+            devolver ArgumentosCompilados >> (Instrucciones: OP#OBJATTRSET, (OP#BCONST: 0))
+        finsi
+        si procnr = (builtins#en: {__NúmeroDeAtributos})
+            necesitas ast#argumentos#longitud = 1
+            devolver ArgumentosCompilados >> (Instrucciones: OP#OBJSZ)
+        finsi
+        si procnr = (builtins#en: {__CódigoDeObjeto})
+            necesitas ast#argumentos#longitud = 1
+            devolver ArgumentosCompilados >> (Instrucciones: OP#OBJ2CLZ)
+        finsi
+        si procnr = (builtins#en: {__EM})
+            necesitas ast#argumentos#longitud = 3
+            devolver ArgumentosCompilados >> (Instrucciones: OP#DYNMSG)
+        finsi
         devolver (CompilarIdentificador: ast#proc)
-              >> (UnirCompilados: (Mapear: ast#argumentos, funcion: nodos
-                      devolver CompilarAWasm: nodos
-                  finfuncion))
+              >> ArgumentosCompilados
               >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
                                  (OP#DYNCALL: ast#argumentos#longitud, 1))
     finsi
     si EsInstancia: ast, AST#NodoAutoejecutar
-        devolver (CompilarAWasm: ast#expr)
+        devolver (CompilarAWasm: ast#expr, builtins)
               >> (UnirCompilados: (Mapear: ast#argumentos, funcion: nodos
-                      devolver CompilarAWasm: nodos
+                      devolver CompilarAWasm: nodos, builtins
                   finfuncion))
               >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
                                  (OP#DYNCALL: ast#argumentos#longitud, 1))
@@ -1958,7 +2037,8 @@ funcion CompilarAWasm: ast
         devolver Compilado#vacío
     finsi
     si EsInstancia: ast, AST#NodoFijar
-        devolver (CompilarAWasm: ast#valor) >> (CompilarFijarIdentificador: ast#objetivo)
+        devolver (CompilarAWasm: ast#valor, builtins)
+              >> (CompilarFijarIdentificador: ast#objetivo)
     finsi
     si EsInstancia: ast, AST#NodoSi
         variables etiqSi, etiqSino, etiqFinsi, localesEnElEntornoSiVerdadero, localesEnElEntornoSiFalso, localesSiVerdadero, localesSiFalso, localesInmediatasSiVerdadero, localesInmediatasSiFalso, profundidad
@@ -1974,18 +2054,18 @@ funcion CompilarAWasm: ast
         fijar localesInmediatasSiFalso a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatasSiFalso}
         fijar localesEnElEntornoSiFalso a VariablesEnElEntorno: localesSiFalso
 
-        devolver (CompilarAWasm: ast#condicional)
+        devolver (CompilarAWasm: ast#condicional, builtins)
               >> (Instrucciones: (OP#CHOOSE: etiqSi, etiqSino),
                                  (OP#NAME: etiqSi),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
               >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntornoSiVerdadero, localesInmediatasSiVerdadero, VERDADERO, profundidad)))
-              >> (CompilarBloqueAWasm: ast#siVerdadero)
+              >> (CompilarBloqueAWasm: ast#siVerdadero, builtins)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#JMP: etiqFinsi),
                                  (OP#NAME: etiqSino),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
               >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntornoSiFalso, localesInmediatasSiFalso, VERDADERO, profundidad)))
-              >> (CompilarBloqueAWasm: ast#siFalso)
+              >> (CompilarBloqueAWasm: ast#siFalso, builtins)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#NAME: etiqFinsi))
     finsi
@@ -2001,21 +2081,23 @@ funcion CompilarAWasm: ast
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
 
         devolver (Instrucciones: (OP#NAME: etiqInicio))
-              >> (CompilarAWasm: ast#condicional)
+              >> (CompilarAWasm: ast#condicional, builtins)
               >> (Instrucciones: (OP#CHOOSE: etiqCont, etiqFinmientras),
                                  (OP#NAME: etiqCont),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
               >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntorno, localesInmediatas, VERDADERO, profundidad)))
-              >> (CompilarBloqueAWasm: ast#cuerpo)
+              >> (CompilarBloqueAWasm: ast#cuerpo, builtins)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#JMP: etiqInicio),
                                  (OP#NAME: etiqFinmientras))
     finsi
     si EsInstancia: ast, AST#NodoNecesitas
-        devolver (CompilarAWasm: ast#expresión) >> (Instrucciones: OP#MTRUE)
+        devolver (CompilarAWasm: ast#expresión, builtins)
+              >> (Instrucciones: OP#MTRUE)
     finsi
     si EsInstancia: ast, AST#NodoDevolver
-        devolver (CompilarAWasm: ast#expresión) >> (Instrucciones: (OP#RETN: 1))
+        devolver (CompilarAWasm: ast#expresión, builtins)
+              >> (Instrucciones: (OP#RETN: 1))
     finsi
     si (EsInstancia: ast, AST#NodoFunción) || (EsInstancia: ast, AST#NodoFunciónAnónima)
         variables nrsParámetros, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad, localesInmediatas, procid
@@ -2038,7 +2120,7 @@ funcion CompilarAWasm: ast
             fijar inicDeClosure a inicDeClosure >> (CompilarFijarIdentificador: ast#nombre)
         finsi
 
-        fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo)
+        fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo, builtins)
         fijar fn a DeclrFunción#crear: procid, nrsParámetros, cuerpo#instrucciones
         devolver inicDeClosure
              >> (Compilado#deDeclaraciones: cuerpo#declaraciones)
@@ -2052,15 +2134,17 @@ funcion CompilarAWasm: ast
         sino
             fijar cmp a Instrucciones: OP#CMPNEQ
         finsi
-        devolver (CompilarAWasm: ast#lhs)
-              >> (CompilarAWasm: ast#rhs)
+        devolver (CompilarAWasm: ast#lhs, builtins)
+              >> (CompilarAWasm: ast#rhs, builtins)
               >> cmp
     finsi
     si EsInstancia: ast, AST#NodoNo
-        devolver (CompilarAWasm: ast#expresión) >> (Instrucciones: OP#NOT)
+        devolver (CompilarAWasm: ast#expresión, builtins)
+              >> (Instrucciones: OP#NOT)
     finsi
     si EsInstancia: ast, AST#NodoEscribir
-        devolver (CompilarAWasm: ast#valor) >> (Instrucciones: OP#PRN)
+        devolver (CompilarAWasm: ast#valor, builtins)
+              >> (Instrucciones: OP#PRN)
     finsi
     si EsInstancia: ast, AST#NodoNl
         devolver Instrucciones: OP#NL
@@ -2277,8 +2361,21 @@ procedimiento EmitirCompilado: compilado, puertoDeEscritura
 finprocedimiento
 
 funcion ParsearYDefunc: programa
-    variable ast
+    variables ast, builtins, autoejecutables
     fijar ast a Parser#CrearAST: programa
+
+    fijar builtins a Diccionario#desdePares:
+        {__EACT}, RN#GenerarIdDeNombre,
+        {__RT}, RN#GenerarIdDeNombre,
+        {__SonElMismoObjeto}, RN#GenerarIdDeNombre,
+        {__ObtenerAtributo}, RN#GenerarIdDeNombre,
+        {__FijarAtributo}, RN#GenerarIdDeNombre,
+        {__NúmeroDeAtributos}, RN#GenerarIdDeNombre,
+        {__EM}, RN#GenerarIdDeNombre,
+        {__CódigoDeObjeto}, RN#GenerarIdDeNombre
+    fijar autoejecutables a Arreglo#crearCon:
+        {__SonElMismoObjeto}, {__ObtenerAtributo}, {__FijarAtributo},
+        {__NúmeroDeAtributos}, {__CódigoDeObjeto}, {__EM}
 
     variable ámbitoPrincipal
     fijar ámbitoPrincipal a RN#ResolverNombres:
@@ -2286,10 +2383,18 @@ funcion ParsearYDefunc: programa
         procedimiento: nombreDelMódulo
             Inalcanzable
         finprocedimiento,
-        procedimiento: ámbito finprocedimiento,
+        procedimiento: ámbito
+            builtins#paraCadaPar: procedimiento: nombre, binding
+                ámbito#agregar: nombre, binding
+            finprocedimiento
+            ParaCadaElemento: autoejecutables, procedimiento: nombre
+                ámbito#marcarComoAutoejecutable: nombre
+            finprocedimiento
+        finprocedimiento,
         procedimiento: ámbito finprocedimiento
     Defun#Defuncionalizar: ast
-    devolver ast
+
+    devolver ObjetoAdHoc: {ast}, ast, {builtins}, builtins
 finfuncion
 
 [{
@@ -2326,14 +2431,15 @@ metodo XD#comoTexto
     devolver {(XD binding = ~t, índiceDeCaptura = ~t, altura = ~t, profundidad = ~t, esCapturado = ~t, esLocal = ~t, esLocalInmediata = ~t, nodo = ~t)}#formatear: yo#binding, yo#índiceDeCaptura, yo#altura, yo#profundidad, yo#esCapturado, yo#esLocal, yo#esLocalInmediata, yo#nodo
 finmetodo
 
-variables ast, programa, cc
+variables ast, resP, programa, cc
 Escribir: ({Leyendo: ~t}#formatear: (__Argv#en: 0))
 Escribir: ({Escribiendo: ~t}#formatear: (__Argv#en: 1))
 fijar programa a SistemaDeArchivos#LeerArchivo: (__Argv#en: 0)
-fijar ast a ParsearYDefunc: programa
+fijar resP a ParsearYDefunc: programa
+fijar ast a resP#ast
 AnotaciónDeCapturas: ast
 [AnotarProfundidadDeIdentificadorEnBloque: ast, 0]
-EnumeraciónDeCapturas: ast, EstadoDeEnumeraciónDeCapturas#inicial
+EnumeraciónDeCapturas: ast, (EstadoDeEnumeraciónDeCapturas#desdeBuiltins: resP#builtins)
 EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast), funcion: nid devolver NULO finfuncion
 AnotarBindingsLocales: ast
 AnotarLocalesInmediatas: ast
@@ -2351,7 +2457,7 @@ EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast), f
 finfuncion
 MarcaVariablesLocalesEnSubámbitos: ast
 MarcaVariablesQueEstánEnElEntorno: ast
-fijar cc a CompilarAWasm: ast
+fijar cc a CompilarAWasm: ast, resP#builtins
 variable ncc
 fijar ncc a NormalizaLosIdsDeConstantes: cc
 Listado: ncc

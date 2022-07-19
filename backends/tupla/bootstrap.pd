@@ -1,0 +1,472 @@
+procedimiento __FallarConMensaje: msj
+    __RT#fallarConMensaje: msj
+finprocedimiento
+
+procedimiento __EnviarMensaje: obj, msj, args
+    devolver __EM: obj, msj, args
+finprocedimiento
+
+variable __Impl
+fijar __Impl a {PDVM Bootstrap}
+
+funcion __CrearArreglo: ...arr
+    devolver arr
+finfuncion
+
+variables NULO, VERDADERO, FALSO
+fijar NULO a %(funcion finfuncion)
+fijar VERDADERO a 1 = 1
+fijar FALSO a no VERDADERO
+
+funcion __ObtenerCLI
+    variables cli, i
+    fijar cli a __CrearArreglo
+    fijar i a 0
+    mientras i < __RT#argc
+        fijar i a i + 1
+        cli#agregarAlFinal: (__RT#argv: i)
+    finmientras
+    devolver cli
+finfuncion
+
+variable __Argv
+fijar __Argv a __ObtenerCLI
+
+procedimiento ErrorDeMensajeNoEncontrado: msj, extra
+    __FallarConMensaje: ({Mensaje ~t no encontrado: ~t}#formatear: msj, extra)
+finprocedimiento
+
+procedimiento __ParaCadaElementoConÍndice: arr, proc
+    variable i
+    fijar i a 0
+    mientras i < arr#longitud
+        %proc: (arr#en: i), i
+        fijar i a i + 1
+    finmientras
+finprocedimiento
+
+procedimiento __ParaCadaElemento: arr, proc
+    __ParaCadaElementoConÍndice: arr, procedimiento: el, i
+        devolver %proc: el
+    finprocedimiento
+finprocedimiento
+
+funcion __ClonarObjeto: obj
+    variable clon
+    fijar clon a (__CódigoDeObjeto: obj)#comoObjeto
+    variable i
+    fijar i a 0
+    mientras i < (__NúmeroDeAtributos: clon)
+        __FijarAtributo: clon, i, (__ObtenerAtributo: obj, i)#\clonar\
+        fijar i a i + 1
+    finmientras
+    devolver clon
+finfuncion
+
+funcion __ObjetosSonIguales: A, B
+    si no (__CódigoDeObjeto: A)#__códigoIgualA: (__CódigoDeObjeto: B)
+        devolver FALSO
+    finsi
+    si no (__NúmeroDeAtributos: A) = (__NúmeroDeAtributos: B)
+        devolver FALSO
+    finsi
+    variable i
+    fijar i a 0
+    mientras i < (__NúmeroDeAtributos: A)
+        si no (__ObtenerAtributo: A, i) = (__ObtenerAtributo: B, i)
+            devolver FALSO
+        finsi
+        fijar i a i + 1
+    finmientras
+    devolver VERDADERO
+finfuncion
+
+variable __MsjObtenerAtributos
+fijar __MsjObtenerAtributos a procedimiento: msj, ...args
+    variable yo
+    fijar yo a __EACT
+
+    si (msj = {igualA}) || (msj = {operador_=})
+        necesitas args#longitud = 1
+        devolver __SonElMismoObjeto: yo, (args#en: 0)
+    finsi
+    si msj = {clonar}
+        necesitas args#longitud = 0
+        devolver yo
+    finsi
+    si msj = {comoTexto}
+        necesitas args#longitud = 0
+        devolver {__MsjObtenerAtributos}
+    finsi
+
+    ErrorDeMensajeNoEncontrado: msj, {En la instancia del mensaje especial __MsjObtenerAtributos}
+finprocedimiento#comoObjeto
+
+funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
+    devolver procedimiento: msj, ...args
+        variables instFalsa, instProxy
+        fijar instFalsa a __EACT
+
+        si __SonElMismoObjeto: instReal, NULO
+            fijar instProxy a instFalsa
+        sino
+            fijar instProxy a instReal
+        finsi
+
+        procedimiento buscarMensaje: msj
+            variable i
+            fijar i a métodos#longitud - 1
+            mientras i >= 0
+                variable métodoDeInstancia
+                fijar métodoDeInstancia a métodos#en: i
+                fijar i a i - 1
+    
+                variables nombreDelMétodo, proc
+                fijar nombreDelMétodo a métodoDeInstancia#en: 0
+                fijar proc a métodoDeInstancia#en: 1
+                si msj = nombreDelMétodo
+                    devolver proc
+                finsi
+            finmientras
+            devolver NULO
+        finprocedimiento
+
+        si msj = __MsjObtenerAtributos
+            necesitas args#longitud = 0
+            devolver atrs
+        finsi
+
+        variable proc
+        fijar proc a buscarMensaje: msj
+        si no __SonElMismoObjeto: proc, NULO
+            devolver %proc: instProxy, ...args
+        finsi
+
+        si msj = {__tipo}
+            necesitas args#longitud = 0
+            devolver cls
+        finsi
+        si (msj = {igualA}) || (msj = {operador_=})
+            necesitas args#longitud = 1
+            devolver __ObjetosSonIguales: instReal, (args#en: 0)
+        finsi
+        si msj = {clonar}
+            necesitas args#longitud = 0
+            devolver __ClonarObjeto: instFalsa
+        finsi
+
+        fijar proc a buscarMensaje: {metodoNoEncontrado}
+        si no __SonElMismoObjeto: proc, NULO
+            devolver %proc: instProxy, msj, args
+        finsi
+
+        ErrorDeMensajeNoEncontrado: msj, ({En una instancia de la clase ~t}#formatear: cls#nombre)
+    finprocedimiento#comoObjeto
+finfuncion
+
+funcion __CrearMétodosDeInstancia: métodosDeInstancia, atributosDeInstancia, atrs
+    variable métodos
+    fijar métodos a __CrearArreglo
+
+    __ParaCadaElemento: métodosDeInstancia, procedimiento: el
+        métodos#agregarAlFinal: el
+    finprocedimiento
+
+    __ParaCadaElementoConÍndice: atributosDeInstancia, procedimiento: atr, i
+        métodos#agregarAlFinal: (__CrearArreglo: atr, metodo
+            devolver atrs#en: i
+        finmetodo)
+        métodos#agregarAlFinal: (__CrearArreglo: ({fijar_}#concatenar: atr), metodo: valor
+            atrs#fijarEn: i, valor
+        finmetodo)
+    finprocedimiento
+
+    devolver métodos
+finfuncion
+
+procedimiento __CrearClase: nombre
+    variables métodosDeInstancia, atributosDeInstancia, claseBase, métodosEstaticos
+    fijar métodosDeInstancia a __CrearArreglo:
+        (__CrearArreglo: {inicializar}, metodo finmetodo)
+    fijar atributosDeInstancia a __CrearArreglo
+    fijar claseBase a NULO
+    fijar métodosEstaticos a __CrearArreglo
+
+    devolver procedimiento: msj, ...args
+        variable yo
+        fijar yo a __EACT
+
+        variable idc
+        fijar idc a métodosEstaticos#longitud - 1
+        mientras idc >= 0
+            variable métodoEstatico
+            fijar métodoEstatico a métodosEstaticos#en: idc
+            fijar idc a idc - 1
+
+            si (métodoEstatico#en: 0) = msj
+                devolver %(métodoEstatico#en: 1): yo, ...args
+            finsi
+        finmientras
+
+        si (msj = {igualA}) || (msj = {operador_=})
+            necesitas args#longitud = 1
+            devolver __SonElMismoObjeto: yo, (args#en: 0)
+        finsi
+
+        si msj = {clonar}
+            necesitas args#longitud = 0
+            devolver yo
+        finsi
+
+        si msj = {comoTexto}
+            necesitas args#longitud = 0
+            devolver {Clase ~t}#formatear: yo#nombre
+        finsi
+
+        si msj = {__métodosDeInstancia}
+            necesitas args#longitud = 0
+            devolver métodosDeInstancia
+        finsi
+
+        si msj = {__atributosDeInstancia}
+            necesitas args#longitud = 0
+            devolver atributosDeInstancia
+        finsi
+
+        si msj = {__métodosEstaticos}
+            necesitas args#longitud = 0
+            devolver métodosEstaticos
+        finsi
+
+        si msj = {fijar___métodosDeInstancia}
+            necesitas args#longitud = 1
+            fijar métodosDeInstancia a args#en: 0
+            devolver NULO
+        finsi
+
+        si msj = {fijar___atributosDeInstancia}
+            necesitas args#longitud = 1
+            fijar atributosDeInstancia a args#en: 0
+            devolver NULO
+        finsi
+
+        si msj = {fijar___métodosEstaticos}
+            necesitas args#longitud = 1
+            fijar métodosEstaticos a args#en: 0
+            devolver NULO
+        finsi
+
+        si msj = {nombre}
+            necesitas args#longitud = 0
+            devolver nombre
+        finsi
+
+        si msj = {claseBase}
+            necesitas args#longitud = 0
+            devolver claseBase
+        finsi
+
+        si msj = {fijar_nombre}
+            necesitas args#longitud = 1
+            fijar nombre a args#en: 0
+            devolver NULO
+        finsi
+
+        si msj = {fijar_claseBase}
+            necesitas args#longitud = 1
+            fijar claseBase a args#en: 0
+            devolver NULO
+        finsi
+
+        si msj = {agregarMetodo}
+            necesitas args#longitud = 2
+            variables nombre, método
+            fijar nombre a args#en: 0
+            fijar método a args#en: 1
+            métodosDeInstancia#agregarAlFinal: (__CrearArreglo: nombre, método)
+            devolver NULO
+        finsi
+
+        si msj = {agregarAtributo}
+            necesitas args#longitud = 1
+            variable nombre
+            fijar nombre a args#en: 0
+            atributosDeInstancia#agregarAlFinal: nombre
+            devolver NULO
+        finsi
+
+        si msj = {agregarMétodoEstatico}
+            necesitas args#longitud = 2
+            métodosEstaticos#agregarAlFinal: (__CrearArreglo: (args#en: 0), (args#en: 1))
+            devolver NULO
+        finsi
+
+        si msj = {_crearConYo}
+            necesitas args#longitud = 1
+            variables instReal, atrs, métodos
+            fijar instReal a args#en: 0
+            fijar atrs a __EnviarMensaje: instReal, __MsjObtenerAtributos, __CrearArreglo
+            fijar métodos a __CrearMétodosDeInstancia: métodosDeInstancia, atributosDeInstancia, atrs
+            devolver __CrearInstanciaDeClase: yo, instReal, métodos, atrs
+        finsi
+
+        si msj = {_crear}
+            necesitas args#longitud = 0
+            variables atrs, métodos
+            fijar atrs a atributosDeInstancia#mapear: funcion: v devolver NULO finfuncion
+            fijar métodos a __CrearMétodosDeInstancia: métodosDeInstancia, atributosDeInstancia, atrs
+            devolver __CrearInstanciaDeClase: yo, NULO, métodos, atrs
+        finsi
+
+        si msj = {crear}
+            variable inst
+            fijar inst a yo#_crear
+            inst#inicializar: ...args
+            devolver inst
+        finsi
+
+        si msj = {subclase}
+            necesitas args#longitud = 0
+            variable subclase
+            fijar subclase a __CrearClase: {<clase anónima>}
+            fijar subclase#claseBase a yo
+            fijar subclase#__atributosDeInstancia a atributosDeInstancia#mapear: funcion: el devolver el finfuncion
+            fijar subclase#__métodosDeInstancia a métodosDeInstancia#mapear: funcion: el devolver el finfuncion
+            fijar subclase#__métodosEstaticos a métodosEstaticos#mapear: funcion: el devolver el finfuncion
+            devolver subclase
+        finsi
+
+        ErrorDeMensajeNoEncontrado: msj, ({En una instancia de la clase ~t}#formatear: nombre)
+    finprocedimiento#comoObjeto
+finprocedimiento
+
+
+[ variable Objeto ]
+[ fijar Objeto a __CrearClase: {Objeto} ]
+
+
+[ clase Numero hereda Objeto ]
+[     [\ metodo estatico crear ![\ ]
+[ finclase ]
+
+[ metodo estatico Numero#crear ]
+[     devolver 0 ]
+[ finmetodo ]
+
+
+[ clase Procedimiento hereda Objeto ]
+[     [\ metodo estatico crear ![\ ]
+[ finclase ]
+
+[ metodo estatico Procedimiento#crear ]
+[     __FallarConMensaje: {No se puede crear un procedimiento con #crear} ]
+[ finmetodo ]
+
+
+[ clase Referencia hereda Objeto ]
+[     [\ metodo estatico crear ![\ ]
+[ finclase ]
+
+[ metodo estatico Referencia#crear ]
+[     __FallarConMensaje: {No se puede crear una referencia con #crear} ]
+[ finmetodo ]
+
+
+[ clase TipoNulo hereda Objeto ]
+[     [\ metodo estatico crear ![\ ]
+[ finclase ]
+
+[ metodo estatico TipoNulo#crear ]
+[     devolver NULO ]
+[ finmetodo ]
+
+
+[ clase Texto hereda Objeto ]
+[     [\ metodo estatico crear ![\ ]
+[     [\ metodo estatico vacío ![\ ]
+[ finclase ]
+
+[ metodo estatico Texto#vacío ]
+[     devolver {} ]
+[ finmetodo ]
+
+[ metodo estatico Texto#crear ]
+[     devolver {} ]
+[ finmetodo ]
+
+
+[ clase Boole hereda Objeto ]
+[     [\ metodo estatico crear ![\ ]
+[     [\ metodo estatico verdadero ![\ ]
+[     [\ metodo estatico falso ![\ ]
+[ finclase ]
+
+[ metodo estatico Boole#crear ]
+[     devolver VERDADERO ]
+[ finmetodo ]
+
+[ metodo estatico Boole#verdadero ]
+[     devolver VERDADERO ]
+[ finmetodo ]
+
+[ metodo estatico Boole#falso ]
+[     devolver FALSO ]
+[ finmetodo ]
+
+[ variable Booleano ]
+[ fijar Booleano a Boole ]
+
+
+[ funcion __EspacioDeNombres: ...pares ]
+[     __FallarConMensaje: {TODO} ]
+[     devolver procedimiento: msj, ...args ]
+[     finprocedimiento#comoObjeto ]
+[ finfuncion ]
+
+
+[ clase EspacioDeNombres hereda Objeto ]
+[     [\ metodo estatico crear ![\ ]
+[     [\ metodo estatico vacio ![\ ]
+[     [\ metodo estatico vacío ![\ ]
+[ finclase ]
+
+[ metodo estatico EspacioDeNombres#crear ]
+[     devolver __EspacioDeNombres ]
+[ finmetodo ]
+
+[ metodo estatico EspacioDeNombres#vacio ]
+[     devolver __EspacioDeNombres ]
+[ finmetodo ]
+
+[ metodo estatico EspacioDeNombres#vacío ]
+[     devolver __EspacioDeNombres ]
+[ finmetodo ]
+
+
+[ clase Arreglo hereda Objeto ]
+[     [\ metodo estatico crear ![\ ]
+[     [\ metodo estatico vacio ![\ ]
+[     [\ metodo estatico vacío ![\ ]
+[     [\ metodo estatico crearCon ![\ ]
+[     [\ metodo estatico conValores ![\ ]
+[ finclase ]
+
+[ metodo estatico Arreglo#crear ]
+[     devolver __CrearArreglo ]
+[ finmetodo ]
+
+[ metodo estatico Arreglo#vacio ]
+[     devolver __CrearArreglo ]
+[ finmetodo ]
+
+[ metodo estatico Arreglo#vacío ]
+[     devolver __CrearArreglo ]
+[ finmetodo ]
+
+[ metodo estatico Arreglo#crearCon: ...valores ]
+[     devolver __CrearArreglo: ...valores ]
+[ finmetodo ]
+
+[ metodo estatico Arreglo#conValores: ...valores ]
+[     devolver __CrearArreglo: ...valores ]
+[ finmetodo ]
