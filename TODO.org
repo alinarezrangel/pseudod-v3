@@ -103,7 +103,7 @@
 ** FIXED Los ~NodoVariadic~ no tienen metadatos.
 ** FIXED No se puede cargar una base de datos de módulos que contenga un módulo que solo exporte un identificador.
 * En el backend de tuplas
-** FIXME Las funciones no pueden tener parámetros variadic.
+** FIXED Las funciones no pueden tener parámetros variadic.
 ** FIXME No puedes llamar a funciones variadic.
    Es necesario usar el nuevo opcode ~DYNMSG~. ~Hola: 1, ...2, 3~ debería
    compilar a algo como:

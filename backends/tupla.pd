@@ -633,7 +633,13 @@ procedimiento EnumeraciónDeCapturas: ast, estado
                 estado#marcarÍndiceCapturaEnDeclaración: nodo#nombre
             finsi
             fijar subestado a EstadoDeEnumeraciónDeCapturas#desdeEstado: estado
-            ParaCadaElemento: nodo#parámetros, &(subestado#marcarÍndiceCapturaEnDeclaración)
+            ParaCadaElemento: nodo#parámetros, procedimiento: param
+                si EsInstancia: param, AST#NodoVariadic
+                    subestado#marcarÍndiceCapturaEnDeclaración: param#interno
+                sino
+                    subestado#marcarÍndiceCapturaEnDeclaración: param
+                finsi
+            finprocedimiento
             ParaCadaElemento: nodo#cuerpo, procedimiento: instr
                 EnumeraciónDeCapturas: instr, subestado
             finprocedimiento
@@ -1344,6 +1350,14 @@ clase DeclrFunción
     atributo parámetros
 
     [DOCUMENTA
+    @brief{El parámetro variadic de la función, o @pd{NULO}.}
+
+    Si es @pd{NULO} entonces la función no es variadic. Si no es nulo entonces
+    debe ser el ID del parámetro que será variadic.
+    DOCUMENTA]
+    atributo parámetroVariadic
+
+    [DOCUMENTA
     @brief{Cuerpo de la función.}
 
     Un arreglo de tuplas.
@@ -1353,7 +1367,7 @@ clase DeclrFunción
     [DOCUMENTA
     @brief{Crea una nueva declaración de función.}
     DOCUMENTA]
-    metodo estatico crear: nombre, parámetros, cuerpo
+    metodo estatico crear: nombre, parámetros, parámVariadic, cuerpo
 
     [DOCUMENTA
     @brief{Devuelve una representación textual de la declaración.}
@@ -1361,16 +1375,18 @@ clase DeclrFunción
     metodo comoTexto
 finclase
 
-metodo estatico DeclrFunción#crear: nombre, parámetros, cuerpo
+metodo estatico DeclrFunción#crear: nombre, parámetros, parámVariadic, cuerpo
     devolver clonar yo#_crear con
         nombre: nombre
         parámetros: parámetros
+        parámetroVariadic: parámVariadic
         cuerpo: cuerpo
     finclonar
 finmetodo
 
 metodo DeclrFunción#comoTexto
-    devolver {(DeclrFunción ~t con ~t es ~t)}#formatear: yo#nombre, yo#parámetros, yo#cuerpo
+    devolver {(DeclrFunción ~t con ~t (~t) es ~t)}#formatear:
+        yo#nombre, yo#parámetros, yo#parámetroVariadic, yo#cuerpo
 finmetodo
 
 [DOCUMENTA
@@ -1556,6 +1572,7 @@ procedimiento Listado: compilado
         ParaCadaElementoConÍndice: declr#parámetros, procedimiento: p, j
             Escribir: {}, {}, ({#~t}#formatear: j), p
         finprocedimiento
+        Escribir: {}, ({VARIADIC ~t}#formatear: declr#parámetroVariadic)
         ParaCadaElementoConÍndice: declr#cuerpo, procedimiento: tupla, i
             Escribir: {}, ({#~t}#formatear: i), {}, ({[~t] 	~t}#formatear: tupla#opcode#bytecode, tupla#opcode#nombre), ...(tupla#argumentos)
         finprocedimiento
@@ -1592,10 +1609,36 @@ método/función/procedimiento.}
 
 @pd{ast} debe ser un @pd{AST#NodoFunción}, @pd{AST#NodoFunciónAnónima},
 @pd{AST#NodoMétodo} o @pd{AST#NodoDefineMétodoEnClase}. Devuelve un arreglo con
-los nombres resueltos de los parámetros (en orden).
+los nombres resueltos de los parámetros (en orden), excluyendo el parámetro
+variadic, si existe.
 DOCUMENTA]
-funcion NombresDeLosParámetros: ast
-    devolver Mapear: ast#parámetros, &(RN#NombreResueltoDe)
+funcion NombresDeLosParámetrosNoVariadic: ast
+    devolver Mapear:
+        (Filtrar: ast#parámetros,
+                  funcion: param
+                      devolver no EsInstancia: param, AST#NodoVariadic
+                  finfuncion),
+        &(RN#NombreResueltoDe)
+finfuncion
+
+[DOCUMENTA
+@brief{Devuelve el parámetro variadic, o @pd{NULO} si no hay ninguno.}
+
+@pd{ast} debe ser un @pd{AST#NodoFunción}, @pd{AST#NodoFunciónAnónima},
+@pd{AST#NodoMétodo} o @pd{AST#NodoDefineMétodoEnClase}. Devuelve el
+@pd{AST#NodoVariadic} o @pd{NULO}.
+DOCUMENTA]
+funcion ParámetroVariadic: ast
+    variable variadics
+    fijar variadics a Filtrar: ast#parámetros, funcion: param
+        devolver EsInstancia: param, AST#NodoVariadic
+    finfuncion
+    si variadics#longitud = 0
+        devolver NULO
+    sino
+        necesitas variadics#longitud = 1
+        devolver variadics#en: 0
+    finsi
 finfuncion
 
 
@@ -1722,6 +1765,11 @@ porque los parámetros son locales pero no deberían estar declarados con
 )
 DOCUMENTA]
 funcion CompilarLocales: locales, parámetros
+    variable variadics
+    fijar variadics a Filtrar: parámetros, funcion: param
+        devolver EsInstancia: param, AST#NodoVariadic
+    finfuncion
+    necesitas (variadics#longitud = 0) || (variadics#longitud = 1)
     Escribir: {-=-}
     ParaCadaElemento: locales, procedimiento: local
         si EstáEnElEntorno: local#nodo
@@ -1730,20 +1778,30 @@ funcion CompilarLocales: locales, parámetros
     finprocedimiento
     Escribir: {---}
     funcion índiceDeCaptura: nodo
-        devolver nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
+        variable nid
+        si EsInstancia: nodo, AST#NodoVariadic
+            fijar nid a nodo#interno
+        sino
+            fijar nid a nodo
+        finsi
+        devolver nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
     finfuncion
     variable índices
     fijar índices a (Mapear: parámetros, &índiceDeCaptura)
     devolver
         Mapear:
-            (Únicos:
-                (Mapear: (Filtrar: locales,
-                                   funcion: meta
-                                       devolver (no EstáEnElEntorno: meta#nodo) && (no Contiene: índices, meta#índiceDeCaptura)
-                                   finfuncion),
-                         funcion: local
-                             devolver local#binding
-                         finfuncion)),
+            (Concatenar:
+                (Únicos:
+                    (Mapear: (Filtrar: locales,
+                                    funcion: meta
+                                        devolver (no EstáEnElEntorno: meta#nodo) && (no Contiene: índices, meta#índiceDeCaptura)
+                                    finfuncion),
+                             funcion: local
+                                 devolver local#binding
+                             finfuncion)),
+                (Mapear: variadics, funcion: variadic
+                    devolver RN#NombreResueltoDe: variadic#interno
+                finfuncion)),
             funcion: registro
                 devolver OP#LOCAL: registro
             finfuncion
@@ -1828,7 +1886,13 @@ funcion CompilarEntornoDelÁmbito: parámetros, localesEnElEntorno, localesInmed
       máximoÍndiceDeLocalCapturado + 1 es el tamaño mínimo necesario para el
       marco de activación ("marco de llamada" o "call-frame") ]
     ops#agregarAlFinal: (OP#OPNFRM: LocalDelEntornoActual, (exísteMarcoSuperior#escojer: LocalDelEntornoSuperior, {NIL}), (máximoÍndiceDeLocalEnElEntorno + 1))
-    fijar nrsParámetros a Mapear: parámetros, &(RN#NombreResueltoDe)
+    fijar nrsParámetros a Mapear: parámetros, funcion: param
+        si EsInstancia: param, AST#NodoVariadic
+            devolver RN#NombreResueltoDe: param#interno
+        sino
+            devolver RN#NombreResueltoDe: param
+        finsi
+    finfuncion
     fijar localesSiSonParámetros a SepararArreglo: localesInmediatas, funcion: local
         devolver Contiene: nrsParámetros, (RN#NombreResueltoDe: local)
     finfuncion
@@ -2100,11 +2164,15 @@ funcion CompilarAWasm: ast, builtins
               >> (Instrucciones: (OP#RETN: 1))
     finsi
     si (EsInstancia: ast, AST#NodoFunción) || (EsInstancia: ast, AST#NodoFunciónAnónima)
-        variables nrsParámetros, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad, localesInmediatas, procid
+        variables nrsParámetros, parámetroVrd, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad, localesInmediatas, procid
 
         fijar preludio a Arreglo#vacio
         [ params ]
-        fijar nrsParámetros a NombresDeLosParámetros: ast
+        fijar nrsParámetros a NombresDeLosParámetrosNoVariadic: ast
+        fijar parámetroVrd a ParámetroVariadic: ast
+        si no EsNulo: parámetroVrd
+            fijar parámetroVrd a RN#NombreResueltoDe: parámetroVrd#interno
+        finsi
         [ locales ]
         fijar locales a LocalesDelBloque: ast
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
@@ -2121,7 +2189,7 @@ funcion CompilarAWasm: ast, builtins
         finsi
 
         fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo, builtins)
-        fijar fn a DeclrFunción#crear: procid, nrsParámetros, cuerpo#instrucciones
+        fijar fn a DeclrFunción#crear: procid, nrsParámetros, parámetroVrd, cuerpo#instrucciones
         devolver inicDeClosure
              >> (Compilado#deDeclaraciones: cuerpo#declaraciones)
              >> (Compilado#deDeclaraciones: (Arreglo#crearCon: fn))
@@ -2235,18 +2303,32 @@ funcion ExtráeInicioMientras: arr, pred
 finfuncion
 
 funcion NormalizaLosIdsDeLocales: compilado
-    funcion normalizaLasLocales: parámetros, instrucciones
-        variables nuevasLocales, locales, nuevasInstrucciones, nuevosParámetros
+    funcion normalizaLasLocales: parámetros, parámetroVariadic, instrucciones
+        variables nuevasLocales, locales, nuevasInstrucciones, nuevosParámetros, nuevoParámetroVariadic, índiceLocal
         fijar nuevasLocales a Diccionario#vacío
+
+        fijar índiceLocal a 0
+        procedimiento generarÍndiceLocal
+            variable res
+            fijar res a índiceLocal
+            fijar índiceLocal a índiceLocal + 1
+            devolver res
+        finprocedimiento
+
         fijar locales a Filtrar: instrucciones, funcion: tupla
             devolver tupla#es: Opcode#LOCAL
         finfuncion
         ParaCadaElementoConÍndice: parámetros, procedimiento: param, i
-            nuevasLocales#fijarEn: param, i
+            nuevasLocales#fijarEn: param, generarÍndiceLocal
         finprocedimiento
         ParaCadaElementoConÍndice: locales, procedimiento: tupla, i
-            nuevasLocales#fijarEn: (tupla#en: 0), (parámetros#longitud + i)
+            nuevasLocales#fijarEn: (tupla#en: 0), generarÍndiceLocal
         finprocedimiento
+        si no EsNulo: parámetroVariadic
+            fijar nuevoParámetroVariadic a nuevasLocales#en: parámetroVariadic
+        sino
+            fijar nuevoParámetroVariadic a NULO
+        finsi
 
         [ Estas locales nunca cambian, podría tener tres condicionales abajo
           pero creo que es más fácil simplemente agregarlas al diccionario. ]
@@ -2287,16 +2369,18 @@ funcion NormalizaLosIdsDeLocales: compilado
         fijar nuevosParámetros a Mapear: parámetros, &(nuevasLocales#en)
 
         devolver ObjetoAdHoc: {parámetros}, nuevosParámetros,
+                              {parámetroVariadic}, nuevoParámetroVariadic,
                               {instrucciones}, nuevasInstrucciones
     finfuncion
 
     devolver Compilado#crear:
-        (normalizaLasLocales: Arreglo#vacio, compilado#instrucciones)#instrucciones,
+        (normalizaLasLocales: Arreglo#vacio, NULO, compilado#instrucciones)#instrucciones,
         (Mapear: compilado#declaraciones, funcion: declr
             variable parámetrosYCuerpo
-            fijar parámetrosYCuerpo a normalizaLasLocales: declr#parámetros, declr#cuerpo
+            fijar parámetrosYCuerpo a normalizaLasLocales: declr#parámetros, declr#parámetroVariadic, declr#cuerpo
             devolver clonar declr con
                 parámetros: parámetrosYCuerpo#parámetros
+                parámetroVariadic: parámetrosYCuerpo#parámetroVariadic
                 cuerpo: parámetrosYCuerpo#instrucciones
             finclonar
         finfuncion),
@@ -2347,6 +2431,9 @@ procedimiento EmitirCompilado: compilado, puertoDeEscritura
         ParaCadaElemento: declr#parámetros, procedimiento: param
             puertoDeEscritura#escribirTexto: ({PARAM ~t~%}#formatear: param)
         finprocedimiento
+        si no EsNulo: declr#parámetroVariadic
+            puertoDeEscritura#escribirTexto: ({VARIADIC ~t~%}#formatear: declr#parámetroVariadic)
+        finsi
         emitirCódigo: declr#cuerpo
         puertoDeEscritura#escribirTexto: {ENDPROC~%}#formatear
     finprocedimiento
