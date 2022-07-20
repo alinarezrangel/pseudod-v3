@@ -413,16 +413,16 @@ metodo BaseDeDatos#guardarMódulos: puerto
 finmetodo
 
 metodo BaseDeDatos#cargarMódulos: puerto
-    funcion SExprADiccionario: se
+    funcion SExprADiccionario: se, esArreglo
         necesitas EsInstancia: se, Arreglo
         variable acc
         fijar acc a Diccionario#vacío
         ParaCadaElemento: se, procedimiento: val
             necesitas EsInstancia: val, Arreglo
-            si val#longitud = 2
-                acc#fijarEn: (val#en: 0), (val#en: 1)
-            sino
+            si %esArreglo: val
                 acc#fijarEn: (val#en: 0), (PedazoDeArreglo: val, 1, -1)
+            sino
+                acc#fijarEn: (val#en: 0), (val#en: 1)
             finsi
         finprocedimiento
         devolver acc
@@ -455,7 +455,11 @@ metodo BaseDeDatos#cargarMódulos: puerto
     fijar módulos a props#en: {modulos}
     ParaCadaElemento: módulos, procedimiento: mod
         variables vals, exporta
-        fijar vals a SExprADiccionario: mod
+        fijar vals a SExprADiccionario: mod, funcion: cons
+            [ Todas las llaves tienen un único valor excepto `exporta`, que es
+              un arreglo de pares. ]
+            devolver (cons#en: 0) = (S: {exporta})
+        finfuncion
         si yo#módulos#contiene: (vals#en: (S: {nombre}))
             __FallarConMensaje: ({El módulo ~t ya exíste}#formatear: (mod#en: (S: {nombre})))
         finsi

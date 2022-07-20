@@ -101,8 +101,23 @@
 ** FIXME No hay un mensaje de error al llamar a una variable que no es autoejecutable.
 ** FIXME El mensaje de error de cuando una variable no existe no contiene el lugar del programa en el que se encontró el identificador.
 ** FIXED Los ~NodoVariadic~ no tienen metadatos.
+** FIXED No se puede cargar una base de datos de módulos que contenga un módulo que solo exporte un identificador.
 * En el backend de tuplas
 ** FIXME Las funciones no pueden tener parámetros variadic.
+** FIXME No puedes llamar a funciones variadic.
+   Es necesario usar el nuevo opcode ~DYNMSG~. ~Hola: 1, ...2, 3~ debería
+   compilar a algo como:
+
+   #+begin_src pseudod-assembler
+     (1)
+     MKARR 1
+     (2)
+     (3)
+     (4)
+     MKARR 2
+     -- ([1], 2, [3, 4])
+     MSGDYN Cx, 3, 1
+   #+end_src
 * Builds y Seguridad
 ** Builds reproducibles. [0/2]
    Si mal no recuerdo, la única parte actual que no permite un build
@@ -147,3 +162,7 @@
 * Distribución
 ** TODO Es necesaria una manera de empaquetar programas en PseudoD.
 ** DONE Cambia la distribución del makefile a un script separado.
+
+# Local Variables:
+# org-adapt-indentation: t
+# End:
