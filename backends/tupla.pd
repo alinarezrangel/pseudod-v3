@@ -27,6 +27,15 @@ funcion Únicos: arr
     devolver (Conjunto#desdeArreglo: arr)#comoArreglo
 finfuncion
 
+[DOCUMENTA
+@brief{Separa un arreglo en base a un predicado.}
+
+Devuelve un objeto con dos atributos, @code{parteVerdadera} y
+@code{parteFalsa}. Ambos son arreglos. @code{parteVerdadera} contiene aquellos
+elementos de @pd{arr} para los que @pd{%cond: elemento} devolvió
+@pd{VERDADERO}, mientras que @code{parteFalsa} contiene aquellos para los que
+devolvió @pd{FALSO}.
+DOCUMENTA]
 funcion SepararArreglo: arr, cond
     variables parteVerdadera, parteFalsa
     fijar parteVerdadera a Arreglo#vacio
@@ -45,19 +54,26 @@ finfuncion
 [DOCUMENTA
 @brief{Camina un AST.}
 
-Cada nodo del AST es visitado de forma recursiva. Si @pd{filtro} (una función
-de la forma @pd{filtro: nodo}) devuelve verdadero entonces la recursión es
-terminada y @pd{cuerpo} es llamado con dos valores: el nodo que @pd{filtro}
-seleccionó y una función @pd{cont: nodo} que "continúa" con la caminata,
-visitando de nuevo (de forma recursiva) @pd{nodo}. Si @pd{filtro} devuelve
-falso para un nodo, @pd{cuerpo} no es llamado, en cambio, @pd{Caminar}
-automáticamente se llama a si mismo sobre los campos recursivos de ese nodo.
+@pd{nodo} es el nodo que se recorrerá.
 
-Todo esto básicamente hace que @pd{Caminar} sea una versión más cómoda y más
-fácil de usar que @pd{CaminaNodos}.
+@pd{cuerpo} es el procedimiento que se llamará.
+
+Específicamente, @pd{Caminar'} llamará a @pd{cuerpo} con dos valores, el nodo
+actual (que al principio es @pd{nodo}) y un @italic{recursor}. El recursor
+tiene 2 métodos:
+
+@itemlist(
+@item{@code{recursor#\llamar\: nodo}: Itera sobre cada subnodo de @pd{nodo}
+(sin incluir @pd{nodo}) y continúa la recursión con cada uno.}
+
+@item{@code{recursor#llamarConRecursión: nodo, nuevoCuerpo}: Itera sobre cada
+subnodo de @pd{nodo} (sin incluirlo) y continúa la recursión con cada uno como
+si @pd{Caminar'} se hubiese llamado con @pd{nuevoCuerpo} en vez de
+@pd{cuerpo}.}
+)
+
+Devuelve un valor indefinido.
 DOCUMENTA]
-variable NADA
-
 funcion Caminar': nodo, cuerpo
     funcion visitarPartesRecursivas: nodo, f
         si EsInstancia: nodo, AST#NodoPrograma
@@ -216,6 +232,15 @@ funcion Caminar': nodo, cuerpo
     devolver %cuerpo: nodo, RecursorDeCaminar#crear
 finfuncion
 
+[DOCUMENTA
+@brief{Versión más fácil de usar de @pd{Caminar'}.}
+
+Llama a @pd{cuerpo} con cada subnodo de @pd{nodo} para el cual @pd{%filtro:
+nodo} devuelva @pd{VERDADERO}. Esta es una versión más limitada pero también
+más fácil de usar que @pd{Caminar'}.
+
+Devuelve un valor indefinido.
+DOCUMENTA]
 funcion Caminar: nodo, filtro, cuerpo
     funcion bucle: nodo, K
         si %filtro: nodo
@@ -236,6 +261,9 @@ finfuncion
   Todos estos minipases usan la llave de anotación de capturas. ]
 
 
+[DOCUMENTA
+@brief{Tipo de @pd{LLAVE_ANOTACIÓN_DE_CAPTURAS}.}
+DOCUMENTA]
 clase LlaveAnotaciónDeCapturas
     metodo comoTexto
 finclase
@@ -244,6 +272,12 @@ metodo LlaveAnotaciónDeCapturas#comoTexto
     devolver {LLAVE_ANOTACIÓN_DE_CAPTURAS}
 finmetodo
 
+[DOCUMENTA
+@brief{Llave de anotación de capturas.}
+
+Es la llave usada por los pases del backend de tuplas para agregar metadatos a
+los nodos.
+DOCUMENTA]
 variable LLAVE_ANOTACIÓN_DE_CAPTURAS
 fijar LLAVE_ANOTACIÓN_DE_CAPTURAS a LlaveAnotaciónDeCapturas#crear
 
@@ -257,6 +291,60 @@ funcion NombresLibres: nodo
         devolver Arreglo#vacio
     sino
         devolver nodo#obtenerMetadato: Defun#LLAVE_DEFUNCIONALIZACIÓN, {nombresLibres}
+    finsi
+finfuncion
+
+procedimiento AnotarIdentificadoresTextuales: ast
+    variable especiales
+    fijar especiales a Arreglo#crearCon:
+        AST#NodoIdentificador, AST#NodoDeclaraciónDeAtributosEnClase,
+        AST#NodoDeclaraciónDeMétodoEnClase, AST#NodoMétodo, AST#NodoAtributos
+    procedimiento esTextual: nodo, es
+        nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esBásicamenteTextual}, es
+    finprocedimiento
+    Caminar: ast, funcion: nodo
+        devolver Algún: (Mapear: especiales, (Parcial: &EsInstancia, nodo))
+    finfuncion, funcion: nodo, recur
+        si EsInstancia: nodo, AST#NodoIdentificador
+            esTextual: nodo, FALSO
+        finsi
+        si EsInstancia: nodo, AST#NodoMétodo
+            esTextual: nodo#deClase, FALSO
+            esTextual: nodo#nombre, VERDADERO
+            ParaCadaElemento: nodo#parámetros, recur
+            ParaCadaElemento: nodo#cuerpo, recur
+        finsi
+        si EsInstancia: nodo, AST#NodoDeclaraciónDeAtributosEnClase
+            ParaCadaElemento: nodo#nombres, procedimiento: nombre
+                esTextual: nombre, VERDADERO
+            finprocedimiento
+        finsi
+        si EsInstancia: nodo, AST#NodoDeclaraciónDeMétodoEnClase
+            esTextual: nodo#nombre, VERDADERO
+            ParaCadaElemento: nodo#parámetros, recur
+        finsi
+        si EsInstancia: nodo, AST#NodoAtributos
+            esTextual: nodo#deClase, FALSO
+            ParaCadaElemento: nodo#nombres, procedimiento: nombre
+                esTextual: nombre, VERDADERO
+            finprocedimiento
+        finsi
+    finfuncion
+finprocedimiento
+
+funcion EsBásicamenteTextual: nodo
+    si EsInstancia: nodo, AST#NodoIdentificador
+        devolver nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esBásicamenteTextual}
+    sino
+        devolver FALSO
+    finsi
+finfuncion
+
+funcion EsIdentificadorDeVariable: nodo
+    si EsInstancia: nodo, AST#NodoIdentificador
+        devolver no nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esBásicamenteTextual}
+    sino
+        devolver FALSO
     finsi
 finfuncion
 
@@ -276,7 +364,9 @@ procedimiento AnotaciónDeCapturas: ast
             AST#NodoVariable, AST#NodoFunción, AST#NodoClase, AST#NodoMétodo, AST#NodoFunciónAnónima
         devolver Algún: (Mapear: declaraciones, (Parcial: &EsInstancia, nodo))
     finfuncion, procedimiento: nodo, recur
-        si (EsInstancia: nodo, AST#NodoFunción) || (EsInstancia: nodo, AST#NodoFunciónAnónima)
+        si (EsInstancia: nodo, AST#NodoFunción)
+        || (EsInstancia: nodo, AST#NodoFunciónAnónima)
+        || (EsInstancia: nodo, AST#NodoMétodo)
             nombresCapturadosAcc#agregarAlFinal: (NombresLibres: nodo)
             ParaCadaElemento: nodo#cuerpo, procedimiento: cn
                 devolver %recur: cn
@@ -286,7 +376,7 @@ procedimiento AnotaciónDeCapturas: ast
     finprocedimiento
     fijar nombresCapturados a Reducir: Conjunto#vacío, (MétodoComoFunción: {unión}), nombresCapturadosAcc
     Caminar: ast, funcion: nodo
-        devolver EsInstancia: nodo, AST#NodoIdentificador
+        devolver EsIdentificadorDeVariable: nodo
     finfuncion, procedimiento: nodo, recur
         nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}, (nombresCapturados#contiene: (RN#NombreResueltoDe: nodo))
     finprocedimiento
@@ -324,6 +414,7 @@ DOCUMENTA]
 procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obtenerMetadatosAdicionales
     necesitas (EsInstancia: ast, AST#NodoFunción)
            || (EsInstancia: ast, AST#NodoFunciónAnónima)
+           || (EsInstancia: ast, AST#NodoMétodo)
            || (EsInstancia: ast, AST#NodoPrograma)
     variables locales, ámbitosLocales, nodosLocales
     fijar locales a Arreglo#vacio
@@ -349,8 +440,9 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
     nodosLocales#apilar: (CreaAgregador: ast, {localesDelNodo'})
 
     funcion filtro: nodo
-        devolver (EsInstancia: nodo, AST#NodoIdentificador)
+        devolver (EsIdentificadorDeVariable: nodo)
               || (EsInstancia: nodo, AST#NodoFunción)
+              || (EsInstancia: nodo, AST#NodoMétodo)
               || (EsInstancia: nodo, AST#NodoFunciónAnónima)
               || (EsInstancia: nodo, AST#NodoSi)
               || (EsInstancia: nodo, AST#NodoMientras)
@@ -358,7 +450,7 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
     finfuncion
 
     procedimiento interno: nodo, recur
-        si EsInstancia: nodo, AST#NodoIdentificador
+        si EsIdentificadorDeVariable: nodo
             si Defun#EsLocalEntre: ámbitoContenedor, ámbitosLocales#últimoValorApilado, nodo
                 AgregarLocal: nodo
             finsi
@@ -391,26 +483,25 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
             AgregarLocal: nodo#nombre
             devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), obtenerMetadatosAdicionales
         finsi
-        si (EsInstancia: nodo, AST#NodoFunciónAnónima) || (EsInstancia: nodo, AST#NodoPrograma)
+        si (EsInstancia: nodo, AST#NodoFunciónAnónima)
+        || (EsInstancia: nodo, AST#NodoMétodo)
+        || (EsInstancia: nodo, AST#NodoPrograma)
             devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), obtenerMetadatosAdicionales
         finsi
     finprocedimiento
 
-    funcion recurrir: nodo, filtro, cuerpo
-        Caminar': nodo, procedimiento: nodo, K
-            devolver K#llamarConRecursión: nodo, funcion: nodo, K
-                devolver Caminar: nodo, filtro, cuerpo
-            finfuncion
-        finprocedimiento
-    finfuncion
-
-    si (EsInstancia: ast, AST#NodoFunción) || (EsInstancia: ast, AST#NodoFunciónAnónima)
+    si (EsInstancia: ast, AST#NodoFunción)
+    || (EsInstancia: ast, AST#NodoFunciónAnónima)
+    || (EsInstancia: ast, AST#NodoMétodo)
         ParaCadaElemento: ast#parámetros, procedimiento: nodo
             devolver Caminar: nodo, &filtro, &interno
         finprocedimiento
         ParaCadaElemento: ast#cuerpo, procedimiento: nodo
             devolver Caminar: nodo, &filtro, &interno
         finprocedimiento
+    finsi
+    si EsInstancia: ast, AST#NodoMétodo
+        Caminar: ast#deClase, &filtro, &interno
     finsi
     si EsInstancia: ast, AST#NodoPrograma
         ParaCadaElemento: ast#instrucciones, procedimiento: nodo
@@ -422,9 +513,30 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelProcedimiento}, (Mapear: locales, obtenerMetadatosAdicionales)
 finprocedimiento
 
+[DOCUMENTA
+@brief{Anota todas las variables locales que estan en el ámbito en el que
+fueron declaradas.}
+
+Cuando una variable es usada en el mismo ámbito en el que fue declarada decimos
+que este uso es @italic{inmediato}. Los usos inmediatos son importantes porque
+si todos los usos de una variable son usos inmediatos entonces esta puede estar
+fuera de cualquier entorno.
+
+Agrega el metadato (con la llave @pd{LLAVE_ANOTACIÓN_DE_CAPTURAS})
+@code{localesInmediatas} a cada nodo que pueda tener un ámbito
+(@pd{AST#NodoPrograma}, @pd{AST#NodoMientras}, @pd{AST#NodoFunción},
+@pd{AST#NodoFunciónAnónima}). @pd{AST#NodoSi} tiene sus propios metadatos
+@code{localesInmediatasSiVerdadero} y @code{localesInmediatasSiFalso}. En todos
+los casos el valor del metadato es un arreglo con los
+@pd{AST#NodoIdentificador} del ámbito que son locales inmediatas.
+
+Además, anota cada @pd{AST#NodoIdentificador} con @code{localInmediata}, un
+metadato que es @pd{VERDADERO} o @pd{FALSO} dependiendo de si el identificador
+es una local inmediata o no.
+DOCUMENTA]
 procedimiento AnotarLocalesInmediatas: ast
     variable NODOS_CON_ÁMBITO
-    fijar NODOS_CON_ÁMBITO a Arreglo#crearCon: AST#NodoPrograma, AST#NodoSi, AST#NodoMientras, AST#NodoFunción, AST#NodoFunciónAnónima
+    fijar NODOS_CON_ÁMBITO a Arreglo#crearCon: AST#NodoPrograma, AST#NodoSi, AST#NodoMientras, AST#NodoFunción, AST#NodoFunciónAnónima, AST#NodoMétodo
 
     funcion esBloqueConÁmbito: ast
         devolver (Algún: (Mapear: NODOS_CON_ÁMBITO, (Parcial: &EsInstancia, ast)))
@@ -434,9 +546,9 @@ procedimiento AnotarLocalesInmediatas: ast
         variable todasLasLocales
         fijar todasLasLocales a Arreglo#vacio
         Caminar: ast, funcion: ast
-            devolver (EsInstancia: ast, AST#NodoIdentificador) || (esBloqueConÁmbito: ast)
+            devolver (EsIdentificadorDeVariable: ast) || (esBloqueConÁmbito: ast)
         finfuncion, procedimiento: ast, recur
-            si EsInstancia: ast, AST#NodoIdentificador
+            si EsIdentificadorDeVariable: ast
                 variables nr, inmediata
                 fijar nr a RN#NombreResueltoDe: ast
                 fijar inmediata a Contiene: ámbito#todosLosBindingsLocales, nr
@@ -447,6 +559,10 @@ procedimiento AnotarLocalesInmediatas: ast
                     todasLasLocales#agregarAlFinal: ast
                 finsi
                 devolver NULO
+            finsi
+            si EsInstancia: ast, AST#NodoMétodo
+                %recur: ast#deClase
+                devolver %recurBloque: ast
             finsi
             si EsInstancia: ast, AST#NodoFunción
                 %recur: ast#nombre
@@ -570,6 +686,9 @@ metodo EstadoDeEnumeraciónDeCapturas#informaciónDeLaCaptura: nid
                               {profundidad}, yo#profundidad
     sino
         variable dt
+        si EsNulo: yo#estadoSuperior
+            Escribir: {No existe?}, nid
+        finsi
         necesitas no EsNulo: yo#estadoSuperior
         fijar dt a yo#estadoSuperior#informaciónDeLaCaptura: nid
         devolver clonar dt con
@@ -611,9 +730,10 @@ en la que se declaró la variable
 DOCUMENTA]
 procedimiento EnumeraciónDeCapturas: ast, estado
     variable DECLARACIONES
-    fijar DECLARACIONES a Arreglo#crearCon: AST#NodoVariable, AST#NodoFunción,
+    fijar DECLARACIONES a Arreglo#crearCon: AST#NodoVariable, AST#NodoFunción, AST#NodoMétodo,
                                             AST#NodoFunciónAnónima, AST#NodoIdentificador,
-                                            AST#NodoSi, AST#NodoMientras, AST#NodoPrograma
+                                            AST#NodoSi, AST#NodoMientras, AST#NodoPrograma,
+                                            AST#NodoClase
 
     Caminar: ast, funcion: nodo
         devolver Algún: (Mapear: DECLARACIONES, (Parcial: &EsInstancia, nodo))
@@ -623,14 +743,29 @@ procedimiento EnumeraciónDeCapturas: ast, estado
             nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}, estado#profundidad
             devolver NULO
         finsi
+        si EsInstancia: nodo, AST#NodoClase
+            estado#marcarÍndiceCapturaEnDeclaración: nodo#nombre
+            si no EsNulo: nodo#claseBase
+                %recur: nodo#claseBase
+            finsi
+            ParaCadaElemento: nodo#extiendeClases, recur
+            ParaCadaElemento: nodo#implementaClases, recur
+            ParaCadaElemento: nodo#declaraciones, recur
+            devolver NULO
+        finsi
         si EsInstancia: nodo, AST#NodoVariable
             ParaCadaElemento: nodo#nombres, &(estado#marcarÍndiceCapturaEnDeclaración)
             devolver NULO
         finsi
-        si (EsInstancia: nodo, AST#NodoFunción) || (EsInstancia: nodo, AST#NodoFunciónAnónima)
+        si (EsInstancia: nodo, AST#NodoFunción)
+        || (EsInstancia: nodo, AST#NodoFunciónAnónima)
+        || (EsInstancia: nodo, AST#NodoMétodo)
             variable subestado
             si EsInstancia: nodo, AST#NodoFunción
                 estado#marcarÍndiceCapturaEnDeclaración: nodo#nombre
+            finsi
+            si EsInstancia: nodo, AST#NodoMétodo
+                estado#marcarÍndiceCapturaEnUso: nodo#deClase
             finsi
             fijar subestado a EstadoDeEnumeraciónDeCapturas#desdeEstado: estado
             ParaCadaElemento: nodo#parámetros, procedimiento: param
@@ -672,7 +807,11 @@ procedimiento EnumeraciónDeCapturas: ast, estado
             devolver NULO
         finsi
         si EsInstancia: nodo, AST#NodoIdentificador
-            estado#marcarÍndiceCapturaEnUso: nodo
+            si EsIdentificadorDeVariable: nodo
+                estado#marcarÍndiceCapturaEnUso: nodo
+            sino
+                Escribir: {EnumeraciónDeCapturas: No es id. de variable </>}, nodo
+            finsi
             devolver NULO
         finsi
         Inalcanzable
@@ -689,6 +828,7 @@ función en la que se encuentra.
 DOCUMENTA]
 procedimiento AnotarBindingsLocales: ast
     necesitas (EsInstancia: ast, AST#NodoFunción)
+           || (EsInstancia: ast, AST#NodoMétodo)
            || (EsInstancia: ast, AST#NodoFunciónAnónima)
            || (EsInstancia: ast, AST#NodoPrograma)
     variables bindings, nombre
@@ -703,11 +843,16 @@ procedimiento AnotarBindingsLocales: ast
               && (no Defun#SonElMismoObjeto: nodo, nombre)
               && (   (EsInstancia: nodo, AST#NodoIdentificador)
                   || (EsInstancia: nodo, AST#NodoFunción)
+                  || (EsInstancia: nodo, AST#NodoMétodo)
                   || (EsInstancia: nodo, AST#NodoFunciónAnónima)
                   || (EsInstancia: nodo, AST#NodoPrograma))
     finfuncion, procedimiento: nodo, recur
         si EsInstancia: nodo, AST#NodoIdentificador
-            nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo))
+            si EsIdentificadorDeVariable: nodo
+                nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo))
+            sino
+                Escribir: {AnotarBindingsLocales: No es id. de variable </>}, nodo
+            finsi
             devolver NULO
         finsi
         si (EsInstancia: nodo, AST#NodoFunciónAnónima) || (EsInstancia: nodo, AST#NodoPrograma)
@@ -715,7 +860,14 @@ procedimiento AnotarBindingsLocales: ast
             devolver NULO
         finsi
         si EsInstancia: nodo, AST#NodoFunción
-            nodo#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo#nombre))
+            [nodo#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo#nombre))]
+            %recur: nodo#nombre
+            AnotarBindingsLocales: nodo
+            devolver NULO
+        finsi
+        si EsInstancia: nodo, AST#NodoMétodo
+            [nodo#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo#nombre))]
+            %recur: nodo#deClase
             AnotarBindingsLocales: nodo
             devolver NULO
         finsi
@@ -723,12 +875,22 @@ procedimiento AnotarBindingsLocales: ast
     finprocedimiento
 finprocedimiento
 
+[DOCUMENTA
+@brief{Marca todas las variables que son locales directas.}
+
+Un uso de una variable cuenta como "uso local directo" si sucede dentro de la
+misma función en la que la variable fue declarada. Este procedimiento marca
+todos los @pd{AST#NodoIdentificador} con el metadato @code{esLocalDirecta}
+(llave @pd{LLAVE_ANOTACIÓN_DE_CAPTURAS}) que es un @pd{Boole} indicando si este
+identificador es un uso local directo.
+DOCUMENTA]
 procedimiento MarcaVariablesLocalesEnSubámbitos: ast
     Caminar': ast, procedimiento: nodo, K
         si (EsInstancia: nodo, AST#NodoFunción)
         || (EsInstancia: nodo, AST#NodoFunciónAnónima)
+        || (EsInstancia: nodo, AST#NodoMétodo)
         || (EsInstancia: nodo, AST#NodoPrograma)
-            variables bindings, locales, localesReales, nombre
+            variables bindings, locales, localesReales, nombre, deClase
             fijar bindings a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {bindingsLocalesDelProcedimiento}
             fijar locales a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelProcedimiento}
             fijar localesReales a Filtrar: (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelNodo'}),
@@ -746,6 +908,11 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
             sino
                 fijar nombre a NULO
             finsi
+            si EsInstancia: nodo, AST#NodoMétodo
+                fijar deClase a nodo#deClase
+            sino
+                fijar deClase a NULO
+            finsi
 
             variables bindingsDeEsteÁmbito, localesDeEsteÁmbito
             fijar bindingsDeEsteÁmbito a Conjunto#desdeArreglo: (Mapear: localesReales, (MétodoComoFunción: {binding}))
@@ -756,13 +923,21 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
             procedimiento marcarSubidentificadores: nodo
                 Caminar: nodo, funcion: nodo
                     devolver (no Defun#SonElMismoObjeto: nodo, nombre)
+                          && (no Defun#SonElMismoObjeto: nodo, deClase)
                           && (   (EsInstancia: nodo, AST#NodoIdentificador)
                               || (EsInstancia: nodo, AST#NodoFunción)
+                              || (EsInstancia: nodo, AST#NodoMétodo)
                               || (EsInstancia: nodo, AST#NodoFunciónAnónima)
                               || (EsInstancia: nodo, AST#NodoPrograma))
                 finfuncion, procedimiento: nodo, subrecur
                     si EsInstancia: nodo, AST#NodoFunción
-                        nodo#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}, (bindingsDeEsteÁmbito#contiene: (RN#NombreResueltoDe: nodo#nombre))
+                        [nodo#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}, (bindingsDeEsteÁmbito#contiene: (RN#NombreResueltoDe: nodo#nombre))]
+                        %subrecur: nodo#nombre
+                        MarcaVariablesLocalesEnSubámbitos: nodo
+                        devolver NULO
+                    finsi
+                    si EsInstancia: nodo, AST#NodoMétodo
+                        %subrecur: nodo#deClase
                         MarcaVariablesLocalesEnSubámbitos: nodo
                         devolver NULO
                     finsi
@@ -770,7 +945,11 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
                         devolver MarcaVariablesLocalesEnSubámbitos: nodo
                     finsi
                     si EsInstancia: nodo, AST#NodoIdentificador
-                        nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}, (bindingsDeEsteÁmbito#contiene: (RN#NombreResueltoDe: nodo))
+                        si EsIdentificadorDeVariable: nodo
+                            nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}, (bindingsDeEsteÁmbito#contiene: (RN#NombreResueltoDe: nodo))
+                        sino
+                            Escribir: {MarcaVariablesLocalesEnSubámbitos: No es id. de variable </>}, nodo
+                        finsi
                     finsi
                 finprocedimiento
             finprocedimiento
@@ -782,9 +961,18 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
     finprocedimiento
 finprocedimiento
 
+[DOCUMENTA
+@brief{Marca todos los identificadores con un metadato indicando si deben
+estar en el entorno o no.}
+
+Le agrega el metadato @code{estáEnElEntorno} (llave
+@pd{LLAVE_ANOTACIÓN_DE_CAPTURAS}) a todos los @pd{AST#NodoIdentificador}. Este
+metadato es un @pd{Boole} que indica si este uso del identificador debe estar
+en el entorno de la función o no.
+DOCUMENTA]
 procedimiento MarcaVariablesQueEstánEnElEntorno: ast
     Caminar: ast, funcion: nodo
-        devolver EsInstancia: nodo, AST#NodoIdentificador
+        devolver EsIdentificadorDeVariable: nodo
     finfuncion, procedimiento: nodo, recur
         variables esLocal, esCapturada, esLocalDirecta
         fijar esCapturada a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
@@ -792,10 +980,18 @@ procedimiento MarcaVariablesQueEstánEnElEntorno: ast
         fijar esLocalDirecta a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}
         Escribir: {! S:}, nodo
         Escribir: {ES}, (esCapturada || (no esLocal) || (no esLocalDirecta))
+        si (no esCapturada)
+            Escribir: {OJO}, (no esLocal), (no esLocalDirecta)
+        finsi
         nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}, (esCapturada || (no esLocal) || (no esLocalDirecta))
     finprocedimiento
 finprocedimiento
 
+[DOCUMENTA
+@brief{Devuelve un boole indicando si @pd{nid} está en el entorno.}
+
+Obtiene el metadato @code{estáEnElEntorno}.
+DOCUMENTA]
 funcion EstáEnElEntorno: nid
     Escribir: {# Q:}, nid
     Escribir: {ES}, (nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno})
@@ -823,7 +1019,8 @@ fijar PSEUDOD_IMPL a {Tupla (IR) Bootstrap}
 
   Las constantes son un diccionario de un CID ("constant-ID") a la constante
   dada. El IR solo puede representar constantes numéricas (como instancias de
-  números) y textuales (como instancias de textos).
+  números), textuales (como instancias de textos) y "prototipos" (véase más
+  abajo).
 
   Las declaraciones actualmente solo incluyen la declaración de función, la
   cual consiste del ID de la función, sus parámetros y las instrucciones de su
@@ -832,6 +1029,29 @@ fijar PSEUDOD_IMPL a {Tupla (IR) Bootstrap}
   Estas 3 partes están agrupadas en una estructura llamada `Compilado`. La
   operación más fundamental de un compilado es secuenciar (`A >> B`) pero
   también tienen otras.
+
+Prototipos:
+
+  Los prototipos son usados para realizar llamadas a funciones variadic. Son un
+  tipo especial de constantes que indican la estructura de la pila al momento
+  de llamar a una función.
+
+  Cuando llamas a un procedimiento variadic, algunos elementos en la pila son
+  argumentos posicionales normales y otros tienen que ser expandidos. Por
+  ejemplo, en la llamada `Hola: 1, ...2, 3, 4, ...5` los argumentos `1`, `3` y
+  `4` son normales y `2` y `5` tienen que ser expandidos.
+
+  Debido a que la pila siempre debe tener una estructura estática (más abajo
+  explico por qué) no podemos simplemente "expandir" los argumentos variadic
+  directamente en la pila. En cambio, mantenemos todos los argumentos como si
+  ninguno fuese variadic (de forma que la pila contendrá los valores `1 2 3 4
+  5`) y creamos un *prototipo* `0 1 0 0 1` que indica cuales argumentos son
+  variadic (en este caso, solo el segundo y el último).
+
+  Los prototipos son un tipo de constante: esto permite al backend-del-backend
+  (el que compila el IR, llamado *lowerer* en inglés ya que "baja" el IR de su
+  nivel intermedio al código final de bajo nivel) compilar y analizar de forma
+  estática y eficiente estas llamadas variadic.
 
 Semanticas:
 
@@ -849,10 +1069,21 @@ Semanticas:
   Todo esto hace que el IR sea bastante fácil de usar: variables e
   instrucciones pueden usar directamente los registros mientras que las
   expresiones utilizan la pila para guardar los valores intermediarios. Nota
-  que la pila no es completamente dinámica: siempre está vacía entre
-  instrucciones. Esto es importante porque es posible que los pases posteriores
-  del compilador "desapilen" el código eliminando la pila y convirtiendo todo
-  el código a registros.
+  que la pila no es completamente dinámica: debido a que todas las operaciones
+  tienen un "efecto" estático en la pila y el compilador tiene cuidado de que
+  las partes dinámicas (como los condicionales o bucles) siempre tengan la pila
+  en un estado determinado al principio y final de estos, es posible (en
+  teoría) determinar estáticamente el número de elementos en la pila. Esto es
+  importante porque es posible que los pases posteriores del compilador
+  "desapilen" el código eliminando la pila y convirtiendo todo el código a
+  registros. (Nada de esto esta implementado, pero es fundamental para que la
+  máquina virtual tenga un buen rendimiento en un futuro. Creo que también
+  tendré que agregar algunas anotaciones en los puntos de control de flujo para
+  hacer este proceso más fácil.)
+
+  La regla más importante al usar la pila es que al principio de todos los
+  bloques básicos la pila siempre debe estar en el mismo estado
+  irrelevantemente de cual salto llevó a dicho bloque.
 
   Finalmente: exísten algunos opcodes para saltar tanto como incondicional como
   condicionalmente. Todos están intencionalmente hechos para que los únicos
@@ -875,30 +1106,29 @@ Semanticas:
 
   Un entorno consiste de un puntero a un entorno "superior" y una lista de
   registros almacenados. Los entornos son usados para implementar closures y
-  objetos. Puedes crear un entorno con las instrucciones de "marco" (*frame
+  objetos. Puedes crear un entorno con las instrucciones del "marco" (*frame
   instructions*, se llaman así porque siempre aparecen al principio de las
   funciones, "reificando" los marcos de activación). Para acceder a un valor en
   un entorno necesitas una altura (el número de entornos a "saltar" desde el
   actual) y un índice (el objeto dentro del entorno seleccionado a acceder).
 
-  Cuando se llama a una closure, su entorno es pasado como primer argumento.
-
   Los registros especiales `ESUP` y `EACT` representan el entorno "superior" al
   actual y el entorno actual, respectivamente. `EACT` tiene que ser
-  inicializado manualmente. `ESUP` es el entorno pasado a esta función
-  (recuerda, el primer argumento es especial).
+  inicializado manualmente. `ESUP` es el entorno pasado a esta función de forma
+  implícita.
 
   Como durante la compilación cada ámbito pasa a ser un entorno, es necesario
   un sistema para prevenir que las variables `EACT` y `ESUP` se confundan (por
   ejemplo, si tienes un `si` dentro de un `mientras`, el `EACT` del mientras
   debe ser distínto del `EACT` del `si`). Para esto existe la pila de ámbitos:
-  cada ámbito guarda sus entornos (`EACT`) en la pila de ámbitos.
+  cada ámbito guarda sus entornos (`EACT`) en la pila de ámbitos usando las
+  instrucciones `SPUSH` y `SPOP`.
 
 Instrucciones:
 
   Los prefijos significan:
 
-  1. `C`: Índice de constante de la lista de constantes.
+  1. `C`: Índice de una constante de la lista de constantes.
   2. `N`: Constante numérica.
   3. `F`: Constante real.
   4. `L`: Índice de registro local.
@@ -914,20 +1144,20 @@ Instrucciones:
   SUB    {a b -- c}
   MUL    {a b -- c}
   DIV    {a b -- c}
-    Operaciones aritméticas básicas. Operan en la pila.
+    Operaciones aritméticas básicas. Operan en la pila. Equivalentes a enviar
+    los mensajes `operador_+`, `operador_-`, `operador_*` y `operador_/`.
 
   LT     {a b -- c}
   GT     {a b -- c}
   LE     {a b -- c}
   GE     {a b -- c}
   OPEQ   {a b -- c}
-    Menor/mayor que, mayor/menor o igual a. Operan en la pila.
+    Menor/mayor que, mayor/menor o igual a e igual a. Operan en la
+    pila. Equivalentes a enviar los mensajes `operador_<`, `operador_>`,
+    `operador_=<`, `operador_>=` y `operador_=`.
 
   SAME   {a b -- c}
     Determina si `a` y `b` son el mismo objeto.
-
-  Las instrucciones `OBJATTR`, `OBJATTRSET` y `OBJSZ` también se pueden usar en
-  closures. En ese caso manipulan las capturas del entorno del closure.
 
   OBJATTR       {obj n -- x}
     Obtiene el atributo #`n` del objeto `obj`.
@@ -938,6 +1168,9 @@ Instrucciones:
   OBJSZ         {obj -- n}
     Obtiene el número de atributos de un objeto.
 
+  Las instrucciones `OBJATTR`, `OBJATTRSET` y `OBJSZ` también se pueden usar en
+  closures. En ese caso manipulan las capturas del entorno del closure.
+
   OBJ2CLZ       {clz -- obj}
   CLZ2OBJ       {obj -- clz}
     Convierte un closure a un objeto y viceversa.
@@ -947,6 +1180,8 @@ Instrucciones:
 
   LCONST Cx    {-- a}
     Carga la constante con el índice `Cx` y la empuja en la pila.
+
+    No puedes cargar cualquier constante, solo las numéricas y textuales.
 
   ICONST Na    {-- a}
   FCONST Fa    {-- a}
@@ -1018,14 +1253,21 @@ Instrucciones:
   DYNCALL Ua, Ub
     Envía el mensaje `llamar` al objeto en la cima de la pila. Similar a `MSG`.
 
+  MSGV Cx, Cy, Ua, Ub
+  DYNCALLV Cx, Ua, Ub
+    Como `MSG` y `DYNCALL`, pero aceptan sus argumentos en su forma
+    variadic. `Cx` es el índice de la constante que contiene el prototipo de la
+    llamada. `Cy` es la constante con el mensaje a enviar. `Ua` y `Ub` tienen
+    el mismo significado que en `MSG` y `DYNCALL`.
+
   RETN Ua
     Devuelve `Ua` objetos (que deben estar en la pila) del procedimiento
     actual.
 
   OPNFRM Ex, ?Ey, Ua    {--}
     Inicializa un entorno. El nuevo entorno es guardado en `Ex`. Si `Ey` es
-    especificado será el entorno superior. `Ua` es el tamaño del entorno, es
-    decir, el número de variables que contiene.
+    especificado será el entorno superior. `Ua` es el tamaño del entorno (es
+    decir, el número de variables que contiene).
 
   ENEW Ex, Ua    {--}
     Inicializa una variable dentro del entorno. La variable en el índice `Ua`
@@ -1038,6 +1280,9 @@ Instrucciones:
   CLSFRM Ex    {--}
     "Cierra" un entorno. Luego de cerrarlo, no puedes usar `EINIT` o `ENEW` con
     `Ex`. En cambio, cualquier cambio al entorno tendrá que pasar por `LSETC`.
+
+  Entre las instrucciones `OPNFRM` y `CLSFRM` solo pueden haber instrucciones
+  `ENEW` y `EINIT`.
 
   NAME Tx
     Declara `Tx` como una etiqueta. `Tx` debe ser único en el procedimiento
@@ -1057,7 +1302,8 @@ Instrucciones:
   CMPEQ     {a b -- c}
   CMPNEQ    {a b -- c}
     Compara si dos objetos de la pila son iguales/diferentes, empujando
-    verdadero o falso.
+    verdadero o falso. `CMPEQ` es equivalente al opcode `OPEQ`. `CMPNEQ` es
+    equivalente a enviar el mensaje `operador_no=`.
 
   DYNMSG    {obj msj args -- r}
     Envía el mensaje `msj` al objeto `obj` con los argumentos `args` (un
@@ -1065,7 +1311,7 @@ Instrucciones:
     como `r`.
 
   NOT    {a -- b}
-    Niega el boole en la cima de la pila.
+    Invierte el boole en la cima de la pila.
 
   PRN    {a --}
     Escribe el texto en la cima de la pila.
@@ -1079,14 +1325,15 @@ Instrucciones:
   SPOP EACT, ESUP
     Empuja/saca y reorganiza `EACT`/`ESUP` en la pila de ámbitos. Luego de
     `SPUSH EACT, ESUP`, `EACT` estará en la pila de ámbitos y `EACT`/`ESUP`
-    serán "rotados", de forma que `EACT` será el entorno superior de `EACT` y
-    `ESUP` será el entorno superior de `ESUP`.
+    serán "rotados".
+
+    TODO: Documenta estos opcodes.
 
     `SPOP EACT, ESUP` revierte esto, sacando y rotando de nuevo las variables.
 
 Ejemplo:
 
-  Equivalente (más o menos) en PseudoD:
+  En PseudoD:
 
     variable X
     funcion Y: v
@@ -1096,7 +1343,7 @@ Ejemplo:
     escribir Y: 3
     nl
 
-  En bytecode:
+  En bytecode (más o menos):
 
     Instrucciones:
       LOCAL 3
@@ -1249,14 +1496,14 @@ funcion EnumConValoresIncrementales: nombre, ...valores
 finfuncion
 
 [DOCUMENTA
-@brief{Todos los opcodes del bytecode.}
+@brief{Todos los opcodes del IR.}
 
 Esta enumeración contiene todos los opcodes del bytecode. El valor de cada
 enumerado es el "código" del opcode.
 
 Como una conveniencia, los enumerados también tienen un método @code{bytecode}
 como un alias de @code{valor} (por ejemplo, @pd{Opcode#SUM#bytecode} es igual
-que @pd{Opcode#SUM#valor}).
+a @pd{Opcode#SUM#valor}).
 DOCUMENTA]
 variable Opcode
 fijar Opcode a EnumConValoresIncrementales: {Opcode},
@@ -1303,6 +1550,8 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {CMPNEQ},     [ CMPNEQ ]
     {NOT},        [ NOT ]
     {MSG},        [ MSG Cx, Ua, Ub ]
+    {MSGV},       [ MSGV Cx, Cy, Ua, Ub ]
+    {DYNCALLV},   [ DYNCALLV Cx, Ua, Ub ]
     {DYNMSG},     [ DYNMSG ]
     {PRN},        [ PRN ]
     {NL},         [ NL ]
@@ -1344,8 +1593,7 @@ clase DeclrFunción
     @brief{Los parámetros de la función.}
 
     Un arreglo de números: cada número es el ID de un registro local que será
-    el parámetro en la función. Opcionalmente @pd{LocalDelEntornoSuperior}
-    puede aparecer como primer elemento.
+    un parámetro en la función.
     DOCUMENTA]
     atributo parámetros
 
@@ -1354,6 +1602,9 @@ clase DeclrFunción
 
     Si es @pd{NULO} entonces la función no es variadic. Si no es nulo entonces
     debe ser el ID del parámetro que será variadic.
+
+    Recuerda que, a diferencia de los demás parámetros, el parámetro variadic
+    debe ser declarado con @code{LOCAL} en el cuerpo de la función.
     DOCUMENTA]
     atributo parámetroVariadic
 
@@ -1390,6 +1641,41 @@ metodo DeclrFunción#comoTexto
 finmetodo
 
 [DOCUMENTA
+@brief{Un prototipo para una llamada variadic.}
+
+Indica cuales valores en la pila deben ser "expandidos" antes de ser usados
+como argumentos.
+DOCUMENTA]
+clase PrototipoDeLlamada
+    [DOCUMENTA
+    @brief{El prototipo.}
+
+    Es un arreglo de valores booleanos. Si un valor es @pd{VERDADERO} entonces
+    su argumento correspondiente en la pila es variadic y debe ser
+    expandido. Si es @pd{FALSO} entonces es un argumento normal.
+    DOCUMENTA]
+    atributo prototipo
+
+    [DOCUMENTA
+    @brief{Crea un nuevo prototipo.}
+    DOCUMENTA]
+    metodo estatico crear: prototipo
+
+    [DOCUMENTA
+    @brief{Devuelve una representación textual del prototipo.}
+    DOCUMENTA]
+    metodo comoTexto
+finclase
+
+metodo PrototipoDeLlamada#inicializar: proto
+    fijar yo#prototipo a proto
+finmetodo
+
+metodo PrototipoDeLlamada#comoTexto
+    devolver {(PrototipoDeLlamada ~t)}#formatear: yo#prototipo
+finmetodo
+
+[DOCUMENTA
 @brief{Una constante en el IR.}
 
 Representa un mapeo de un ID de constante a la constante.
@@ -1406,7 +1692,7 @@ clase Constante
     [DOCUMENTA
     @brief{Valor de la constante.}
 
-    Solo puede ser un número o un texto.
+    Puede ser un número, un texto o un @pd{PrototipoDeLlamada}.
     DOCUMENTA]
     atributo valor
 
@@ -1457,7 +1743,7 @@ clase Compilado
     [DOCUMENTA
     @brief{Constantes de este compilado.}
 
-    Arreglo de @pd{Constante}.
+    Arreglo de @pd{Constante}s.
     DOCUMENTA]
     atributo constantes
 
@@ -1497,7 +1783,7 @@ clase Compilado
     [DOCUMENTA
     @brief{Devuelve el valor de la constante con ID @pd{idDeConstante}.}
     DOCUMENTA]
-    metodo valorDeConstante: idDeConstante
+    metodo valorDeLaConstante: idDeConstante
 
     [DOCUMENTA
     @brief{Devuelve una representación textual del compilado.}
@@ -1536,7 +1822,7 @@ metodo Compilado#operador_>>: otro
         (Concatenar: yo#constantes, otro#constantes)
 finmetodo
 
-metodo Compilado#valorDeConstante: idDeConstante
+metodo Compilado#valorDeLaConstante: idDeConstante
     variable encontrados
     fijar encontrados a Filtrar: yo#constantes, funcion: const
         devolver const#id = idDeConstante
@@ -1589,6 +1875,15 @@ finprocedimiento
 DOCUMENTA]
 funcion UnirCompilados: partes
     devolver Reducir: Compilado#vacío, (OperadorBinario: {>>}), partes
+finfuncion
+
+[DOCUMENTA
+@brief{Devuelve un compilado con las instrucciones dadas.}
+
+El compilado no tendrá ni constantes ni declaraciones.
+DOCUMENTA]
+funcion Instrucciones: ...Is
+    devolver Compilado#deInstrucciónes: Is
 finfuncion
 
 
@@ -1689,6 +1984,11 @@ finprocedimiento
 
 variable ContadorDeProcedimientos
 fijar ContadorDeProcedimientos a 0
+[DOCUMENTA
+@brief{Devuelve un nuevo ID para un procedimiento.}
+
+Devuelve un número único que sirve como ID de un procedimiento.
+DOCUMENTA]
 procedimiento GenerarIdDeProcedimiento
     fijar ContadorDeProcedimientos a ContadorDeProcedimientos + 1
     devolver ContadorDeProcedimientos
@@ -1702,6 +2002,9 @@ finprocedimiento
 @pd{instrucciones} debe ser un arreglo de @pd{AST#NodoInstrucción}. Esta
 función automaticamente se encarga de dejar la pila en un estado apropiado
 cuando se encuentra a una expresión en una posición de instrucción.
+
+@pd{builtins} debe ser un diccionario mapeando los nombres de los builtins de
+este backend a sus nombres resueltos.
 DOCUMENTA]
 funcion CompilarBloqueAWasm: instrucciones, builtins
     variable res
@@ -1718,7 +2021,7 @@ finfuncion
 [DOCUMENTA
 @brief{Compila un identificador.}
 
-@pd{ast} debe ser el @pd{AST#NodoIdentificador} del bloque.
+@pd{ast} debe ser el @pd{AST#NodoIdentificador} que se obtendrá.
 
 Devuelve un compilado que obtiene la variable @pd{ast} y la empuja en la pila.
 DOCUMENTA]
@@ -1735,6 +2038,14 @@ funcion CompilarIdentificador: ast
     devolver Compilado#deInstrucciónes: (Arreglo#crearCon: op)
 finfuncion
 
+[DOCUMENTA
+@brief{Compila el fijar un identificador.}
+
+@pd{ast} debe ser el @pd{AST#NodoIdentificador} que se fijará.
+
+Devuelve un compilado que saca un valor de la pila y fija la variable @pd{ast}
+a dicho valor.
+DOCUMENTA]
 funcion CompilarFijarIdentificador: ast
     variables altura, índiceDeCaptura, op, binding
     fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
@@ -1761,7 +2072,8 @@ Devuelve un arreglo con todas las declaraciones @code{LOCAL} necesarias.
 un arreglo de bindings. Si se esta compilando un bloque que no es uno de estos,
 @pd{parámetros} debería ser un arreglo vacío. Este parámetro es necesario
 porque los parámetros son locales pero no deberían estar declarados con
-@code{LOCAL} si no con @code{PARAM}.}
+@code{LOCAL} (excepto el parámetro variadic que si debe ser declarado con
+@code{LOCAL}).}
 )
 DOCUMENTA]
 funcion CompilarLocales: locales, parámetros
@@ -1866,6 +2178,11 @@ bloque actual, asignándolo a @code{EACT} apropiadamente.
 @code{#esCapturado} debe ser verdadero). Puedes obtener este arreglo con
 @pd{VariablesLocalesCapturadas}.}
 
+@defparam(localesEnElEntorno){Las locales del entorno, tal como fueron
+devueltas por @pd{LocalesDelBloque}.}
+
+@defparam(localesInmediatas){Arreglo con las locales inmediatas del bloque.}
+
 @defparam(exísteMarcoSuperior){@pd{Boole} que indica si exíste
 @code{ESUP}. Determina si el entorno tendrá marco superior.}
 
@@ -1923,6 +2240,12 @@ funcion VariablesLocalesCapturadas: locales
     devolver Únicos: (Filtrar: locales, (MétodoComoFunción: {esCapturado}))
 finfuncion
 
+[DOCUMENTA
+@brief{Filtra un arreglo de locales para obtener las que están en el entorno.}
+
+Devuelve un arreglo con las locales que están en el entorno de la
+función/método/procedimiento.
+DOCUMENTA]
 funcion VariablesEnElEntorno: locales
     devolver Únicos: (Filtrar: locales, funcion: local
         devolver local#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}
@@ -1942,9 +2265,118 @@ funcion CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas,
         (CompilarEntornoDelÁmbito: parámetros, localesEnElEntorno, localesInmediatas, exísteMarcoSuperior, profundidad)
 finfuncion
 
+[DOCUMENTA
+@brief{Escribe dos valores pero devuelve uno.}
+
+Escribe tanto @pd{A} como @pd{B} y devuelve @pd{B}.
+DOCUMENTA]
 funcion Inspeccionar: A, B
     Escribir: A, B
     devolver B
+finfuncion
+
+[DOCUMENTA
+@brief{Compila los argumentos de una llamada a función.}
+
+@pd{argumentos} es el arreglo con los @pd{AST#NodoExpresion}s a
+compilar. @pd{compilarExpr} es una función que se llamará sobre cada argumento
+para compilarlo.
+
+Devuelve un objeto con los siguientes atributos:
+
+@itemlist(
+
+@item{@code{compilado}: el compilado del código que prepara la pila para la
+llamada a la función.}
+
+@item{@code{numValoresEnLaPila}: el número de valores que está en la pila antes
+de llamar a la función. Dicho de otra forma: el número de valores que el
+compilado devuelto empujo a la pila.}
+
+@item{@code{variadics}: un booleano indicando si se debe realizar una llamada
+variadic o no. Si es @pd{VERDADERO} debes usar los opcodes
+@code{MSGV}/@code{DYNCALLV}/etc. Si es @pd{FALSO} debes usar los opcodes
+@code{MSG}/@code{DYNCALL}/etc.}
+
+@item{@code{prototipo}: Este atributo solo existe si @code{variadics} es
+@pd{VERDADERO}. Es el índice de la constante que contiene al prototipo de la
+llamada.}
+
+)
+DOCUMENTA]
+funcion CompilarArgumentos: argumentos, compilarExpr
+    variable bloques
+    fijar bloques a Mapear: argumentos, funcion: arg
+        si EsInstancia: arg, AST#NodoVariadic
+            devolver ObjetoAdHoc: {variadic}, VERDADERO,
+                                  {compilado}, (%compilarExpr: arg#interno)
+        sino
+            devolver ObjetoAdHoc: {variadic}, FALSO,
+                                  {compilado}, (%compilarExpr: arg)
+        finsi
+    finfuncion
+
+    variables compilado, prototipo, variadics
+    fijar prototipo a Mapear: bloques, funcion: bloque
+        devolver bloque#variadic#escojer: 1, 0
+    finfuncion
+    fijar compilado a Reducir: Compilado#vacío, funcion: acc, bloque
+        devolver acc >> bloque#compilado
+    finfuncion, bloques
+    fijar compilado a compilado >> (Instrucciones: (OP#ROT: argumentos#longitud))
+    fijar variadics a Filtrar: argumentos, funcion: arg
+        devolver EsInstancia: arg, AST#NodoVariadic
+    finfuncion
+
+    si variadics#longitud = 0
+        devolver ObjetoAdHoc: {compilado}, compilado,
+                              {variadics}, FALSO,
+                              {numValoresEnLaPila}, argumentos#longitud
+    sino
+        devolver ObjetoAdHoc: {compilado}, compilado,
+                              {variadics}, VERDADERO,
+                              {numValoresEnLaPila}, argumentos#longitud,
+                              {prototipo}, prototipo
+    finsi
+finfuncion
+
+funcion CompilarLlamadaAFunción: argumentos, opLlamar, opLlamarVrd, numResultados, builtins
+    variables argumentosCompilados, op
+    fijar argumentosCompilados a CompilarArgumentos: argumentos, funcion: expr
+        devolver CompilarAWasm: expr, builtins
+    finfuncion
+    si argumentosCompilados#variadics
+        variable constPrototipo
+        fijar constPrototipo a GenerarIdDeConstante
+        fijar op a (%opLlamarVrd: argumentosCompilados#numValoresEnLaPila, constPrototipo, argumentosCompilados#prototipo, numResultados)
+                >> (Compilado#deConstantes:
+                        (Arreglo#crearCon:
+                            (Constante#crear: constPrototipo, argumentosCompilados#prototipo)))
+    sino
+        fijar op a %opLlamar: argumentosCompilados#numValoresEnLaPila, numResultados
+    finsi
+    devolver argumentosCompilados#compilado >> op
+finfuncion
+
+[DOCUMENTA
+@brief{Crea un compilado que agrega un atributo a una clase.}
+
+@pd{compiladoParaObtenerClase} debe ser el compilado que empuja en la pila la
+clase a la que se le agregará el atributo. @pd{nombreDelAtributo} es un
+@pd{Texto} que es el nombre del atributo a agregar.
+DOCUMENTA]
+funcion CompilarAgregarAtributo: compiladoParaObtenerClase, nombreDelAtributo
+    variables constAtributo, constAgregarAtributo
+    fijar constAtributo a GenerarIdDeConstante
+    fijar constAgregarAtributo a GenerarIdDeConstante
+    devolver (Compilado#deConstantes:
+                 (Arreglo#crearCon:
+                     (Constante#crear: constAtributo, nombreDelAtributo),
+                     (Constante#crear: constAgregarAtributo, {agregarAtributo})))
+          >> compiladoParaObtenerClase
+          >> (Instrucciones: (OP#LCONST: constAtributo),
+                             (OP#ROT: 1),
+                             (OP#MSG: constAgregarAtributo, 1, 0))
 finfuncion
 
 [DOCUMENTA
@@ -1956,10 +2388,6 @@ resultado de la expresión. Si es un @pd{AST#NodoInstrucción} entonces no dejar
 valores en la pila.
 DOCUMENTA]
 funcion CompilarAWasm: ast, builtins
-    funcion Instrucciones: ...Is
-        devolver Compilado#deInstrucciónes: Is
-    finfuncion
-
     si EsInstancia: ast, AST#NodoPrograma
         variables locales, localesEnElEntorno, profundidad, localesInmediatas
         fijar locales a LocalesDelBloque: ast
@@ -2044,19 +2472,25 @@ funcion CompilarAWasm: ast, builtins
         variable cid
         fijar cid a GenerarIdDeConstante
         devolver (CompilarAWasm: ast#objeto, builtins)
-              >> (UnirCompilados: (Mapear: ast#argumentos, funcion: nodos
-                      devolver CompilarAWasm: nodos, builtins
-                  finfuncion))
-              >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
-                                 (OP#MSG: cid, ast#argumentos#longitud, 1))
               >> (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, ast#mensaje)))
+              >> (CompilarLlamadaAFunción:
+                     ast#argumentos,
+                     funcion: numValoresEnLaPila, numResultados
+                         devolver Instrucciones: (OP#MSG: cid, numValoresEnLaPila, numResultados)
+                     finfuncion,
+                     funcion: numValoresEnLaPila, constPrototipo, prototipo, numResultados
+                         devolver Instrucciones: (OP#MSGV: cid, constPrototipo, numValoresEnLaPila, numResultados)
+                     finfuncion,
+                     1,
+                     builtins)
     finsi
     si EsInstancia: ast, AST#NodoLlamarProcedimiento
         variable procnr
         fijar procnr a RN#NombreResueltoDe: ast#proc
         funcion ArgumentosCompilados
-            devolver UnirCompilados: (Mapear: ast#argumentos, funcion: nodos
-                         devolver CompilarAWasm: nodos, builtins
+            devolver UnirCompilados: (Mapear: ast#argumentos, funcion: nodo
+                         necesitas no EsInstancia: nodo, AST#NodoVariadic
+                         devolver CompilarAWasm: nodo, builtins
                      finfuncion)
         finfuncion
 
@@ -2085,17 +2519,29 @@ funcion CompilarAWasm: ast, builtins
             devolver ArgumentosCompilados >> (Instrucciones: OP#DYNMSG)
         finsi
         devolver (CompilarIdentificador: ast#proc)
-              >> ArgumentosCompilados
-              >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
-                                 (OP#DYNCALL: ast#argumentos#longitud, 1))
+              >> (CompilarLlamadaAFunción:
+                     ast#argumentos,
+                     funcion: numValoresEnLaPila, numResultados
+                         devolver Instrucciones: (OP#DYNCALL: numValoresEnLaPila, numResultados)
+                     finfuncion,
+                     funcion: numValoresEnLaPila, constPrototipo, prototipo, numResultados
+                         devolver Instrucciones: (OP#DYNCALLV: constPrototipo, numValoresEnLaPila, numResultados)
+                     finfuncion,
+                     1,
+                     builtins)
     finsi
     si EsInstancia: ast, AST#NodoAutoejecutar
         devolver (CompilarAWasm: ast#expr, builtins)
-              >> (UnirCompilados: (Mapear: ast#argumentos, funcion: nodos
-                      devolver CompilarAWasm: nodos, builtins
-                  finfuncion))
-              >> (Instrucciones: (OP#ROT: ast#argumentos#longitud),
-                                 (OP#DYNCALL: ast#argumentos#longitud, 1))
+              >> (CompilarLlamadaAFunción:
+                     ast#argumentos,
+                     funcion: numValoresEnLaPila, numResultados
+                         devolver Instrucciones: (OP#DYNCALL: numValoresEnLaPila, numResultados)
+                     finfuncion,
+                     funcion: numValoresEnLaPila, constPrototipo, prototipo, numResultados
+                         devolver Instrucciones: (OP#DYNCALLV: constPrototipo, numValoresEnLaPila, numResultados)
+                     finfuncion,
+                     1,
+                     builtins)
     finsi
     si EsInstancia: ast, AST#NodoVariable
         devolver Compilado#vacío
@@ -2105,7 +2551,9 @@ funcion CompilarAWasm: ast, builtins
               >> (CompilarFijarIdentificador: ast#objetivo)
     finsi
     si EsInstancia: ast, AST#NodoSi
-        variables etiqSi, etiqSino, etiqFinsi, localesEnElEntornoSiVerdadero, localesEnElEntornoSiFalso, localesSiVerdadero, localesSiFalso, localesInmediatasSiVerdadero, localesInmediatasSiFalso, profundidad
+        variables etiqSi, etiqSino, etiqFinsi, localesEnElEntornoSiVerdadero,
+                  localesEnElEntornoSiFalso, localesSiVerdadero, localesSiFalso,
+                  localesInmediatasSiVerdadero, localesInmediatasSiFalso, profundidad
         fijar etiqSi a GenerarEtiqueta
         fijar etiqSino a GenerarEtiqueta
         fijar etiqFinsi a GenerarEtiqueta
@@ -2223,14 +2671,53 @@ funcion CompilarAWasm: ast, builtins
     si EsInstancia: ast, AST#NodoUtilizar
         NoImplementado
     finsi
+    si EsInstancia: ast, AST#NodoClase
+        variables constSubclase, constNombre, constFijarNombre, constantes, agregarAtributos
+        fijar constSubclase a GenerarIdDeConstante
+        fijar constNombre a GenerarIdDeConstante
+        fijar constFijarNombre a GenerarIdDeConstante
+        fijar constantes a Compilado#deConstantes:
+            (Arreglo#crearCon:
+                (Constante#crear: constSubclase, {subclase}),
+                (Constante#crear: constNombre, ast#nombre#nombre),
+                (Constante#crear: constFijarNombre, {fijar_nombre}))
+        si EsNulo: ast#claseBase
+            NoImplementado
+        finsi
+        fijar agregarAtributos a
+            UnirCompilados:
+                (Mapear: (Filtrar: ast#declaraciones,
+                                   funcion: D
+                                       devolver EsInstancia: D, AST#NodoDeclaraciónDeAtributosEnClase
+                                   finfuncion),
+                         funcion: nodo
+                             devolver UnirCompilados:
+                                 (Mapear: nodo#nombres,
+                                          funcion: nombre
+                                              devolver CompilarAgregarAtributo: (CompilarIdentificador: ast#nombre), nombre#nombre
+                                          finfuncion)
+                         finfuncion)
+        devolver constantes
+              >> (CompilarAWasm: ast#claseBase, builtins)
+              >> (Instrucciones: (OP#MSG: constSubclase, 0, 1))
+              >> (CompilarFijarIdentificador: ast#nombre)
+              >> (CompilarIdentificador: ast#nombre)
+              >> (Instrucciones: (OP#LCONST: constNombre),
+                                 (OP#ROT: 1),
+                                 (OP#MSG: constFijarNombre, 1, 0))
+              >> agregarAtributos
+    finsi
     si EsInstancia: ast, AST#NodoMétodo
         NoImplementado
     finsi
-    si EsInstancia: ast, AST#NodoClase
-        NoImplementado
-    finsi
     si EsInstancia: ast, AST#NodoAtributos
-        NoImplementado
+        variable deClase
+        fijar deClase a CompilarAWasm: ast#deClase, builtins
+        devolver (UnirCompilados:
+                     (Mapear: ast#nombres,
+                              funcion: nombre
+                                  devolver CompilarAgregarAtributo: deClase, nombre#nombre
+                              finfuncion))
     finsi
 
     Inalcanzable
@@ -2257,7 +2744,7 @@ funcion NormalizaLosIdsDeConstantes: compilado
                 [ Tanto LCONST como MSG tienen su CID en el primer argumento. ]
                 variables cid, cv, clon, cidReal
                 fijar cid a tupla#en: 0
-                fijar cv a compilado#valorDeConstante: cid
+                fijar cv a compilado#valorDeLaConstante: cid
                 fijar clon a clonar tupla con finclonar
                 si no (constantes#contiene: cv)
                     fijar cidReal a índiceDeConstantes
@@ -2289,6 +2776,21 @@ funcion NormalizaLosIdsDeConstantes: compilado
     devolver Compilado#crear: nuevasInstrs, nuevasDeclrs, nuevasConstantes
 finfuncion
 
+[DOCUMENTA
+@brief{Extráe los primeros elementos de @pd{arr} que satisfagan @pd{pred}.}
+
+Por ejemplo:
+
+@ejemplo|{
+variable arr, res
+funcion MenorA5: X
+    devolver X < 5
+finfuncion
+fijar arr a Arreglo#crearCon: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -2, -3, -4
+fijar res a ExtráeInicioMientras: arr, &MenorA5
+necesitas res = (Arreglo#crearCon: 0, 1, 2, 3, 4)
+}|
+DOCUMENTA]
 funcion ExtráeInicioMientras: arr, pred
     variable últimoÍndiceVálido
     fijar últimoÍndiceVálido a LlamarConEC: procedimiento: salir
@@ -2302,6 +2804,16 @@ funcion ExtráeInicioMientras: arr, pred
     devolver PedazoDeArreglo: arr, 0, (últimoÍndiceVálido + 1)
 finfuncion
 
+[DOCUMENTA
+@brief{Normaliza los IDs de las variables locales.}
+
+Los índices de los registros locales en el IR deben ser "lineales": deben
+comenzar en 0 y avanzar ascendentemente sin "huecos". Esta funcion toma
+@pd{compilado} y normaliza todos los IDs de las variables locales para que
+cumplan con esta condición.
+
+Devuelve el nuevo compilado normalizado.
+DOCUMENTA]
 funcion NormalizaLosIdsDeLocales: compilado
     funcion normalizaLasLocales: parámetros, parámetroVariadic, instrucciones
         variables nuevasLocales, locales, nuevasInstrucciones, nuevosParámetros, nuevoParámetroVariadic, índiceLocal
@@ -2387,6 +2899,13 @@ funcion NormalizaLosIdsDeLocales: compilado
         compilado#constantes
 finfuncion
 
+[DOCUMENTA
+@brief{Escapa un texto para que sea válido en la representación textual del
+IR.}
+
+El texto devuelto puede ser rodeado por comillas @code{""} y será una literal
+textual válida del IR.
+DOCUMENTA]
 funcion EscaparParaPDVM: texto
     devolver MapearTexto: texto, funcion: car
         si car = {\}
@@ -2402,6 +2921,15 @@ funcion EscaparParaPDVM: texto
     finfuncion
 finfuncion
 
+[DOCUMENTA
+@brief{Emite la representación textual de un compilado.}
+
+Utiliza la sintaxis del ensamblador en vez de la otra representación usada por
+@pd{Listado} que es más fácil de leer pero no puede ser compilada.
+
+@pd{puertoDeEscritura} es el puerto de escritura en el cual se escribirá el
+compilado.
+DOCUMENTA]
 procedimiento EmitirCompilado: compilado, puertoDeEscritura
     procedimiento emitirCódigo: tuplas
         ParaCadaElemento: tuplas, procedimiento: tupla
@@ -2524,8 +3052,8 @@ Escribir: ({Escribiendo: ~t}#formatear: (__Argv#en: 1))
 fijar programa a SistemaDeArchivos#LeerArchivo: (__Argv#en: 0)
 fijar resP a ParsearYDefunc: programa
 fijar ast a resP#ast
+AnotarIdentificadoresTextuales: ast
 AnotaciónDeCapturas: ast
-[AnotarProfundidadDeIdentificadorEnBloque: ast, 0]
 EnumeraciónDeCapturas: ast, (EstadoDeEnumeraciónDeCapturas#desdeBuiltins: resP#builtins)
 EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast), funcion: nid devolver NULO finfuncion
 AnotarBindingsLocales: ast
