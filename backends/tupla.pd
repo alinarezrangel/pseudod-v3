@@ -294,6 +294,15 @@ funcion NombresLibres: nodo
     finsi
 finfuncion
 
+[DOCUMENTA
+@brief{Anota todos los identificadores que representan variables.}
+
+Anota todos los @pd{AST#NodoIdentificador} de @pd{ast} con el metadato
+@code{esBásicamenteTextual} (llave @pd{LLAVE_ANOTACIÓN_DE_CAPTURAS}) que es
+@pd{VERDADERO} o @pd{FALSO} dependiendo de si el @pd{AST#NodoIdentificador} es
+"textual" (su @code{#nombre} debe ser interpretado de forma literal) o no (es
+el nombre de una variable).
+DOCUMENTA]
 procedimiento AnotarIdentificadoresTextuales: ast
     variable especiales
     fijar especiales a Arreglo#crearCon:
@@ -332,6 +341,12 @@ procedimiento AnotarIdentificadoresTextuales: ast
     finfuncion
 finprocedimiento
 
+[DOCUMENTA
+@brief{Obtiene el metadato @code{esBásicamenteTextual} (llave
+@pd{LLAVE_ANOTACIÓN_DE_CAPTURAS}).}
+
+Si @pd{nodo} no es un @pd{AST#NodoIdentificador} devuelve @pd{FALSO}.
+DOCUMENTA]
 funcion EsBásicamenteTextual: nodo
     si EsInstancia: nodo, AST#NodoIdentificador
         devolver nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esBásicamenteTextual}
@@ -340,6 +355,13 @@ funcion EsBásicamenteTextual: nodo
     finsi
 finfuncion
 
+[DOCUMENTA
+@brief{Determina si el nodo representa una variable mediante el metadato
+@code{esBásicamenteTextual} (llave @pd{LLAVE_ANOTACIÓN_DE_CAPTURAS}).}
+
+Básicamente devuelve @code{no esBásicamenteTextual}. Si @pd{nodo} no es un
+@pd{AST#NodoIdentificador} devuelve @pd{FALSO}.
+DOCUMENTA]
 funcion EsIdentificadorDeVariable: nodo
     si EsInstancia: nodo, AST#NodoIdentificador
         devolver no nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esBásicamenteTextual}
