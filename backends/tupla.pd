@@ -2611,8 +2611,8 @@ funcion CompilarAWasm: ast, builtins
         devolver (CompilarAWasm: ast#expresión, builtins)
               >> (Instrucciones: (OP#RETN: 1))
     finsi
-    si (EsInstancia: ast, AST#NodoFunción) || (EsInstancia: ast, AST#NodoFunciónAnónima)
-        variables nrsParámetros, parámetroVrd, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad, localesInmediatas, procid
+    si (EsInstancia: ast, AST#NodoFunción) || (EsInstancia: ast, AST#NodoFunciónAnónima) || (EsInstancia: ast, AST#NodoMétodo)
+        variables nrsParámetros, parámetroVrd, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad, localesInmediatas, procid, tieneYo
 
         fijar preludio a Arreglo#vacio
         [ params ]
@@ -2632,8 +2632,24 @@ funcion CompilarAWasm: ast, builtins
 
         fijar procid a GenerarIdDeProcedimiento
         fijar inicDeClosure a (Instrucciones: (OP#MKCLZ: LocalDelEntornoActual, procid))
+        fijar tieneYo a FALSO
         si EsInstancia: ast, AST#NodoFunción
             fijar inicDeClosure a inicDeClosure >> (CompilarFijarIdentificador: ast#nombre)
+        finsi
+        si EsInstancia: ast, AST#NodoMétodo
+            variable constAgregarMétodo
+            fijar constAgregarMétodo a GenerarIdDeConstante
+            fijar inicDeClosure a (CompilarIdentificador: ast#deClase)
+                               >> inicDeClosure
+                               >> (Instrucciones: (OP#ROT: 1),
+                                                  (OP#MSG: constAgregarMétodo, 1, 0))
+                               >> (Compilado#deConstantes:
+                                      (Arreglo#crearCon:
+                                          (Constante#crear: constAgregarMétodo, {agregarMétodo})))
+            fijar tieneYo a VERDADERO
+        finsi
+        si EsInstancia: ast, AST#NodoFunciónAnónima
+            fijar tieneYo a ast#esMétodo
         finsi
 
         fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo, builtins)
@@ -2706,9 +2722,6 @@ funcion CompilarAWasm: ast, builtins
                                  (OP#ROT: 1),
                                  (OP#MSG: constFijarNombre, 1, 0))
               >> agregarAtributos
-    finsi
-    si EsInstancia: ast, AST#NodoMétodo
-        NoImplementado
     finsi
     si EsInstancia: ast, AST#NodoAtributos
         variable deClase
