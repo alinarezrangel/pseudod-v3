@@ -288,7 +288,7 @@ Véase el pase de defuncionalización (@pd{Defuncionalizar}).
 DOCUMENTA]
 funcion NombresLibres: nodo
     si EsInstancia: nodo, AST#NodoPrograma
-        devolver Arreglo#vacio
+        devolver Conjunto#vacío
     sino
         devolver nodo#obtenerMetadato: Defun#LLAVE_DEFUNCIONALIZACIÓN, {nombresLibres}
     finsi
@@ -371,6 +371,34 @@ funcion EsIdentificadorDeVariable: nodo
 finfuncion
 
 [DOCUMENTA
+@brief{Determina si el nodo contiene una variable @pd{yo} implícita.}
+
+Devuelve @pd{VERDADERO} si @pd{nodo} declara de forma implícita una variable
+@pd{yo}. Por ejemplo, @pd{AST#NodoFunción}es que fueron declarados con
+@code{metodo}, @pd{AST#NodoMétodo} y @pd{AST#NodoFunciónAnónima} que fueron
+creadas con @code{metodo} declaran de forma implícita una variable @pd{yo}.
+DOCUMENTA]
+funcion ContieneYoImplícito: nodo
+    si EsInstancia: nodo, AST#NodoFunciónAnónima
+        devolver nodo#esMétodo
+    finsi
+    si EsInstancia: nodo, AST#NodoMétodo
+        devolver VERDADERO
+    finsi
+    devolver FALSO
+finfuncion
+
+[DOCUMENTA
+@brief{Devuelve el nombre resuelto (binding) del @pd{yo} implícito de un nodo.}
+
+@pd{nodo} debe declarar un @pd{yo} implícito (véase @pd{ContieneYoImplícito}).
+DOCUMENTA]
+funcion NombreResueltoDelYoImplícito: nodo
+    necesitas ContieneYoImplícito: nodo
+    devolver nodo#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
+finfuncion
+
+[DOCUMENTA
 @brief{Pase de anotación de capturas.}
 
 Anota todos los @pd{AST#NodoIdentificador} del AST con un metadato
@@ -384,8 +412,12 @@ procedimiento AnotaciónDeCapturas: ast
         variable declaraciones
         fijar declaraciones a Arreglo#crearCon:
             AST#NodoVariable, AST#NodoFunción, AST#NodoClase, AST#NodoMétodo, AST#NodoFunciónAnónima
-        devolver Algún: (Mapear: declaraciones, (Parcial: &EsInstancia, nodo))
+        devolver (ContieneYoImplícito: nodo) || (Algún: (Mapear: declaraciones, (Parcial: &EsInstancia, nodo)))
     finfuncion, procedimiento: nodo, recur
+        [ FIXME: Esto siempre captura `yo` incluso cuando no lo esta siendo realmente ]
+        [ si ContieneYoImplícito: nodo ]
+        [     nombresCapturadosAcc#agregarAlFinal: (Conjunto#conValores: (NombreResueltoDelYoImplícito: nodo)) ]
+        [ finsi ]
         si (EsInstancia: nodo, AST#NodoFunción)
         || (EsInstancia: nodo, AST#NodoFunciónAnónima)
         || (EsInstancia: nodo, AST#NodoMétodo)
@@ -397,43 +429,195 @@ procedimiento AnotaciónDeCapturas: ast
         finsi
     finprocedimiento
     fijar nombresCapturados a Reducir: Conjunto#vacío, (MétodoComoFunción: {unión}), nombresCapturadosAcc
-    Caminar: ast, funcion: nodo
-        devolver EsIdentificadorDeVariable: nodo
-    finfuncion, procedimiento: nodo, recur
-        nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}, (nombresCapturados#contiene: (RN#NombreResueltoDe: nodo))
+    Caminar': ast, procedimiento: nodo, recur
+        si ContieneYoImplícito: nodo
+            nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsCapturado}, (nombresCapturados#contiene: (NombreResueltoDelYoImplícito: nodo))
+        finsi
+        si EsIdentificadorDeVariable: nodo
+            nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}, (nombresCapturados#contiene: (RN#NombreResueltoDe: nodo))
+        finsi
+        devolver %recur: nodo
     finprocedimiento
 finprocedimiento
 
+[ TODO: Documenta las siguientes clases ]
+clase LocalDelProcedimiento
+    metodo esCapturado
+    metodo binding
+    metodo índiceDeCaptura
+    metodo esLocal
+    metodo altura
+    metodo profundidad
+    metodo esLocalInmediata
+    metodo esLocalDirecta
+    metodo estáEnElEntorno
+finclase
 
-[DOCUMENTA
-@brief{Pase de enumeración de locales del procedimiento.}
+metodo LocalDelProcedimiento#comoTexto
+    devolver {(~t esCapturado = ~t, binding = ~t, índiceDeCaptura = ~t, esLocal = ~t, altura = ~t, profundidad = ~t, esLocalInmediata = ~t, esLocalDirecta = ~t, estáEnElEntorno = ~t)}#formatear: (TipoDe: yo), yo#esCapturado, yo#binding, yo#índiceDeCaptura, yo#esLocal, yo#altura, yo#profundidad, yo#esLocalInmediata, yo#esLocalDirecta, yo#estáEnElEntorno
+finmetodo
 
-Acumula las variables locales de todos los ámbitos del
-AST. @pd{ámbitoContenedor} es el ámbito que contiene a @pd{ast}.
+clase IdentificadorLocalDelProcedimiento hereda LocalDelProcedimiento
+    metodo estatico crear: nid
+    metodo nodo
+finclase
 
-A medida que acumula las variables, va agregando el resultado de
-@pd{%obtenerMetadatosAdicionales: nodoIdentificador} a los siguientes metadatos
-de todos los nodos del AST que contienen un ámbito y al identificador
-encontrado:
+atributo IdentificadorLocalDelProcedimiento#nodo
 
-@itemlist(
-@item{@pd{AST#NodoPrograma}: @code{localesDelNodo'}.}
+metodo IdentificadorLocalDelProcedimiento#inicializar: nid
+    fijar yo#nodo a nid
+finmetodo
 
-@item{@pd{AST#NodoSi}: @code{localesSiVerdadero} y @code{localesSiFalso}.}
+metodo IdentificadorLocalDelProcedimiento#binding
+    devolver RN#NombreResueltoDe: yo#nodo
+finmetodo
 
-@item{@pd{AST#NodoMientras}: @code{localesDelNodo}.}
+metodo IdentificadorLocalDelProcedimiento#esCapturado
+    si yo#nodo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
+        devolver yo#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
+    sino
+        devolver NULO
+    finsi
+finmetodo
 
-@item{@pd{AST#NodoPrograma} y @pd{AST#NodoFunción}: @code{localesDelProcedimiento}.}
-)
+metodo IdentificadorLocalDelProcedimiento#índiceDeCaptura
+    si yo#nodo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
+        devolver yo#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
+    sino
+        devolver NULO
+    finsi
+finmetodo
 
-Además, para los @pd{AST#NodoPrograma} y @pd{AST#NodoFunción} el metadato
-@code{bindingsLocalesDelProcedimiento} será agregado con los bindings de todas
-las variables locales del ámbito.
+metodo IdentificadorLocalDelProcedimiento#esLocal
+    si yo#nodo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}
+        devolver yo#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}
+    sino
+        devolver NULO
+    finsi
+finmetodo
 
-Todos los metadatos son agregados con la llave de anotación de capturas
-@pd{LLAVE_ANOTACIÓN_DE_CAPTURAS}.
-DOCUMENTA]
-procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obtenerMetadatosAdicionales
+metodo IdentificadorLocalDelProcedimiento#altura
+    si yo#nodo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
+        devolver yo#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo IdentificadorLocalDelProcedimiento#profundidad
+    si yo#nodo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
+        devolver yo#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo IdentificadorLocalDelProcedimiento#esLocalInmediata
+    si yo#nodo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalInmediata}
+        devolver yo#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalInmediata}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo IdentificadorLocalDelProcedimiento#esLocalDirecta
+    si yo#nodo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}
+        devolver yo#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo IdentificadorLocalDelProcedimiento#estáEnElEntorno
+    si yo#nodo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}
+        devolver yo#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+clase YoLocalDelProcedimiento hereda LocalDelProcedimiento
+    metodo estatico crear: nodoConYo
+    metodo nodoConYo
+finclase
+
+atributo YoLocalDelProcedimiento#nodoConYo
+
+metodo YoLocalDelProcedimiento#inicializar: nodoConYo
+    necesitas ContieneYoImplícito: nodoConYo
+    fijar yo#nodoConYo a nodoConYo
+finmetodo
+
+metodo YoLocalDelProcedimiento#binding
+    devolver NombreResueltoDelYoImplícito: yo#nodoConYo
+finmetodo
+
+metodo YoLocalDelProcedimiento#esCapturado
+    si yo#nodoConYo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsCapturado}
+        devolver yo#nodoConYo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsCapturado}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo YoLocalDelProcedimiento#índiceDeCaptura
+    si yo#nodoConYo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCapturaDeYo}
+        devolver yo#nodoConYo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCapturaDeYo}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo YoLocalDelProcedimiento#esLocal
+    si yo#nodoConYo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocal}
+        devolver yo#nodoConYo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocal}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo YoLocalDelProcedimiento#altura
+    si yo#nodoConYo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {alturaDeYo}
+        devolver yo#nodoConYo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {alturaDeYo}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo YoLocalDelProcedimiento#profundidad
+    si yo#nodoConYo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidadDeYo}
+        devolver yo#nodoConYo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidadDeYo}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo YoLocalDelProcedimiento#esLocalInmediata
+    si yo#nodoConYo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocalInmediata}
+        devolver yo#nodoConYo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocalInmediata}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo YoLocalDelProcedimiento#esLocalDirecta
+    si yo#nodoConYo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocalDirecta}
+        devolver yo#nodoConYo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocalDirecta}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo YoLocalDelProcedimiento#estáEnElEntorno
+    si yo#nodoConYo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEstáEnElEntorno}
+        devolver yo#nodoConYo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEstáEnElEntorno}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+[ TODO: Documenta este pase ]
+procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor
     necesitas (EsInstancia: ast, AST#NodoFunción)
            || (EsInstancia: ast, AST#NodoFunciónAnónima)
            || (EsInstancia: ast, AST#NodoMétodo)
@@ -443,18 +627,37 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
     fijar ámbitosLocales a Pila#vacía
     fijar nodosLocales a Pila#vacía
 
-    procedimiento AgregarLocal: nid
-        locales#agregarAlFinal: nid
-        necesitas ámbitosLocales#_elementos#longitud = nodosLocales#_elementos#longitud
+    procedimiento AgregarLocal: local
+        locales#agregarAlFinal: local
+        necesitas ámbitosLocales#longitud = nodosLocales#longitud
         ParaCadaElemento: nodosLocales#_elementos, procedimiento: agregador
-            devolver %agregador: nid
+            devolver %agregador: local
         finprocedimiento
+    finprocedimiento
+
+    procedimiento FijarMetadatoConIdentificadorLocal: nid
+        variable local
+        fijar local a IdentificadorLocalDelProcedimiento#crear: nid
+        nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {local}, local
+        devolver local
+    finprocedimiento
+
+    procedimiento AgregarIdentificadorLocal: nid
+        devolver AgregarLocal: (FijarMetadatoConIdentificadorLocal: nid)
+    finprocedimiento
+
+    procedimiento AgregarYoLocal: nodoConYo
+        necesitas ContieneYoImplícito: nodoConYo
+        variable local
+        fijar local a YoLocalDelProcedimiento#crear: nodoConYo
+        nodoConYo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localYo}, local
+        devolver AgregarLocal: local
     finprocedimiento
 
     procedimiento CreaAgregador: nodo, metadato
         nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, metadato, Arreglo#vacio
-        devolver procedimiento: nid
-            (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, metadato)#agregarAlFinal: (%obtenerMetadatosAdicionales: nid)
+        devolver procedimiento: local
+            (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, metadato)#agregarAlFinal: local
         finprocedimiento
     finprocedimiento
 
@@ -469,12 +672,15 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
               || (EsInstancia: nodo, AST#NodoSi)
               || (EsInstancia: nodo, AST#NodoMientras)
               || (EsInstancia: nodo, AST#NodoPrograma)
+              || (ContieneYoImplícito: nodo)
     finfuncion
 
     procedimiento interno: nodo, recur
         si EsIdentificadorDeVariable: nodo
             si Defun#EsLocalEntre: ámbitoContenedor, ámbitosLocales#últimoValorApilado, nodo
-                AgregarLocal: nodo
+                AgregarIdentificadorLocal: nodo
+            sino
+                FijarMetadatoConIdentificadorLocal: nodo
             finsi
             devolver NULO
         finsi
@@ -501,15 +707,18 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
             ámbitosLocales#desapilar
             devolver NULO
         finsi
-        si EsInstancia: nodo, AST#NodoFunción
-            AgregarLocal: nodo#nombre
-            devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), obtenerMetadatosAdicionales
-        finsi
+
         si (EsInstancia: nodo, AST#NodoFunciónAnónima)
         || (EsInstancia: nodo, AST#NodoMétodo)
         || (EsInstancia: nodo, AST#NodoPrograma)
-            devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), obtenerMetadatosAdicionales
+        || (EsInstancia: nodo, AST#NodoFunción)
+            si EsInstancia: nodo, AST#NodoFunción
+                %recur: nodo#nombre
+            finsi
+            devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo)
         finsi
+
+        necesitas no ContieneYoImplícito: nodo
     finprocedimiento
 
     si (EsInstancia: ast, AST#NodoFunción)
@@ -525,14 +734,17 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, obte
     si EsInstancia: ast, AST#NodoMétodo
         Caminar: ast#deClase, &filtro, &interno
     finsi
+    si ContieneYoImplícito: ast
+        AgregarYoLocal: ast
+    finsi
     si EsInstancia: ast, AST#NodoPrograma
         ParaCadaElemento: ast#instrucciones, procedimiento: nodo
             devolver Caminar: nodo, &filtro, &interno
         finprocedimiento
     finsi
 
-    ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {bindingsLocalesDelProcedimiento}, (Conjunto#desdeArreglo: (Mapear: locales, &(RN#NombreResueltoDe)))
-    ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelProcedimiento}, (Mapear: locales, obtenerMetadatosAdicionales)
+    ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {bindingsLocalesDelProcedimiento}, (Conjunto#desdeArreglo: (Mapear: locales, (MétodoComoFunción: {binding})))
+    ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelProcedimiento}, locales
 finprocedimiento
 
 [DOCUMENTA
@@ -549,8 +761,9 @@ Agrega el metadato (con la llave @pd{LLAVE_ANOTACIÓN_DE_CAPTURAS})
 (@pd{AST#NodoPrograma}, @pd{AST#NodoMientras}, @pd{AST#NodoFunción},
 @pd{AST#NodoFunciónAnónima}). @pd{AST#NodoSi} tiene sus propios metadatos
 @code{localesInmediatasSiVerdadero} y @code{localesInmediatasSiFalso}. En todos
-los casos el valor del metadato es un arreglo con los
-@pd{AST#NodoIdentificador} del ámbito que son locales inmediatas.
+los casos el valor del metadato es un arreglo con las locales del ámbito
+(devueltas tal y como @pd{EnumeraciónDeLocalesDeProcedimiento}) que son locales
+inmediatas.
 
 Además, anota cada @pd{AST#NodoIdentificador} con @code{localInmediata}, un
 metadato que es @pd{VERDADERO} o @pd{FALSO} dependiendo de si el identificador
@@ -622,8 +835,9 @@ procedimiento AnotarLocalesInmediatas: ast
                 Escribir: {siVerdadero}, localesSiVerdadero
                 Escribir: {siFalso}, localesSiFalso
             sino
+                variable locales
                 si EsInstancia: ast, AST#NodoFunción
-                    variables ámbito, locales, localInmediata
+                    variables ámbito, localInmediata
                     fijar ámbito a RN#ObtenerNombresDefinídos: ast
                     fijar localInmediata a ast#nombre#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localInmediata}
                     fijar locales a marcarConÁmbito: ast, ámbito
@@ -632,12 +846,20 @@ procedimiento AnotarLocalesInmediatas: ast
                     Escribir: {NodoFunción}, ast#areaTextual
                     Escribir: {locales}, locales
                 sino
-                    variables ámbito, locales
+                    variable ámbito
                     fijar ámbito a RN#ObtenerNombresDefinídos: ast
                     fijar locales a marcarConÁmbito: ast, ámbito
                     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}, locales
                     Escribir: (TipoDe: ast), ast#areaTextual
                     Escribir: {locales}, locales
+                finsi
+
+                si ContieneYoImplícito: ast
+                    Escribir: {Contiene yo implícito}
+                    [ variable nrYo ]
+                    [ fijar nrYo a NombreResueltoDelYoImplícito: ast ]
+                    [ ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocalInmediata}, (Contiene: (Mapear: locales, (MétodoComoFunción: {binding})), nrYo) ]
+                    ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocalInmediata}, VERDADERO
                 finsi
             finsi
         sino
@@ -659,6 +881,7 @@ clase EstadoDeEnumeraciónDeCapturas
     metodo estatico desdeEstado: estado
 
     metodo marcarÍndiceCapturaEnDeclaración: nid
+    metodo marcarÍndiceCapturaEnDeclaraciónDeYo: nid
     metodo marcarÍndiceCapturaEnUso: nid
     metodo informaciónDeLaCaptura: nid
 
@@ -698,6 +921,14 @@ metodo EstadoDeEnumeraciónDeCapturas#marcarÍndiceCapturaEnDeclaración: nid
     nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}, yo#acc
     nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}, yo#profundidad
     yo#asoc#fijarEn: (RN#NombreResueltoDe: nid), yo#acc
+    fijar yo#acc a yo#acc + 1
+finmetodo
+
+metodo EstadoDeEnumeraciónDeCapturas#marcarÍndiceCapturaEnDeclaraciónDeYo: nodo
+    nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {alturaDeYo}, 0
+    nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCapturaDeYo}, yo#acc
+    nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidadDeYo}, yo#profundidad
+    yo#asoc#fijarEn: (NombreResueltoDelYoImplícito: nodo), yo#acc
     fijar yo#acc a yo#acc + 1
 finmetodo
 
@@ -790,6 +1021,9 @@ procedimiento EnumeraciónDeCapturas: ast, estado
                 estado#marcarÍndiceCapturaEnUso: nodo#deClase
             finsi
             fijar subestado a EstadoDeEnumeraciónDeCapturas#desdeEstado: estado
+            si ContieneYoImplícito: nodo
+                subestado#marcarÍndiceCapturaEnDeclaraciónDeYo: nodo
+            finsi
             ParaCadaElemento: nodo#parámetros, procedimiento: param
                 si EsInstancia: param, AST#NodoVariadic
                     subestado#marcarÍndiceCapturaEnDeclaración: param#interno
@@ -877,18 +1111,19 @@ procedimiento AnotarBindingsLocales: ast
             finsi
             devolver NULO
         finsi
+        si ContieneYoImplícito: nodo
+            nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocal}, (bindings#contiene: (NombreResueltoDelYoImplícito: nodo))
+        finsi
         si (EsInstancia: nodo, AST#NodoFunciónAnónima) || (EsInstancia: nodo, AST#NodoPrograma)
             AnotarBindingsLocales: nodo
             devolver NULO
         finsi
         si EsInstancia: nodo, AST#NodoFunción
-            [nodo#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo#nombre))]
             %recur: nodo#nombre
             AnotarBindingsLocales: nodo
             devolver NULO
         finsi
         si EsInstancia: nodo, AST#NodoMétodo
-            [nodo#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo#nombre))]
             %recur: nodo#deClase
             AnotarBindingsLocales: nodo
             devolver NULO
@@ -912,6 +1147,7 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
         || (EsInstancia: nodo, AST#NodoFunciónAnónima)
         || (EsInstancia: nodo, AST#NodoMétodo)
         || (EsInstancia: nodo, AST#NodoPrograma)
+        || (ContieneYoImplícito: nodo)
             variables bindings, locales, localesReales, nombre, deClase
             fijar bindings a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {bindingsLocalesDelProcedimiento}
             fijar locales a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesDelProcedimiento}
@@ -942,6 +1178,10 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
                 devolver bindingsDeEsteÁmbito#contiene: local#binding
             finfuncion
 
+            si ContieneYoImplícito: nodo
+                nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocalDirecta}, (bindingsDeEsteÁmbito#contiene: (NombreResueltoDelYoImplícito: nodo))
+            finsi
+
             procedimiento marcarSubidentificadores: nodo
                 Caminar: nodo, funcion: nodo
                     devolver (no Defun#SonElMismoObjeto: nodo, nombre)
@@ -953,7 +1193,6 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
                               || (EsInstancia: nodo, AST#NodoPrograma))
                 finfuncion, procedimiento: nodo, subrecur
                     si EsInstancia: nodo, AST#NodoFunción
-                        [nodo#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}, (bindingsDeEsteÁmbito#contiene: (RN#NombreResueltoDe: nodo#nombre))]
                         %subrecur: nodo#nombre
                         MarcaVariablesLocalesEnSubámbitos: nodo
                         devolver NULO
@@ -993,19 +1232,27 @@ metadato es un @pd{Boole} que indica si este uso del identificador debe estar
 en el entorno de la función o no.
 DOCUMENTA]
 procedimiento MarcaVariablesQueEstánEnElEntorno: ast
-    Caminar: ast, funcion: nodo
-        devolver EsIdentificadorDeVariable: nodo
-    finfuncion, procedimiento: nodo, recur
-        variables esLocal, esCapturada, esLocalDirecta
-        fijar esCapturada a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
-        fijar esLocal a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}
-        fijar esLocalDirecta a nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}
-        Escribir: {! S:}, nodo
-        Escribir: {ES}, (esCapturada || (no esLocal) || (no esLocalDirecta))
-        si (no esCapturada)
-            Escribir: {OJO}, (no esLocal), (no esLocalDirecta)
+    funcion esLocal: local
+        si EsInstancia: local, IdentificadorLocalDelProcedimiento
+            Escribir: {! S:}, local#nodo
+        sino
+            Escribir: {! S:}, local#nodoConYo
         finsi
-        nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}, (esCapturada || (no esLocal) || (no esLocalDirecta))
+        Escribir: {ES}, (local#esCapturado || (no local#esLocal) || (no local#esLocalDirecta))
+        si (no local#esCapturado)
+            Escribir: {OJO}, (no local#esLocal), (no local#esLocalDirecta)
+        finsi
+        devolver local#esCapturado || (no local#esLocal) || (no local#esLocalDirecta)
+    finfuncion
+    Caminar': ast, procedimiento: nodo, recur
+        si EsIdentificadorDeVariable: nodo
+            nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}, (esLocal: (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {local}))
+            devolver NULO
+        finsi
+        si ContieneYoImplícito: nodo
+            nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEstáEnElEntorno}, (esLocal: (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localYo}))
+        finsi
+        devolver %recur: nodo
     finprocedimiento
 finprocedimiento
 
@@ -2096,9 +2343,12 @@ un arreglo de bindings. Si se esta compilando un bloque que no es uno de estos,
 porque los parámetros son locales pero no deberían estar declarados con
 @code{LOCAL} (excepto el parámetro variadic que si debe ser declarado con
 @code{LOCAL}).}
+
+@defparam(localYo){El local de la declaración de la variable @pd{yo} implícita
+en este método. Si no se esta compilando un método, debe ser @pd{NULO}.}
 )
 DOCUMENTA]
-funcion CompilarLocales: locales, parámetros
+funcion CompilarLocales: locales, parámetros, localYo
     variable variadics
     fijar variadics a Filtrar: parámetros, funcion: param
         devolver EsInstancia: param, AST#NodoVariadic
@@ -2106,7 +2356,7 @@ funcion CompilarLocales: locales, parámetros
     necesitas (variadics#longitud = 0) || (variadics#longitud = 1)
     Escribir: {-=-}
     ParaCadaElemento: locales, procedimiento: local
-        si EstáEnElEntorno: local#nodo
+        si local#estáEnElEntorno
             Escribir: {Está en el entorno:}, local
         finsi
     finprocedimiento
@@ -2120,15 +2370,20 @@ funcion CompilarLocales: locales, parámetros
         finsi
         devolver nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
     finfuncion
-    variable índices
+    variables índices, bindingYo
     fijar índices a (Mapear: parámetros, &índiceDeCaptura)
+    si no EsNulo: localYo
+        fijar bindingYo a localYo#binding
+    sino
+        fijar bindingYo a NULO
+    finsi
     devolver
         Mapear:
             (Concatenar:
                 (Únicos:
                     (Mapear: (Filtrar: locales,
                                     funcion: meta
-                                        devolver (no EstáEnElEntorno: meta#nodo) && (no Contiene: índices, meta#índiceDeCaptura)
+                                        devolver (no meta#estáEnElEntorno) && (no Contiene: índices, meta#índiceDeCaptura) && (no meta#binding = bindingYo)
                                     finfuncion),
                              funcion: local
                                  devolver local#binding
@@ -2269,9 +2524,7 @@ Devuelve un arreglo con las locales que están en el entorno de la
 función/método/procedimiento.
 DOCUMENTA]
 funcion VariablesEnElEntorno: locales
-    devolver Únicos: (Filtrar: locales, funcion: local
-        devolver local#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}
-    finfuncion)
+    devolver Únicos: (Filtrar: locales, (MétodoComoFunción: {estáEnElEntorno}))
 finfuncion
 
 [DOCUMENTA
@@ -2281,9 +2534,9 @@ Llama a @pd{CompilarLocales} y @pd{CompilarEntornoDelÁmbito}, acumulando sus
 resultados. Devuelve un arreglo de instrucciones que sirve como "inicio" o
 "preludio" de un bloque.
 DOCUMENTA]
-funcion CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, parámetros, exísteMarcoSuperior, profundidad
+funcion CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, parámetros, exísteMarcoSuperior, profundidad, localYo
     devolver Concatenar:
-        (CompilarLocales: locales, parámetros),
+        (CompilarLocales: locales, parámetros, localYo),
         (CompilarEntornoDelÁmbito: parámetros, localesEnElEntorno, localesInmediatas, exísteMarcoSuperior, profundidad)
 finfuncion
 
@@ -2416,7 +2669,7 @@ funcion CompilarAWasm: ast, builtins
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
         fijar localesInmediatas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}
-        devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, Arreglo#vacio, FALSO, profundidad)))
+        devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, Arreglo#vacio, FALSO, profundidad, NULO)))
               >> (CompilarBloqueAWasm: ast#instrucciones, builtins)
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
@@ -2634,7 +2887,7 @@ funcion CompilarAWasm: ast, builtins
               >> (Instrucciones: (OP#RETN: 1))
     finsi
     si (EsInstancia: ast, AST#NodoFunción) || (EsInstancia: ast, AST#NodoFunciónAnónima) || (EsInstancia: ast, AST#NodoMétodo)
-        variables nrsParámetros, parámetroVrd, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad, localesInmediatas, procid, tieneYo
+        variables nrsParámetros, parámetroVrd, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad, localesInmediatas, procid, localYo
 
         fijar preludio a Arreglo#vacio
         [ params ]
@@ -2650,11 +2903,23 @@ funcion CompilarAWasm: ast, builtins
         fijar localesInmediatas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}
         fijar nombresLibres a NombresLibres: ast
 
-        fijar preludio a Concatenar: preludio, (CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, ast#parámetros, VERDADERO, profundidad)
+        si ContieneYoImplícito: ast
+            variable yos
+            fijar yos a Filtrar: locales, funcion: local
+                devolver (local#binding = NombreResueltoDelYoImplícito: ast) && (EsInstancia: local, YoLocalDelProcedimiento)
+            finfuncion
+            Escribir: {$$$$$$}, yos
+            necesitas yos#longitud = 1
+            fijar localYo a yos#en: 0
+            fijar nrsParámetros a Concatenar: (Arreglo#crearCon: localYo#binding), nrsParámetros
+        sino
+            fijar localYo a NULO
+        finsi
+
+        fijar preludio a Concatenar: preludio, (CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, ast#parámetros, VERDADERO, profundidad, localYo)
 
         fijar procid a GenerarIdDeProcedimiento
         fijar inicDeClosure a (Instrucciones: (OP#MKCLZ: LocalDelEntornoActual, procid))
-        fijar tieneYo a FALSO
         si EsInstancia: ast, AST#NodoFunción
             fijar inicDeClosure a inicDeClosure >> (CompilarFijarIdentificador: ast#nombre)
         finsi
@@ -2668,10 +2933,6 @@ funcion CompilarAWasm: ast, builtins
                                >> (Compilado#deConstantes:
                                       (Arreglo#crearCon:
                                           (Constante#crear: constAgregarMétodo, {agregarMétodo})))
-            fijar tieneYo a VERDADERO
-        finsi
-        si EsInstancia: ast, AST#NodoFunciónAnónima
-            fijar tieneYo a ast#esMétodo
         finsi
 
         fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo, builtins)
@@ -3072,15 +3333,6 @@ Q
 
 }]
 
-clase XD
-    atributos esCapturado, binding, índiceDeCaptura, esLocal, altura, profundidad, esLocalInmediata, nodo
-    metodo comoTexto
-finclase
-
-metodo XD#comoTexto
-    devolver {(XD binding = ~t, índiceDeCaptura = ~t, altura = ~t, profundidad = ~t, esCapturado = ~t, esLocal = ~t, esLocalInmediata = ~t, nodo = ~t)}#formatear: yo#binding, yo#índiceDeCaptura, yo#altura, yo#profundidad, yo#esCapturado, yo#esLocal, yo#esLocalInmediata, yo#nodo
-finmetodo
-
 variables ast, resP, programa, cc
 Escribir: ({Leyendo: ~t}#formatear: (__Argv#en: 0))
 Escribir: ({Escribiendo: ~t}#formatear: (__Argv#en: 1))
@@ -3090,21 +3342,9 @@ fijar ast a resP#ast
 AnotarIdentificadoresTextuales: ast
 AnotaciónDeCapturas: ast
 EnumeraciónDeCapturas: ast, (EstadoDeEnumeraciónDeCapturas#desdeBuiltins: resP#builtins)
-EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast), funcion: nid devolver NULO finfuncion
+EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast)
 AnotarBindingsLocales: ast
 AnotarLocalesInmediatas: ast
-EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast), funcion: nid
-    devolver clonar XD#crear con
-        esCapturado: nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esCapturado}
-        binding: RN#NombreResueltoDe: nid
-        índiceDeCaptura: nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
-        altura: nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
-        esLocal: nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}
-        profundidad: nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
-        esLocalInmediata: nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localInmediata}
-        nodo: nid
-    finclonar
-finfuncion
 MarcaVariablesLocalesEnSubámbitos: ast
 MarcaVariablesQueEstánEnElEntorno: ast
 fijar cc a CompilarAWasm: ast, resP#builtins

@@ -57,6 +57,15 @@ funcion NombreResueltoDe: id
     devolver id#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResuelto}
 finfuncion
 
+[DOCUMENTA
+@brief{Obtiene el nombre resuelto de la variable @pd{yo} de un método.}
+
+Obtiene y devuelve el valor del metadato @code{nombreResueltoDeYo} del nodo.
+DOCUMENTA]
+funcion NombreResueltoDelYoImplícito: id
+    devolver id#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
+finfuncion
+
 [ Esta clase es solo un "ayudante", no debería usarse fuera de este módulo y es
   un detalle de la implementación. Para ver la lista de metadatos que esta
   clase pone en los nodos, véase el procedimiento ResolverNombres.
