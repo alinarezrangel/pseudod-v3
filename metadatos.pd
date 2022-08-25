@@ -1,0 +1,68 @@
+[DOCUMENTA
+@brief{Metadatos sobre esta versión del compilador.}
+
+El @code{Makefile} del compilador genera un módulo @code{_VERSIÓN} que contiene
+una instancia de esta clase con todos sus atributos inicializados
+correctamente. Véase la documentación del makefile para más información.
+DOCUMENTA]
+clase Metadatos
+    [DOCUMENTA
+    @brief{El número de commits que se realizaron desde que el repositorio se etiquetó.}
+
+    Por ejemplo, si se etiquetó un commit @code{A} con la etiqueta
+    @code{v3.6.4}, pero desde ese entonces se han realizado 7 commits
+    adicionales, entonces este número será 7.
+
+    Si no es 0 entonces es una versión de desarrollo. Véase también el método
+    @pd{esVersiónDeDesarrollo}.
+    DOCUMENTA]
+    metodo númeroDeCommitsDesdeLaÚltimaEtiqueta
+
+    [DOCUMENTA
+    @brief{El commit del que se construyó este compilador.}
+    DOCUMENTA]
+    metodo commit
+
+    [DOCUMENTA
+    @brief{La versión del compilador.}
+
+    Un @pd{Texto} que está en formato de @link("https://semver.org"){versionado
+    semántico (semver 2.0)}.
+    DOCUMENTA]
+    metodo versión
+
+    [DOCUMENTA
+    @brief{Un @pd{Boole} indicando si este compilador tiene cambios que aún no
+    están en un commit.}
+
+    Si es @pd{VERDADERO} entonces es una versión de desarrollo.
+    DOCUMENTA]
+    metodo tieneCambiosSinHacerCommit
+
+    [DOCUMENTA
+    @brief{Un @pd{Boole} indicando si es una versión de desarrollo.}
+    DOCUMENTA]
+    metodo esVersiónDeDesarrollo
+
+    [DOCUMENTA
+    @brief{Devuelve una representación textual sencilla de los metadatos.}
+    DOCUMENTA]
+    metodo comoTexto
+finclase
+
+atributos Metadatos#númeroDeCommitsDesdeLaÚltimaEtiqueta,
+          Metadatos#commit,
+          Metadatos#versión,
+          Metadatos#tieneCambiosSinHacerCommit
+
+metodo Metadatos#esVersiónDeDesarrollo
+    devolver yo#tieneCambiosSinHacerCommit || (yo#númeroDeCommitsDesdeLaÚltimaEtiqueta > 0)
+finmetodo
+
+metodo Metadatos#comoTexto
+    devolver {(Metadatos ~t ~t-~t tieneCambiosSinHacerCommit = ~t)}#formatear:
+        yo#versión,
+        yo#númeroDeCommitsDesdeLaÚltimaEtiqueta,
+        yo#commit,
+        yo#tieneCambiosSinHacerCommit
+finmetodo

@@ -35,8 +35,8 @@ bepd/x/entorno.pd bepd/x/adhoc.pd bepd/x/lazy.pd bepd/x/puerto/conPosición.pd	\
 bepd/x/puerto/deArchivo.pd bepd/x/sistemaDeArchivos/archivo.pd
 COMPILER_FILES = $(BEPD_FILES) ámbito.pd ast.pd caminaNodos.pd combinadores.pd	\
 compilador.pd inicio.pd módulos.pd parser.pd resoluciónDeNombres.pd				\
-tokenizador.pd tokens.pd defuncionalización.pd backends/lua.pd					\
-backends/lua/emisor.pd backends/wasm.pd
+tokenizador.pd tokens.pd defuncionalización.pd metadatos.pd _VERSIÓN.pd			\
+backends/lua.pd backends/lua/emisor.pd backends/wasm.pd
 
 DIST_EXTRA_FILES = README.md $(DOCS_DIR)/man/pseudod.1	\
 $(DOCS_DIR)/man/pseudod.html $(DOCS_DIR)/man/pseudod.md
@@ -78,6 +78,25 @@ distclean:
 	rm -r $(DIST_TMP_DIR) $(DIST_ZIP)
 
 # Stages y las distíntas partes del compilador:
+
+.PHONY: FORCE
+
+# Utilizamos el objetivo `FORCE` para obligar a make a reconstruir
+# `_VERSIÓN.pd` cada vez que sea necesario. Como `FORCE` es `.PHONY`, las
+# dependencias de `_VERSIÓN.pd` siempre estarán consideradas como "más
+# recientes" y por consecuencia `_VERSIÓN.pd` siempre será considerado como
+# "por reconstruir". No podemos marcar a `_VERSIÓN.pd` como `.PHONY` porque
+# esto haría que todos los objetivos que dependen de `_VERSIÓN.pd` estén
+# perpetuamente considerados como "no actualizados".
+#
+# Recuerda que `scripts/get-version.py` solo actualiza `_VERSIÓN.pd` si es
+# necesario, lo que queremos es que el comando se ejecute siempre pero que los
+# dependientes de `_VERSIÓN.pd` solo vean cambios si `scripts/get-version.py`
+# realmente los realizó.
+#
+# Como este comando se ejecutará regularmente, utiliza la opción `--quiet`.
+_VERSIÓN.pd: _VERSIÓN.pd.tmpl FORCE
+	$(PYTHON3) scripts/get-version.py --quiet --output $@
 
 .PHONY: stage0
 stage0: $(STAGE0_FILES)

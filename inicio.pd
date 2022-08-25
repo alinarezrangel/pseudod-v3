@@ -11,13 +11,8 @@ utilizar compilador como Compilador
 utilizar resoluciónDeNombres como RN
 utilizar backends/lua como LuaBack
 utilizar módulos como Módulos
+utilizar _VERSIÓN (VERSIÓN, METADATOS_GIT)
 
-
-[DOCUMENTA
-@brief{Es la versión de PseudoD que este compilador implementa.}
-DOCUMENTA]
-variable VERSIÓN
-fijar VERSIÓN a {3.0.0-alpha.1}
 
 [DOCUMENTA
 @brief{Es el nombre (legible por humanos) de esta implementación.}

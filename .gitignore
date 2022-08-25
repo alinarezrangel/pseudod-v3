@@ -14,6 +14,9 @@ outputs/
 # Archivo TAGS para PseudoD
 PDTAGS
 
+# Archivos generados automáticamente
+_VERSIÓN.pd
+
 # El compilador ya compilado
 bootstrapped/
 

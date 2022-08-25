@@ -1,0 +1,24 @@
+$advertencia
+utilizar metadatos (Metadatos)
+
+[DOCUMENTA
+@brief{Versión del compilador.}
+
+Está en formato de @link("https://semver.org"){versionado semántico (semver
+2.0)}.
+DOCUMENTA]
+variable VERSIÓN
+fijar VERSIÓN a {$semver}
+
+[DOCUMENTA
+@brief{Metadatos del compilador.}
+
+Es una instancia de la clase @pd{Metadatos}.
+DOCUMENTA]
+variable METADATOS_GIT
+fijar METADATOS_GIT a clonar Metadatos#crear con
+    númeroDeCommitsDesdeLaÚltimaEtiqueta: $commits_since_last_tag
+    commit: {$commit}
+    versión: VERSIÓN
+    tieneCambiosSinHacerCommit: $uncommited
+finclonar
