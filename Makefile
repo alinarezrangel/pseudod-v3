@@ -16,6 +16,7 @@ STAGE2 = $(BTDIR)/stage2
 STAGE0_FILES = $(STAGE0)/inicio.lua $(STAGE0)/inicio.sdb
 STAGE1_FILES = $(STAGE1)/inicio.lua $(STAGE1)/inicio.sdb
 STAGE2_FILES = $(STAGE2)/inicio.lua $(STAGE2)/inicio.sdb
+ALL_STAGE_FILES = $(STAGE0_FILES) $(STAGE1_FILES) $(STAGE2_FILES)
 
 PDC ?= $(LUA) $(STAGE2)/inicio.lua
 
@@ -136,14 +137,20 @@ $(STAGE2)/inicio.lua: $(STAGE1_FILES) $(COMPILER_FILES) | $(STAGE2)
 .PHONY: force_update_stages force_update_stage0 force_update_stage1 force_update_stage2
 force_update_stages: force_update_stage0 force_update_stage1 force_update_stage2
 
-force_update_stage0:
-	touch $(STAGE0_FILES)
+MOST_RECENT_FILE = `$(PYTHON3) scripts/more-recent-of-all-files.py $(ALL_STAGE_FILES) $(COMPILER_FILES)`
 
-force_update_stage1: force_update_stage0
-	touch $(STAGE1_FILES)
+force_update_stage0: $(COMPILER_FILES)
+	touch $(STAGE0_FILES) -r $(MOST_RECENT_FILE)
 
-force_update_stage2: force_update_stage1
-	touch $(STAGE2_FILES)
+force_update_stage1: force_update_stage0 $(COMPILER_FILES)
+	touch $(STAGE1_FILES) -r $(MOST_RECENT_FILE)
+
+force_update_stage2: force_update_stage1 $(COMPILER_FILES)
+	touch $(STAGE2_FILES) -r $(MOST_RECENT_FILE)
+
+.PHONY: show_most_recent_file
+show_most_recent_file:
+	echo $(MOST_RECENT_FILE)
 
 PDTAGS: tool_tags $(COMPILER_FILES)
 	$(LUA) $(OUTPUTS_DIR)/tags.lua -o $@ $(COMPILER_FILES)
