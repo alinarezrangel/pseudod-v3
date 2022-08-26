@@ -132,6 +132,13 @@ $(STAGE2)/inicio.sdb: $(STAGE2)/inicio.lua $(COMPILER_FILES) | $(STAGE2)
 $(STAGE2)/inicio.lua: $(STAGE1_FILES) $(COMPILER_FILES) | $(STAGE2)
 	$(LUA) $(STAGE1)/inicio.lua inicio.pd --salida $(STAGE2)/inicio.lua --guardar-db $(STAGE2)/inicio.sdb
 
+# Backend de tuplas
+
+$(OUTPUTS_DIR)/tupla-db.sdb: $(OUTPUTS_DIR)/tupla.lua
+
+$(OUTPUTS_DIR)/tupla.lua: backends/tupla.pd $(COMPILER_FILES) $(STAGE2_FILES) | $(OUTPUTS_DIR)
+	$(LUA) $(STAGE2)/inicio.lua -o $@ --cargar-db $(OUTPUTS_DIR)/tupla-db.sdb $<
+
 # Objetivos útiles mientras se trabaja en el compilador
 
 .PHONY: force_update_stages force_update_stage0 force_update_stage1 force_update_stage2
