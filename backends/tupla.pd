@@ -399,6 +399,20 @@ funcion NombreResueltoDelYoImplícito: nodo
 finfuncion
 
 [DOCUMENTA
+@brief{Si el nodo debe ser ignorado para propósitos de compilación.}
+
+Algunos nodos, como los @pd{AST#NodoDeclaraciónDeMétodoEnClase} no deben ser
+compilados ni analizados. Estos nodos básicamente no tienen funcionalidad para
+el backend.
+
+Devuelve @pd{VERDADERO} si @pd{nodo} debería ser ignorado y @pd{FALSO} de lo
+contrario.
+DOCUMENTA]
+funcion DebeIgnorarElNodo: nodo
+    devolver EsInstancia: nodo, AST#NodoDeclaraciónDeMétodoEnClase
+finfuncion
+
+[DOCUMENTA
 @brief{Pase de anotación de capturas.}
 
 Anota todos los @pd{AST#NodoIdentificador} del AST con un metadato
@@ -412,12 +426,17 @@ procedimiento AnotaciónDeCapturas: ast
         variable declaraciones
         fijar declaraciones a Arreglo#crearCon:
             AST#NodoVariable, AST#NodoFunción, AST#NodoClase, AST#NodoMétodo, AST#NodoFunciónAnónima
-        devolver (ContieneYoImplícito: nodo) || (Algún: (Mapear: declaraciones, (Parcial: &EsInstancia, nodo)))
+        devolver (DebeIgnorarElNodo: nodo)
+              || (ContieneYoImplícito: nodo)
+              || (Algún: (Mapear: declaraciones, (Parcial: &EsInstancia, nodo)))
     finfuncion, procedimiento: nodo, recur
         [ FIXME: Esto siempre captura `yo` incluso cuando no lo esta siendo realmente ]
         [ si ContieneYoImplícito: nodo ]
         [     nombresCapturadosAcc#agregarAlFinal: (Conjunto#conValores: (NombreResueltoDelYoImplícito: nodo)) ]
         [ finsi ]
+        si DebeIgnorarElNodo: nodo
+            devolver NULO
+        finsi
         si (EsInstancia: nodo, AST#NodoFunción)
         || (EsInstancia: nodo, AST#NodoFunciónAnónima)
         || (EsInstancia: nodo, AST#NodoMétodo)
@@ -430,6 +449,9 @@ procedimiento AnotaciónDeCapturas: ast
     finprocedimiento
     fijar nombresCapturados a Reducir: Conjunto#vacío, (MétodoComoFunción: {unión}), nombresCapturadosAcc
     Caminar': ast, procedimiento: nodo, recur
+        si DebeIgnorarElNodo: nodo
+            devolver NULO
+        finsi
         si ContieneYoImplícito: nodo
             nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsCapturado}, (nombresCapturados#contiene: (NombreResueltoDelYoImplícito: nodo))
         finsi
@@ -665,7 +687,8 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor
     nodosLocales#apilar: (CreaAgregador: ast, {localesDelNodo'})
 
     funcion filtro: nodo
-        devolver (EsIdentificadorDeVariable: nodo)
+        devolver (DebeIgnorarElNodo: nodo)
+              || (EsIdentificadorDeVariable: nodo)
               || (EsInstancia: nodo, AST#NodoFunción)
               || (EsInstancia: nodo, AST#NodoMétodo)
               || (EsInstancia: nodo, AST#NodoFunciónAnónima)
@@ -676,6 +699,9 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor
     finfuncion
 
     procedimiento interno: nodo, recur
+        si DebeIgnorarElNodo: nodo
+            devolver NULO
+        finsi
         si EsIdentificadorDeVariable: nodo
             si Defun#EsLocalEntre: ámbitoContenedor, ámbitosLocales#últimoValorApilado, nodo
                 AgregarIdentificadorLocal: nodo
@@ -712,6 +738,9 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor
         || (EsInstancia: nodo, AST#NodoMétodo)
         || (EsInstancia: nodo, AST#NodoPrograma)
         || (EsInstancia: nodo, AST#NodoFunción)
+            si EsInstancia: nodo, AST#NodoMétodo
+                %recur: nodo#deClase
+            finsi
             si EsInstancia: nodo, AST#NodoFunción
                 %recur: nodo#nombre
             finsi
@@ -730,9 +759,6 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor
         ParaCadaElemento: ast#cuerpo, procedimiento: nodo
             devolver Caminar: nodo, &filtro, &interno
         finprocedimiento
-    finsi
-    si EsInstancia: ast, AST#NodoMétodo
-        Caminar: ast#deClase, &filtro, &interno
     finsi
     si ContieneYoImplícito: ast
         AgregarYoLocal: ast
@@ -781,8 +807,13 @@ procedimiento AnotarLocalesInmediatas: ast
         variable todasLasLocales
         fijar todasLasLocales a Arreglo#vacio
         Caminar: ast, funcion: ast
-            devolver (EsIdentificadorDeVariable: ast) || (esBloqueConÁmbito: ast)
+            devolver (DebeIgnorarElNodo: ast)
+                  || (EsIdentificadorDeVariable: ast)
+                  || (esBloqueConÁmbito: ast)
         finfuncion, procedimiento: ast, recur
+            si DebeIgnorarElNodo: ast
+                devolver NULO
+            finsi
             si EsIdentificadorDeVariable: ast
                 variables nr, inmediata
                 fijar nr a RN#NombreResueltoDe: ast
@@ -809,6 +840,9 @@ procedimiento AnotarLocalesInmediatas: ast
     finprocedimiento
 
     procedimiento recursión: ast, K
+        si DebeIgnorarElNodo: ast
+            devolver NULO
+        finsi
         si esBloqueConÁmbito: ast
             procedimiento marcarConÁmbito: ast, ámbito
                 variable locales
@@ -989,8 +1023,12 @@ procedimiento EnumeraciónDeCapturas: ast, estado
                                             AST#NodoClase
 
     Caminar: ast, funcion: nodo
-        devolver Algún: (Mapear: DECLARACIONES, (Parcial: &EsInstancia, nodo))
+        devolver (DebeIgnorarElNodo: nodo)
+              || (Algún: (Mapear: DECLARACIONES, (Parcial: &EsInstancia, nodo)))
     finfuncion, procedimiento: nodo, recur
+        si DebeIgnorarElNodo: nodo
+            devolver NULO
+        finsi
         si EsInstancia: nodo, AST#NodoPrograma
             ParaCadaElemento: nodo#instrucciones, recur
             nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}, estado#profundidad
@@ -1095,14 +1133,18 @@ procedimiento AnotarBindingsLocales: ast
         fijar nombre a NULO
     finsi
     Caminar: ast, funcion: nodo
-        devolver (no Defun#SonElMismoObjeto: nodo, ast)
-              && (no Defun#SonElMismoObjeto: nodo, nombre)
-              && (   (EsInstancia: nodo, AST#NodoIdentificador)
-                  || (EsInstancia: nodo, AST#NodoFunción)
-                  || (EsInstancia: nodo, AST#NodoMétodo)
-                  || (EsInstancia: nodo, AST#NodoFunciónAnónima)
-                  || (EsInstancia: nodo, AST#NodoPrograma))
+        devolver (DebeIgnorarElNodo: nodo)
+              || (   (no Defun#SonElMismoObjeto: nodo, ast)
+                  && (no Defun#SonElMismoObjeto: nodo, nombre)
+                  && (   (EsInstancia: nodo, AST#NodoIdentificador)
+                      || (EsInstancia: nodo, AST#NodoFunción)
+                      || (EsInstancia: nodo, AST#NodoMétodo)
+                      || (EsInstancia: nodo, AST#NodoFunciónAnónima)
+                      || (EsInstancia: nodo, AST#NodoPrograma)))
     finfuncion, procedimiento: nodo, recur
+        si DebeIgnorarElNodo: nodo
+            devolver NULO
+        finsi
         si EsInstancia: nodo, AST#NodoIdentificador
             si EsIdentificadorDeVariable: nodo
                 nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo))
@@ -1143,6 +1185,9 @@ identificador es un uso local directo.
 DOCUMENTA]
 procedimiento MarcaVariablesLocalesEnSubámbitos: ast
     Caminar': ast, procedimiento: nodo, K
+        si DebeIgnorarElNodo: nodo
+            devolver NULO
+        finsi
         si (EsInstancia: nodo, AST#NodoFunción)
         || (EsInstancia: nodo, AST#NodoFunciónAnónima)
         || (EsInstancia: nodo, AST#NodoMétodo)
@@ -1184,14 +1229,18 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
 
             procedimiento marcarSubidentificadores: nodo
                 Caminar: nodo, funcion: nodo
-                    devolver (no Defun#SonElMismoObjeto: nodo, nombre)
-                          && (no Defun#SonElMismoObjeto: nodo, deClase)
-                          && (   (EsInstancia: nodo, AST#NodoIdentificador)
-                              || (EsInstancia: nodo, AST#NodoFunción)
-                              || (EsInstancia: nodo, AST#NodoMétodo)
-                              || (EsInstancia: nodo, AST#NodoFunciónAnónima)
-                              || (EsInstancia: nodo, AST#NodoPrograma))
+                    devolver (DebeIgnorarElNodo: nodo)
+                          || (   (no Defun#SonElMismoObjeto: nodo, nombre)
+                              && (no Defun#SonElMismoObjeto: nodo, deClase)
+                              && (   (EsInstancia: nodo, AST#NodoIdentificador)
+                                  || (EsInstancia: nodo, AST#NodoFunción)
+                                  || (EsInstancia: nodo, AST#NodoMétodo)
+                                  || (EsInstancia: nodo, AST#NodoFunciónAnónima)
+                                  || (EsInstancia: nodo, AST#NodoPrograma)))
                 finfuncion, procedimiento: nodo, subrecur
+                    si DebeIgnorarElNodo: nodo
+                        devolver NULO
+                    finsi
                     si EsInstancia: nodo, AST#NodoFunción
                         %subrecur: nodo#nombre
                         MarcaVariablesLocalesEnSubámbitos: nodo
@@ -1251,7 +1300,11 @@ procedimiento MarcaVariablesQueEstánEnElEntorno: ast
         devolver local#esCapturado || (no local#esLocal) || (no local#esLocalDirecta)
     finfuncion
     Caminar': ast, procedimiento: nodo, recur
+        si DebeIgnorarElNodo: nodo
+            devolver NULO
+        finsi
         si EsIdentificadorDeVariable: nodo
+            Escribir: {^^^}, nodo
             nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}, (esLocal: (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {local}))
             devolver NULO
         finsi
@@ -2944,15 +2997,16 @@ funcion CompilarAWasm: ast, builtins
             fijar inicDeClosure a inicDeClosure >> (CompilarFijarIdentificador: ast#nombre)
         finsi
         si EsInstancia: ast, AST#NodoMétodo
-            variable constAgregarMétodo
+            variables constAgregarMétodo, agregarMétodo
             fijar constAgregarMétodo a GenerarIdDeConstante
+            fijar agregarMétodo a ast#esEstático#escojer: {agregarMétodoEstático}, {agregarMétodo}
             fijar inicDeClosure a (CompilarIdentificador: ast#deClase)
                                >> inicDeClosure
                                >> (Instrucciones: (OP#ROT: 1),
                                                   (OP#MSG: constAgregarMétodo, 1, 0))
                                >> (Compilado#deConstantes:
                                       (Arreglo#crearCon:
-                                          (Constante#crear: constAgregarMétodo, {agregarMétodo})))
+                                          (Constante#crear: constAgregarMétodo, agregarMétodo)))
         finsi
 
         fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo, builtins)
