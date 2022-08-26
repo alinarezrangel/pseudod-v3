@@ -569,6 +569,10 @@ Suitable for use with `completion-at-point-functions'."
             nil))
       nil)))
 
+(defconst pseudod-compilation-error-regexp
+  '((pseudod-pdc "«\\(\\([^:]+\\):\\([0-9]+\\):\\([0-9]+\\)\\)»" 2 3 4))
+  "Alist of compilation error regexps for different PseudoD implementations.")
+
 
 
 (defvar pseudod-mode-map
@@ -601,6 +605,16 @@ Suitable for use with `completion-at-point-functions'."
   (setq-local comment-padding " ")
   (setq-local comment-start-skip nil)
   (setq-local comment-use-syntax t)
+
+  ;; (setq compilation-error-regexp-alist (remove 'pseudod-pdc compilation-error-regexp-alist))
+  ;; (setq compilation-error-regexp-alist-alist (remove-if (lambda (x) (equal (car x) 'pseudod-pdc)) compilation-error-regexp-alist-alist))
+
+  ;; Add compilation regexps
+  (dolist (el pseudod-compilation-error-regexp)
+    (add-to-list 'compilation-error-regexp-alist (car el))
+    (add-to-list 'compilation-error-regexp-alist-alist el nil
+                 (lambda (a b) (equal (car a) (car b)))))
+
   (add-hook 'completion-at-point-functions
             #'pseudod-tags--complete-at-point-function
             nil
