@@ -89,7 +89,7 @@ def get_pseudod_exec(pseudod_impl):
     Esta línea devuelta leerá el programa de la entrada estándar y lo
     ejecutará, escribiendo el resultado a la salida estándar.
     """
-    assert pseudod_impl in {"interpreter", "stage0", "stage1", "jit"}
+    assert pseudod_impl in {"interpreter", "stage0", "stage1", "stage2", "jit"}
     if pseudod_impl == "interpreter":
         return [
             search_in_path("pseudod"),
