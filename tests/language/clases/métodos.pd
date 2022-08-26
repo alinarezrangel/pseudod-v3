@@ -1,0 +1,10 @@
+{
+    "nombre": "Métodos anónimos y métodos sin clase",
+    "espera": "éxito"
+}
+====================
+variable X
+fijar X a metodo: A
+    devolver yo + A
+finmetodo
+necesitas (X#\llamar\: 1, 2) = 3

@@ -1,0 +1,13 @@
+{
+    "nombre": "Métodos que capturan variables",
+    "espera": "éxito"
+}
+====================
+variable X
+fijar X a metodo: A, B
+    funcion W
+        devolver A + B
+    finfuncion
+    devolver yo + W
+finmetodo
+necesitas (X#\llamar\: 5, -2, 3) = 6

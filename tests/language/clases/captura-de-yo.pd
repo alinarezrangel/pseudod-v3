@@ -1,0 +1,13 @@
+{
+    "nombre": "Métodos que capturan `yo`",
+    "espera": "éxito"
+}
+====================
+variable X
+fijar X a metodo: A
+    funcion W: B
+        devolver yo + B
+    finfuncion
+    devolver W: A
+finmetodo
+necesitas (X#\llamar\: 1, 2) = 3
