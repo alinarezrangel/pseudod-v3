@@ -787,8 +787,8 @@ procedimiento AnotarLocalesInmediatas: ast
                 variables nr, inmediata
                 fijar nr a RN#NombreResueltoDe: ast
                 fijar inmediata a Contiene: ámbito#todosLosBindingsLocales, nr
-                Escribir: {ID}, ast
-                Escribir: {ES}, nr, {Y}, inmediata
+                [ Escribir: {ID}, ast ]
+                [ Escribir: {ES}, nr, {Y}, inmediata ]
                 ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localInmediata}, inmediata
                 si inmediata
                     todasLasLocales#agregarAlFinal: ast
@@ -831,9 +831,9 @@ procedimiento AnotarLocalesInmediatas: ast
                 ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatasSiVerdadero}, localesSiVerdadero
                 fijar localesSiFalso a marcarConÁmbito: ast, siFalso
                 ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatasSiFalso}, localesSiFalso
-                Escribir: {NodoSi}, ast#areaTextual
-                Escribir: {siVerdadero}, localesSiVerdadero
-                Escribir: {siFalso}, localesSiFalso
+                [ Escribir: {NodoSi}, ast#areaTextual ]
+                [ Escribir: {siVerdadero}, localesSiVerdadero ]
+                [ Escribir: {siFalso}, localesSiFalso ]
             sino
                 variable locales
                 si EsInstancia: ast, AST#NodoFunción
@@ -843,19 +843,19 @@ procedimiento AnotarLocalesInmediatas: ast
                     fijar locales a marcarConÁmbito: ast, ámbito
                     ast#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localInmediata}, localInmediata
                     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}, locales
-                    Escribir: {NodoFunción}, ast#areaTextual
-                    Escribir: {locales}, locales
+                    [ Escribir: {NodoFunción}, ast#areaTextual ]
+                    [ Escribir: {locales}, locales ]
                 sino
                     variable ámbito
                     fijar ámbito a RN#ObtenerNombresDefinídos: ast
                     fijar locales a marcarConÁmbito: ast, ámbito
                     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}, locales
-                    Escribir: (TipoDe: ast), ast#areaTextual
-                    Escribir: {locales}, locales
+                    [ Escribir: (TipoDe: ast), ast#areaTextual ]
+                    [ Escribir: {locales}, locales ]
                 finsi
 
                 si ContieneYoImplícito: ast
-                    Escribir: {Contiene yo implícito}
+                    [ Escribir: {Contiene yo implícito} ]
                     [ variable nrYo ]
                     [ fijar nrYo a NombreResueltoDelYoImplícito: ast ]
                     [ ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocalInmediata}, (Contiene: (Mapear: locales, (MétodoComoFunción: {binding})), nrYo) ]
@@ -1066,7 +1066,7 @@ procedimiento EnumeraciónDeCapturas: ast, estado
             si EsIdentificadorDeVariable: nodo
                 estado#marcarÍndiceCapturaEnUso: nodo
             sino
-                Escribir: {EnumeraciónDeCapturas: No es id. de variable </>}, nodo
+                [ Escribir: {EnumeraciónDeCapturas: No es id. de variable </>}, nodo ]
             finsi
             devolver NULO
         finsi
@@ -1107,7 +1107,7 @@ procedimiento AnotarBindingsLocales: ast
             si EsIdentificadorDeVariable: nodo
                 nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo))
             sino
-                Escribir: {AnotarBindingsLocales: No es id. de variable </>}, nodo
+                [ Escribir: {AnotarBindingsLocales: No es id. de variable </>}, nodo ]
             finsi
             devolver NULO
         finsi
@@ -1209,7 +1209,7 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
                         si EsIdentificadorDeVariable: nodo
                             nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta}, (bindingsDeEsteÁmbito#contiene: (RN#NombreResueltoDe: nodo))
                         sino
-                            Escribir: {MarcaVariablesLocalesEnSubámbitos: No es id. de variable </>}, nodo
+                            [ Escribir: {MarcaVariablesLocalesEnSubámbitos: No es id. de variable </>}, nodo ]
                         finsi
                     finsi
                 finprocedimiento
@@ -1233,11 +1233,17 @@ en el entorno de la función o no.
 DOCUMENTA]
 procedimiento MarcaVariablesQueEstánEnElEntorno: ast
     funcion esLocal: local
+        [ si EsInstancia: local, IdentificadorLocalDelProcedimiento ]
+        [     Escribir: {! S:}, local#nodo ]
+        [ sino ]
+        [     Escribir: {! S:}, local#nodoConYo ]
+        [ finsi ]
         si EsInstancia: local, IdentificadorLocalDelProcedimiento
-            Escribir: {! S:}, local#nodo
+            Escribir: {! L1:}, local#nodo#areaTextual
         sino
-            Escribir: {! S:}, local#nodoConYo
+            Escribir: {! L2:}, local#nodoConYo#areaTextual
         finsi
+        Escribir: {! B:}, local#binding
         Escribir: {ES}, (local#esCapturado || (no local#esLocal) || (no local#esLocalDirecta))
         si (no local#esCapturado)
             Escribir: {OJO}, (no local#esLocal), (no local#esLocalDirecta)
@@ -1262,8 +1268,8 @@ finprocedimiento
 Obtiene el metadato @code{estáEnElEntorno}.
 DOCUMENTA]
 funcion EstáEnElEntorno: nid
-    Escribir: {# Q:}, nid
-    Escribir: {ES}, (nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno})
+    [ Escribir: {# Q:}, nid ]
+    [ Escribir: {ES}, (nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}) ]
     devolver nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}
 finfuncion
 
@@ -2317,6 +2323,7 @@ a dicho valor.
 DOCUMENTA]
 funcion CompilarFijarIdentificador: ast
     variables altura, índiceDeCaptura, op, binding
+    Escribir: {Fijar:}, ast
     fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
     fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
     fijar binding a RN#NombreResueltoDe: ast
@@ -2354,13 +2361,13 @@ funcion CompilarLocales: locales, parámetros, localYo
         devolver EsInstancia: param, AST#NodoVariadic
     finfuncion
     necesitas (variadics#longitud = 0) || (variadics#longitud = 1)
-    Escribir: {-=-}
-    ParaCadaElemento: locales, procedimiento: local
-        si local#estáEnElEntorno
-            Escribir: {Está en el entorno:}, local
-        finsi
-    finprocedimiento
-    Escribir: {---}
+    [ Escribir: {-=-} ]
+    [ ParaCadaElemento: locales, procedimiento: local ]
+    [     si local#estáEnElEntorno ]
+    [         Escribir: {Está en el entorno:}, local ]
+    [     finsi ]
+    [ finprocedimiento ]
+    [ Escribir: {---} ]
     funcion índiceDeCaptura: nodo
         variable nid
         si EsInstancia: nodo, AST#NodoVariadic
