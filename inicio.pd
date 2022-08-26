@@ -45,6 +45,8 @@ Opciones:
                                       la versión.
  --solo-version                     : Solamente muestra la versión del
                                       intérprete.
+ --version-y-metadatos              : Muestra la versión, nombre del intérprete
+                                      y los metadatos de esta versión.
  -h | --help | -a | --ayuda | -?    : Muestra este mensaje de ayuda y termina.
  -i                                 : Inicia el REPL. Equivalente a llamar
                                       `pseudod` sin <archivo> ni `-c`.
@@ -88,11 +90,16 @@ acción a realizar con respecto a la versión de esta implementación.
 @defenum(VERSIÓN_Y_NOMBRE){Se debe mostrar la versión de PseudoD implementada
 y el nombre de la implementación.}
 @defenum(SOLO_VERSIÓN){Solo muestra la versión de PseudoD implementada.}
+@defenum(METADATOS){Muestra la versión y todos los metadatos del compilador.}
 @defenum(NO){No muestres ni la versión ni el nombre.}
 )
 DOCUMENTA]
 variable MostrarVersión
-fijar MostrarVersión a Enum: {MostrarVersión}, {VERSIÓN_Y_NOMBRE}, {SOLO_VERSIÓN}, {NO}
+fijar MostrarVersión a Enum: {MostrarVersión},
+    {VERSIÓN_Y_NOMBRE},
+    {SOLO_VERSIÓN},
+    {METADATOS},
+    {NO}
 
 [DOCUMENTA
 @brief{Contexto de las opciones del CLI.}
@@ -304,6 +311,10 @@ procedimiento ParsearOpción: ctx, arg, resto
     finsi
     si arg = {--solo-version}
         fijar ctx#mostrarVersión a MostrarVersión#SOLO_VERSIÓN
+        devolver 0
+    finsi
+    si arg = {--version-y-metadatos}
+        fijar ctx#mostrarVersión a MostrarVersión#METADATOS
         devolver 0
     finsi
     si arg = {-l}
@@ -581,18 +592,59 @@ procedimiento Inicio: ctxcli
     Escribir: ctxcli
 finprocedimiento
 
+[DOCUMENTA
+@brief{Escribe la versión del compilador y el nombre de esta implementación.}
+DOCUMENTA]
+procedimiento EscribirVersiónYNombre
+    Escribir: ({~t ~t}#formatear: NOMBRE_IMPLEMENTACIÓN, VERSIÓN)
+finprocedimiento
+
+[DOCUMENTA
+@brief{Escribe los metadatos del compilador.}
+
+La primera línea es la misma que @pd{EscribirVersiónYNombre}. El resto de los
+metadatos se escriben en un formato que es legible tanto para máquinas como
+para personas.
+DOCUMENTA]
+procedimiento EscribirMetadatos
+    EscribirVersiónYNombre
+    Escribir: {}
+    Escribir: ({git: v~t-~t-~t}#formatear:
+        METADATOS_GIT#versión,
+        METADATOS_GIT#númeroDeCommitsDesdeLaÚltimaEtiqueta,
+        METADATOS_GIT#commit)
+    Escribir: ({versión: ~t}#formatear: METADATOS_GIT#versión)
+    Escribir: ({commits-sin-etiqueta: ~t}#formatear: METADATOS_GIT#númeroDeCommitsDesdeLaÚltimaEtiqueta)
+    Escribir: ({commit: ~t}#formatear: METADATOS_GIT#commit)
+    Escribir: ({nombre: ~t}#formatear: NOMBRE_IMPLEMENTACIÓN)
+    si METADATOS_GIT#esVersiónDeDesarrollo
+        Escribir: {versión-de-desarrollo: si}
+    sino
+        Escribir: {versión-de-desarrollo: no}
+    finsi
+    si METADATOS_GIT#tieneCambiosSinHacerCommit
+        Escribir: {cambios: esta versión tiene cambios que no se encuentran en el commit anterior}
+    sino
+        Escribir: {cambios: esta versión no tiene cambios adicionales}
+    finsi
+finprocedimiento
+
 variable ctxcli
 fijar ctxcli a ParsearCLI: __Argv
 si ctxcli#mostrarAyuda
     escribir MENSAJE_DE_AYUDA
 sino
     si ctxcli#mostrarVersión = MostrarVersión#VERSIÓN_Y_NOMBRE
-        Escribir: ({~t ~t}#formatear: NOMBRE_IMPLEMENTACIÓN, VERSIÓN)
+        EscribirVersiónYNombre
     sino
-        si ctxcli#mostrarVersión = MostrarVersión#SOLO_VERSIÓN
-            Escribir: VERSIÓN
+        si ctxcli#mostrarVersión = MostrarVersión#METADATOS
+            EscribirMetadatos
         sino
-            Inicio: ctxcli
+            si ctxcli#mostrarVersión = MostrarVersión#SOLO_VERSIÓN
+                Escribir: VERSIÓN
+            sino
+                Inicio: ctxcli
+            finsi
         finsi
     finsi
 finsi

@@ -32,6 +32,9 @@ pseudod - El nuevo compilador de PseudoD.
 **-\-solo-version**
 : Muestra únicamente la versión y termina.
 
+**-\-version-y-metadatos**
+: Muestra el nombre, la versión y los meta-datos de esta implementación. Los meta-datos indican algunos parámetros de cuando se construyó el compilador, como el commit, si es una versión de desarrollo y más.
+
 **-l** *ruta-NEA*
 : No hace nada, existe por compatibilidad.
 
