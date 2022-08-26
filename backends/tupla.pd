@@ -2822,8 +2822,21 @@ funcion CompilarAWasm: ast, builtins
         devolver Compilado#vacío
     finsi
     si EsInstancia: ast, AST#NodoFijar
-        devolver (CompilarAWasm: ast#valor, builtins)
-              >> (CompilarFijarIdentificador: ast#objetivo)
+        si EsInstancia: ast#objetivo, AST#NodoEnviarMensaje
+            necesitas ast#objetivo#argumentos#longitud = 0
+            variable cid
+            fijar cid a GenerarIdDeConstante
+            devolver (CompilarAWasm: ast#objetivo#objeto, builtins)
+                  >> (CompilarAWasm: ast#valor, builtins)
+                  >> (Instrucciones: (OP#ROT: 1),
+                                     (OP#MSG: cid, 1, 0))
+                  >> (Compilado#deConstantes:
+                         (Arreglo#crearCon:
+                             (Constante#crear: cid, {fijar_}#concatenar: ast#objetivo#mensaje)))
+        sino
+            devolver (CompilarAWasm: ast#valor, builtins)
+                  >> (CompilarFijarIdentificador: ast#objetivo)
+        finsi
     finsi
     si EsInstancia: ast, AST#NodoSi
         variables etiqSi, etiqSino, etiqFinsi, localesEnElEntornoSiVerdadero,
@@ -3339,16 +3352,26 @@ Escribir: ({Escribiendo: ~t}#formatear: (__Argv#en: 1))
 fijar programa a SistemaDeArchivos#LeerArchivo: (__Argv#en: 0)
 fijar resP a ParsearYDefunc: programa
 fijar ast a resP#ast
+Escribir: {AnotarIdentificadoresTextuales}
 AnotarIdentificadoresTextuales: ast
+Escribir: {AnotaciónDeCapturas}
 AnotaciónDeCapturas: ast
+Escribir: {EnumeraciónDeCapturas}
 EnumeraciónDeCapturas: ast, (EstadoDeEnumeraciónDeCapturas#desdeBuiltins: resP#builtins)
+Escribir: {EnumeraciónDeLocalesDeProcedimiento}
 EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast)
+Escribir: {AnotarBindingsLocales}
 AnotarBindingsLocales: ast
+Escribir: {AnotarLocalesInmediatas}
 AnotarLocalesInmediatas: ast
+Escribir: {MarcaVariablesLocalesEnSubámbitos}
 MarcaVariablesLocalesEnSubámbitos: ast
+Escribir: {MarcaVariablesQueEstánEnElEntorno}
 MarcaVariablesQueEstánEnElEntorno: ast
+Escribir: {CompilarAWasm}
 fijar cc a CompilarAWasm: ast, resP#builtins
 variable ncc
+Escribir: {NormalizaLosIdsDeConstantes}
 fijar ncc a NormalizaLosIdsDeConstantes: cc
 Listado: ncc
 Escribir: {====================}
