@@ -341,132 +341,133 @@ procedimiento __CrearClase: nombre
 finprocedimiento
 
 
-[ variable Objeto ]
-[ fijar Objeto a __CrearClase: {Objeto} ]
+variable Objeto
+fijar Objeto a __CrearClase: {Objeto}
+fijar __RT#objeto a Objeto
 
 
-[ clase Numero hereda Objeto ]
-[     [\ metodo estatico crear ![\ ]
-[ finclase ]
+clase Numero hereda Objeto
+    metodo estatico crear
+finclase
 
-[ metodo estatico Numero#crear ]
-[     devolver 0 ]
-[ finmetodo ]
-
-
-[ clase Procedimiento hereda Objeto ]
-[     [\ metodo estatico crear ![\ ]
-[ finclase ]
-
-[ metodo estatico Procedimiento#crear ]
-[     __FallarConMensaje: {No se puede crear un procedimiento con #crear} ]
-[ finmetodo ]
+metodo estatico Numero#crear
+    devolver 0
+finmetodo
 
 
-[ clase Referencia hereda Objeto ]
-[     [\ metodo estatico crear ![\ ]
-[ finclase ]
+clase Procedimiento hereda Objeto
+    metodo estatico crear
+finclase
 
-[ metodo estatico Referencia#crear ]
-[     __FallarConMensaje: {No se puede crear una referencia con #crear} ]
-[ finmetodo ]
-
-
-[ clase TipoNulo hereda Objeto ]
-[     [\ metodo estatico crear ![\ ]
-[ finclase ]
-
-[ metodo estatico TipoNulo#crear ]
-[     devolver NULO ]
-[ finmetodo ]
+metodo estatico Procedimiento#crear
+    __FallarConMensaje: {No se puede crear un procedimiento con #crear}
+finmetodo
 
 
-[ clase Texto hereda Objeto ]
-[     [\ metodo estatico crear ![\ ]
-[     [\ metodo estatico vacío ![\ ]
-[ finclase ]
+clase Referencia hereda Objeto
+    metodo estatico crear
+finclase
 
-[ metodo estatico Texto#vacío ]
-[     devolver {} ]
-[ finmetodo ]
-
-[ metodo estatico Texto#crear ]
-[     devolver {} ]
-[ finmetodo ]
+metodo estatico Referencia#crear
+    __FallarConMensaje: {No se puede crear una referencia con #crear}
+finmetodo
 
 
-[ clase Boole hereda Objeto ]
-[     [\ metodo estatico crear ![\ ]
-[     [\ metodo estatico verdadero ![\ ]
-[     [\ metodo estatico falso ![\ ]
-[ finclase ]
+clase TipoNulo hereda Objeto
+    metodo estatico crear
+finclase
 
-[ metodo estatico Boole#crear ]
-[     devolver VERDADERO ]
-[ finmetodo ]
-
-[ metodo estatico Boole#verdadero ]
-[     devolver VERDADERO ]
-[ finmetodo ]
-
-[ metodo estatico Boole#falso ]
-[     devolver FALSO ]
-[ finmetodo ]
-
-[ variable Booleano ]
-[ fijar Booleano a Boole ]
+metodo estatico TipoNulo#crear
+    devolver NULO
+finmetodo
 
 
-[ funcion __EspacioDeNombres: ...pares ]
-[     __FallarConMensaje: {TODO} ]
-[     devolver procedimiento: msj, ...args ]
-[     finprocedimiento#comoObjeto ]
-[ finfuncion ]
+clase Texto hereda Objeto
+    metodo estatico crear
+    metodo estatico vacío
+finclase
+
+metodo estatico Texto#vacío
+    devolver {}
+finmetodo
+
+metodo estatico Texto#crear
+    devolver {}
+finmetodo
 
 
-[ clase EspacioDeNombres hereda Objeto ]
-[     [\ metodo estatico crear ![\ ]
-[     [\ metodo estatico vacio ![\ ]
-[     [\ metodo estatico vacío ![\ ]
-[ finclase ]
+clase Boole hereda Objeto
+    metodo estatico crear
+    metodo estatico verdadero
+    metodo estatico falso
+finclase
 
-[ metodo estatico EspacioDeNombres#crear ]
-[     devolver __EspacioDeNombres ]
-[ finmetodo ]
+metodo estatico Boole#crear
+    devolver VERDADERO
+finmetodo
 
-[ metodo estatico EspacioDeNombres#vacio ]
-[     devolver __EspacioDeNombres ]
-[ finmetodo ]
+metodo estatico Boole#verdadero
+    devolver VERDADERO
+finmetodo
 
-[ metodo estatico EspacioDeNombres#vacío ]
-[     devolver __EspacioDeNombres ]
-[ finmetodo ]
+metodo estatico Boole#falso
+    devolver FALSO
+finmetodo
+
+variable Booleano
+fijar Booleano a Boole
 
 
-[ clase Arreglo hereda Objeto ]
-[     [\ metodo estatico crear ![\ ]
-[     [\ metodo estatico vacio ![\ ]
-[     [\ metodo estatico vacío ![\ ]
-[     [\ metodo estatico crearCon ![\ ]
-[     [\ metodo estatico conValores ![\ ]
-[ finclase ]
+funcion __EspacioDeNombres: ...pares
+    __FallarConMensaje: {TODO}
+    devolver procedimiento: msj, ...args
+    finprocedimiento#comoObjeto
+finfuncion
 
-[ metodo estatico Arreglo#crear ]
-[     devolver __CrearArreglo ]
-[ finmetodo ]
 
-[ metodo estatico Arreglo#vacio ]
-[     devolver __CrearArreglo ]
-[ finmetodo ]
+clase EspacioDeNombres hereda Objeto
+    metodo estatico crear
+    metodo estatico vacio
+    metodo estatico vacío
+finclase
 
-[ metodo estatico Arreglo#vacío ]
-[     devolver __CrearArreglo ]
-[ finmetodo ]
+metodo estatico EspacioDeNombres#crear
+    devolver __EspacioDeNombres
+finmetodo
 
-[ metodo estatico Arreglo#crearCon: ...valores ]
-[     devolver __CrearArreglo: ...valores ]
-[ finmetodo ]
+metodo estatico EspacioDeNombres#vacio
+    devolver __EspacioDeNombres
+finmetodo
 
-[ metodo estatico Arreglo#conValores: ...valores ]
-[     devolver __CrearArreglo: ...valores ]
-[ finmetodo ]
+metodo estatico EspacioDeNombres#vacío
+    devolver __EspacioDeNombres
+finmetodo
+
+
+clase Arreglo hereda Objeto
+    metodo estatico crear
+    metodo estatico vacio
+    metodo estatico vacío
+    metodo estatico crearCon
+    metodo estatico conValores
+finclase
+
+metodo estatico Arreglo#crear
+    devolver __CrearArreglo
+finmetodo
+
+metodo estatico Arreglo#vacio
+    devolver __CrearArreglo
+finmetodo
+
+metodo estatico Arreglo#vacío
+    devolver __CrearArreglo
+finmetodo
+
+metodo estatico Arreglo#crearCon: ...valores
+    devolver __CrearArreglo: ...valores
+finmetodo
+
+metodo estatico Arreglo#conValores: ...valores
+    devolver __CrearArreglo: ...valores
+finmetodo
