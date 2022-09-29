@@ -17,8 +17,8 @@ function luaver
     end
     set luapath $argv[1]
     # El `head -n 1` es para asegurar que solo una única línea será escrita.
-    # Si más de una línea se escribiese entonces Fish procesaría una
-    # comparación como `[ (luaver lua) = 5 ]` insertaría varios elementos en el
+    # Si se escribiese más de una línea entonces Fish procesaría una
+    # comparación como `[ (luaver lua) = 5 ]` insertando varios elementos en el
     # comando `test`.
     $luapath -v 2>&1 | awk -F ' ' '{ print $2 }' | awk -F . '{ print $1 "." $2 }' | head -n 1
 end
