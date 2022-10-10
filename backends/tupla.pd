@@ -1659,6 +1659,11 @@ Instrucciones:
 
     `SPOP EACT, ESUP` revierte esto, sacando y rotando de nuevo las variables.
 
+  EX Un
+    Saca `Un` valores de la pila y exportalos desde el módulo actual. Este
+    opcode solo se puede usar al final de la sección de instrucciones de un
+    módulo.
+
 Ejemplo:
 
   En PseudoD:
@@ -1884,7 +1889,8 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {PRN},        [ PRN ]
     {NL},         [ NL ]
     {SPUSH},      [ SPUSH EACT ]
-    {SPOP}        [ SPOP EACT ]
+    {SPOP},       [ SPOP EACT ]
+    {EX}          [ EX Un ]
 
 metodo Opcode#bytecode
     devolver yo#valor
@@ -2714,6 +2720,42 @@ funcion CompilarAgregarAtributo: compiladoParaObtenerClase, nombreDelAtributo
                              (OP#MSG: constAgregarAtributo, 1, 0))
 finfuncion
 
+
+[DOCUMENTA
+@brief{Obtiene todas las declaraciones de una lista de nodos.}
+
+@devuelve{Aquellos nodos de @pd{nodos} que declaren algún nombre.}
+DOCUMENTA]
+funcion DeclaracionesEn: nodos
+    variable DECLARACIONES
+    fijar DECLARACIONES a Arreglo#crearCon:
+        AST#NodoVariable, AST#NodoFunción, AST#NodoClase
+    funcion esDeclaración: nodo
+        devolver Algún: (Mapear: DECLARACIONES, (Parcial: &EsInstancia, nodo))
+    finfuncion
+    devolver Filtrar: nodos, funcion: nodo devolver esDeclaración: nodo finfuncion
+finfuncion
+
+[DOCUMENTA
+@brief{Obtiene los nombres declarados en todos los @pd{nodos}.}
+
+@devuelve{Un arreglo con todos los nodos identificadores
+(@pd{AST#NodoIdentificador}) que fueron declarados en @pd{nodos}.}
+DOCUMENTA]
+funcion NombresDeclaradosEn: nodos
+    variable declrs
+    fijar declrs a DeclaracionesEn: nodos
+    devolver Aplanar: (Mapear: declrs, funcion: nodo
+        si EsInstancia: nodo, AST#NodoVariable
+            devolver nodo#nombres
+        finsi
+        si (EsInstancia: nodo, AST#NodoFunción) || (EsInstancia: nodo, AST#NodoClase)
+            devolver Arreglo#crearCon: nodo#nombre
+        finsi
+        Inalcanzable
+    finfuncion)
+finfuncion
+
 [DOCUMENTA
 @brief{Compila una instrucción o expresión a un compilado.}
 
@@ -2724,13 +2766,20 @@ valores en la pila.
 DOCUMENTA]
 funcion CompilarAWasm: ast, builtins
     si EsInstancia: ast, AST#NodoPrograma
-        variables locales, localesEnElEntorno, profundidad, localesInmediatas
+        variables locales, localesEnElEntorno, profundidad, localesInmediatas, exportaciones, identificadoresDefinídos
         fijar locales a LocalesDelBloque: ast
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
         fijar localesInmediatas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}
+        fijar exportaciones a Compilado#vacío
+        fijar identificadoresDefinídos a NombresDeclaradosEn: ast#instrucciones
+        ParaCadaElemento: identificadoresDefinídos, procedimiento: nid
+            fijar exportaciones a exportaciones >> (CompilarIdentificador: nid)
+        finprocedimiento
         devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, Arreglo#vacio, FALSO, profundidad, NULO)))
               >> (CompilarBloqueAWasm: ast#instrucciones, builtins)
+              >> exportaciones
+              >> (Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#EX: identificadoresDefinídos#longitud)))
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
         si EsNúmeroEntero: ast#valor
@@ -3057,6 +3106,7 @@ funcion CompilarAWasm: ast, builtins
         si EsNulo: ast#claseBase
             NoImplementado
         finsi
+
         fijar agregarAtributos a
             UnirCompilados:
                 (Mapear: (Filtrar: ast#declaraciones,
