@@ -111,25 +111,25 @@ $(STAGE0)/inicio.lua: $(COMPILER_FILES) | $(STAGE0)
 	$(PDINT) -X v3x inicio.pd -- inicio.pd --salida $(STAGE0)/inicio.lua --guardar-db $(STAGE0)/inicio.sdb
 
 .PHONY: stage1
-stage1: $(STAGE1_FILES)
+stage1: stage0 $(STAGE1_FILES)
 
 $(STAGE1): | $(BTDIR)
 	mkdir -p $(STAGE1)
 
 $(STAGE1)/inicio.sdb: $(STAGE1)/inicio.lua $(COMPILER_FILES) | $(STAGE1)
 
-$(STAGE1)/inicio.lua: $(STAGE0_FILES) $(COMPILER_FILES) | $(STAGE1)
+$(STAGE1)/inicio.lua: $(COMPILER_FILES) | $(STAGE1)
 	$(LUA) $(STAGE0)/inicio.lua inicio.pd --salida $(STAGE1)/inicio.lua --guardar-db $(STAGE1)/inicio.sdb
 
 .PHONY: stage2
-stage2: $(STAGE2_FILES)
+stage2: stage1 $(STAGE2_FILES)
 
 $(STAGE2): | $(BTDIR)
 	mkdir -p $(STAGE2)
 
 $(STAGE2)/inicio.sdb: $(STAGE2)/inicio.lua $(COMPILER_FILES) | $(STAGE2)
 
-$(STAGE2)/inicio.lua: $(STAGE1_FILES) $(COMPILER_FILES) | $(STAGE2)
+$(STAGE2)/inicio.lua: $(COMPILER_FILES) | $(STAGE2)
 	$(LUA) $(STAGE1)/inicio.lua inicio.pd --salida $(STAGE2)/inicio.lua --guardar-db $(STAGE2)/inicio.sdb
 
 # Backend de tuplas
@@ -158,6 +158,8 @@ force_update_stage2: force_update_stage1 $(COMPILER_FILES)
 .PHONY: show_most_recent_file
 show_most_recent_file:
 	echo $(MOST_RECENT_FILE)
+
+# PDTAGS del compilador:
 
 PDTAGS: tool_tags $(COMPILER_FILES)
 	$(LUA) $(OUTPUTS_DIR)/tags.lua -o $@ $(COMPILER_FILES)
