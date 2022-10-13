@@ -1,0 +1,37 @@
+utilizar bepd/builtins
+utilizar bepd/utilidades/texto (Unir)
+utilizar bepd/x/puerto/deArchivo como PDA
+utilizar módulos como Módulos
+
+procedimiento Mensaje: ...args
+    si __Impl = {Lua Bootstrap}
+        variables msj, TAB
+        fijar TAB a {	} [ ¡No elimines este tabulador! ]
+        fijar msj a Unir: (Mapear: args, (MétodoComoFunción: {comoTexto})), TAB
+        __Lua: {function(m)
+   io.stderr:write(m)
+   io.stderr:write '\n'
+end}, msj
+    sino
+        [ Es mejor no escribir nada para no mezclar la salida real en stdout
+          con la informativa en stderr. ]
+    finsi
+finprocedimiento
+
+variables db, cargaBasesDeDatos
+fijar cargaBasesDeDatos a __Argv
+fijar db a Módulos#BaseDeDatos#conConfiguración: Módulos#ConfiguraciónGlobal#vacía
+Mensaje: {Cargando los archivos}
+ParaCadaElemento: cargaBasesDeDatos, procedimiento: nombreDelArchivo
+    variable arch
+    Mensaje: {Cargando}, nombreDelArchivo
+    fijar arch a PDA#PuertoDeArchivoDeLectura#abrir: nombreDelArchivo
+    db#cargarMódulos: arch
+    arch#cerrar
+    Mensaje: {Se cargó con éxito}, nombreDelArchivo
+finprocedimiento
+
+Mensaje: {Iterando...}
+db#paraCadaMódulo: procedimiento: módulo
+    Escribir: módulo#llave#nombreCompletoDelArchivo
+finprocedimiento

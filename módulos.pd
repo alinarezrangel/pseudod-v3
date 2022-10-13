@@ -40,6 +40,14 @@ clase ConfiguraciónGlobal
     metodo estatico predeterminado: usarVariablesDeEntorno, rutasBásicas
 
     [DOCUMENTA
+    @brief{Una configuración global vacía.}
+
+    Esta configuración no tendrá rutas en las que buscar ni extensiones a
+    probar.
+    DOCUMENTA]
+    metodo estatico vacía
+
+    [DOCUMENTA
     @brief{Las rutas donde se deberían buscar los módulos.}
 
     Un arreglo de textos que son rutas a directorios en los que los módulos
@@ -105,6 +113,10 @@ metodo estatico ConfiguraciónGlobal#predeterminado: usarVariablesDeEntorno, rut
             {psd},
             {pseudo},
             {pseudod})
+finmetodo
+
+metodo estatico ConfiguraciónGlobal#vacía
+    devolver yo#crear: Arreglo#vacio, Arreglo#vacio
 finmetodo
 
 

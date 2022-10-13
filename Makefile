@@ -192,12 +192,18 @@ test_lua:
 # Compila los programas de `tools/`
 
 .PHONY: tools
-tools: tool_tags
+tools: tool_tags tool_archivos
 
 .PHONY: tool_tags
 tool_tags: $(OUTPUTS_DIR)/tags.lua
 
 $(OUTPUTS_DIR)/tags.lua: $(TOOLS_DIR)/tags.pd $(STAGE2_FILES) | $(OUTPUTS_DIR)
+	$(PDC) $< --cargar-db $(STAGE2)/inicio.sdb -o $@
+
+.PHONY: tool_archivos
+tool_archivos: $(OUTPUTS_DIR)/archivos.lua
+
+$(OUTPUTS_DIR)/archivos.lua: $(TOOLS_DIR)/archivos.pd $(STAGE2_FILES) | $(OUTPUTS_DIR)
 	$(PDC) $< --cargar-db $(STAGE2)/inicio.sdb -o $@
 
 # Binarios `pdc` y `pdcjit`
