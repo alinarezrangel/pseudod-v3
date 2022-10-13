@@ -60,6 +60,9 @@ Opciones:
                                       compilar.
  --escribir-salida                  : Escribe la salida de compilación a la
                                       salida estándar.
+ --ruta-de-bibliotecas <ruta>       : Agrega <ruta> a la lista de rutas en las
+                                      que el compilador buscará bibliotecas y
+                                      archivos.
 
 Si la opción `-b` no es especificada, la ruta a la BEPD se extráe de:
 
@@ -224,6 +227,15 @@ clase ContextoDeCLI
     atributo experimentos
 
     [DOCUMENTA
+    @brief{Rutas en las que buscar bibliotecas.}
+
+    Un @pd{Arreglo} de @pd{Texto}s con las rutas en las que se deberían buscar
+    las bibliotecas. Estas rutas serán agregadas a la base de datos de módulos.
+
+    DOCUMENTA]
+    atributo rutasALasBibliotecas
+
+    [DOCUMENTA
     @brief{Devuelve este contexto como un texto.}
     DOCUMENTA]
     metodo comoTexto
@@ -257,10 +269,24 @@ metodo ContextoDeCLI#inicializar
     fijar yo#cargaBasesDeDatos a Arreglo#vacio
     fijar yo#escribirCompilado a FALSO
     fijar yo#experimentos a Arreglo#vacio
+    fijar yo#rutasALasBibliotecas a Arreglo#vacio
 finmetodo
 
 metodo ContextoDeCLI#comoTexto
-    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t, guardaBaseDeDatos ~t, cargaBasesDeDatos ~t, escribirCompilado ~t, experimentos ~t)}#formatear: yo#archivoAEjecutar, yo#programaAEjecutar, yo#mostrarAyuda, yo#mostrarVersión, yo#rutaDeLaBEPD, yo#interactivo, yo#archivoDeSalida, yo#mostrarMensajes, yo#guardaBaseDeDatos, yo#cargaBasesDeDatos, yo#escribirCompilado, yo#experimentos
+    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t, guardaBaseDeDatos ~t, cargaBasesDeDatos ~t, escribirCompilado ~t, experimentos ~t, rutasALasBibliotecas ~t)}#formatear:
+        yo#archivoAEjecutar,
+        yo#programaAEjecutar,
+        yo#mostrarAyuda,
+        yo#mostrarVersión,
+        yo#rutaDeLaBEPD,
+        yo#interactivo,
+        yo#archivoDeSalida,
+        yo#mostrarMensajes,
+        yo#guardaBaseDeDatos,
+        yo#cargaBasesDeDatos,
+        yo#escribirCompilado,
+        yo#experimentos,
+        yo#rutasALasBibliotecas
 finmetodo
 
 metodo ContextoDeCLI#mostrarMensaje: texto
@@ -365,6 +391,11 @@ procedimiento ParsearOpción: ctx, arg, resto
     si arg = {--escribir-salida}
         fijar ctx#escribirCompilado a VERDADERO
         devolver 0
+    finsi
+    si arg = {--ruta-de-bibliotecas}
+        necesitas resto#longitud > 0
+        ctx#rutasALasBibliotecas#agregarAlFinal: (resto#en: 0)
+        devolver 1
     finsi
     devolver NULO
 finprocedimiento
@@ -478,7 +509,9 @@ procedimiento Compilar: ctx, programa
     sino
         ctx#mostrarMensaje: {---- No}
     finsi
-    fijar conf a Módulos#ConfiguraciónGlobal#predeterminado: Entorno#SoportaVariablesDeEntorno
+    fijar conf a Módulos#ConfiguraciónGlobal#predeterminado:
+        Entorno#SoportaVariablesDeEntorno,
+        ctx#rutasALasBibliotecas
     fijar db a Módulos#BaseDeDatos#conConfiguración: conf
     ParaCadaElemento: ctx#cargaBasesDeDatos, procedimiento: nombreDelArchivo
         ctx#mostrarMensaje: ({Cargando ~t}#formatear: nombreDelArchivo)

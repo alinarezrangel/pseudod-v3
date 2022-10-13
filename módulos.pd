@@ -32,8 +32,12 @@ clase ConfiguraciónGlobal
     @item{@code{RUTA_PSEUDOD_BEPD}}
     @item{@code{RUTA_PSEUDOD_LIBS}}
     )
+
+    @pd{rutasBásicas} debe ser un @pd{Arreglo} de @pd{Texto}s con las rutas
+    iniciales. Con este arreglo puedes agregar rutas específicas a la
+    configuración generada por este método.
     DOCUMENTA]
-    metodo estatico predeterminado: usarVariablesDeEntorno
+    metodo estatico predeterminado: usarVariablesDeEntorno, rutasBásicas
 
     [DOCUMENTA
     @brief{Las rutas donde se deberían buscar los módulos.}
@@ -71,9 +75,10 @@ metodo ConfiguraciónGlobal#extensionesAProbar
     devolver yo#extensiones
 finmetodo
 
-metodo estatico ConfiguraciónGlobal#predeterminado: usarVariablesDeEntorno
+metodo estatico ConfiguraciónGlobal#predeterminado: usarVariablesDeEntorno, rutasBásicas
     variable rutas
-    fijar rutas a Arreglo#vacio
+    fijar rutas a Mapear: rutasBásicas, &Identidad
+
     si usarVariablesDeEntorno
         necesitas Entorno#SoportaVariablesDeEntorno
         procedimiento DesdeVariable: nombre
@@ -87,10 +92,10 @@ metodo estatico ConfiguraciónGlobal#predeterminado: usarVariablesDeEntorno
         DesdeVariable: {RUTA_PSEUDOD_BEPD}
         DesdeVariable: {RUTA_PSEUDOD_LIBS}
     finsi
-    [ FIXME: Solo funciona en *NIX. ]
+
     devolver yo#crear:
         (Concatenar:
-            (Arreglo#crearCon: {.}),
+            (Arreglo#crearCon: {.}) [ FIXME: Solo funciona en *NIX. ],
             rutas,
             (Arreglo#crearCon:
                 {/opt/pseudod/lib/pseudod/v3},
