@@ -3,6 +3,7 @@
 - [¿Qué es el bootstrapping?](bootstrap.md).
 - [Formato PDTAGS](pdtags.md).
 - [El Makefile del Proyecto](makefile.md).
+- [Documentación del nuevo sistema de construcción](build.md).
 
 ## Documentación en otros formatos ##
 

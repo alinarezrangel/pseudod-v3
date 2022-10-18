@@ -1,6 +1,6 @@
 # Estructura del proyecto #
 
-La siguiente lista contiene una referencia rápida de que archivo hace que:
+La siguiente lista contiene una referencia rápida de que hace cada archivo:
 
 - `README.md`: Comienza a leer por aquí.
 - `ESTRUCTURA.md`: Este archivo.
@@ -84,7 +84,9 @@ TODO
 
 ### Tuplas ###
 
-- `backends/tuplas.pd`: El backend principal para la máquina virtual.
+- `backends/tupla.pd`: El backend principal para la máquina virtual.
+  - `backends/tupla/bootstrap.pd`: Inicialización del runtime del backend
+    tuplas.
 
 ## Tests ##
 
@@ -115,3 +117,22 @@ TODO
     `docs/pdtags.md` para más información.
   - `tools/profiler/main.lua`: Un perfilador de rendimiento estadístico para
     PseudoD.
+
+## Sistema de construcción ##
+
+- `build/`: Contiene un nuevo sistema de construcción que utiliza
+  [build.lua][build.lua]. Para compilar el compilador sigue las instrucciones
+  en [`docs/build.md`](docs/build.md).
+  - `build/Redofile.lua`: El *Redofile*. Este archivo se ejecuta antes de
+    ejecutar cada objetivo de `build.redo`. Las funciones que declares aquí
+    serán visibles dentro de todos los archivos `.do.lua`.
+  - Todos los archivos que terminan en `.do.lua` son instrucciones para generar
+    archivos.
+  - `build/configurar.lua`: Programa de configuración. Detecta los programas
+    necesarios en tu sistema y configura todo para que las versiones correctas
+    sean usadas. También verifica que todas las dependencias estén instaladas.
+  - `build/targets/`: Los "objetivos" (plataformas y sistemas operativos) para
+    los que puedes compilar el compilador.
+    - `build/targets/boot/`: Todos los objetivos para los que puedes
+      bootstrapear el compilador.
+  - `build/vars/`: Las variables del sistema de construcción.

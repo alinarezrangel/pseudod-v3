@@ -1,0 +1,15 @@
+# Todos los archivos Lua generados
+*.lua
+# Excepto aquellos que sean parte de `build.redo`
+!*.do.lua
+
+# Las bases de datos generadas
+*.sdb
+
+# Las listas de dependencias
+deps.txt
+
+# Los enlaces completos a los programas compilados
+pdc
+archivos
+tags

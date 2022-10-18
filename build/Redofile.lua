@@ -91,9 +91,9 @@ function ppt(t)
    io.write "\n"
 end
 
-function getenv(n)
+function getenv(n, def)
    -- FIXME: Debería ser una función exportada por build.redo
-   return os.getenv(n) or ""
+   return os.getenv(n) or def or ""
 end
 
 function setenv(name, val)
@@ -207,12 +207,18 @@ function prelude(G)
          assert(def ~= nil, "prelude.var: " .. err)
          return def
       else
-         return utils.chomp_end(handle:read "a")
+         local val = utils.chomp_end(handle:read "a")
+         G.ifchange(path)
+         return val
       end
    end
 
+   function M.get(name, def)
+      return getenv(name, M.var(name, def))
+   end
+
    function M.get_lua()
-      return {emptyor(M.var "LUA5_4", "lua5.4")}
+      return {M.get("LUA5_4", "lua5.4")}
    end
 
    function M.get_pdc()
@@ -266,8 +272,7 @@ exec %W %w "$@"]], ADDED_LUA_PATH, LUA, lua_file_path)
    end
 
 
-   M.VIA = getenv "VIA"
-
+   M.VIA = M.get "VIA"
    if M.VIA == "" then
       M.VIA = "lua:" .. join(M.REL_ROOT, "bootstrapped", "stage2", "inicio.lua")
    end
@@ -278,11 +283,11 @@ exec %W %w "$@"]], ADDED_LUA_PATH, LUA, lua_file_path)
    elseif string.match(M.VIA, "^boot:") then
       M.VIA_BOOT = string.match(M.VIA, "^boot:(.*)$")
    elseif M.VIA == "pdc" then
-      M.VIA_PDC = emptyor(M.var "PDC", "pdc")
+      M.VIA_PDC = M.get("PDC", "pdc")
    elseif string.match(M.VIA, "^pdc:") then
       M.VIA_PDC = string.match(M.VIA, "^pdc:(.*)$")
    elseif M.VIA == "int" then
-      M.VIA_INT = emptyor(M.var "INTPD", "pseudod")
+      M.VIA_INT = M.get("INTPD", "pseudod")
    elseif string.match(M.VIA, "^int:") then
       M.VIA_INT = string.match(M.VIA, "^int:(.*)$")
    elseif string.match(M.VIA, "^lua:") then
@@ -296,13 +301,13 @@ exec %W %w "$@"]], ADDED_LUA_PATH, LUA, lua_file_path)
          M.set_global_luapath()
          M.VIA_LUA = join(BASE_DIR, "targets", target, "pdc.lua")
       else
-         error("No se ejecutar el compilador contenido en el target " .. target)
+         error("No se ejecutar el compilador del target " .. target)
       end
    else
-      error("Valor inválido para la variable VIA: " .. M.VIA)
+      errorf("Valor inválido para la variable VIA: %q", M.VIA)
    end
 
-   M.DESTDIR = M.var("DESTDIR", getenv "DESTDIR")
+   --M.DESTDIR = M.get "DESTDIR"
 
    M.TOOL_ARCHIVOS = join(M.REL_ROOT, "outputs", "archivos.lua")
 

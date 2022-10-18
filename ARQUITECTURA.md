@@ -91,6 +91,7 @@ El nuevo backend a WebAssembly. Aún no está listo. Estará en `backends/wasm/`
 ### Tuplas ###
 
 El backend de tuplas compila PseudoD a un bytecode que después es ejecutado en
-una máquina virtual o compilado (de nuevo) a C. Está en `backends/tupla.pd`
+una máquina virtual o compilado (de nuevo) a C. Está en `backends/tupla.pd` y
+`backends/tupla/`.
 
 [wasm]: https://webassembly.org
