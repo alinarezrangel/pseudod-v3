@@ -214,7 +214,7 @@ function prelude(G)
    end
 
    function M.get(name, def)
-      return getenv(name, M.var(name, def))
+      return getenv(name, emptyor(M.var(name, def), def))
    end
 
    function M.get_lua()
@@ -258,7 +258,7 @@ function prelude(G)
       if not M.global_luapath_set then
          local added = M.get_added_luapath()
          setenv("LUA_PATH", added .. getenv "LUA_PATH")
-         printf("export LUA_PATH=\"%sLUA_PATH\"", added)
+         printf("export LUA_PATH=\"%s$LUA_PATH\"", added)
          M.global_luapath_set = true
       end
    end
