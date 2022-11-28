@@ -1840,57 +1840,65 @@ a @pd{Opcode#SUM#valor}).
 DOCUMENTA]
 variable Opcode
 fijar Opcode a EnumConValoresIncrementales: {Opcode},
+    {LOCAL},      [ LOCAL Lx  (Solo al principio de un procedimiento) ]
+    {LCONST},     [ LCONST Cx ]
+    {ICONST},     [ ICONST Ia ]
+    {FCONST},     [ FCONST Fa ]
+    {BCONST},     [ BCONST Ia ]
     {SUM},        [ SUM ]
     {SUB},        [ SUB ]
     {MUL},        [ MUL ]
     {DIV},        [ DIV ]
-    {LT},         [ LT ]
-    {GT},         [ GT ]
-    {LE},         [ LE ]
-    {GE},         [ GE ]
-    {OPEQ},       [ OPEQ ]
-    {SAME},       [ SAME ]
-    {OBJATTR},    [ OBJATTR ]
-    {OBJATTRSET}, [ OBJATTRSET ]
-    {OBJSZ},      [ OBJSZ ]
-    {OBJ2CLZ},    [ OBJ2CLZ ]
-    {CLZ2OBJ},    [ CLZ2OBJ ]
-    {POP},        [ POP ]
-    {LCONST},     [ LCONST Cx ]
-    {ICONST},     [ ICONST Na ]
-    {BCONST},     [ FCONST Fa ]
-    {FCONST},     [ FCONST Fa ]
-    {LOCAL},      [ LOCAL Lx  (Solo al principio de un procedimiento) ]
-    {PARAM},      [ PARAM Lx  (Solo antes que LOCAL en un procedimiento) ]
+    {RETN},       [ RETN Ux ]
     {MKCLZ},      [ MKCLZ Ex, Px ]
     {MK0CLZ},     [ MK0CLZ Px ]
-    {LSET},       [ LSET Lx ]
-    {LGET},       [ LGET Lx ]
+    {OPNFRM},     [ OPNFRM Ex, ?Ey, Ua ]
+    {EINIT},      [ EINIT Ex, Ua, Lx ]
+    {ENEW},       [ ENEW  ]
+    {CLSFRM},     [ CLSFRM Ex ]
     {LSETC},      [ LSETC Ex, Ua, Ub ]
     {LGETC},      [ LGETC Ex, Ua, Ub ]
-    {ROT},        [ ROT Ua ]
-    {DYNCALL},    [ DYNCALL Ua, Ub ]
-    {RETN},       [ RETN Ua ]
-    {ENEW},       [ ENEW Lx, Ua ]
-    {EINIT},      [ EINIT Lx, Ua, Ly ]
-    {OPNFRM},     [ OPNFRM Ex, ?Ey, Ua ]
-    {CLSFRM},     [ CLSFRM Ex ]
+    {LSET},       [ LSET Lx ]
+    {LGET},       [ LGET Lx ]
+    {POP},        [ POP ]
     {CHOOSE},     [ CHOOSE Tx, Ty ]
     {JMP},        [ JMP Tx ]
     {NAME},       [ NAME Tx ]
     {MTRUE},      [ MTRUE ]
     {CMPEQ},      [ CMPEQ ]
     {CMPNEQ},     [ CMPNEQ ]
+    {CMPREFEQ},   [ CMPREFEQ ]
     {NOT},        [ NOT ]
+    {ROT},        [ ROT Ua ]
+    {GT},         [ GT ]
+    {LT},         [ LT ]
+    {GE},         [ GE ]
+    {LE},         [ LE ]
+    {OPEQ},       [ OPEQ ]
+    {CLZ2OBJ},    [ CLZ2OBJ ]
+    {OBJ2CLZ},    [ OBJ2CLZ ]
+    {TMSG},       [ TMSG Cx, Ua, Ub ]
     {MSG},        [ MSG Cx, Ua, Ub ]
-    {MSGV},       [ MSGV Cx, Cy, Ua, Ub ]
-    {DYNCALLV},   [ DYNCALLV Cx, Ua, Ub ]
-    {DYNMSG},     [ DYNMSG ]
+    {TMSGV},      [ TMSGV Cx, Cy, Ub ]
+    {MSGV},       [ MSGV Cx, Cy, Ub ]
+    {TDYNMSG},    [ TDYNMSG Ua, Ub ]
+    {DYNMSG},     [ DYNMSG Ua, Ub ]
+    {TDYNMSGV},   [ TDYNMSGV Cx, Ub ]
+    {DYNMSGV},    [ DYNMSGV Cx, Ub ]
     {PRN},        [ PRN ]
     {NL},         [ NL ]
-    {SPUSH},      [ SPUSH EACT ]
-    {SPOP},       [ SPOP EACT ]
-    {EX}          [ EX Un ]
+    {OPNEXP},     [ OPNEXP Ua ]
+    {CLSEXP},     [ CLSEXP ]
+    {EXP},        [ EXP Cx, Bx ]
+    {IMPORT},     [ IMPORT Cx ]
+    {SAVEIMPORT}, [ SAVEIMPORT Cx ]
+    {MODULE},     [ MODULE Cx ]
+    {SPUSH},      [ SPUSH EACT, ESUP ]
+    {SPOP},       [ SPOP EACT, ESUP ]
+    {OBJTAG},     [ OBJTAG ]
+    {OBJATTR},    [ OBJATTR ]
+    {OBJATTRSET}, [ OBJATTRSET ]
+    {OBJSZ}       [ OBJSZ ]
 
 metodo Opcode#bytecode
     devolver yo#valor
@@ -2636,8 +2644,8 @@ compilado devuelto empujo a la pila.}
 
 @item{@code{variadics}: un booleano indicando si se debe realizar una llamada
 variadic o no. Si es @pd{VERDADERO} debes usar los opcodes
-@code{MSGV}/@code{DYNCALLV}/etc. Si es @pd{FALSO} debes usar los opcodes
-@code{MSG}/@code{DYNCALL}/etc.}
+@code{MSGV}/@code{DYNMSGV}/etc. Si es @pd{FALSO} debes usar los opcodes
+@code{MSG}/@code{DYNMSG}/etc.}
 
 @item{@code{prototipo}: Este atributo solo existe si @code{variadics} es
 @pd{VERDADERO}. Es el índice de la constante que contiene al prototipo de la
@@ -2659,7 +2667,7 @@ funcion CompilarArgumentos: argumentos, compilarExpr
 
     variables compilado, prototipo, variadics
     fijar prototipo a Mapear: bloques, funcion: bloque
-        devolver bloque#variadic#escojer: 1, 0
+        devolver bloque#variadic
     finfuncion
     fijar compilado a Reducir: Compilado#vacío, funcion: acc, bloque
         devolver acc >> bloque#compilado
@@ -2773,13 +2781,31 @@ funcion CompilarAWasm: ast, builtins
         fijar localesInmediatas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}
         fijar exportaciones a Compilado#vacío
         fijar identificadoresDefinídos a NombresDeclaradosEn: ast#instrucciones
-        ParaCadaElemento: identificadoresDefinídos, procedimiento: nid
-            fijar exportaciones a exportaciones >> (CompilarIdentificador: nid)
+        ParaCadaElementoConÍndice: identificadoresDefinídos, procedimiento: nid, índice
+            variable esAutoejecutable
+            fijar esAutoejecutable a nid#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+            fijar exportaciones a exportaciones
+                               >> (CompilarIdentificador: nid)
+                               >> (Instrucciones: (OP#EXP: índice, (esAutoejecutable#escojer: 1, 0)))
         finprocedimiento
-        devolver (Compilado#deInstrucciónes: (Aplanar: (CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, Arreglo#vacio, FALSO, profundidad, NULO)))
+        devolver (Compilado#deInstrucciónes:
+                     (Aplanar:
+                         (CompilarLocalesYClosure: locales,
+                                                   localesEnElEntorno,
+                                                   localesInmediatas,
+                                                   Arreglo#vacio,
+                                                   FALSO,
+                                                   profundidad,
+                                                   NULO)))
+              >> (Instrucciones: (OP#MODULE: constNombreDelMódulo))
+              >> (Compilado#deConstantes:
+                     (Arreglo#crearCon:
+                         (Constante#crear: constNombreDelMódulo, nombreDelMódulo)))
               >> (CompilarBloqueAWasm: ast#instrucciones, builtins)
+              >> (Instrucciones: (OP#OPNEXP: identificadoresDefinídos#longitud))
               >> exportaciones
-              >> (Compilado#deInstrucciónes: (Arreglo#crearCon: (OP#EX: identificadoresDefinídos#longitud)))
+              >> (Instrucciones OP#CLSEXP,
+                                (OP#RETN: 1))
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
         si EsNúmeroEntero: ast#valor
@@ -2840,7 +2866,12 @@ funcion CompilarAWasm: ast, builtins
             variable res
             fijar res a CompilarIdentificador: ast
             si ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
-                fijar res a res >> (Instrucciones: (OP#DYNCALL: 0, 1))
+                variable constLlamar
+                fijar constLlamar a GenerarIdDeNombre
+                fijar res a res >> (Instrucciones: (OP#MSG: constLlamar, 0, 1))
+                                >> (Compilado#deConstantes:
+                                       (Arreglo#crearCon:
+                                           (Constante#crear: constLlamar, {llamar})))
             finsi
             devolver res
         finsi
@@ -2853,20 +2884,41 @@ funcion CompilarAWasm: ast, builtins
         finsi
     finsi
     si EsInstancia: ast, AST#NodoEnviarMensaje
-        variable cid
-        fijar cid a GenerarIdDeConstante
-        devolver (CompilarAWasm: ast#objeto, builtins)
-              >> (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, ast#mensaje)))
-              >> (CompilarLlamadaAFunción:
-                     ast#argumentos,
-                     funcion: numValoresEnLaPila, numResultados
-                         devolver Instrucciones: (OP#MSG: cid, numValoresEnLaPila, numResultados)
-                     finfuncion,
-                     funcion: numValoresEnLaPila, constPrototipo, prototipo, numResultados
-                         devolver Instrucciones: (OP#MSGV: cid, constPrototipo, numValoresEnLaPila, numResultados)
-                     finfuncion,
-                     1,
-                     builtins)
+        si (RN#NombreResueltoDe: ast) = (builtins#en: {__Tupla})
+            [ Si el mensaje comienza con `i`, es un opcode que no empuja nada
+              (`iPOP`, `iLSET`). Si por el contrario comienza con `e`, entonces
+              si empuja algo (`eLGET`, `eMKARR`). ]
+            si (ast#mensaje#longitud > 2) && ((ast#mensaje#subTexto: 0, 1) = {i})
+                variable opcode
+                fijar opcode a ast#mensaje#subTexto: 1, (ast#mensaje#longitud - 1)
+                devolver Instrucciones: (__EnviarMensaje: OP, opcode, argumentos),
+                                        [ Empujamos un valor cualquiera. Recuerda que todas
+                                          las expresiones deben dejar un valor en la pila,
+                                          pero este opcode no empuja nada. ]
+                                        (OP#BCONST: 0)
+            finsi
+            si (ast#mensaje#longitud > 2) && ((ast#mensaje#subTexto: 0, 1) = {e})
+                variable opcode
+                fijar opcode a ast#mensaje#subTexto: 1, (ast#mensaje#longitud - 1)
+                devolver Instrucciones: (__EnviarMensaje: OP, opcode, argumentos)
+            finsi
+            __FallarConMensaje: ({No se esperaba el mensaje a __Tupla: ~t}#formatear: ast#mensaje)
+        sino
+            variable cid
+            fijar cid a GenerarIdDeConstante
+            devolver (CompilarAWasm: ast#objeto, builtins)
+                >> (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, ast#mensaje)))
+                >> (CompilarLlamadaAFunción:
+                        ast#argumentos,
+                        funcion: numValoresEnLaPila, numResultados
+                            devolver Instrucciones: (OP#MSG: cid, numValoresEnLaPila, numResultados)
+                        finfuncion,
+                        funcion: numValoresEnLaPila, constPrototipo, prototipo, numResultados
+                            devolver Instrucciones: (OP#MSGV: cid, constPrototipo, numResultados)
+                        finfuncion,
+                        1,
+                        builtins)
+        finsi
     finsi
     si EsInstancia: ast, AST#NodoLlamarProcedimiento
         variable procnr
@@ -2880,7 +2932,7 @@ funcion CompilarAWasm: ast, builtins
 
         si procnr = (builtins#en: {__SonElMismoObjeto})
             necesitas ast#argumentos#longitud = 2
-            devolver ArgumentosCompilados >> (Instrucciones: OP#SAME)
+            devolver ArgumentosCompilados >> (Instrucciones: OP#CMPREFEQ)
         finsi
         si procnr = (builtins#en: {__ObtenerAtributo})
             necesitas ast#argumentos#longitud = 2
@@ -2900,32 +2952,51 @@ funcion CompilarAWasm: ast, builtins
         finsi
         si procnr = (builtins#en: {__EM})
             necesitas ast#argumentos#longitud = 3
-            devolver ArgumentosCompilados >> (Instrucciones: OP#DYNMSG)
+            variables constPrototipo, prototipo
+            fijar constPrototipo a GenerarIdDeNombre
+            fijar prototipo a Arreglo#crearCon: VERDADERO
+            devolver ArgumentosCompilados
+                  >> (Instrucciones: (OP#ROTM: 1),
+                                     (OP#DYNMSGV: constPrototipo, 1))
+                  >> (Compilado#deConstantes:
+                         (Arreglo#crearCon:
+                             (Constante#crear: constPrototipo, prototipo)))
         finsi
+
+        variable constLlamar
+        fijar constLlamar a GenerarIdDeNombre
         devolver (CompilarIdentificador: ast#proc)
               >> (CompilarLlamadaAFunción:
                      ast#argumentos,
                      funcion: numValoresEnLaPila, numResultados
-                         devolver Instrucciones: (OP#DYNCALL: numValoresEnLaPila, numResultados)
+                         devolver Instrucciones: (OP#MSG: constLlamar, numValoresEnLaPila, numResultados)
                      finfuncion,
                      funcion: numValoresEnLaPila, constPrototipo, prototipo, numResultados
-                         devolver Instrucciones: (OP#DYNCALLV: constPrototipo, numValoresEnLaPila, numResultados)
+                         devolver Instrucciones: (OP#MSGV: constLlamar, constPrototipo, numResultados)
                      finfuncion,
                      1,
                      builtins)
+              >> (Compilado#deConstantes:
+                     (Arreglo#crearCon:
+                         (Constante#crear: constLlamar, {llamar})))
     finsi
     si EsInstancia: ast, AST#NodoAutoejecutar
+        variable constLlamar
+        fijar constLlamar a GenerarIdDeNombre
         devolver (CompilarAWasm: ast#expr, builtins)
               >> (CompilarLlamadaAFunción:
                      ast#argumentos,
                      funcion: numValoresEnLaPila, numResultados
-                         devolver Instrucciones: (OP#DYNCALL: numValoresEnLaPila, numResultados)
+                         devolver Instrucciones: (OP#MSG: constLlamar, numValoresEnLaPila, numResultados)
                      finfuncion,
                      funcion: numValoresEnLaPila, constPrototipo, prototipo, numResultados
-                         devolver Instrucciones: (OP#DYNCALLV: constPrototipo, numValoresEnLaPila, numResultados)
+                         devolver Instrucciones: (OP#MSGV: constLlamar, constPrototipo, numResultados)
                      finfuncion,
                      1,
                      builtins)
+              >> (Compilado#deConstantes:
+                     (Arreglo#crearCon:
+                         (Constante#crear: constLlamar, {llamar})))
     finsi
     si EsInstancia: ast, AST#NodoVariable
         devolver Compilado#vacío
@@ -3271,7 +3342,7 @@ funcion NormalizaLosIdsDeLocales: compilado
         fijar nuevasInstrucciones a Mapear: instrucciones, funcion: tupla
             [ Todos estos opcodes tienen su única referencia a una variable
               local en su primer argumento ]
-            si (tupla#es: Opcode#LOCAL) || (tupla#es: Opcode#PARAM)
+            si (tupla#es: Opcode#LOCAL)
             || (tupla#es: Opcode#LSET)  || (tupla#es: Opcode#LGET)
             || (tupla#es: Opcode#LSETC) || (tupla#es: Opcode#LGETC)
             || (tupla#es: Opcode#MKCLZ) || (tupla#es: Opcode#CLSFRM)
@@ -3389,8 +3460,20 @@ procedimiento EmitirCompilado: compilado, puertoDeEscritura
 
     puertoDeEscritura#escribirTexto: {SECTION "constant pool"~%}#formatear
     ParaCadaElemento: compilado#constantes, procedimiento: constante
-        necesitas EsInstancia: constante#valor, Texto
-        puertoDeEscritura#escribirTexto: ({#~t STRING "~T"~%}#formatear: constante#id, (EscaparParaPDVM: constante#valor))
+        si EsInstancia: constante#valor, Texto
+            puertoDeEscritura#escribirTexto:
+                ({#~t STRING "~T"~%}#formatear: constante#id, (EscaparParaPDVM: constante#valor))
+        sino
+            necesitas EsInstancia: constante#valor, PrototipoDeLlamada
+            puertoDeEscritura#escribirTexto:
+                ({#~t PROTOTYPE ~t~%}#formatear:
+                    constante#id,
+                    (Unir: (Mapear: constante#valor#prototipo,
+                                    funcion: x
+                                        devolver x#escojer: {1}, {0}
+                                    finfuncion),
+                           {, }))
+        finsi
     finprocedimiento
     puertoDeEscritura#escribirTexto: {ENDSECTION~%}#formatear
 finprocedimiento
@@ -3402,6 +3485,7 @@ funcion ParsearYDefunc: programa
     fijar builtins a Diccionario#desdePares:
         {__EACT}, RN#GenerarIdDeNombre,
         {__RT}, RN#GenerarIdDeNombre,
+        {__Tupla}, RN#GenerarIdDeNombre,
         {__SonElMismoObjeto}, RN#GenerarIdDeNombre,
         {__ObtenerAtributo}, RN#GenerarIdDeNombre,
         {__FijarAtributo}, RN#GenerarIdDeNombre,
