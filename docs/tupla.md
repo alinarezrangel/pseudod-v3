@@ -10,7 +10,7 @@ para almacenar el valor de las expresiones mientras que los registros se usan
 para las operaciones más complejas.
 
 Los registros (*locales*, de ahora en adelante) también incluyen los parámetros
-de los procedimientos y el local especial `E`, el *entorno* del procedimiento.
+de los procedimientos y el registro especial `E`, el *entorno* del procedimiento.
 
 ## Los entornos ##
 

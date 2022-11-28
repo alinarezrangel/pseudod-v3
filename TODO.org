@@ -96,13 +96,19 @@
 ** FIXME ~NULO~ es falso en condicionales.
    Solo ~FALSO~ debe ser falso.
 ** FIXME ~SonElMismoObjeto~ debe ser un builtin.
-** TODO Termina el pase de defuncionalización.
+** DONE Termina el pase de defuncionalización.
 ** FIXED ~tags~ no genera etiquetas para atributos dentro de clases.
 ** FIXME No hay un mensaje de error al llamar a una variable que no es autoejecutable.
 ** FIXME El mensaje de error de cuando una variable no existe no contiene el lugar del programa en el que se encontró el identificador.
 ** FIXED Los ~NodoVariadic~ no tienen metadatos.
 ** FIXED No se puede cargar una base de datos de módulos que contenga un módulo que solo exporte un identificador.
 * En el backend de tuplas
+** TODO No se está llevando registro que que llamadas están en posición /tail/ y cuales no. Debido a esto nunca de emiten las instrucciones ~TMSG~, ~TMSGV~, ~TDYNMSG~ ni ~TDYNMSGV~.
+** TODO Elimina las instrucciones que no se están utilizando.
+   - ~CLZ2OBJ~
+   - ~MK0CLZ~
+** TODO Implementa el sistema de módulos (~IMPORT~, ~SAVEIMPORT~ y ~MODULE~).
+** TODO Implementa las pragmas.
 ** FIXED Las funciones no pueden tener parámetros variadic.
 ** FIXME No puedes llamar a funciones variadic.
    Es necesario usar el nuevo opcode ~DYNMSG~. ~Hola: 1, ...2, 3~ debería
