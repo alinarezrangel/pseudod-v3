@@ -550,6 +550,13 @@ variable `B' and a function `C' this returns the list `(\"A\"
   (mapcar (lambda (pair) (cadddr pair))
           completions-alist))
 
+(defun pseudod--remove-duplicates (list)
+  "Remove the duplicate elements (via `equal') of the LIST.
+
+Returns the new list without duplicates."
+  (let ((new (copy-sequence list)))
+    (delete-dups new)))
+
 (defun pseudod-tags--complete-at-point-function ()
   "Complete the symbol at point using the pdtags data.
 
@@ -564,7 +571,7 @@ Suitable for use with `completion-at-point-functions'."
           (if as-list
               (list (car symb)
                     (cdr symb)
-                    (remove-duplicates
+                    (pseudod--remove-duplicates
                      (append as-list pseudod-predefined-completions)))
             nil))
       nil)))
