@@ -62,8 +62,6 @@ funcion EsFinDePalabra: car
     devolver (TextoNS#TextoContiene: «{}():#.%[],"», car) || (TextoNS#TextoContiene: {«»}, car)
 finfuncion
 
-[ " ]
-
 [DOCUMENTA
 @brief{Determina si @pd{car} es un espacio en blanco.}
 DOCUMENTA]
@@ -212,9 +210,9 @@ procedimiento LeerLexema: puerto
         fijar posFin a puerto#posiciónActual
         devolver Tokens#TokenPalabraClave#crear: (Tokens#AreaTextual#crear: posIni, posFin), car, car
     finsi
-    si car = {"} [ " ]
+    si car = {"}
         variables texto, posFin
-        fijar texto a Puerto#LeerHasta: puerto, {"} [ " ]
+        fijar texto a Puerto#LeerHasta: puerto, {"}
         fijar posFin a puerto#posiciónActual
         devolver Tokens#TokenTexto#crear: (Tokens#AreaTextual#crear: posIni, posFin), texto
     finsi
@@ -250,7 +248,7 @@ procedimiento LeerLexema: puerto
         fijar posFin a puerto#posiciónActual
         devolver Tokens#TokenTexto#crear: (Tokens#AreaTextual#crear: posIni, posFin), texto
     finsi
-    si car = {[} [ ]
+    si car = {[}
         variables texto, posFin
         fijar texto a Puerto#LeerHasta: puerto, {]}
         fijar posFin a puerto#posiciónActual

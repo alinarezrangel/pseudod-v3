@@ -168,8 +168,6 @@ fijar PALABRAS_CLAVE a
         {finimplementa}, {ref}
     )
 
-[ " ]
-
 [DOCUMENTA
 @brief{Las palabras clave pero como un diccionario.}
 

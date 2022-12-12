@@ -45,13 +45,12 @@ funcion EscaparParaLua: texto
         devolver __Lua: {function(texto)
 return '"' .. string.gsub(texto, "[\"\n\\]", "\\%1") .. '"'
 end}, texto
-    [ " ]
     sino
         variable res
-        fijar res a {"} [ " ]
+        fijar res a {"}
         ParaCadaElemento: texto, procedimiento: car
-            si car = {"} [ " ]
-                fijar res a res#concatenar: {\"} [ " ]
+            si car = {"}
+                fijar res a res#concatenar: {\"}
             sino
                 si car = {~%}#formatear
                     fijar res a res#concatenar: {\n}
@@ -64,7 +63,7 @@ end}, texto
                 finsi
             finsi
         finprocedimiento
-        devolver res#concatenar: {"} [ " ]
+        devolver res#concatenar: {"}
     finsi
 finfuncion
 
