@@ -7,6 +7,8 @@ utilizar bepd/x/puerto/deArchivo como PDA
 utilizar bepd/x/puerto/conPosición (PosiciónTextual)
 utilizar bepd/x/sistemaDeArchivos/archivo como SistemaDeArchivos
 utilizar bepd/utilidades/texto
+utilizar bepd/utilidades/iteración
+utilizar bepd/utilidades/arreglo
 utilizar bepd/x/enum (Enum, EnumConValores)
 
 utilizar tokens como Tokens
@@ -15,40 +17,6 @@ utilizar parser como Parser
 utilizar resoluciónDeNombres como RN
 utilizar defuncionalización como Defun
 
-
-
-[DOCUMENTA
-@brief{Devuelve un arreglo sin duplicados.}
-
-Devuelve un arreglo como @pd{arr} pero sin elementos duplicados. Además, el
-órden de los elementos no está especificado.
-DOCUMENTA]
-funcion Únicos: arr
-    devolver (Conjunto#desdeArreglo: arr)#comoArreglo
-finfuncion
-
-[DOCUMENTA
-@brief{Separa un arreglo en base a un predicado.}
-
-Devuelve un objeto con dos atributos, @code{parteVerdadera} y
-@code{parteFalsa}. Ambos son arreglos. @code{parteVerdadera} contiene aquellos
-elementos de @pd{arr} para los que @pd{%cond: elemento} devolvió
-@pd{VERDADERO}, mientras que @code{parteFalsa} contiene aquellos para los que
-devolvió @pd{FALSO}.
-DOCUMENTA]
-funcion SepararArreglo: arr, cond
-    variables parteVerdadera, parteFalsa
-    fijar parteVerdadera a Arreglo#vacio
-    fijar parteFalsa a Arreglo#vacio
-    ParaCadaElemento: arr, procedimiento: el
-        si %cond: el
-            parteVerdadera#agregarAlFinal: el
-        sino
-            parteFalsa#agregarAlFinal: el
-        finsi
-    finprocedimiento
-    devolver ObjetoAdHoc: {parteVerdadera}, parteVerdadera, {parteFalsa}, parteFalsa
-finfuncion
 
 
 [DOCUMENTA

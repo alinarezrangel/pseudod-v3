@@ -1,0 +1,37 @@
+utilizar bepd/builtins
+utilizar bepd/x/adhoc
+
+
+procedimiento __ParaCadaElemento': cuerpo, arreglo, ...otrosArreglos
+    variable longitudMáx
+    fijar longitudMáx a Max: arreglo#longitud, (Mapear: otrosArreglos, (MétodoComoFunción: {longitud}))
+    ParaCadaNúmero: 0, longitudMáx, procedimiento: i
+        variable valor
+        fijar valor a %func: (arreglo#en: i),
+                             ...(Mapear: otrosArreglos,
+                                         funcion: arr
+                                             devolver arr#en: i
+                                         finfuncion)
+    finprocedimiento
+finprocedimiento
+
+funcion Mapear': func, arreglo, ...otrosArreglos
+    variable resultado
+    fijar resultado a Arreglo#vacio
+    __ParaCadaElemento': procedimiento: ...valores
+        resultado#agregarAlFinal: (%func: ...valores)
+    finprocedimiento, arreglo, ...otrosArreglos
+    devolver resultado
+finfuncion
+
+procedimiento ParaCadaElemento': ...arreglosYCuerpo
+    si arreglosYCuerpo#longitud < 2
+        __FallarConMensaje: ({ParaCadaElemento' requiere al menos 2 argumentos, pero solo especificastes ~t}#formatear: arreglosYCuerpo#longitud)
+    finsi
+    variables arreglos, cuerpo
+    fijar arreglos a PedazoDeArreglo: arreglosYCuerpo, 0, (arreglosYCuerpo#longitud - 2)
+    fijar cuerpo a arreglosYCuerpo#en: (arreglosYCuerpo#longitud - 1)
+    __ParaCadaElemento': procedimiento: ...valores
+        %cuerpo: ...valores
+    finprocedimiento, ...arreglos
+finprocedimiento
