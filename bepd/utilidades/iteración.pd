@@ -7,11 +7,11 @@ procedimiento __ParaCadaElemento': cuerpo, arreglo, ...otrosArreglos
     fijar longitudMáx a Max: arreglo#longitud, (Mapear: otrosArreglos, (MétodoComoFunción: {longitud}))
     ParaCadaNúmero: 0, longitudMáx, procedimiento: i
         variable valor
-        fijar valor a %func: (arreglo#en: i),
-                             ...(Mapear: otrosArreglos,
-                                         funcion: arr
-                                             devolver arr#en: i
-                                         finfuncion)
+        fijar valor a %cuerpo: (arreglo#en: i),
+                               ...(Mapear: otrosArreglos,
+                                           funcion: arr
+                                               devolver arr#en: i
+                                           finfuncion)
     finprocedimiento
 finprocedimiento
 
