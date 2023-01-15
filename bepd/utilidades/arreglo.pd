@@ -1,4 +1,6 @@
 utilizar bepd/builtins
+utilizar bepd/datos/conjunto
+utilizar bepd/x/adhoc (ObjetoAdHoc)
 
 [DOCUMENTA
 @brief{Intercala un elemento en un arreglo.}
