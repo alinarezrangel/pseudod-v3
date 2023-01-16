@@ -569,7 +569,7 @@ automatically indented."
   (interactive)
   (save-mark-and-excursion
     (let ((indentation (pseudod--indentation-of-current-line)))
-      (indent-line-to (indent-next-tab-stop indentation t)))))
+      (indent-line-to (max 0 (indent-next-tab-stop indentation t))))))
 
 (defun pseudod-indent ()
   "Indent the current function to the next tab stop."
@@ -610,14 +610,20 @@ Works on the region between START and END."
 If this line was already indented to what would be it's default
 indentation (or a bigger indentation) then extra tabs are added."
   (interactive)
-  (let ((indentation (pseudod--indentation-of-line))
-        (ind-pt (save-mark-and-excursion (back-to-indentation) (point)))
-        (move (if (<= (point) ind-pt)
-                  'back
-                'leave)))
+  (let* ((indentation (pseudod--indentation-of-line))
+         (ind-pt (save-mark-and-excursion (back-to-indentation) (point)))
+         (move (if (<= (point) ind-pt)
+                   'back
+                 'leave))
+         (blank-line (string-blank-p (pseudod--get-current-line))))
     (save-mark-and-excursion
       (cond ((not indentation) 'noindent)
-            ((= (pseudod--indentation-of-current-line) indentation)
+            ((and (not blank-line)
+                  (= (pseudod--indentation-of-current-line) (+ indentation pseudod-indentation-level)))
+             (pseudod-dedent)
+             (pseudod-dedent))
+            ((and (not blank-line)
+                  (= (pseudod--indentation-of-current-line) indentation))
              (pseudod-indent))
             (t (indent-line-to indentation))))
     (when (equal move 'back)
