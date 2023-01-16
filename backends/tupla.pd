@@ -1838,6 +1838,7 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {CMPREFEQ},   [ CMPREFEQ ]
     {NOT},        [ NOT ]
     {ROT},        [ ROT Ua ]
+    {ROTM},       [ ROTM Ua ]
     {GT},         [ GT ]
     {LT},         [ LT ]
     {GE},         [ GE ]
@@ -1866,7 +1867,8 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {OBJTAG},     [ OBJTAG ]
     {OBJATTR},    [ OBJATTR ]
     {OBJATTRSET}, [ OBJATTRSET ]
-    {OBJSZ}       [ OBJSZ ]
+    {OBJSZ},      [ OBJSZ ]
+    {PRAGMA}      [ PRAGMA (Texto:Nombre de la pragma), argumentos... ]
 
 metodo Opcode#bytecode
     devolver yo#valor
