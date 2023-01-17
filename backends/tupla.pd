@@ -1743,6 +1743,14 @@ clase Tupla
     @brief{Devuelve una representación textual de la tupla.}
     DOCUMENTA]
     metodo comoTexto
+
+    [DOCUMENTA
+    @brief{Escribe la representación textual de la tupla en el IR.}
+
+    @pd{puertoDeEscritura} es el puerto en el que la representación textual de
+    la tupla será escrita.
+    DOCUMENTA]
+    metodo emitirComoIR: puertoDeEscritura
 finclase
 
 metodo estatico Tupla#crear: op, ...args
@@ -1769,6 +1777,18 @@ metodo Tupla#comoTexto
               devolver x#comoTexto
           finfuncion),
          {, })
+finmetodo
+
+metodo Tupla#emitirComoIR: puertoDeEscritura
+    puertoDeEscritura#escribirTexto: yo#opcode#nombre
+    ParaCadaElementoConÍndice: yo#argumentos, procedimiento: argumento, i
+        si i > 0
+            puertoDeEscritura#escribirTexto: {,}
+        finsi
+        puertoDeEscritura#escribirTexto: { }
+        puertoDeEscritura#escribirTexto: argumento#comoTexto
+    finprocedimiento
+    puertoDeEscritura#escribirTexto: {~%}#formatear
 finmetodo
 
 [DOCUMENTA
@@ -1891,6 +1911,55 @@ si VERDADERO
 finsi
 
 [DOCUMENTA
+@brief{Compila los argumentos de una pragma al IR.}
+
+Devuelve un texto que contiene a los argumentos de la pragma compilados. Cada
+argumento puede ser un @pd{Texto}, en cuyo caso será escapado mediante
+@pd{EscaparParaPDVM}, o un número, en cuyo caso será emitido tal cual.
+DOCUMENTA]
+funcion CompilarArgumentosParaPragmaDirectamente: argumentos
+    funcion escapar: valor
+        si EsInstancia: valor, Texto
+            devolver EscaparParaPDVM: valor
+        sino
+            devolver valor#comoTexto
+        finsi
+    finfuncion
+    devolver Unir: (Mapear: argumentos, &escapar), {, }
+finfuncion
+
+[DOCUMENTA
+@brief{Una pragma del IR.}
+
+Cada pragma controla un aspecto especial sobre el código
+compilado. Generalmente las pragmas se alma
+DOCUMENTA]
+clase Pragma
+    atributo nombre
+    atributo argumentos
+
+    metodo estatico desdeTupla: tupla
+    metodo estatico crear: nombre, ...argumentos
+
+    metodo emitirComoIR: puertoDeEscritura
+finclase
+
+metodo estatico Pragma#desdeTupla: tupla
+    devolver yo#crear: (tupla#en: 0), ...(PedazoDeArreglo: tupla#argumentos, 1, -1)
+finmetodo
+
+metodo Pragma#inicializar: nombre, ...argumentos
+    fijar yo#nombre a nombre
+    fijar yo#argumentos a argumentos
+finmetodo
+
+metodo Pragma#emitirComoIR: puertoDeEscritura
+    puertoDeEscritura#escribirTexto: {PRAGMA }
+    puertoDeEscritura#escribirTexto: yo#nombre
+    puertoDeEscritura#escribirTexto: (CompilarArgumentosParaPragmaDirectamente: yo#argumentos)
+finmetodo
+
+[DOCUMENTA
 @brief{Declaración de función o procedimiento dentro del bytecode.}
 DOCUMENTA]
 clase DeclrFunción
@@ -1921,6 +1990,13 @@ clase DeclrFunción
     atributo parámetroVariadic
 
     [DOCUMENTA
+    @brief{Pragmas de la función.}
+
+    Un arreglo de @pd{Pragma}s.
+    DOCUMENTA]
+    atributo pragmas
+
+    [DOCUMENTA
     @brief{Cuerpo de la función.}
 
     Un arreglo de tuplas.
@@ -1936,20 +2012,45 @@ clase DeclrFunción
     @brief{Devuelve una representación textual de la declaración.}
     DOCUMENTA]
     metodo comoTexto
+
+    [DOCUMENTA
+    @brief{Escribe la representación textual de la declaración en el IR.}
+
+    @pd{puertoDeEscritura} es el puerto en el que la representación textual de
+    la función será escrita.
+    DOCUMENTA]
+    metodo emitirComoIR: puertoDeEscritura
 finclase
 
 metodo estatico DeclrFunción#crear: nombre, parámetros, parámVariadic, cuerpo
+    variable pragmasYCuerpo
+    fijar pragmasYCuerpo a SepararArreglo: cuerpo, funcion: tupla devolver tupla#es: Opcode#PRAGMA finfuncion, cuerpo
     devolver clonar yo#_crear con
         nombre: nombre
         parámetros: parámetros
         parámetroVariadic: parámVariadic
-        cuerpo: cuerpo
+        pragmas: (Mapear: pragmasYCuerpo#parteVerdadera, &(Pragma#desdeTupla))
+        cuerpo: pragmasYCuerpo#parteFalsa
     finclonar
 finmetodo
 
 metodo DeclrFunción#comoTexto
-    devolver {(DeclrFunción ~t con ~t (~t) es ~t)}#formatear:
-        yo#nombre, yo#parámetros, yo#parámetroVariadic, yo#cuerpo
+    devolver {(DeclrFunción ~t con ~t (~t) es ~t / ~t)}#formatear:
+        yo#nombre, yo#parámetros, yo#parámetroVariadic, yo#pragmas, yo#cuerpo
+finmetodo
+
+metodo DeclrFunción#emitirComoIR: puertoDeEscritura
+    puertoDeEscritura#escribirTexto: ({PROC ~t~%}#formatear: yo#nombre)
+    ParaCadaElemento: yo#parámetros, procedimiento: param
+        puertoDeEscritura#escribirTexto: ({PARAM ~t~%}#formatear: param)
+    finprocedimiento
+    si no EsNulo: yo#parámetroVariadic
+        puertoDeEscritura#escribirTexto: ({VARIADIC ~t~%}#formatear: yo#parámetroVariadic)
+    finsi
+    ParaCadaElemento: yo#cuerpo, procedimiento: tupla
+        tupla#emitirComoIR: puertoDeEscritura
+    finprocedimiento
+    puertoDeEscritura#escribirTexto: {ENDPROC~%}#formatear
 finmetodo
 
 [DOCUMENTA
@@ -1977,6 +2078,8 @@ clase PrototipoDeLlamada
     @brief{Devuelve una representación textual del prototipo.}
     DOCUMENTA]
     metodo comoTexto
+
+    metodo emitirComoIR: puertoDeEscritura
 finclase
 
 metodo PrototipoDeLlamada#inicializar: proto
@@ -1986,6 +2089,37 @@ finmetodo
 metodo PrototipoDeLlamada#comoTexto
     devolver {(PrototipoDeLlamada ~t)}#formatear: yo#prototipo
 finmetodo
+
+metodo PrototipoDeLlamada#emitirComoIR: puertoDeEscritura
+    puertoDeEscritura#escribirTexto: {PROTOTYPE }
+    ParaCadaElementoConÍndice: yo#prototipo, procedimiento: x, i
+        si i > 0
+            puertoDeEscritura#escribirTexto: {, }
+        finsi
+        puertoDeEscritura#escribirTexto: (x#escojer: {1}, {0})
+    finprocedimiento
+    puertoDeEscritura#escribirTexto: {~%}#formatear
+finmetodo
+
+clase TextoDelIR
+    atributo valor
+    metodo emitirComoIR: puertoDeEscritura
+finclase
+
+metodo TextoDelIR#inicializar: valor
+    fijar yo#valor a valor
+finmetodo
+
+metodo TextoDelIR#emitirComoIR: puertoDeEscritura
+    puertoDeEscritura#escribirTexto: {STRING "}
+    puertoDeEscritura#escribirTexto: (EscaparParaPDVM: yo#valor)
+    puertoDeEscritura#escribirTexto: {"~%}#formatear
+finmetodo
+
+metodo TextoDelIR#comoTexto
+    devolver {(TextoDelIR "~t")}#formatear: (EscaparParaPDVM: yo#valor)
+finmetodo
+
 
 [DOCUMENTA
 @brief{Una constante en el IR.}
@@ -2017,6 +2151,8 @@ clase Constante
     @brief{Devuelve una representación textual del mapeo de la constante.}
     DOCUMENTA]
     metodo comoTexto
+
+    metodo emitirComoIR: puertoDeEscritura
 finclase
 
 metodo estatico Constante#crear: id, valor
@@ -2028,6 +2164,13 @@ finmetodo
 
 metodo Constante#comoTexto
     devolver {(Constante#crear: ~t, ~t)}#formatear: yo#id, yo#valor
+finmetodo
+
+metodo Constante#emitirComoIR: puertoDeEscritura
+    puertoDeEscritura#escribirTexto: {#}
+    puertoDeEscritura#escribirTexto: yo#id#comoTexto
+    puertoDeEscritura#escribirTexto: { }
+    yo#valor#emitirComoIR: puertoDeEscritura
 finmetodo
 
 
@@ -2101,6 +2244,8 @@ clase Compilado
     @brief{Devuelve una representación textual del compilado.}
     DOCUMENTA]
     metodo comoTexto
+
+    metodo emitirComoIR: puertoDeEscritura
 finclase
 
 metodo estatico Compilado#crear: i, d, c
@@ -2145,6 +2290,29 @@ finmetodo
 
 metodo Compilado#comoTexto
     devolver {(Compilado ds = ~t, is = ~t, cs = ~t)}#formatear: yo#declaraciones, yo#instrucciones, yo#constantes
+finmetodo
+
+metodo Compilado#emitirComoIR: puertoDeEscritura
+    puertoDeEscritura#escribirTexto: {PDVM 1.0~%}#formatear
+    puertoDeEscritura#escribirTexto: {PLATFORM "pdcrt"~%~%}#formatear
+
+    puertoDeEscritura#escribirTexto: {SECTION "code"~%}#formatear
+    ParaCadaElemento: yo#instrucciones, procedimiento: instr
+        instr#emitirComoIR: puertoDeEscritura
+    finprocedimiento
+    puertoDeEscritura#escribirTexto: {ENDSECTION~%~%}#formatear
+
+    puertoDeEscritura#escribirTexto: {SECTION "procedures"~%}#formatear
+    ParaCadaElemento: yo#declaraciones, procedimiento: declr
+        declr#emitirComoIR: puertoDeEscritura
+    finprocedimiento
+    puertoDeEscritura#escribirTexto: {ENDSECTION~%~%}#formatear
+
+    puertoDeEscritura#escribirTexto: {SECTION "constant pool"~%}#formatear
+    ParaCadaElemento: yo#constantes, procedimiento: constante
+        constante#emitirComoIR: puertoDeEscritura
+    finprocedimiento
+    puertoDeEscritura#escribirTexto: {ENDSECTION~%}#formatear
 finmetodo
 
 
@@ -2690,8 +2858,8 @@ funcion CompilarAgregarAtributo: compiladoParaObtenerClase, nombreDelAtributo
     fijar constAgregarAtributo a GenerarIdDeConstante
     devolver (Compilado#deConstantes:
                  (Arreglo#crearCon:
-                     (Constante#crear: constAtributo, nombreDelAtributo),
-                     (Constante#crear: constAgregarAtributo, {agregarAtributo})))
+                     (Constante#crear: constAtributo, (TextoDelIR#crear: nombreDelAtributo)),
+                     (Constante#crear: constAgregarAtributo, (TextoDelIR#crear: {agregarAtributo}))))
           >> compiladoParaObtenerClase
           >> (Instrucciones: (OP#LCONST: constAtributo),
                              (OP#ROT: 1),
@@ -2744,20 +2912,26 @@ valores en la pila.
 DOCUMENTA]
 funcion CompilarAWasm: ast, builtins
     si EsInstancia: ast, AST#NodoPrograma
-        variables locales, localesEnElEntorno, profundidad, localesInmediatas, exportaciones, identificadoresDefinídos
+        variables locales, localesEnElEntorno, profundidad, localesInmediatas,
+                  exportaciones, identificadoresDefinídos,
+                  ámbito, constNombreDelMódulo, nombreDelMódulo
         fijar locales a LocalesDelBloque: ast
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
         fijar localesInmediatas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}
         fijar exportaciones a Compilado#vacío
+        fijar ámbito a RN#ObtenerNombresDefinídos: ast
         fijar identificadoresDefinídos a NombresDeclaradosEn: ast#instrucciones
         ParaCadaElementoConÍndice: identificadoresDefinídos, procedimiento: nid, índice
             variable esAutoejecutable
-            fijar esAutoejecutable a nid#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+            Escribir: {$$$$$}, nid
+            fijar esAutoejecutable a ámbito#esAutoejecutable: nid#nombre
             fijar exportaciones a exportaciones
                                >> (CompilarIdentificador: nid)
                                >> (Instrucciones: (OP#EXP: índice, (esAutoejecutable#escojer: 1, 0)))
         finprocedimiento
+        fijar constNombreDelMódulo a GenerarIdDeConstante
+        fijar nombreDelMódulo a {ejemplo}
         devolver (Compilado#deInstrucciónes:
                      (Aplanar:
                          (CompilarLocalesYClosure: locales,
@@ -2770,12 +2944,12 @@ funcion CompilarAWasm: ast, builtins
               >> (Instrucciones: (OP#MODULE: constNombreDelMódulo))
               >> (Compilado#deConstantes:
                      (Arreglo#crearCon:
-                         (Constante#crear: constNombreDelMódulo, nombreDelMódulo)))
+                         (Constante#crear: constNombreDelMódulo, (TextoDelIR#crear: nombreDelMódulo))))
               >> (CompilarBloqueAWasm: ast#instrucciones, builtins)
               >> (Instrucciones: (OP#OPNEXP: identificadoresDefinídos#longitud))
               >> exportaciones
-              >> (Instrucciones OP#CLSEXP,
-                                (OP#RETN: 1))
+              >> (Instrucciones: OP#CLSEXP,
+                                 (OP#RETN: 1))
     finsi
     si EsInstancia: ast, AST#NodoNumeroLiteral
         si EsNúmeroEntero: ast#valor
@@ -2788,7 +2962,9 @@ funcion CompilarAWasm: ast, builtins
         variable cid
         fijar cid a GenerarIdDeConstante
         devolver (Instrucciones: (OP#LCONST: cid))
-              >> (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, ast#valor)))
+              >> (Compilado#deConstantes:
+                     (Arreglo#crearCon:
+                         (Constante#crear: cid, (TextoDelIR#crear: ast#valor))))
     finsi
     si EsInstancia: ast, AST#NodoOperador
         variables lhs, rhs
@@ -2824,7 +3000,9 @@ funcion CompilarAWasm: ast, builtins
         variables cid, optxt
         fijar cid a GenerarIdDeConstante
         fijar optxt a {operador_}#concatenar: ast#op#op
-        devolver (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, optxt)))
+        devolver (Compilado#deConstantes:
+                     (Arreglo#crearCon:
+                         (Constante#crear: cid, (TextoDelIR#crear: optxt))))
               >> lhs >> rhs
               >> (Instrucciones: (OP#ROT: 1),
                                  (OP#MSG: cid, 2, 1))
@@ -2837,11 +3015,11 @@ funcion CompilarAWasm: ast, builtins
             fijar res a CompilarIdentificador: ast
             si ast#obtenerMetadato: RN#LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
                 variable constLlamar
-                fijar constLlamar a GenerarIdDeNombre
+                fijar constLlamar a GenerarIdDeConstante
                 fijar res a res >> (Instrucciones: (OP#MSG: constLlamar, 0, 1))
                                 >> (Compilado#deConstantes:
                                        (Arreglo#crearCon:
-                                           (Constante#crear: constLlamar, {llamar})))
+                                           (Constante#crear: constLlamar, (TextoDelIR#crear: {llamar}))))
             finsi
             devolver res
         finsi
@@ -2854,41 +3032,49 @@ funcion CompilarAWasm: ast, builtins
         finsi
     finsi
     si EsInstancia: ast, AST#NodoEnviarMensaje
-        si (RN#NombreResueltoDe: ast) = (builtins#en: {__Tupla})
-            [ Si el mensaje comienza con `i`, es un opcode que no empuja nada
-              (`iPOP`, `iLSET`). Si por el contrario comienza con `e`, entonces
-              si empuja algo (`eLGET`, `eMKARR`). ]
-            si (ast#mensaje#longitud > 2) && ((ast#mensaje#subTexto: 0, 1) = {i})
-                variable opcode
-                fijar opcode a ast#mensaje#subTexto: 1, (ast#mensaje#longitud - 1)
-                devolver Instrucciones: (__EnviarMensaje: OP, opcode, argumentos),
-                                        [ Empujamos un valor cualquiera. Recuerda que todas
-                                          las expresiones deben dejar un valor en la pila,
-                                          pero este opcode no empuja nada. ]
-                                        (OP#BCONST: 0)
+        si EsInstancia: ast#objeto, AST#NodoIdentificador
+            si (RN#NombreResueltoDe: ast#objeto) = (builtins#en: {__Tupla})
+                [ Si el mensaje comienza con `i`, es un opcode que no empuja nada
+                  (`iPOP`, `iLSET`). Si por el contrario comienza con `e`, entonces
+                  si empuja algo (`eLGET`, `eMKARR`). ]
+                variable argumentos
+                fijar argumentos a Mapear: ast#argumentos, funcion: arg
+                    necesitas (EsInstancia: arg, AST#NodoTextoLiteral) || (EsInstancia: arg, AST#NodoNumeroLiteral)
+                    devolver arg#valor
+                finfuncion
+                si (ast#mensaje#longitud > 2) && ((ast#mensaje#subTexto: 0, 1) = {i})
+                    variable opcode
+                    fijar opcode a ast#mensaje#subTexto: 1, (ast#mensaje#longitud - 1)
+                    devolver Instrucciones: (__EnviarMensaje: OP, opcode, argumentos),
+                                            [ Empujamos un valor cualquiera. Recuerda que todas
+                                              las expresiones deben dejar un valor en la pila,
+                                              pero este opcode no empuja nada. ]
+                                            (OP#BCONST: 0)
+                finsi
+                si (ast#mensaje#longitud > 2) && ((ast#mensaje#subTexto: 0, 1) = {e})
+                    variable opcode
+                    fijar opcode a ast#mensaje#subTexto: 1, (ast#mensaje#longitud - 1)
+                    devolver Instrucciones: (__EnviarMensaje: OP, opcode, argumentos)
+                finsi
+                __FallarConMensaje: ({No se esperaba el mensaje a __Tupla: ~t}#formatear: ast#mensaje)
             finsi
-            si (ast#mensaje#longitud > 2) && ((ast#mensaje#subTexto: 0, 1) = {e})
-                variable opcode
-                fijar opcode a ast#mensaje#subTexto: 1, (ast#mensaje#longitud - 1)
-                devolver Instrucciones: (__EnviarMensaje: OP, opcode, argumentos)
-            finsi
-            __FallarConMensaje: ({No se esperaba el mensaje a __Tupla: ~t}#formatear: ast#mensaje)
-        sino
-            variable cid
-            fijar cid a GenerarIdDeConstante
-            devolver (CompilarAWasm: ast#objeto, builtins)
-                >> (Compilado#deConstantes: (Arreglo#crearCon: (Constante#crear: cid, ast#mensaje)))
-                >> (CompilarLlamadaAFunción:
-                        ast#argumentos,
-                        funcion: numValoresEnLaPila, numResultados
-                            devolver Instrucciones: (OP#MSG: cid, numValoresEnLaPila, numResultados)
-                        finfuncion,
-                        funcion: numValoresEnLaPila, constPrototipo, prototipo, numResultados
-                            devolver Instrucciones: (OP#MSGV: cid, constPrototipo, numResultados)
-                        finfuncion,
-                        1,
-                        builtins)
         finsi
+        variable cid
+        fijar cid a GenerarIdDeConstante
+        devolver (CompilarAWasm: ast#objeto, builtins)
+              >> (Compilado#deConstantes:
+                     (Arreglo#crearCon:
+                         (Constante#crear: cid, (TextoDelIR#crear: ast#mensaje))))
+              >> (CompilarLlamadaAFunción:
+                      ast#argumentos,
+                      funcion: numValoresEnLaPila, numResultados
+                          devolver Instrucciones: (OP#MSG: cid, numValoresEnLaPila, numResultados)
+                      finfuncion,
+                      funcion: numValoresEnLaPila, constPrototipo, prototipo, numResultados
+                          devolver Instrucciones: (OP#MSGV: cid, constPrototipo, numResultados)
+                      finfuncion,
+                      1,
+                      builtins)
     finsi
     si EsInstancia: ast, AST#NodoLlamarProcedimiento
         variable procnr
@@ -2923,7 +3109,7 @@ funcion CompilarAWasm: ast, builtins
         si procnr = (builtins#en: {__EM})
             necesitas ast#argumentos#longitud = 3
             variables constPrototipo, prototipo
-            fijar constPrototipo a GenerarIdDeNombre
+            fijar constPrototipo a GenerarIdDeConstante
             fijar prototipo a Arreglo#crearCon: VERDADERO
             devolver ArgumentosCompilados
                   >> (Instrucciones: (OP#ROTM: 1),
@@ -2934,7 +3120,7 @@ funcion CompilarAWasm: ast, builtins
         finsi
 
         variable constLlamar
-        fijar constLlamar a GenerarIdDeNombre
+        fijar constLlamar a GenerarIdDeConstante
         devolver (CompilarIdentificador: ast#proc)
               >> (CompilarLlamadaAFunción:
                      ast#argumentos,
@@ -2948,11 +3134,11 @@ funcion CompilarAWasm: ast, builtins
                      builtins)
               >> (Compilado#deConstantes:
                      (Arreglo#crearCon:
-                         (Constante#crear: constLlamar, {llamar})))
+                         (Constante#crear: constLlamar, (TextoDelIR#crear: {llamar}))))
     finsi
     si EsInstancia: ast, AST#NodoAutoejecutar
         variable constLlamar
-        fijar constLlamar a GenerarIdDeNombre
+        fijar constLlamar a GenerarIdDeConstante
         devolver (CompilarAWasm: ast#expr, builtins)
               >> (CompilarLlamadaAFunción:
                      ast#argumentos,
@@ -2966,7 +3152,7 @@ funcion CompilarAWasm: ast, builtins
                      builtins)
               >> (Compilado#deConstantes:
                      (Arreglo#crearCon:
-                         (Constante#crear: constLlamar, {llamar})))
+                         (Constante#crear: constLlamar, (TextoDelIR#crear: {llamar}))))
     finsi
     si EsInstancia: ast, AST#NodoVariable
         devolver Compilado#vacío
@@ -2982,7 +3168,7 @@ funcion CompilarAWasm: ast, builtins
                                      (OP#MSG: cid, 1, 0))
                   >> (Compilado#deConstantes:
                          (Arreglo#crearCon:
-                             (Constante#crear: cid, {fijar_}#concatenar: ast#objetivo#mensaje)))
+                             (Constante#crear: cid, (TextoDelIR#crear: ({fijar_}#concatenar: ast#objetivo#mensaje)))))
         sino
             devolver (CompilarAWasm: ast#valor, builtins)
                   >> (CompilarFijarIdentificador: ast#objetivo)
@@ -3050,7 +3236,9 @@ funcion CompilarAWasm: ast, builtins
               >> (Instrucciones: (OP#RETN: 1))
     finsi
     si (EsInstancia: ast, AST#NodoFunción) || (EsInstancia: ast, AST#NodoFunciónAnónima) || (EsInstancia: ast, AST#NodoMétodo)
-        variables nrsParámetros, parámetroVrd, preludio, cuerpo, fn, nombresLibres, inicDeClosure, locales, localesEnElEntorno, profundidad, localesInmediatas, procid, localYo
+        variables nrsParámetros, parámetroVrd, preludio, cuerpo, fn,
+                  nombresLibres, inicDeClosure, locales, localesEnElEntorno,
+                  profundidad, localesInmediatas, procid, localYo, pragmas
 
         fijar preludio a Arreglo#vacio
         [ params ]
@@ -3096,10 +3284,11 @@ funcion CompilarAWasm: ast, builtins
                                                   (OP#MSG: constAgregarMétodo, 1, 0))
                                >> (Compilado#deConstantes:
                                       (Arreglo#crearCon:
-                                          (Constante#crear: constAgregarMétodo, agregarMétodo)))
+                                          (Constante#crear: constAgregarMétodo, (TextoDelIR#crear: agregarMétodo))))
         finsi
 
         fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo, builtins)
+
         fijar fn a DeclrFunción#crear: procid, nrsParámetros, parámetroVrd, cuerpo#instrucciones
         devolver inicDeClosure
              >> (Compilado#deDeclaraciones: cuerpo#declaraciones)
@@ -3141,9 +3330,9 @@ funcion CompilarAWasm: ast, builtins
         fijar constFijarNombre a GenerarIdDeConstante
         fijar constantes a Compilado#deConstantes:
             (Arreglo#crearCon:
-                (Constante#crear: constSubclase, {subclase}),
-                (Constante#crear: constNombre, ast#nombre#nombre),
-                (Constante#crear: constFijarNombre, {fijar_nombre}))
+                (Constante#crear: constSubclase, (TextoDelIR#crear: {subclase})),
+                (Constante#crear: constNombre, (TextoDelIR#crear: ast#nombre#nombre)),
+                (Constante#crear: constFijarNombre, (TextoDelIR#crear: {fijar_nombre})))
         si EsNulo: ast#claseBase
             NoImplementado
         finsi
@@ -3201,8 +3390,8 @@ funcion NormalizaLosIdsDeConstantes: compilado
 
     procedimiento normalizarInstrucciones: instrs
         devolver Mapear: instrs, procedimiento: tupla
-            si (tupla#es: Opcode#LCONST) || (tupla#es: Opcode#MSG)
-                [ Tanto LCONST como MSG tienen su CID en el primer argumento. ]
+            si (tupla#es: Opcode#LCONST) || (tupla#es: Opcode#MSG) || (tupla#es: Opcode#MODULE)
+                [ Tanto LCONST como MSG y los MODULE tienen su CID en el primer argumento. ]
                 variables cid, cv, clon, cidReal
                 fijar cid a tupla#en: 0
                 fijar cv a compilado#valorDeLaConstante: cid
@@ -3392,60 +3581,7 @@ Utiliza la sintaxis del ensamblador en vez de la otra representación usada por
 compilado.
 DOCUMENTA]
 procedimiento EmitirCompilado: compilado, puertoDeEscritura
-    procedimiento emitirCódigo: tuplas
-        ParaCadaElemento: tuplas, procedimiento: tupla
-            puertoDeEscritura#escribirTexto: tupla#opcode#nombre
-            ParaCadaElementoConÍndice: tupla#argumentos, procedimiento: argumento, i
-                si i > 0
-                    puertoDeEscritura#escribirTexto: {,}
-                finsi
-                puertoDeEscritura#escribirTexto: { }
-                puertoDeEscritura#escribirTexto: argumento#comoTexto
-            finprocedimiento
-            puertoDeEscritura#escribirTexto: {~%}#formatear
-        finprocedimiento
-    finprocedimiento
-
-    puertoDeEscritura#escribirTexto: {PDVM 1.0~%}#formatear
-    puertoDeEscritura#escribirTexto: {PLATFORM "pdcrt"~%~%}#formatear
-
-    puertoDeEscritura#escribirTexto: {SECTION "code"~%}#formatear
-    emitirCódigo: compilado#instrucciones
-    puertoDeEscritura#escribirTexto: {ENDSECTION~%~%}#formatear
-
-    puertoDeEscritura#escribirTexto: {SECTION "procedures"~%}#formatear
-    ParaCadaElemento: compilado#declaraciones, procedimiento: declr
-        necesitas EsInstancia: declr, DeclrFunción
-        puertoDeEscritura#escribirTexto: ({PROC ~t~%}#formatear: declr#nombre)
-        ParaCadaElemento: declr#parámetros, procedimiento: param
-            puertoDeEscritura#escribirTexto: ({PARAM ~t~%}#formatear: param)
-        finprocedimiento
-        si no EsNulo: declr#parámetroVariadic
-            puertoDeEscritura#escribirTexto: ({VARIADIC ~t~%}#formatear: declr#parámetroVariadic)
-        finsi
-        emitirCódigo: declr#cuerpo
-        puertoDeEscritura#escribirTexto: {ENDPROC~%}#formatear
-    finprocedimiento
-    puertoDeEscritura#escribirTexto: {ENDSECTION~%~%}#formatear
-
-    puertoDeEscritura#escribirTexto: {SECTION "constant pool"~%}#formatear
-    ParaCadaElemento: compilado#constantes, procedimiento: constante
-        si EsInstancia: constante#valor, Texto
-            puertoDeEscritura#escribirTexto:
-                ({#~t STRING "~T"~%}#formatear: constante#id, (EscaparParaPDVM: constante#valor))
-        sino
-            necesitas EsInstancia: constante#valor, PrototipoDeLlamada
-            puertoDeEscritura#escribirTexto:
-                ({#~t PROTOTYPE ~t~%}#formatear:
-                    constante#id,
-                    (Unir: (Mapear: constante#valor#prototipo,
-                                    funcion: x
-                                        devolver x#escojer: {1}, {0}
-                                    finfuncion),
-                           {, }))
-        finsi
-    finprocedimiento
-    puertoDeEscritura#escribirTexto: {ENDSECTION~%}#formatear
+    compilado#emitirComoIR: puertoDeEscritura
 finprocedimiento
 
 funcion ParsearYDefunc: programa
