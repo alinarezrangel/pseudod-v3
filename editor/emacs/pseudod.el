@@ -668,10 +668,9 @@ indentation (or a bigger indentation) then extra tabs are added."
 
 (defvar pseudod-mode-syntax-table
   (let ((st (make-syntax-table prog-mode-syntax-table)))
-    (modify-syntax-entry ?\[ "<" st)
-    (modify-syntax-entry ?\] ">" st)
     (modify-syntax-entry ?% "." st)
     (modify-syntax-entry ?: "." st)
+    (modify-syntax-entry ?\" "." st)
     (modify-syntax-entry ?& "." st)
     (modify-syntax-entry ?_ "w" st)
     (modify-syntax-entry ?' "w" st)
@@ -682,9 +681,10 @@ indentation (or a bigger indentation) then extra tabs are added."
 (defun pseudod-syntax-propertize (start end)
   (funcall
    (syntax-propertize-rules
-    ;;("\\(\\[\\)[^]]*\\(\\]\\)" (1 "<") (2 ">"))
+    ("\\(\\[\\)[^]]*\\(\\]\\)" (1 "<") (2 ">"))
     ("\\({\\)[^}]*\\(}\\)" (1 "|") (2 "|"))
-    ("\\(«\\)[^»]*\\(»\\)" (1 "|") (2 "|")))
+    ("\\(«\\)[^»]*\\(»\\)" (1 "|") (2 "|"))
+    ("\\(\"\\)[^\"]*\\(\"\\)" (1 "|") (2 "|")))
    start end)
   )
 
