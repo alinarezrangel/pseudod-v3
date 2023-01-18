@@ -16,6 +16,7 @@ utilizar ast como AST
 utilizar parser como Parser
 utilizar resoluciónDeNombres como RN
 utilizar defuncionalización como Defun
+utilizar módulos como Módulos
 
 
 
@@ -2931,7 +2932,7 @@ funcion CompilarAWasm: ast, builtins
                                >> (Instrucciones: (OP#EXP: índice, (esAutoejecutable#escojer: 1, 0)))
         finprocedimiento
         fijar constNombreDelMódulo a GenerarIdDeConstante
-        fijar nombreDelMódulo a {ejemplo}
+        fijar nombreDelMódulo a (ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {llaveDelMódulo})#nombreCompletoDelArchivo
         devolver (Compilado#deInstrucciónes:
                      (Aplanar:
                          (CompilarLocalesYClosure: locales,
@@ -3622,6 +3623,21 @@ funcion ParsearYDefunc: programa
     devolver ObjetoAdHoc: {ast}, ast, {builtins}, builtins
 finfuncion
 
+[DOCUMENTA
+@brief{Anota el @pd{AST#NodoPrograma} con la llave del módulo.}
+
+@pd{llave} debe ser la llave del módulo a usar. Este procedimiento anota
+@bold{todos} los @pd{AST#NodoPrograma}s en el @pd{ast}, pero no anota aquellos
+que estén dentro de otros @pd{AST#NodoPrograma}.
+DOCUMENTA]
+procedimiento AnotarElProgramaConSuLlaveDeMódulo: ast, llave
+    Caminar: ast, funcion: nodo
+        devolver EsInstancia: nodo, AST#NodoPrograma
+    finfuncion, procedimiento: nodo
+        nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {llaveDelMódulo}, llave
+    finprocedimiento
+finprocedimiento
+
 [{
 
 funcion Q
@@ -3647,7 +3663,7 @@ Q
 
 }]
 
-variables ast, resP, programa, cc
+variables ast, resP, programa, cc, llaveMod
 Escribir: ({Leyendo: ~t}#formatear: (__Argv#en: 0))
 Escribir: ({Escribiendo: ~t}#formatear: (__Argv#en: 1))
 fijar programa a SistemaDeArchivos#LeerArchivo: (__Argv#en: 0)
@@ -3669,6 +3685,8 @@ Escribir: {MarcaVariablesLocalesEnSubámbitos}
 MarcaVariablesLocalesEnSubámbitos: ast
 Escribir: {MarcaVariablesQueEstánEnElEntorno}
 MarcaVariablesQueEstánEnElEntorno: ast
+Escribir: {AnotarElProgramaConSuLlaveDeMódulo}
+AnotarElProgramaConSuLlaveDeMódulo: ast, (Módulos#LlaveDeMódulo#crear: {./hola}, {ejemplo}, {pd})
 Escribir: {CompilarAWasm}
 fijar cc a CompilarAWasm: ast, resP#builtins
 variable ncc
