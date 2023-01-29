@@ -3400,26 +3400,44 @@ funcion NormalizaLosIdsDeConstantes: compilado
     fijar constantes a Diccionario#vacío
     fijar índiceDeConstantes a 0
 
+    procedimiento normalizarConstante: tupla, índice
+        variables cid, cv, cidReal
+        fijar cid a tupla#en: índice
+        fijar cv a compilado#valorDeLaConstante: cid
+        si no (constantes#contiene: cv)
+            fijar cidReal a índiceDeConstantes
+            constantes#fijarEn: cv, cidReal
+            fijar índiceDeConstantes a índiceDeConstantes + 1
+        sino
+            fijar cidReal a constantes#en: cv
+        finsi
+        tupla#argumentos#fijarEn: índice, cidReal
+    finprocedimiento
+
     procedimiento normalizarInstrucciones: instrs
         devolver Mapear: instrs, procedimiento: tupla
-            si (tupla#es: Opcode#LCONST) || (tupla#es: Opcode#MSG) || (tupla#es: Opcode#MODULE)
-                [ Tanto LCONST como MSG y los MODULE tienen su CID en el primer argumento. ]
-                variables cid, cv, clon, cidReal
-                fijar cid a tupla#en: 0
-                fijar cv a compilado#valorDeLaConstante: cid
+            si (tupla#es: Opcode#LCONST)
+                || (tupla#es: Opcode#MODULE)
+                || (tupla#es: Opcode#IMPORT) || (tupla#es: Opcode#SAVEIMPORT)
+                || (tupla#es: Opcode#MSG) || (tupla#es: Opcode#TMSG)
+                || (tupla#es: Opcode#DYNMSGV) || (tupla#es: Opcode#TDYNMSGV)
+                [ El primer argumento es una constante. ]
+                variable clon
                 fijar clon a clonar tupla con finclonar
-                si no (constantes#contiene: cv)
-                    fijar cidReal a índiceDeConstantes
-                    constantes#fijarEn: cv, cidReal
-                    fijar índiceDeConstantes a índiceDeConstantes + 1
-                sino
-                    fijar cidReal a constantes#en: cv
-                finsi
-                clon#argumentos#fijarEn: 0, cidReal [ <= parchea el CID ]
+                normalizarConstante: clon, 0
                 devolver clon
             sino
-                [ Ningun otro opcode tiene un CID. ]
-                devolver tupla
+                si (tupla#es: Opcode#MSGV) || (tupla#es: Opcode#TMSGV)
+                    [ Tanto el primer como el segundo argumento son constantes ]
+                    variable clon
+                    fijar clon a clonar tupla con finclonar
+                    normalizarConstante: clon, 0
+                    normalizarConstante: clon, 1
+                    devolver clon
+                sino
+                    [ Ningun otro opcode tiene un CID. ]
+                    devolver tupla
+                finsi
             finsi
         finprocedimiento
     finprocedimiento
@@ -3631,7 +3649,8 @@ funcion ParsearYDefunc: programa
         procedimiento: ámbito finprocedimiento
     Defun#Defuncionalizar: ast
 
-    devolver ObjetoAdHoc: {ast}, ast, {builtins}, builtins
+    devolver ObjetoAdHoc: {ast}, ast,
+                          {builtins}, builtins
 finfuncion
 
 [DOCUMENTA
