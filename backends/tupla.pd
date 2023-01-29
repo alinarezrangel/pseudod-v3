@@ -2810,9 +2810,9 @@ funcion CompilarArgumentos: argumentos, compilarExpr
     finfuncion
 
     variables compilado, prototipo, variadics
-    fijar prototipo a Mapear: bloques, funcion: bloque
+    fijar prototipo a PrototipoDeLlamada#crear: (Mapear: bloques, funcion: bloque
         devolver bloque#variadic
-    finfuncion
+    finfuncion)
     fijar compilado a Reducir: Compilado#vacío, funcion: acc, bloque
         devolver acc >> bloque#compilado
     finfuncion, bloques
@@ -3122,7 +3122,7 @@ funcion CompilarAWasm: ast, builtins
             necesitas ast#argumentos#longitud = 3
             variables constPrototipo, prototipo
             fijar constPrototipo a GenerarIdDeConstante
-            fijar prototipo a Arreglo#crearCon: VERDADERO
+            fijar prototipo a PrototipoDeLlamada#crear: (Arreglo#crearCon: VERDADERO)
             devolver ArgumentosCompilados
                   >> (Instrucciones: (OP#ROTM: 1),
                                      (OP#DYNMSGV: constPrototipo, 1))
