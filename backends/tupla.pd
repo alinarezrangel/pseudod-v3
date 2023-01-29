@@ -3048,7 +3048,7 @@ funcion CompilarAWasm: ast, builtins
                     necesitas (EsInstancia: arg, AST#NodoTextoLiteral) || (EsInstancia: arg, AST#NodoNumeroLiteral)
                     devolver arg#valor
                 finfuncion
-                si (ast#mensaje#longitud > 2) && ((ast#mensaje#subTexto: 0, 1) = {i})
+                si (ast#mensaje#longitud > 1) && ((ast#mensaje#subTexto: 0, 1) = {i})
                     variable opcode
                     fijar opcode a ast#mensaje#subTexto: 1, (ast#mensaje#longitud - 1)
                     devolver Instrucciones: (__EnviarMensaje: OP, opcode, argumentos),
@@ -3057,7 +3057,7 @@ funcion CompilarAWasm: ast, builtins
                                               pero este opcode no empuja nada. ]
                                             (OP#BCONST: 0)
                 finsi
-                si (ast#mensaje#longitud > 2) && ((ast#mensaje#subTexto: 0, 1) = {e})
+                si (ast#mensaje#longitud > 1) && ((ast#mensaje#subTexto: 0, 1) = {e})
                     variable opcode
                     fijar opcode a ast#mensaje#subTexto: 1, (ast#mensaje#longitud - 1)
                     devolver Instrucciones: (__EnviarMensaje: OP, opcode, argumentos)
