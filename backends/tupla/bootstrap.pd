@@ -1,3 +1,10 @@
+procedimiento __ObtenerRT
+    __Tupla#PRAGMA_CNAME: {pdcrt_frt_obtener_rt}
+    __Tupla#PRAGMA_IMPORT
+finprocedimiento
+
+fijar __RT a __ObtenerRT
+
 procedimiento __FallarConMensaje: msj
     __RT#fallarConMensaje: msj
 finprocedimiento
@@ -23,8 +30,8 @@ funcion __ObtenerCLI
     fijar cli a __CrearArreglo
     fijar i a 0
     mientras i < __RT#argc
-        fijar i a i + 1
         cli#agregarAlFinal: (__RT#argv: i)
+        fijar i a i + 1
     finmientras
     devolver cli
 finfuncion

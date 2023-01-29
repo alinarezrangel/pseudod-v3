@@ -1879,7 +1879,7 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {NL},         [ NL ]
     {OPNEXP},     [ OPNEXP Ua ]
     {CLSEXP},     [ CLSEXP ]
-    {EXP},        [ EXP Cx, Bx ]
+    {EXP},        [ EXP Ux, Bx ]
     {IMPORT},     [ IMPORT Cx ]
     {SAVEIMPORT}, [ SAVEIMPORT Cx ]
     {MODULE},     [ MODULE Cx ]
@@ -1921,7 +1921,7 @@ DOCUMENTA]
 funcion CompilarArgumentosParaPragmaDirectamente: argumentos
     funcion escapar: valor
         si EsInstancia: valor, Texto
-            devolver EscaparParaPDVM: valor
+            devolver {"~t"}#formatear: (EscaparParaPDVM: valor)
         sino
             devolver valor#comoTexto
         finsi
@@ -1957,7 +1957,9 @@ finmetodo
 metodo Pragma#emitirComoIR: puertoDeEscritura
     puertoDeEscritura#escribirTexto: {PRAGMA }
     puertoDeEscritura#escribirTexto: yo#nombre
+    puertoDeEscritura#escribirTexto: { }
     puertoDeEscritura#escribirTexto: (CompilarArgumentosParaPragmaDirectamente: yo#argumentos)
+    puertoDeEscritura#escribirTexto: {~%}#formatear
 finmetodo
 
 [DOCUMENTA
@@ -2048,6 +2050,9 @@ metodo DeclrFunción#emitirComoIR: puertoDeEscritura
     si no EsNulo: yo#parámetroVariadic
         puertoDeEscritura#escribirTexto: ({VARIADIC ~t~%}#formatear: yo#parámetroVariadic)
     finsi
+    ParaCadaElemento: yo#pragmas, procedimiento: pragma
+        pragma#emitirComoIR: puertoDeEscritura
+    finprocedimiento
     ParaCadaElemento: yo#cuerpo, procedimiento: tupla
         tupla#emitirComoIR: puertoDeEscritura
     finprocedimiento
@@ -3056,6 +3061,12 @@ funcion CompilarAWasm: ast, builtins
                     variable opcode
                     fijar opcode a ast#mensaje#subTexto: 1, (ast#mensaje#longitud - 1)
                     devolver Instrucciones: (__EnviarMensaje: OP, opcode, argumentos)
+                finsi
+                si (ast#mensaje#longitud > {PRAGMA_}#longitud) && ((ast#mensaje#subTexto: 0, {PRAGMA_}#longitud) = {PRAGMA_})
+                    variable pragma
+                    fijar pragma a ast#mensaje#subTexto: {PRAGMA_}#longitud, (ast#mensaje#longitud - {PRAGMA_}#longitud)
+                    devolver Instrucciones: (OP#PRAGMA: pragma, ...argumentos),
+                                            (OP#BCONST: 0)
                 finsi
                 __FallarConMensaje: ({No se esperaba el mensaje a __Tupla: ~t}#formatear: ast#mensaje)
             finsi
