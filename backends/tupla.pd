@@ -1257,13 +1257,13 @@ procedimiento MarcaVariablesQueEstánEnElEntorno: ast
         [ sino ]
         [     Escribir: {! S:}, local#nodoConYo ]
         [ finsi ]
-        si EsInstancia: local, IdentificadorLocalDelProcedimiento
-            Escribir: {! L1:}, local#nodo#areaTextual
-        sino
-            Escribir: {! L2:}, local#nodoConYo#areaTextual
-        finsi
-        Escribir: {! B:}, local#binding
-        Escribir: {ES}, (local#esCapturado || (no local#esLocal) || (no local#esLocalDirecta))
+        [ si EsInstancia: local, IdentificadorLocalDelProcedimiento ]
+        [     Escribir: {! L1:}, local#nodo#areaTextual ]
+        [ sino ]
+        [     Escribir: {! L2:}, local#nodoConYo#areaTextual ]
+        [ finsi ]
+        [ Escribir: {! B:}, local#binding ]
+        [ Escribir: {ES}, (local#esCapturado || (no local#esLocal) || (no local#esLocalDirecta)) ]
         si (no local#esCapturado)
             Escribir: {OJO}, (no local#esLocal), (no local#esLocalDirecta)
         finsi
@@ -1274,7 +1274,7 @@ procedimiento MarcaVariablesQueEstánEnElEntorno: ast
             devolver NULO
         finsi
         si EsIdentificadorDeVariable: nodo
-            Escribir: {^^^}, nodo
+            [ Escribir: {^^^}, nodo ]
             nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}, (esLocal: (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {local}))
             devolver NULO
         finsi
@@ -2291,6 +2291,9 @@ metodo Compilado#valorDeLaConstante: idDeConstante
     fijar encontrados a Filtrar: yo#constantes, funcion: const
         devolver const#id = idDeConstante
     finfuncion
+    si no (encontrados#longitud = 1)
+        Escribir: {%%%%%%}, encontrados, idDeConstante, yo#constantes
+    finsi
     necesitas encontrados#longitud = 1
     devolver (encontrados#en: 0)#valor
 finmetodo
@@ -2535,7 +2538,6 @@ a dicho valor.
 DOCUMENTA]
 funcion CompilarFijarIdentificador: ast
     variables altura, índiceDeCaptura, op, binding
-    Escribir: {Fijar:}, ast
     fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
     fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
     fijar binding a RN#NombreResueltoDe: ast
@@ -2931,7 +2933,6 @@ funcion CompilarAWasm: ast, builtins
         fijar identificadoresDefinídos a NombresDeclaradosEn: ast#instrucciones
         ParaCadaElementoConÍndice: identificadoresDefinídos, procedimiento: nid, índice
             variable esAutoejecutable
-            Escribir: {$$$$$}, nid
             fijar esAutoejecutable a ámbito#esAutoejecutable: nid#nombre
             fijar exportaciones a exportaciones
                                >> (CompilarIdentificador: nid)
@@ -3272,7 +3273,6 @@ funcion CompilarAWasm: ast, builtins
             fijar yos a Filtrar: locales, funcion: local
                 devolver (local#binding = NombreResueltoDelYoImplícito: ast) && (EsInstancia: local, YoLocalDelProcedimiento)
             finfuncion
-            Escribir: {$$$$$$}, yos
             necesitas yos#longitud = 1
             fijar localYo a yos#en: 0
             fijar nrsParámetros a Concatenar: (Arreglo#crearCon: localYo#binding), nrsParámetros
