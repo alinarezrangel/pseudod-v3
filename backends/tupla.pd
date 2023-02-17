@@ -3045,6 +3045,16 @@ funcion CompilarAWasm: ast, builtins
                 [ Si el mensaje comienza con `i`, es un opcode que no empuja nada
                   (`iPOP`, `iLSET`). Si por el contrario comienza con `e`, entonces
                   si empuja algo (`eLGET`, `eMKARR`). ]
+                si ast#mensaje = {obtener}
+                    necesitas ast#argumentos#longitud = 1
+                    devolver (CompilarIdentificador: (ast#argumentos#en: 0))
+                          >> (Instrucciones: (OP#BCONST: 0))
+                finsi
+                si ast#mensaje = {fijar}
+                    necesitas ast#argumentos#longitud = 1
+                    devolver CompilarFijarIdentificador: (ast#argumentos#en: 0)
+                          >> (Instrucciones: (OP#BCONST: 0))
+                finsi
                 variable argumentos
                 fijar argumentos a Mapear: ast#argumentos, funcion: arg
                     necesitas (EsInstancia: arg, AST#NodoTextoLiteral) || (EsInstancia: arg, AST#NodoNumeroLiteral)
