@@ -2,7 +2,7 @@ utilizar bepd/builtins
 utilizar bepd/x/adhoc (ObjetoAdHoc)
 utilizar bepd/datos/conjunto (Conjunto)
 utilizar bepd/datos/diccionario (Diccionario)
-utilizar bepd/x/puerto (SalidaEstándar)
+utilizar bepd/x/puerto (SalidaEstándar, PuertoParaTexto, TextoDePuertoDeEscritura)
 utilizar bepd/x/puerto/deArchivo como PDA
 utilizar bepd/x/puerto/conPosición (PosiciónTextual)
 utilizar bepd/x/sistemaDeArchivos/archivo como SistemaDeArchivos
@@ -17,6 +17,7 @@ utilizar parser como Parser
 utilizar resoluciónDeNombres como RN
 utilizar defuncionalización como Defun
 utilizar módulos como Módulos
+utilizar compilador como Compilador
 
 
 
@@ -3668,63 +3669,133 @@ procedimiento AnotarElProgramaConSuLlaveDeMódulo: ast, llave
     finprocedimiento
 finprocedimiento
 
-[{
 
-funcion Q
-    2 * 3 - 20 / 4
-finfuncion
 
-funcion W: X, Y
-    funcion J: K
-        funcion Ñ: L
-            L - K - X
-        finfuncion
-        K + X + Y
+clase CompiladorATuplas hereda Compilador#CompiladorBase
+finclase
+
+atributo CompiladorATuplas#nombresBuiltins
+
+metodo CompiladorATuplas#inicializar
+    funcion datosDelBuiltin: binding, autoejecutable
+        devolver ObjetoAdHoc: {binding}, binding, {esAutoejecutable}, autoejecutable
     finfuncion
-    X + Y
-finfuncion
+    fijar yo#nombresBuiltins a Diccionario#desdePares:
+        {__EACT}, (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO),
+        {__RT}, (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO),
+        {__Tupla}, (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO),
+        {__SonElMismoObjeto}, (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO),
+        {__ObtenerAtributo}, (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO),
+        {__FijarAtributo}, (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO),
+        {__NúmeroDeAtributos}, (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO),
+        {__EM}, (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO),
+        {__CódigoDeObjeto}, (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO)
+finmetodo
 
-variables X, Y, Z
-fijar X a 4
-fijar Y a X * 2 - Q * 2
-fijar Z a Y * Y
-Z / 2
-Q
+metodo CompiladorATuplas#compilarAST: llaveDeMódulo, ast, ámbito
+    variable builtins, cc, ncc, ptesc
+    fijar builtins a yo#nombresBuiltins#mapear: funcion: nombre, datos
+        devolver Arreglo#crearCon: nombre, datos#binding
+    finfuncion
+    Escribir: {---: Defuncionalizar}
+    Defun#Defuncionalizar: ast
+    Escribir: {---: AnotarIdentificadoresTextuales}
+    AnotarIdentificadoresTextuales: ast
+    Escribir: {---: AnotaciónDeCapturas}
+    AnotaciónDeCapturas: ast
+    Escribir: {---: EnumeraciónDeCapturas}
+    EnumeraciónDeCapturas: ast, (EstadoDeEnumeraciónDeCapturas#desdeBuiltins: builtins)
+    Escribir: {---: EnumeraciónDeLocalesDeProcedimiento}
+    EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast)
+    Escribir: {---: AnotarBindingsLocales}
+    AnotarBindingsLocales: ast
+    Escribir: {---: AnotarLocalesInmediatas}
+    AnotarLocalesInmediatas: ast
+    Escribir: {---: MarcaVariablesLocalesEnSubámbitos}
+    MarcaVariablesLocalesEnSubámbitos: ast
+    Escribir: {---: MarcaVariablesQueEstánEnElEntorno}
+    MarcaVariablesQueEstánEnElEntorno: ast
+    Escribir: {---: AnotarElProgramaConSuLlaveDeMódulo}
+    AnotarElProgramaConSuLlaveDeMódulo: ast, llaveDeMódulo
+    Escribir: {---: CompilarAWasm}
+    fijar cc a CompilarAWasm: ast, builtins
+    Escribir: {---: NormalizaLosIdsDeConstantes}
+    fijar ncc a NormalizaLosIdsDeConstantes: cc
+    Escribir: {---: NormalizaLosIdsDeLocales}
+    fijar ncc a NormalizaLosIdsDeLocales: ncc
+    Listado: ncc
+    Escribir: {---: EmitirCompilado}
+    fijar ptesc a PuertoParaTexto
+    EmitirCompilado: ncc, ptesc
+    devolver clonar Compilador#ResultadoDeCompilación#crear con
+        compilado: (TextoDePuertoDeEscritura: ptesc)
+        informaciónDeDepuración: {}
+    finclonar
+finmetodo
 
-}]
+metodo CompiladorATuplas#importarMódulo: nombreDelMódulo
+    NoImplementado
+finmetodo
 
-variables ast, resP, programa, cc, llaveMod
+metodo CompiladorATuplas#inyectarNombresEnÁmbito: ámbito
+    yo#nombresBuiltins#paraCadaPar: funcion: nombre, datos
+        ámbito#agregar: nombre, datos#binding
+        si datos#esAutoejecutable
+            ámbito#marcarComoAutoejecutable: nombre
+        finsi
+    finfuncion
+finmetodo
+
+metodo CompiladorATuplas#removerNombresDeÁmbito: ámbito
+    yo#nombresBuiltins#paraCadaPar: funcion: nombre, datos
+        ámbito#eliminarNombre: nombre
+    finfuncion
+finmetodo
+
+
+
+variables compilador, mod, programa
+fijar compilador a CompiladorATuplas#crear
+fijar compilador#baseDeDatos a Módulos#BaseDeDatos#conConfiguración:
+    (Módulos#ConfiguraciónGlobal#predeterminado: VERDADERO, Arreglo#vacio)
 Escribir: ({Leyendo: ~t}#formatear: (__Argv#en: 0))
 Escribir: ({Escribiendo: ~t}#formatear: (__Argv#en: 1))
 fijar programa a SistemaDeArchivos#LeerArchivo: (__Argv#en: 0)
-fijar resP a ParsearYDefunc: programa
-fijar ast a resP#ast
-Escribir: {AnotarIdentificadoresTextuales}
-AnotarIdentificadoresTextuales: ast
-Escribir: {AnotaciónDeCapturas}
-AnotaciónDeCapturas: ast
-Escribir: {EnumeraciónDeCapturas}
-EnumeraciónDeCapturas: ast, (EstadoDeEnumeraciónDeCapturas#desdeBuiltins: resP#builtins)
-Escribir: {EnumeraciónDeLocalesDeProcedimiento}
-EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast)
-Escribir: {AnotarBindingsLocales}
-AnotarBindingsLocales: ast
-Escribir: {AnotarLocalesInmediatas}
-AnotarLocalesInmediatas: ast
-Escribir: {MarcaVariablesLocalesEnSubámbitos}
-MarcaVariablesLocalesEnSubámbitos: ast
-Escribir: {MarcaVariablesQueEstánEnElEntorno}
-MarcaVariablesQueEstánEnElEntorno: ast
-Escribir: {AnotarElProgramaConSuLlaveDeMódulo}
-AnotarElProgramaConSuLlaveDeMódulo: ast, (Módulos#LlaveDeMódulo#crear: {./hola}, {ejemplo}, {pd})
-Escribir: {CompilarAWasm}
-fijar cc a CompilarAWasm: ast, resP#builtins
-variable ncc
-Escribir: {NormalizaLosIdsDeConstantes}
-fijar ncc a NormalizaLosIdsDeConstantes: cc
-Listado: ncc
-Escribir: {====================}
-variable ptesc
-fijar ptesc a PDA#PuertoDeArchivoDeEscritura#abrir: (__Argv#en: 1)
-EmitirCompilado: (NormalizaLosIdsDeLocales: ncc), ptesc
-ptesc#cerrar
+fijar mod a compilador#compilarTexto: (Módulos#LlaveDeMódulo#crear: {.}, (__Argv#en: 0), {pd}), programa
+Escribir: {======================================}
+compilador#baseDeDatos#agregarMódulo: mod
+Escribir: {======================================}
+SistemaDeArchivos#EscribirArchivo: (__Argv#en: 1), mod#compilado
+
+[ variables ast, resP, programa, cc, llaveMod ]
+[ fijar resP a ParsearYDefunc: programa ]
+[ fijar ast a resP#ast ]
+[ Escribir: {AnotarIdentificadoresTextuales} ]
+[ AnotarIdentificadoresTextuales: ast ]
+[ Escribir: {AnotaciónDeCapturas} ]
+[ AnotaciónDeCapturas: ast ]
+[ Escribir: {EnumeraciónDeCapturas} ]
+[ EnumeraciónDeCapturas: ast, (EstadoDeEnumeraciónDeCapturas#desdeBuiltins: resP#builtins) ]
+[ Escribir: {EnumeraciónDeLocalesDeProcedimiento} ]
+[ EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast) ]
+[ Escribir: {AnotarBindingsLocales} ]
+[ AnotarBindingsLocales: ast ]
+[ Escribir: {AnotarLocalesInmediatas} ]
+[ AnotarLocalesInmediatas: ast ]
+[ Escribir: {MarcaVariablesLocalesEnSubámbitos} ]
+[ MarcaVariablesLocalesEnSubámbitos: ast ]
+[ Escribir: {MarcaVariablesQueEstánEnElEntorno} ]
+[ MarcaVariablesQueEstánEnElEntorno: ast ]
+[ Escribir: {AnotarElProgramaConSuLlaveDeMódulo} ]
+[ AnotarElProgramaConSuLlaveDeMódulo: ast, (Módulos#LlaveDeMódulo#crear: {./hola}, {ejemplo}, {pd}) ]
+[ Escribir: {CompilarAWasm} ]
+[ fijar cc a CompilarAWasm: ast, resP#builtins ]
+[ variable ncc ]
+[ Escribir: {NormalizaLosIdsDeConstantes} ]
+[ fijar ncc a NormalizaLosIdsDeConstantes: cc ]
+[ Listado: ncc ]
+[ Escribir: {====================} ]
+[ variable ptesc ]
+[ fijar ptesc a PDA#PuertoDeArchivoDeEscritura#abrir: (__Argv#en: 1) ]
+[ EmitirCompilado: (NormalizaLosIdsDeLocales: ncc), ptesc ]
+[ ptesc#cerrar ]
