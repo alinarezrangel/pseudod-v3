@@ -2045,15 +2045,15 @@ finmetodo
 
 metodo DeclrFunción#emitirComoIR: puertoDeEscritura
     puertoDeEscritura#escribirTexto: ({PROC ~t~%}#formatear: yo#nombre)
+    ParaCadaElemento: yo#pragmas, procedimiento: pragma
+        pragma#emitirComoIR: puertoDeEscritura
+    finprocedimiento
     ParaCadaElemento: yo#parámetros, procedimiento: param
         puertoDeEscritura#escribirTexto: ({PARAM ~t~%}#formatear: param)
     finprocedimiento
     si no EsNulo: yo#parámetroVariadic
         puertoDeEscritura#escribirTexto: ({VARIADIC ~t~%}#formatear: yo#parámetroVariadic)
     finsi
-    ParaCadaElemento: yo#pragmas, procedimiento: pragma
-        pragma#emitirComoIR: puertoDeEscritura
-    finprocedimiento
     ParaCadaElemento: yo#cuerpo, procedimiento: tupla
         tupla#emitirComoIR: puertoDeEscritura
     finprocedimiento
