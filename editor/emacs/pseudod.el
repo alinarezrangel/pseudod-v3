@@ -690,39 +690,53 @@ indentation (or a bigger indentation) then extra tabs are added."
 
 ;; Smartparens mode:
 
+(defun pseudod--sp-post-handler (id action context)
+  (when (equal action 'insert)
+    (save-mark-and-excursion
+      (newline)
+      (indent-according-to-mode))))
+
 (sp-with-modes '(pseudod-mode)
   (sp-local-pair "si" "finsi"
-                 :when '(("SPC"))
-                 :unless '(sp-in-comment-p sp-in-string-p))
+                 :when '(("SPC" "RET"))
+                 :unless '(sp-in-comment-p sp-in-string-p)
+                 :post-handlers '(pseudod--sp-post-handler))
   (sp-local-pair "mientras" "finmientras"
-                 :when '(("SPC"))
-                 :unless '(sp-in-comment-p sp-in-string-p))
+                 :when '(("SPC" "RET"))
+                 :unless '(sp-in-comment-p sp-in-string-p)
+                 :post-handlers '(pseudod--sp-post-handler))
   (sp-local-pair "llamar" "finargs"
-                 :when '(("SPC"))
-                 :unless '(sp-in-comment-p sp-in-string-p))
+                 :when '(("SPC" "RET"))
+                 :unless '(sp-in-comment-p sp-in-string-p)
+                 :post-handlers '(pseudod--sp-post-handler))
   (sp-local-pair "clase" "finclase"
-                 :when '(("SPC"))
-                 :unless '(sp-in-comment-p sp-in-string-p))
+                 :when '(("SPC" "RET"))
+                 :unless '(sp-in-comment-p sp-in-string-p)
+                 :post-handlers '(pseudod--sp-post-handler))
   (sp-local-pair "metodo" "finmetodo"
-                 :when '(("SPC"))
-                 :unless '(sp-in-comment-p sp-in-string-p))
+                 :when '(("SPC" "RET"))
+                 :unless '(sp-in-comment-p sp-in-string-p)
+                 :post-handlers '(pseudod--sp-post-handler))
   (sp-local-pair "funcion" "finfuncion"
-                 :when '(("SPC"))
-                 :unless '(sp-in-comment-p sp-in-string-p))
+                 :when '(("SPC" "RET"))
+                 :unless '(sp-in-comment-p sp-in-string-p)
+                 :post-handlers '(pseudod--sp-post-handler))
   (sp-local-pair "procedimiento" "finprocedimiento"
-                 :when '(("SPC"))
-                 :unless '(sp-in-comment-p sp-in-string-p))
+                 :when '(("SPC" "RET"))
+                 :unless '(sp-in-comment-p sp-in-string-p)
+                 :post-handlers '(pseudod--sp-post-handler))
   (sp-local-pair "clonar" "finclonar"
-                 :when '(("SPC"))
-                 :unless '(sp-in-comment-p sp-in-string-p))
+                 :when '(("SPC" "RET"))
+                 :unless '(sp-in-comment-p sp-in-string-p)
+                 :post-handlers '(pseudod--sp-post-handler))
   (sp-local-pair "(" ")"
                  :unless '(sp-in-comment-p sp-in-string-p))
   (sp-local-pair "[" "]"
                  :unless '(sp-in-string-p))
   (sp-local-pair "{" "}"
-                 :unless '(sp-in-comment-p sp-in-string-p))
+                 :unless '(sp-in-comment-p))
   (sp-local-pair "«" "»"
-                 :unless '(sp-in-comment-p sp-in-string-p)))
+                 :unless '(sp-in-comment-p)))
 
 
 ;; PDTAGS support:
