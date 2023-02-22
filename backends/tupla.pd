@@ -1095,17 +1095,23 @@ procedimiento AnotarBindingsLocales: ast
            || (EsInstancia: ast, AST#NodoMétodo)
            || (EsInstancia: ast, AST#NodoFunciónAnónima)
            || (EsInstancia: ast, AST#NodoPrograma)
-    variables bindings, nombre
+    variables bindings, nombre, deClase
     fijar bindings a BindingsLocalesDelBloque: ast
     si EsInstancia: ast, AST#NodoFunción
         fijar nombre a ast#nombre
     sino
         fijar nombre a NULO
     finsi
+    si EsInstancia: ast, AST#NodoMétodo
+        fijar deClase a ast#deClase
+    sino
+        fijar deClase a NULO
+    finsi
     Caminar: ast, funcion: nodo
         devolver (DebeIgnorarElNodo: nodo)
               || (   (no Defun#SonElMismoObjeto: nodo, ast)
                   && (no Defun#SonElMismoObjeto: nodo, nombre)
+                  && (no Defun#SonElMismoObjeto: nodo, deClase)
                   && (   (EsInstancia: nodo, AST#NodoIdentificador)
                       || (EsInstancia: nodo, AST#NodoFunción)
                       || (EsInstancia: nodo, AST#NodoMétodo)
