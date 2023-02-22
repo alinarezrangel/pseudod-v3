@@ -3304,16 +3304,19 @@ funcion CompilarAWasm: ast, builtins
             fijar inicDeClosure a inicDeClosure >> (CompilarFijarIdentificador: ast#nombre)
         finsi
         si EsInstancia: ast, AST#NodoMétodo
-            variables constAgregarMétodo, agregarMétodo
+            variables constAgregarMétodo, constMétodo, agregarMétodo
             fijar constAgregarMétodo a GenerarIdDeConstante
             fijar agregarMétodo a ast#esEstático#escojer: {agregarMétodoEstático}, {agregarMétodo}
+            fijar constMétodo a GenerarIdDeConstante
             fijar inicDeClosure a (CompilarIdentificador: ast#deClase)
+                               >> (Instrucciones: (OP#LCONST: constMétodo))
                                >> inicDeClosure
-                               >> (Instrucciones: (OP#ROT: 1),
-                                                  (OP#MSG: constAgregarMétodo, 1, 0))
+                               >> (Instrucciones: (OP#ROT: 2),
+                                                  (OP#MSG: constAgregarMétodo, 2, 0))
                                >> (Compilado#deConstantes:
                                       (Arreglo#crearCon:
-                                          (Constante#crear: constAgregarMétodo, (TextoDelIR#crear: agregarMétodo))))
+                                          (Constante#crear: constAgregarMétodo, (TextoDelIR#crear: agregarMétodo)),
+                                          (Constante#crear: constMétodo, (TextoDelIR#crear: ast#nombre#nombre))))
         finsi
 
         fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo, builtins)
