@@ -4,6 +4,55 @@ procedimiento __ObtenerRT
 finprocedimiento
 
 fijar __RT a __ObtenerRT
+fijar __RT#entornoBootstrap a __EACT
+
+variables NULO, VERDADERO, FALSO
+fijar NULO a %(funcion finfuncion)
+fijar VERDADERO a 1 = 1
+fijar FALSO a no VERDADERO
+
+
+funcion __TipoDe: obj
+    __Tupla#obtener: obj
+    devolver __Tupla#eOBJTAG
+finfuncion
+
+variables __TOBJ_ENTERO, __TOBJ_FLOAT, __TOBJ_MARCA_DE_PILA, __TOBJ_CLOSURE,
+          __TOBJ_TEXTO, __TOBJ_OBJETO, __TOBJ_BOOLEANO, __TOBJ_NULO,
+          __TOBJ_ARREGLO, __TOBJ_VOIDPTR, __TOBJ_ESPACIO_DE_NOMBRES
+[ NOTA: Debe mantenerse sincronizado con la enumeración `pdcrt_tipo_de_objeto`
+  en el runtime de C. ]
+fijar __TOBJ_ENTERO a 0
+fijar __TOBJ_FLOAT a 1
+fijar __TOBJ_MARCA_DE_PILA a 2
+fijar __TOBJ_CLOSURE a 3
+fijar __TOBJ_TEXTO a 4
+fijar __TOBJ_OBJETO a 5
+fijar __TOBJ_BOOLEANO a 6
+fijar __TOBJ_NULO a 7
+fijar __TOBJ_ARREGLO a 8
+fijar __TOBJ_VOIDPTR a 9
+fijar __TOBJ_ESPACIO_DE_NOMBRES a 10
+
+funcion __EsUn: obj, tipo
+    devolver (__TipoDe: obj) = tipo
+finfuncion
+
+
+procedimiento __ParaCadaElementoConÍndice: arr, proc
+    variable i
+    fijar i a 0
+    mientras i < arr#longitud
+        %proc: (arr#en: i), i
+        fijar i a i + 1
+    finmientras
+finprocedimiento
+
+procedimiento __ParaCadaElemento: arr, proc
+    __ParaCadaElementoConÍndice: arr, procedimiento: el, i
+        devolver %proc: el
+    finprocedimiento
+finprocedimiento
 
 procedimiento __FallarConMensaje: msj
     __RT#fallarConMensaje: msj
@@ -20,10 +69,108 @@ funcion __CrearArreglo: ...arr
     devolver arr
 finfuncion
 
-variables NULO, VERDADERO, FALSO
-fijar NULO a %(funcion finfuncion)
-fijar VERDADERO a 1 = 1
-fijar FALSO a no VERDADERO
+funcion __ArregloComoTexto: arr
+    __Tupla#PRAGMA_CNAME: {pdcrt_frt_arreglo_como_texto}
+    variables res, pos
+    fijar res a __RT#constructorDeTexto: {(Arreglo#crearCon: )}#longitud
+    fijar pos a 0
+    res#agregar: {(Arreglo#crearCon}
+    __ParaCadaElemento: arr, procedimiento: el
+        si pos = 0
+            res#agregar: {: }
+        sino
+            res#agregar: {, }
+        finsi
+        res#agregar: el#comoTexto
+        fijar pos a pos + 1
+    finprocedimiento
+    res#agregar: {)}
+    devolver res#finalizar
+finfuncion
+
+funcion __ClonarArreglo: arr
+    __Tupla#PRAGMA_CNAME: {pdcrt_frt_clonar_arreglo}
+    variable clon
+    fijar clon a __CrearArreglo
+    __ParaCadaElemento: arr, procedimiento: el
+        clon#agregarAlFinal: el#\clonar\
+    finprocedimiento
+    devolver clon
+finfuncion
+
+procedimiento __ParaCadaNúmeroBuscando: desde, hasta, cuerpo
+    variable i
+    fijar i a desde
+    mientras i < hasta
+        si %cuerpo: i
+            devolver VERDADERO
+        finsi
+        fijar i a i + 1
+    finmientras
+    devolver FALSO
+finprocedimiento
+
+funcion __ArregloIgualA: yo, arr
+    __Tupla#PRAGMA_CNAME: {pdcrt_frt_arreglo_igual_a}
+    si no __EsUn: arr, __TOBJ_ARREGLO
+        devolver FALSO
+    finsi
+    si no yo#longitud = arr#longitud
+        devolver FALSO
+    finsi
+    devolver no __ParaCadaNúmeroBuscando: 0, yo#longitud, procedimiento: i
+        devolver no (yo#en: i)#igualA: (arr#en: i)
+    finprocedimiento
+finfuncion
+
+funcion __ArregloDistíntoDe: yo, arr
+    __Tupla#PRAGMA_CNAME: {pdcrt_frt_arreglo_distinto_de}
+    si no __EsUn: arr, __TOBJ_ARREGLO
+        devolver VERDADERO
+    finsi
+    si no yo#longitud = arr#longitud
+        devolver VERDADERO
+    finsi
+    devolver __ParaCadaNúmeroBuscando: 0, yo#longitud, procedimiento: i
+        devolver (yo#en: i)#distíntoDe: (arr#en: i)
+    finprocedimiento
+finfuncion
+
+funcion __ArregloOperadorIgual: yo, arr
+    __Tupla#PRAGMA_CNAME: {pdcrt_frt_arreglo_operador_igual}
+    si no __EsUn: arr, __TOBJ_ARREGLO
+        devolver FALSO
+    finsi
+    si no yo#longitud = arr#longitud
+        devolver FALSO
+    finsi
+    devolver no __ParaCadaNúmeroBuscando: 0, yo#longitud, procedimiento: i
+        devolver no (yo#en: i) = (arr#en: i)
+    finprocedimiento
+finfuncion
+
+funcion __ArregloOperadorDistínto: yo, arr
+    __Tupla#PRAGMA_CNAME: {pdcrt_frt_arreglo_operador_distinto}
+    si no __EsUn: arr, __TOBJ_ARREGLO
+        devolver VERDADERO
+    finsi
+    si no yo#longitud = arr#longitud
+        devolver VERDADERO
+    finsi
+    devolver __ParaCadaNúmeroBuscando: 0, yo#longitud, procedimiento: i
+        devolver (yo#en: i)#\operador_no=\: (arr#en: i)
+    finprocedimiento
+finfuncion
+
+funcion __ArregloMapear: yo, f
+    __Tupla#PRAGMA_CNAME: {pdcrt_frt_arreglo_mapear}
+    variable res
+    fijar res a __CrearArreglo
+    __ParaCadaElemento: yo, procedimiento: el
+        res#agregarAlFinal: (%f: el)
+    finprocedimiento
+    devolver res
+finfuncion
 
 funcion __ObtenerCLI
     variables cli, i
@@ -41,21 +188,6 @@ fijar __Argv a __ObtenerCLI
 
 procedimiento ErrorDeMensajeNoEncontrado: msj, extra
     __FallarConMensaje: ({Mensaje ~t no encontrado: ~t}#formatear: msj, extra)
-finprocedimiento
-
-procedimiento __ParaCadaElementoConÍndice: arr, proc
-    variable i
-    fijar i a 0
-    mientras i < arr#longitud
-        %proc: (arr#en: i), i
-        fijar i a i + 1
-    finmientras
-finprocedimiento
-
-procedimiento __ParaCadaElemento: arr, proc
-    __ParaCadaElementoConÍndice: arr, procedimiento: el, i
-        devolver %proc: el
-    finprocedimiento
 finprocedimiento
 
 funcion __ClonarObjeto: obj
@@ -302,7 +434,7 @@ procedimiento __CrearClase: nombre
             devolver NULO
         finsi
 
-        si msj = {agregarMétodoEstatico}
+        si msj = {agregarMétodoEstático}
             necesitas args#longitud = 2
             métodosEstaticos#agregarAlFinal: (__CrearArreglo: (args#en: 0), (args#en: 1))
             devolver NULO
@@ -343,7 +475,7 @@ procedimiento __CrearClase: nombre
             devolver subclase
         finsi
 
-        ErrorDeMensajeNoEncontrado: msj, ({En una instancia de la clase ~t}#formatear: nombre)
+        ErrorDeMensajeNoEncontrado: msj, ({En la clase ~t}#formatear: nombre)
     finprocedimiento#comoObjeto
 finprocedimiento
 
