@@ -66,6 +66,16 @@ funcion NombreResueltoDelYoImplícito: id
     devolver id#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {nombreResueltoDeYo}
 finfuncion
 
+[DOCUMENTA
+@brief{Obtiene la llave del módulo de un @pd{AST#NodoUtilizar}.}
+
+Obtiene la llave del módulo (@pd{LlaveDeMódulo}) que fue importado en
+@pd{nodo}, un @pd{AST#NodoUtilizar}.
+DOCUMENTA]
+funcion LlaveDelMóduloImportado: nodo
+    devolver nodo#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {llaveDelMóduloImportado}
+finfuncion
+
 [ Esta clase es solo un "ayudante", no debería usarse fuera de este módulo y es
   un detalle de la implementación. Para ver la lista de metadatos que esta
   clase pone en los nodos, véase el procedimiento ResolverNombres.
@@ -270,6 +280,7 @@ metodo ResoluciónDeNombresCNImpl#visitarUtilizar: nodo
         fijar móduloImportado a nodo#módulo
     finsi
     fijar instanciaDeMódulo a yo#_resolverMóduloProc#\llamar\: móduloImportado
+    nodo#fijarMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {llaveDelMóduloImportado}, instanciaDeMódulo#llave
 
     si no EsNulo: nodo#espacioDeNombres
         variables espacioDeNombres, espacioDeNombresId
@@ -348,7 +359,9 @@ finmetodo
 
 metodo ResoluciónDeNombresCNImpl#visitarLlamarProcedimiento: nodo
     yo#visitar: nodo#proc
-    necesitas nodo#proc#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+    si no nodo#proc#obtenerMetadato: LLAVE_RESOLUCIÓN_DE_NOMBRES, {esAutoejecutable}
+        __FallarConMensaje: ({El identificador ~t no es autoejecutable}#formatear: nodo#proc#nombre)
+    finsi
     yo#resolverArgumentos: nodo#argumentos
 finmetodo
 
