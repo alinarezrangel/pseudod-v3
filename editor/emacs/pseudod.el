@@ -6,6 +6,7 @@
 
 (require 'comint)
 (require 'smartparens)
+(require 'edit-indirect)
 (require 'projectile)
 (require 'xref)
 
@@ -190,11 +191,17 @@ previous logical line relative to PT."
       (catch 'break
         (while (not (bobp))
           (cond ((or (pseudod--inside-string-p) (pseudod--inside-comment-p))
-                 (let ((start-of (nth 8 (syntax-ppss))))
+                 (let ((start-of (or (pseudod--comment-start-pos) (pseudod--string-start-pos))))
                    (if start-of
                        (progn
                          (goto-char start-of)
-                         (beginning-of-line))
+                         (let ((p (point)))
+                           (beginning-of-line)
+                           (when (= (point) p)
+                             ;; The comment is at the beginning of the line,
+                             ;; we need to go back further:
+                             (previous-line)
+                             (beginning-of-line))))
                      (error "Impossible: was inside of a string/comment previously"))))
                 ((string-blank-p (pseudod--get-current-line))
                  (previous-line)
@@ -271,9 +278,8 @@ if the comment has no marking word.
 word of the comment begins on the same line that the comment
 opener.  Otherwise is nil."
   (let* ((pt (or pt (point)))
-         (state (syntax-ppss pt))
-         (in-comment (nth 4 state))
-         (comment-start (nth 8 state)))
+         (in-comment (pseudod--inside-comment-p))
+         (comment-start (pseudod--comment-start-pos)))
     (if in-comment
         (save-mark-and-excursion
           (goto-char (1+ comment-start))
@@ -291,15 +297,43 @@ Returns a list of two elements, the starting and ending points of
 the comment at PT (which defaults to the current point).  If not
 inside a comment, returns a list with 2 nils."
   (let* ((pt (or pt (point)))
-         (state (syntax-ppss pt))
-         (in-comment (nth 4 state))
-         (comment-start (nth 8 state)))
+         (in-comment (pseudod--inside-comment-p))
+         (comment-start (pseudod--comment-start-pos)))
     (if in-comment
         (save-mark-and-excursion
           (goto-char comment-start)
           (let ((end (save-match-data
                        (re-search-forward "\\]" nil 'noerror))))
             (list comment-start end)))
+      (list nil nil))))
+
+(defconst pseudod--string-pairs
+  '(("{" "}")
+    ("«" "»")
+    ("\"" "\""))
+  "Tuples with the string pairs.
+
+They are not regexps.")
+
+(defun pseudod--string-boundaries (&optional pt)
+  "Get the boundaries of the current string.
+
+Returns a list of two elements, the starting and ending points of
+the string at PT (which defaults to the current point).  If not
+inside a string, returns a list with 2 nils."
+  (let* ((pt (or pt (point)))
+         (in-string (pseudod--inside-string-p))
+         (string-start (pseudod--string-start-pos)))
+    (if in-string
+        (save-mark-and-excursion
+          (goto-char string-start)
+          (let ((pair (--find (looking-at-p (regexp-quote (car it)))
+                              pseudod--string-pairs)))
+            (if pair
+                (let* ((end (save-match-data
+                              (re-search-forward (regexp-quote (cadr pair)) nil 'noerror))))
+                  (list string-start end))
+              (list nil nil))))
       (list nil nil))))
 
 (defmacro pseudod--lex-rules (&rest rules)
@@ -351,6 +385,7 @@ matched text.  This will happen before the body is evaluated."
     ("implementa" "finimplementa")
     ("llamar" "finllamar")
     ("intenta" "atrapa" "finintenta")
+    ("(" ")")
     "adquirir" "variable" "variables" "instancia" "liberar"
     "fijar" "a"
     "necesitas"
@@ -447,6 +482,7 @@ The token types are:
 
 Returns a list of strings containing the keywords."
   (goto-char (or pt (point)))
+  (beginning-of-line)
   (let ((res '()))
     (catch 'break
       (let ((cur-line (line-number-at-pos pt)))
@@ -459,9 +495,23 @@ Returns a list of strings containing the keywords."
                    (let ((tag (car tk))
                          (beg (cadr tk))
                          (end (caddr tk)))
-                     (when (equal tag 'keyword)
+                     (when (or (equal tag 'keyword)
+                               (equal tag 'keyword-op))
                        (push (buffer-substring-no-properties beg end) res)))))))))
     (reverse res)))
+
+(defun pseudod--track-nesting (kw-list)
+  "Track the nesting across a list of keywords."
+  (let ((takes 0) (gives 0))
+    (dolist (kw kw-list)
+      (cond ((pseudod--keyword-opens kw)
+             (setq gives (+ gives 1)))
+            ((pseudod--keyword-closes kw)
+             (if (<= gives 0)
+                 (setq takes (- takes 1))
+               (setq gives (- gives 1))))
+            (t nil)))
+    (list takes gives)))
 
 (defun pseudod--keyword-indentation-of-line (&optional pt ppt)
   "Get the relative indentation of the line based on it's keywords.
@@ -483,14 +533,16 @@ positive ones mean indent it."
                                            (point))))
          (p-kws (save-excursion (pseudod--keywords-of-line ppt)))
          (kws (save-excursion (pseudod--keywords-of-line pt))))
-    (cond ((and kws (pseudod--keyword-closes (car kws)))
-           -1)
-          ((and kws (equal (car kws) "sino"))
-           -1)
-          ((and p-kws (pseudod--keyword-opens (car (last p-kws))))
-           1)
-          (t
-           0))))
+    (pcase-let ((`(,p-takes ,p-gives) (pseudod--track-nesting p-kws))
+                (`(,takes ,gives) (pseudod--track-nesting kws)))
+      (cond ((> p-gives 0)
+             p-gives)
+            ((and kws (equal (car kws) "sino"))
+             -1)
+            ((< takes 0)
+             takes)
+            (t
+             0)))))
 
 (defun pseudod--indentation-of-line ()
   "Calculate the indentation of the current line.
@@ -500,10 +552,9 @@ function can return nil if the current line should not be
 automatically indented."
   (save-mark-and-excursion
     (beginning-of-line)
-    (let* ((state (syntax-ppss))
-           (in-comment (nth 4 state))
-           (in-string (nth 3 state))
-           (comment-start (nth 8 state))
+    (let* ((in-comment (pseudod--inside-comment-p))
+           (in-string (pseudod--inside-string-p))
+           (comment-start (pseudod--comment-start-pos))
            (prev-logical-line (pseudod--previous-logical-line))
            (prev-indentation (pseudod--indentation-of-current-line prev-logical-line)))
       (cond (in-comment
@@ -562,7 +613,7 @@ automatically indented."
              ;; Other lines get indented based on their first and last
              ;; keywords.
              (let ((rel (pseudod--keyword-indentation-of-line (point) prev-logical-line)))
-               (+ prev-indentation (* rel pseudod-indentation-level))))))))
+               (max 0 (+ prev-indentation (* rel pseudod-indentation-level)))))))))
 
 (defun pseudod-dedent ()
   "Dedent the current function to the previous tab stop."
@@ -583,32 +634,51 @@ automatically indented."
 
 Works on the region between START and END."
   (interactive "r")
-  (save-mark-and-excursion
-    (goto-char start)
-    (beginning-of-line)
-    (while (< (point) end)
-      (pseudod-indent)
-      (forward-line 1)
-      (beginning-of-line))))
+  (let ((start-mark (make-marker))
+        (end-mark (make-marker)))
+    (save-mark-and-excursion
+      (goto-char start)
+      (beginning-of-line)
+      (set-marker start-mark (point))
+      (goto-char end)
+      (end-of-line)
+      (set-marker end-mark (point))
+
+      (goto-char start-mark)
+      (beginning-of-line)
+      (while (< (point) end-mark)
+        (pseudod-indent)
+        (forward-line 1)
+        (beginning-of-line)))
+    (set-marker start-mark nil)
+    (set-marker end-mark nil)))
 
 (defun pseudod-dedent-region (start end)
   "Dedent all lines in a region to the next tab stop.
 
 Works on the region between START and END."
   (interactive "r")
-  (save-mark-and-excursion
-    (goto-char start)
-    (end-of-line)
-    (while (< (point) end)
-      (pseudod-dedent)
-      (forward-line 1)
-      (end-of-line))))
+  (let ((start-mark (make-marker))
+        (end-mark (make-marker)))
+    (save-mark-and-excursion
+      (goto-char start)
+      (beginning-of-line)
+      (set-marker start-mark (point))
+      (goto-char end)
+      (end-of-line)
+      (set-marker end-mark (point))
+
+      (goto-char start-mark)
+      (end-of-line)
+      (while (<= (point) end-mark)
+        (pseudod-dedent)
+        (forward-line 1)
+        (end-of-line)))
+    (set-marker start-mark nil)
+    (set-marker end-mark nil)))
 
 (defun pseudod-indent-function ()
-  "Indent a line of PseudoD code.
-
-If this line was already indented to what would be it's default
-indentation (or a bigger indentation) then extra tabs are added."
+  "Indent a line of PseudoD code."
   (interactive)
   (let* ((indentation (pseudod--indentation-of-line))
          (ind-pt (save-mark-and-excursion (back-to-indentation) (point)))
@@ -617,17 +687,98 @@ indentation (or a bigger indentation) then extra tabs are added."
                  'leave))
          (blank-line (string-blank-p (pseudod--get-current-line))))
     (save-mark-and-excursion
-      (cond ((not indentation) 'noindent)
-            ((and (not blank-line)
-                  (= (pseudod--indentation-of-current-line) (+ indentation pseudod-indentation-level)))
-             (pseudod-dedent)
-             (pseudod-dedent))
-            ((and (not blank-line)
-                  (= (pseudod--indentation-of-current-line) indentation))
-             (pseudod-indent))
-            (t (indent-line-to indentation))))
+      (if (not indentation)
+          'noindent
+        (indent-line-to indentation)))
     (when (equal move 'back)
       (back-to-indentation))))
+
+(defun pseudod--previous-whitespace-on-line ()
+  (let ((p (point))
+        b)
+    (beginning-of-line)
+    (setq b (point))
+    (goto-char p)
+    (if (re-search-backward "[[:space:]][^[:space:]]" b 'noerror)
+        (progn
+          (forward-char 1)
+          t)
+      nil)))
+
+(defun pseudod--move-to-column (c)
+  "Move the point to the column number C."
+  (let (beg end)
+    (save-excursion
+      (beginning-of-line)
+      (setq beg (point))
+      (end-of-line)
+      (setq end (point)))
+    (if (> (+ beg c) end)
+        (goto-char end)
+      (goto-char (+ beg c)))))
+
+(defun pseudod--get-previous-indentations (&optional pt)
+  "Return a list of all the indentations of previous lines.
+
+Repetitions and empty lines are ignored.  Also, only the smallest
+indentation at any step is considered.  This has the result of
+only considering indentations that \"contain\" the current line.
+
+PT is the point at which the search will begin, it defaults to
+the current point."
+  (let ((l nil) (c nil))
+    (save-excursion
+      (when pt (goto-char pt))
+      (while (not (bobp))
+        (previous-line)
+        (when c
+          (pseudod--move-to-column c))
+        (let ((ind (pseudod--indentation-of-current-line)))
+          (if (= ind 0)
+              (goto-char (point-min))
+            (when (or (not c) (<= ind c))
+              (let ((old-c c))
+                (setq c ind)
+                (if (and old-c (> c old-c))
+                    (goto-char (point-min))
+                  (when (or (not old-c)
+                            (< c old-c))
+                    (push c l)))))))))
+    (cons 0 l)))
+
+(defun pseudod-indent-command (&optional reverse)
+  "Cycle thru indentations for the current line.
+
+This command will cycle the indentation of the current line.  It
+is meant to be bound to TAB.  Unlike the
+`pseudod-indent-function' command, this function is meant to only
+be used interactively, as it will sometimes be unpredictable.
+
+If REVERSE, then cycles in reverse."
+  (interactive)
+  (let* ((ind (pseudod--indentation-of-current-line))
+         (exp (pseudod--indentation-of-line))
+         (prev (pseudod--indentation-of-previous-line))
+         (seq (sort (-distinct (append (list (+ prev pseudod-indentation-level)
+                                             (max 0 (- prev pseudod-indentation-level))
+                                             exp
+                                             (+ exp pseudod-indentation-level)
+                                             (max 0 (- exp pseudod-indentation-level)))
+                                       (pseudod--get-previous-indentations)))
+                    #'<))
+         (next (or (--find (if reverse
+                               (< it ind)
+                             (> it ind))
+                           (if reverse (reverse seq) seq))
+                   (if reverse
+                       (-max seq)
+                     0))))
+    (indent-line-to next)))
+
+(defun pseudod-dedent-commant ()
+  "Like `pseudod-indent-command' but in reverse."
+  (interactive)
+  (pseudod-indent-command t))
 
 ;; Major Mode:
 
@@ -737,6 +888,30 @@ indentation (or a bigger indentation) then extra tabs are added."
                  :unless '(sp-in-comment-p))
   (sp-local-pair "«" "»"
                  :unless '(sp-in-comment-p)))
+
+;; Edit indirect integration:
+
+(defun pseudod--get-edit-indirect-region (&optional pt)
+  (save-mark-and-excursion
+    (goto-char (or pt (point)))
+    (cond ((pseudod--inside-comment-p)
+           (let ((p (pseudod--comment-boundaries)))
+             (if (and p (car p) (cadr p))
+                 p
+               nil)))
+          ((pseudod--inside-string-p)
+           (let ((p (pseudod--string-boundaries)))
+             (if (and p (car p) (cadr p))
+                 p
+               nil)))
+          (t nil))))
+
+(defun pseudod-edit-indirect ()
+  (interactive)
+  (let ((r (pseudod--get-edit-indirect-region)))
+    (if r
+        (edit-indirect-region (car r) (cadr r) t)
+      (message "Cannot edit indirectly the thing at point"))))
 
 
 ;; PDTAGS support:
@@ -974,9 +1149,21 @@ always returns the point after all the MOVs."
   "Return nil if outside of a comment, non-nil otherwise."
   (nth 4 (syntax-ppss)))
 
+(defun pseudod--comment-start-pos ()
+  "Return the position of the starting char for this comment.
+
+If not inside a comment returns nil."
+  (nth 8 (syntax-ppss)))
+
 (defun pseudod--inside-string-p ()
   "Return nil if outside of a string literal, non-nil otherwise."
   (nth 3 (syntax-ppss)))
+
+(defun pseudod--string-start-pos ()
+  "Return the position of the starting char for this string.
+
+If not inside a string returns nil."
+  (nth 8 (syntax-ppss)))
 
 (defun pseudod-fill--select-paragraph ()
   "Select the paragraph at the point.
@@ -1034,9 +1221,11 @@ JUSTIFY has the same meaning that in `fill-region' and
     (define-key map (kbd "C-c C-z") #'pseudod-switch-to-repl-buffer)
     (define-key map (kbd "C-c >") #'pseudod-indent-region)
     (define-key map (kbd "C-c <") #'pseudod-dedent-region)
-    (define-key map (kbd "<backtab>") #'pseudod-dedent)
+    (define-key map (kbd "<backtab>") #'pseudod-dedent-commant)
+    (define-key map (kbd "TAB") #'pseudod-indent-command)
     (define-key map (kbd "M-.") #'pseudod-tags-dwim)
     (define-key map (kbd "M-,") #'xref-pop-marker-stack)
+    (define-key map (kbd "C-c '") #'pseudod-edit-indirect)
     map)
   "Keymap for pseudod-mode.")
 
