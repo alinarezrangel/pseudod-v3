@@ -10,11 +10,14 @@ utilizar módulos como Módulos
 
 @pd{compilado} es un texto, el compilado del módulo.
 
+@pd{compiladoAbstracto} es el compilado no textual del módulo. Su tipo depende
+sel backend.
+
 @pd{informaciónDeDepuración} es otro texto: la información de depuración de
 @code{rt.debug}.
 DOCUMENTA]
 clase ResultadoDeCompilación
-    atributos compilado, informaciónDeDepuración
+    atributos compilado, compiladoAbstracto, informaciónDeDepuración
 finclase
 
 [DOCUMENTA
@@ -148,6 +151,7 @@ metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
         llave: llaveDeMódulo
         exporta: ámbito
         compilado: res#compilado
+        compiladoAbstracto: res#compiladoAbstracto
         informaciónDeDepuración: res#informaciónDeDepuración
     finclonar
 finmetodo

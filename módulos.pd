@@ -251,8 +251,21 @@ clase Módulo
     @brief{Resultado de compilar el archivo.}
 
     Es un texto, su contenido depende del backend actual.
+
+    Véase también @pd{compiladoAbstracto}, una versión no textual de este
+    atributo.
     DOCUMENTA]
     metodo compilado
+
+    [DOCUMENTA
+    @brief{Representación no textual del compilado.}
+
+    La versión no textual del atributo @pd{compilado}. Mientras que
+    @pd{compilado} contiene la versión textual lista para ser guardada en un
+    archivo, este atributo contiene la versión "interna" que el backend utilizó
+    para generar @pd{compilado}.
+    DOCUMENTA]
+    metodo compiladoAbstracto
 
     [DOCUMENTA
     @brief{Información de depuración del módulo.}
@@ -267,7 +280,8 @@ clase Módulo
     metodo comoTexto
 finclase
 
-atributos Módulo#llave, Módulo#exporta, Módulo#compilado, Módulo#informaciónDeDepuración
+atributos Módulo#llave, Módulo#exporta, Módulo#compilado,
+          Módulo#compiladoAbstracto, Módulo#informaciónDeDepuración
 
 metodo Módulo#ruta
     devolver yo#llave#ruta

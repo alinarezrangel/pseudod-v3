@@ -1167,6 +1167,7 @@ finmetodo
 
 metodo CompiladorALua#importarMódulo: nombreDelMódulo
     variables móduloOLlave, móduloCompilado
+    Escribir: ({--- Buscando: ~t}#formatear: nombreDelMódulo)
     fijar móduloOLlave a
         Módulos#ResolverMóduloPorNombre: yo#baseDeDatos, nombreDelMódulo, procedimiento: llave
             devolver llave
@@ -1175,7 +1176,6 @@ metodo CompiladorALua#importarMódulo: nombreDelMódulo
         finprocedimiento, procedimiento
             __FallarConMensaje: ({Error: no se pudo encontrar el módulo ~t}#formatear: nombreDelMódulo)
         finprocedimiento
-    Escribir: ({--- Buscando: ~t}#formatear: nombreDelMódulo)
     si EsInstancia: móduloOLlave, Módulos#Módulo
         Escribir: {--- Encontrado}
         devolver móduloOLlave

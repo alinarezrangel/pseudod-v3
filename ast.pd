@@ -596,8 +596,8 @@ finmetodo
 [DOCUMENTA
 @brief{No llama a una variable.}
 
-@pd{base} es un @pd{NodoIdentificador}. @pd{mensajes} es un arreglo de
-textos (posiblemente vacío).
+@pd{base} es un @pd{NodoIdentificador}. @pd{mensajes} es un arreglo
+(posiblemente vacío) de @pd{TokenIdentificador}.
 
 Corresponde a la sintáxis @pd{&Variable} y @pd{&(Objeto#mensaje1#mensaje2)}.
 DOCUMENTA]
