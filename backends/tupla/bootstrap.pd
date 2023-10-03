@@ -17,6 +17,35 @@ funcion __TipoDe: obj
     devolver __Tupla#eOBJTAG
 finfuncion
 
+funcion __SonElMismoObjeto: A, B
+    __Tupla#obtener: A
+    __Tupla#obtener: B
+    devolver __Tupla#eCMPREFEQ
+finfuncion
+
+funcion __ObtenerAtributo: obj, n
+    __Tupla#obtener: obj
+    __Tupla#obtener: n
+    devolver __Tupla#eOBJATTR
+finfuncion
+
+funcion __FijarAtributo: obj, n, val
+    __Tupla#obtener: obj
+    __Tupla#obtener: n
+    __Tupla#obtener: val
+    __Tupla#iOBJATTRSET
+finfuncion
+
+funcion __NúmeroDeAtributos: obj
+    __Tupla#obtener: obj
+    devolver __Tupla#eOBJSZ
+finfuncion
+
+funcion __CódigoDeObjeto: obj
+    __Tupla#obtener: obj
+    devolver __Tupla#eOBJ2CLZ
+finfuncion
+
 variables __TOBJ_ENTERO, __TOBJ_FLOAT, __TOBJ_MARCA_DE_PILA, __TOBJ_CLOSURE,
           __TOBJ_TEXTO, __TOBJ_OBJETO, __TOBJ_BOOLEANO, __TOBJ_NULO,
           __TOBJ_ARREGLO, __TOBJ_VOIDPTR, __TOBJ_ESPACIO_DE_NOMBRES
@@ -72,20 +101,20 @@ finfuncion
 funcion __ArregloComoTexto: arr
     __Tupla#PRAGMA_CNAME: {pdcrt_frt_arreglo_como_texto}
     variables res, pos
-    fijar res a __RT#constructorDeTexto: {(Arreglo#crearCon: )}#longitud
+    fijar res a __CrearArreglo
     fijar pos a 0
-    res#agregar: {(Arreglo#crearCon}
+    res#agregarAlFinal: {(Arreglo#crearCon}
     __ParaCadaElemento: arr, procedimiento: el
         si pos = 0
-            res#agregar: {: }
+            res#agregarAlFinal: {: }
         sino
-            res#agregar: {, }
+            res#agregarAlFinal: {, }
         finsi
-        res#agregar: el#comoTexto
+        res#agregarAlFinal: el#comoTexto
         fijar pos a pos + 1
     finprocedimiento
-    res#agregar: {)}
-    devolver res#finalizar
+    res#agregarAlFinal: {)}
+    devolver __RT#construirTexto: res
 finfuncion
 
 funcion __ClonarArreglo: arr
@@ -108,6 +137,10 @@ procedimiento __ParaCadaNúmeroBuscando: desde, hasta, cuerpo
         fijar i a i + 1
     finmientras
     devolver FALSO
+finprocedimiento
+
+procedimiento __ParaCadaNúmero: desde, hasta, cuerpo
+    devolver __ParaCadaNúmeroBuscando: desde, hasta, procedimiento: x %cuerpo: x devolver FALSO finprocedimiento
 finprocedimiento
 
 funcion __ArregloIgualA: yo, arr
@@ -172,6 +205,73 @@ funcion __ArregloMapear: yo, f
     devolver res
 finfuncion
 
+variable __NL
+fijar __NL a ({
+})
+
+funcion __TextoFormatear: yo, ...valores
+    __Tupla#PRAGMA_CNAME: {pdcrt_frt_texto_formatear}
+    variables i, res, val
+    fijar i a 0
+    fijar val a 0
+
+    procedimiento consumir
+        variable c
+        fijar c a yo#en: i
+        fijar i a i + 1
+        devolver c
+    finprocedimiento
+
+    procedimiento emitir: c
+        res#agregarAlFinal: c
+    finprocedimiento
+
+    procedimiento siguienteValor
+        variable ret
+        fijar ret a valores#en: val
+        fijar val a val + 1
+        devolver ret
+    finprocedimiento
+
+    fijar res a __CrearArreglo
+    mientras i < yo#longitud
+        variable c
+        fijar c a consumir
+        si c = {~}
+            fijar c a consumir
+            si c = {t}
+                res#agregarAlFinal: siguienteValor#comoTexto
+            finsi
+            si c = {T}
+                res#agregarAlFinal: siguienteValor
+            finsi
+            si c = {~}
+                emitir: {~}
+            finsi
+            si c = {%}
+                emitir: __NL
+            finsi
+            si c = {e}
+                emitir: "}"
+            finsi
+            si c = {E}
+                emitir: {»}
+            finsi
+            si c = {q}
+                emitir: {"}
+            finsi
+            si c = {|}
+                necesitas consumir = {%}
+                necesitas consumir = __NL
+            finsi
+        sino
+            emitir: c
+        finsi
+    finmientras
+
+    devolver res#unir
+finfuncion
+
 funcion __ObtenerCLI
     variables cli, i
     fijar cli a __CrearArreglo
@@ -190,12 +290,35 @@ procedimiento ErrorDeMensajeNoEncontrado: msj, extra
     __FallarConMensaje: ({Mensaje ~t no encontrado: ~t}#formatear: msj, extra)
 finprocedimiento
 
+procedimiento __Escribir: X
+    escribir X#comoTexto
+    nl
+finprocedimiento
+
+procedimiento __Escribir': X, Y
+    escribir X#comoTexto
+    escribir { }
+    escribir Y#comoTexto
+    nl
+finprocedimiento
+
+procedimiento __Escribir'': X, Y, Z
+    escribir X#comoTexto
+    escribir { }
+    escribir Y#comoTexto
+    escribir { }
+    escribir Z#comoTexto
+    nl
+finprocedimiento
+
 funcion __ClonarObjeto: obj
     variable clon
     fijar clon a (__CódigoDeObjeto: obj)#comoObjeto
+    __Escribir': {!!}, (__NúmeroDeAtributos: clon)
     variable i
     fijar i a 0
     mientras i < (__NúmeroDeAtributos: clon)
+        __Escribir'': { !}, i, (__ObtenerAtributo: obj, i)
         __FijarAtributo: clon, i, (__ObtenerAtributo: obj, i)#\clonar\
         fijar i a i + 1
     finmientras
@@ -223,7 +346,7 @@ finfuncion
 variable __MsjObtenerAtributos
 fijar __MsjObtenerAtributos a procedimiento: msj, ...args
     variable yo
-    fijar yo a __EACT
+    fijar yo a __ESUP
 
     si (msj = {igualA}) || (msj = {operador_=})
         necesitas args#longitud = 1
@@ -244,7 +367,7 @@ finprocedimiento#comoObjeto
 funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
     devolver procedimiento: msj, ...args
         variables instFalsa, instProxy
-        fijar instFalsa a __EACT
+        fijar instFalsa a __ESUP
 
         si __SonElMismoObjeto: instReal, NULO
             fijar instProxy a instFalsa
@@ -259,7 +382,7 @@ funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
                 variable métodoDeInstancia
                 fijar métodoDeInstancia a métodos#en: i
                 fijar i a i - 1
-    
+
                 variables nombreDelMétodo, proc
                 fijar nombreDelMétodo a métodoDeInstancia#en: 0
                 fijar proc a métodoDeInstancia#en: 1
@@ -291,7 +414,12 @@ funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
         finsi
         si msj = {clonar}
             necesitas args#longitud = 0
-            devolver __ClonarObjeto: instFalsa
+            variable atrsClonados
+            fijar atrsClonados a __CrearArreglo
+            __ParaCadaElemento: atrs, procedimiento: el
+                atrsClonados#agregarAlFinal: el#\clonar\
+            finprocedimiento
+            devolver __CrearInstanciaDeClase: cls, instReal, métodos, atrsClonados
         finsi
 
         fijar proc a buscarMensaje: {metodoNoEncontrado}
@@ -313,10 +441,10 @@ funcion __CrearMétodosDeInstancia: métodosDeInstancia, atributosDeInstancia, a
 
     __ParaCadaElementoConÍndice: atributosDeInstancia, procedimiento: atr, i
         métodos#agregarAlFinal: (__CrearArreglo: atr, metodo
-            devolver atrs#en: i
+            devolver (__EnviarMensaje: yo, __MsjObtenerAtributos, __CrearArreglo)#en: i
         finmetodo)
         métodos#agregarAlFinal: (__CrearArreglo: ({fijar_}#concatenar: atr), metodo: valor
-            atrs#fijarEn: i, valor
+            (__EnviarMensaje: yo, __MsjObtenerAtributos, __CrearArreglo)#fijarEn: i, valor
         finmetodo)
     finprocedimiento
 
@@ -333,7 +461,7 @@ procedimiento __CrearClase: nombre
 
     devolver procedimiento: msj, ...args
         variable yo
-        fijar yo a __EACT
+        fijar yo a __ESUP
 
         variable idc
         fijar idc a métodosEstaticos#longitud - 1
@@ -417,7 +545,7 @@ procedimiento __CrearClase: nombre
             devolver NULO
         finsi
 
-        si msj = {agregarMetodo}
+        si (msj = {agregarMetodo}) || (msj = {agregarMétodo})
             necesitas args#longitud = 2
             variables nombre, método
             fijar nombre a args#en: 0

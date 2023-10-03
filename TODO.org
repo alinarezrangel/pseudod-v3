@@ -1,3 +1,24 @@
+* Notas
+** DONE Error al compilar [[file:backends/tupla/bootstrap.pd::variable subclase]].
+   El ~fijar~ en [[file:backends/tupla/bootstrap.pd::fijar subclase a __CrearClase: {<clase anónima>}][~fijar subclase a~]] está siendo compilado a un ~LSETC EACT, 0,
+   0~, a pesar de que el ~OPNFRM~ del [[file:backends/tupla/bootstrap.pd::si msj = {subclase}][~si~]] está vacío. Esto es causado porque
+   la variable ~subclase~ está en el entorno ya que no es importada, no es
+   caturada, es local pero no es local directa (hay un ámbito de por medio
+   entre su uso y la función que la contiene).
+
+   El código [[file:backends/tupla.pd::Mapear: (Filtrar: localesInmediatas, (MétodoComoFunción: {estáEnElEntorno})), (MétodoComoFunción: {índiceDeCaptura})][aquí]] no la «agarra» porque no es una local inmediata (véase [[file:backends/tupla.pd::fijar inmediata a Contiene: ámbito#todosLosBindingsLocales, nr][esta
+   parte]]). Por eso no está siendo contada.
+
+   No tengo clara la solución. Claramente debo cambiar las reglas de cuando una
+   variable cuenta para el ~OPNFRM~ de su entorno. Los nodos ~si~ y ~mientras~
+   deberían pasar las variables de sus ámbios como si fuesen
+   «inmediatas». ¿Quizás deba introducir un nuevo metadato?
+   ~localInmediataDelÁmbito~: Si la local es usada en el ámbito en el que se
+   declaró (~localInmediata~ solo toma en cuenta funciones, esta toma en cuenta
+   todos los ámbitos).
+
+   *Nota*: Creo que esto último es innecesario, las locales inmediatas de los
+    ~si~ y ~mientras~ deberían estarse incluyendo...
 * Experimentación
 ** v3y
 *** Tipos de suma con metaprogramación, similar a `Enum`.
@@ -38,6 +59,17 @@
     5. Objetos como ~Ámbito~ son mejores, aunque no perfectos.
     6. Objetos como ~CaminaNodos~ son /horribles/.
 * Diseño
+** Asociar el esquema de las tuplas a sus respectivos opcodes.
+   En vez de especificar manualmente en los distíntos pases del IR que
+   argumenos son constantes, procedimientos, números, etc, cada opcode debería
+   saber los tipos de sus argumentos de forma que, por ejemplo, obtener todas
+   las constantes de una tupla séa tan sencillo como:
+
+   #+begin_src pseudod
+     Mapear: (Filtrar: tupla#opcode#esquema, (MétodoComoFunción: {esConstante})), funcion: c
+         devolver tupla#en: c#índice
+     finfuncion
+   #+end_src
 ** Usar el mismo AST en todos los pases ha resultado en complicaciones innecesarias. Por ejemplo, hacer que los ámbitos y bloques estuviesen representados por sus propios nodos simplificaría mucho el compilador.
    Por ejemplo, en vez de tener arreglos de nodos (en ~NodoPrograma~, ~NodoSi~,
    ~NodoMientras~, ~NodoFunción~, etc) sería mejor tener un solo atributo
