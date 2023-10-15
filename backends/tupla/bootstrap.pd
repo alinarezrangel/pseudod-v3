@@ -91,8 +91,8 @@ procedimiento __EnviarMensaje: obj, msj, args
     devolver __EM: obj, msj, args
 finprocedimiento
 
-variable __Impl
-fijar __Impl a {PDVM Bootstrap}
+variable A, B, __Impl
+fijar __Impl a {Tupla (IR) Bootstrap}
 
 funcion __CrearArreglo: ...arr
     devolver arr
@@ -311,6 +311,29 @@ procedimiento __Escribir'': X, Y, Z
     nl
 finprocedimiento
 
+funcion Aplicar: proc, args
+    devolver __EnviarMensaje: proc, {llamar}, args
+finfuncion
+
+funcion ProcedimientoVarargs: n, proc
+    devolver funcion: ...Xs
+        si Xs#longitud < n
+            __FallarConMensaje: ({Se esperaban al menos ~t argumentos para el procedimiento vararg, pero se recibieron ~t}#formatear: n, Xs#longitud)
+        finsi
+        variables inicio, resto
+        fijar inicio a __CrearArreglo
+        fijar resto a __CrearArreglo
+        __ParaCadaElementoConÍndice: Xs, procedimiento: argumento, i
+            si i < n
+                inicio#agregarAlFinal: argumento
+            sino
+                resto#agregarAlFinal: argumento
+            finsi
+        finprocedimiento
+        devolver %proc: ...inicio, resto
+    finfuncion
+finfuncion
+
 funcion __ClonarObjeto: obj
     variable clon
     fijar clon a (__CódigoDeObjeto: obj)#comoObjeto
@@ -325,7 +348,7 @@ funcion __ClonarObjeto: obj
     devolver clon
 finfuncion
 
-funcion __ObjetosSonIguales: A, B
+funcion __CompararObjeto: A, B
     si no (__CódigoDeObjeto: A)#__códigoIgualA: (__CódigoDeObjeto: B)
         devolver FALSO
     finsi
@@ -342,6 +365,9 @@ funcion __ObjetosSonIguales: A, B
     finmientras
     devolver VERDADERO
 finfuncion
+
+variable __ByteEof
+fijar __ByteEof a -1
 
 variable __MsjObtenerAtributos
 fijar __MsjObtenerAtributos a procedimiento: msj, ...args
@@ -410,7 +436,7 @@ funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
         finsi
         si (msj = {igualA}) || (msj = {operador_=})
             necesitas args#longitud = 1
-            devolver __ObjetosSonIguales: instReal, (args#en: 0)
+            devolver __CompararObjeto: instReal, (args#en: 0)
         finsi
         si msj = {clonar}
             necesitas args#longitud = 0
@@ -738,3 +764,6 @@ finmetodo
 metodo estatico Arreglo#conValores: ...valores
     devolver __CrearArreglo: ...valores
 finmetodo
+
+
+[ TODO: TipoDe, __AbrirArchivo, __TextoAByte, __ByteATexto, __LeerCaracter ]

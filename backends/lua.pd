@@ -1120,7 +1120,7 @@ finclase
 
 atributo CompiladorALua#_builtins, CompiladorALua#_builtinsAutoejecutables
 
-metodo CompiladorALua#inicializar: db
+metodo CompiladorALua#inicializar: db, experimentos
     fijar yo#baseDeDatos a db
     fijar yo#_builtins a
         Diccionario#desdePares:

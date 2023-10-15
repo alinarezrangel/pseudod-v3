@@ -2,7 +2,7 @@ utilizar bepd/builtins
 utilizar bepd/x/adhoc (ObjetoAdHoc)
 utilizar bepd/datos/conjunto (Conjunto)
 utilizar bepd/datos/diccionario (Diccionario)
-utilizar bepd/x/puerto (SalidaEstándar, PuertoParaTexto, TextoDePuertoDeEscritura)
+utilizar bepd/x/puerto (SalidaEstándar, PuertoParaTexto, TextoDePuertoDeEscritura, TextoComoPuerto)
 utilizar bepd/x/puerto/deArchivo como PDA
 utilizar bepd/x/puerto/conPosición (PosiciónTextual)
 utilizar bepd/x/sistemaDeArchivos/archivo como SistemaDeArchivos
@@ -287,9 +287,9 @@ funcion NombresImportadosResueltos: nodo
     finsi
 finfuncion
 
-procedimiento AnotaLosNombresImportadosImplícitamente: ast
+procedimiento AnotaLosNombresImportadosImplícitamente: ast, bindingsAdicionales
     variable implícitos
-    fijar implícitos a Conjunto#vacío
+    fijar implícitos a Conjunto#desdeArreglo: bindingsAdicionales
 
     Caminar: ast, funcion: nodo
         devolver EsInstancia: nodo, AST#NodoUtilizar
@@ -700,7 +700,7 @@ clase ImportadoLocalEnElProcedimiento hereda LocalDelProcedimiento
     metodo nodo
 finclase
 
-atributo ImportadoLocalEnElProcedimiento#nodo, ImportadoLocalEnElProcedimiento#binding
+atributos ImportadoLocalEnElProcedimiento#nodo, ImportadoLocalEnElProcedimiento#binding
 
 metodo ImportadoLocalEnElProcedimiento#inicializar: nodoUtilizar, binding
     fijar yo#nodo a nodoUtilizar
@@ -768,8 +768,82 @@ metodo ImportadoLocalEnElProcedimiento#areaTextual
     devolver yo#nodo#areaTextual
 finmetodo
 
+clase LocalBuiltinDelPrograma hereda LocalDelProcedimiento
+    metodo estatico crear: nodoPrograma, binding
+    metodo nodo
+finclase
+
+atributos LocalBuiltinDelPrograma#nodo, LocalBuiltinDelPrograma#binding
+
+metodo LocalBuiltinDelPrograma#inicializar: nodoPrograma, binding
+    fijar yo#nodo a nodoPrograma
+    fijar yo#binding a binding
+finmetodo
+
+metodo LocalBuiltinDelPrograma#igualA: otro
+    si no EsInstancia: otro, (TipoDe: yo)
+        devolver FALSO
+    sino
+        devolver (Defun#SonElMismoObjeto: yo#nodo, otro#nodo) && (yo#binding = otro#binding)
+    finsi
+finmetodo
+
+metodo LocalBuiltinDelPrograma#\operador_=\: otro
+    devolver yo#igualA: otro
+finmetodo
+
+metodo LocalBuiltinDelPrograma#esCapturado
+    devolver VERDADERO
+finmetodo
+
+metodo LocalBuiltinDelPrograma#índiceDeCaptura
+    si yo#nodo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCapturaDeBuiltins}
+        devolver (yo#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCapturaDeBuiltins})#en: yo#binding
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo LocalBuiltinDelPrograma#esLocal
+    devolver FALSO
+finmetodo
+
+metodo LocalBuiltinDelPrograma#altura
+    si yo#nodo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {alturaDeBuiltins}
+        devolver yo#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {alturaDeBuiltins}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo LocalBuiltinDelPrograma#profundidad
+    si yo#nodo#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidadDeBuiltins}
+        devolver yo#nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidadDeBuiltins}
+    sino
+        devolver NULO
+    finsi
+finmetodo
+
+metodo LocalBuiltinDelPrograma#esLocalInmediata
+    [ FIXME: Sigo bastante seguro de que este método nunca se está usando... ]
+    devolver NULO
+finmetodo
+
+metodo LocalBuiltinDelPrograma#esLocalDirecta
+    devolver FALSO
+finmetodo
+
+metodo LocalBuiltinDelPrograma#estáEnElEntorno
+    devolver VERDADERO
+finmetodo
+
+metodo LocalBuiltinDelPrograma#areaTextual
+    devolver yo#nodo#areaTextual
+finmetodo
+
+
 [ TODO: Documenta este pase ]
-procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor
+procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, builtins
     necesitas (EsInstancia: ast, AST#NodoFunción)
            || (EsInstancia: ast, AST#NodoFunciónAnónima)
            || (EsInstancia: ast, AST#NodoMétodo)
@@ -818,6 +892,21 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor
         finprocedimiento
         nodoUtilizar#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesImportadas}, localesImportados
         devolver localesImportados
+    finprocedimiento
+
+    procedimiento AgregarLocalesBuiltins: nodoPrograma
+        variable localesBuiltins
+        fijar localesBuiltins a Arreglo#vacio
+        builtins#paraCadaPar: procedimiento: nombre, datos
+            si datos#esImportable
+                variable local
+                fijar local a LocalBuiltinDelPrograma#crear: nodoPrograma, datos#binding
+                localesBuiltins#agregarAlFinal: local
+                AgregarLocal: local
+            finsi
+        finprocedimiento
+        nodoPrograma#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesBuiltins}, localesBuiltins
+        devolver localesBuiltins
     finprocedimiento
 
     procedimiento CreaAgregador: nodo, metadato
@@ -905,7 +994,7 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor
             si EsInstancia: nodo, AST#NodoFunción
                 %recur: nodo#nombre
             finsi
-            devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo)
+            devolver EnumeraciónDeLocalesDeProcedimiento: nodo, (RN#ObtenerNombresDefinídos: nodo), builtins
         finsi
 
         necesitas no ContieneYoImplícito: nodo
@@ -925,6 +1014,7 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor
         AgregarYoLocal: ast
     finsi
     si EsInstancia: ast, AST#NodoPrograma
+        AgregarLocalesBuiltins: ast
         ParaCadaElemento: ast#instrucciones, procedimiento: nodo
             devolver Caminar: nodo, &filtro, &interno
         finprocedimiento
@@ -981,8 +1071,6 @@ procedimiento AnotarLocalesInmediatas: ast
                 variables nr, inmediata
                 fijar nr a RN#NombreResueltoDe: ast
                 fijar inmediata a Contiene: ámbito#todosLosBindingsLocales, nr
-                [ Escribir: {ID}, ast ]
-                [ Escribir: {ES}, nr, {Y}, inmediata ]
                 ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalInmediata}, inmediata
                 si inmediata
                     todasLasLocales#agregarAlFinal: ast
@@ -1028,9 +1116,6 @@ procedimiento AnotarLocalesInmediatas: ast
                 ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatasSiVerdadero}, localesSiVerdadero
                 fijar localesSiFalso a marcarConÁmbito: ast, siFalso
                 ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatasSiFalso}, localesSiFalso
-                [ Escribir: {NodoSi}, ast#areaTextual ]
-                [ Escribir: {siVerdadero}, localesSiVerdadero ]
-                [ Escribir: {siFalso}, localesSiFalso ]
             sino
                 variable locales
                 si EsInstancia: ast, AST#NodoFunción
@@ -1040,22 +1125,14 @@ procedimiento AnotarLocalesInmediatas: ast
                     fijar locales a marcarConÁmbito: ast, ámbito
                     ast#nombre#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalInmediata}, localInmediata
                     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}, locales
-                    [ Escribir: {NodoFunción}, ast#areaTextual ]
-                    [ Escribir: {locales}, locales ]
                 sino
                     variable ámbito
                     fijar ámbito a RN#ObtenerNombresDefinídos: ast
                     fijar locales a marcarConÁmbito: ast, ámbito
                     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesInmediatas}, locales
-                    [ Escribir: (TipoDe: ast), ast#areaTextual ]
-                    [ Escribir: {locales}, locales ]
                 finsi
 
                 si ContieneYoImplícito: ast
-                    [ Escribir: {Contiene yo implícito} ]
-                    [ variable nrYo ]
-                    [ fijar nrYo a NombreResueltoDelYoImplícito: ast ]
-                    [ ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocalInmediata}, (Contiene: (Mapear: locales, (MétodoComoFunción: {binding})), nrYo) ]
                     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {yoEsLocalInmediata}, VERDADERO
                 finsi
             finsi
@@ -1081,6 +1158,7 @@ clase EstadoDeEnumeraciónDeCapturas
     metodo marcarÍndiceCapturaEnDeclaraciónDeYo: nid
     metodo marcarÍndiceCapturaEnUso: nid
     metodo marcarÍndiceCapturaEnImportación: nodoUtilizar, binding
+    metodo marcarÍndiceCapturaEnBuiltin: nodoPrograma, binding
     metodo informaciónDeLaCaptura: nid
 
     metodo profundidad
@@ -1141,6 +1219,17 @@ metodo EstadoDeEnumeraciónDeCapturas#marcarÍndiceCapturaEnImportación: nodoUt
     fijar yo#acc a yo#acc + 1
 finmetodo
 
+metodo EstadoDeEnumeraciónDeCapturas#marcarÍndiceCapturaEnBuiltin: nodoPrograma, binding
+    nodoPrograma#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {alturaDeBuiltins}, 0
+    si no nodoPrograma#contieneMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCapturaDeBuiltins}
+        nodoPrograma#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCapturaDeBuiltins}, Diccionario#vacío
+    finsi
+    (nodoPrograma#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCapturaDeBuiltins})#fijarEn: binding, yo#acc
+    nodoPrograma#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidadDeBuiltins}, yo#profundidad
+    yo#asoc#fijarEn: binding, yo#acc
+    fijar yo#acc a yo#acc + 1
+finmetodo
+
 metodo EstadoDeEnumeraciónDeCapturas#informaciónDeLaCaptura: nid
     si yo#asoc#contiene: (RN#NombreResueltoDe: nid)
         devolver ObjetoAdHoc: {altura}, 0,
@@ -1162,9 +1251,6 @@ finmetodo
 metodo EstadoDeEnumeraciónDeCapturas#marcarÍndiceCapturaEnUso: nid
     variable dt
     fijar dt a yo#informaciónDeLaCaptura: nid
-    si nid#nombre = {subclase}
-        Escribir: {##}, dt, nid#areaTextual
-    finsi
     nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}, dt#altura
     nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}, dt#índiceDeCaptura
     nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}, dt#profundidad
@@ -1193,7 +1279,7 @@ cada ámbito es compilado a un entorno en el IR.
 @code{profundidad} es un número que indica la profundidad dentro del programa
 en la que se declaró la variable
 DOCUMENTA]
-procedimiento EnumeraciónDeCapturas: ast, estado, callbacks
+procedimiento EnumeraciónDeCapturas: ast, estado, callbacks, builtins
     variable DECLARACIONES
     fijar DECLARACIONES a Arreglo#crearCon: AST#NodoVariable, AST#NodoFunción, AST#NodoMétodo,
                                             AST#NodoFunciónAnónima, AST#NodoIdentificador,
@@ -1210,8 +1296,13 @@ procedimiento EnumeraciónDeCapturas: ast, estado, callbacks
         si EsInstancia: nodo, AST#NodoPrograma
             variable subcallbacks
             fijar subcallbacks a Arreglo#vacio
+
+            builtins#paraCadaPar: procedimiento: llave, datos
+                estado#marcarÍndiceCapturaEnBuiltin: nodo, datos#binding
+            finprocedimiento
+
             ParaCadaElemento: nodo#instrucciones, procedimiento: nodo
-                EnumeraciónDeCapturas: nodo, estado, subcallbacks
+                EnumeraciónDeCapturas: nodo, estado, subcallbacks, builtins
             finprocedimiento
             ParaCadaElemento: subcallbacks, (MétodoComoFunción: {llamar})
             nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}, estado#profundidad
@@ -1279,7 +1370,7 @@ procedimiento EnumeraciónDeCapturas: ast, estado, callbacks
 
             callbacks#agregarAlFinal: procedimiento
                 ParaCadaElemento: nodo#cuerpo, procedimiento: instr
-                    EnumeraciónDeCapturas: instr, subestado, subcallbacks
+                    EnumeraciónDeCapturas: instr, subestado, subcallbacks, builtins
                 finprocedimiento
 
                 ParaCadaElemento: subcallbacks, (MétodoComoFunción: {llamar})
@@ -1295,7 +1386,7 @@ procedimiento EnumeraciónDeCapturas: ast, estado, callbacks
             %recur: nodo#condicional
             fijar subestado a EstadoDeEnumeraciónDeCapturas#desdeEstado: estado
             ParaCadaElemento: nodo#cuerpo, procedimiento: instr
-                EnumeraciónDeCapturas: instr, subestado, subcallbacks
+                EnumeraciónDeCapturas: instr, subestado, subcallbacks, builtins
             finprocedimiento
 
             ParaCadaElemento: subcallbacks, (MétodoComoFunción: {llamar})
@@ -1310,13 +1401,13 @@ procedimiento EnumeraciónDeCapturas: ast, estado, callbacks
             %recur: nodo#condicional
             fijar subestadoSiVerdadero a EstadoDeEnumeraciónDeCapturas#desdeEstado: estado
             ParaCadaElemento: nodo#siVerdadero, procedimiento: instr
-                EnumeraciónDeCapturas: instr, subestadoSiVerdadero, subcallbacksSiVerdadero
+                EnumeraciónDeCapturas: instr, subestadoSiVerdadero, subcallbacksSiVerdadero, builtins
             finprocedimiento
             ParaCadaElemento: subcallbacksSiVerdadero, (MétodoComoFunción: {llamar})
 
             fijar subestadoSiFalso a EstadoDeEnumeraciónDeCapturas#desdeEstado: estado
             ParaCadaElemento: nodo#siFalso, procedimiento: instr
-                EnumeraciónDeCapturas: instr, subestadoSiFalso, subcallbacksSiFalso
+                EnumeraciónDeCapturas: instr, subestadoSiFalso, subcallbacksSiFalso, builtins
             finprocedimiento
             ParaCadaElemento: subcallbacksSiFalso, (MétodoComoFunción: {llamar})
 
@@ -1327,8 +1418,6 @@ procedimiento EnumeraciónDeCapturas: ast, estado, callbacks
         si EsInstancia: nodo, AST#NodoIdentificador
             si EsIdentificadorDeVariable: nodo
                 estado#marcarÍndiceCapturaEnUso: nodo
-            sino
-                [ Escribir: {EnumeraciónDeCapturas: No es id. de variable </>}, nodo ]
             finsi
             devolver NULO
         finsi
@@ -1378,8 +1467,6 @@ procedimiento AnotarBindingsLocales: ast
         si EsInstancia: nodo, AST#NodoIdentificador
             si EsIdentificadorDeVariable: nodo
                 nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocal}, (bindings#contiene: (RN#NombreResueltoDe: nodo))
-            sino
-                [ Escribir: {AnotarBindingsLocales: No es id. de variable </>}, nodo ]
             finsi
             devolver NULO
         finsi
@@ -1488,8 +1575,6 @@ procedimiento MarcaVariablesLocalesEnSubámbitos: ast
                         si EsIdentificadorDeVariable: nodo
                             nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {esLocalDirecta},
                                 (bindingsDeEsteÁmbito#contiene: (RN#NombreResueltoDe: nodo))
-                        sino
-                            [ Escribir: {MarcaVariablesLocalesEnSubámbitos: No es id. de variable </>}, nodo ]
                         finsi
                     finsi
                 finprocedimiento
@@ -1513,21 +1598,6 @@ en el entorno de la función o no.
 DOCUMENTA]
 procedimiento MarcaVariablesQueEstánEnElEntorno: ast
     funcion vaEnElEntorno: local
-        [ si EsInstancia: local, IdentificadorLocalDelProcedimiento ]
-        [     Escribir: {! S:}, local#nodo ]
-        [ sino ]
-        [     Escribir: {! S:}, local#nodoConYo ]
-        [ finsi ]
-        [ si EsInstancia: local, IdentificadorLocalDelProcedimiento ]
-        [     Escribir: {! L1:}, local#nodo#areaTextual ]
-        [ sino ]
-        [     Escribir: {! L2:}, local#nodoConYo#areaTextual ]
-        [ finsi ]
-        [ Escribir: {! B:}, local#binding ]
-        [ Escribir: {ES}, (local#esCapturado || (no local#esLocal) || (no local#esLocalDirecta)) ]
-        [ si (no local#esCapturado) ]
-        [     Escribir: {OJO}, (no local#esLocal), (no local#esLocalDirecta) ]
-        [ finsi ]
         devolver local#esCapturado || (no local#esLocal) || (no local#esLocalDirecta)
     finfuncion
     Caminar': ast, procedimiento: nodo, recur
@@ -1535,11 +1605,6 @@ procedimiento MarcaVariablesQueEstánEnElEntorno: ast
             devolver NULO
         finsi
         si EsIdentificadorDeVariable: nodo
-            si nodo#nombre = {subclase}
-                variable L
-                fijar L a (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {local})
-                Escribir: {!!}, nodo#areaTextual, {|}, L#esCapturado, L#esLocal, L#esLocalDirecta, {|}, (EsImportado: nodo)
-            finsi
             nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno},
                 ((EsImportado: nodo) || (vaEnElEntorno: (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {local})))
             devolver NULO
@@ -1558,8 +1623,6 @@ finprocedimiento
 Obtiene el metadato @code{estáEnElEntorno}.
 DOCUMENTA]
 funcion EstáEnElEntorno: nid
-    [ Escribir: {# Q:}, nid ]
-    [ Escribir: {ES}, (nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}) ]
     devolver nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {estáEnElEntorno}
 finfuncion
 
@@ -2120,6 +2183,7 @@ clase Tupla
     metodo emitirComoIR: puertoDeEscritura
 
     metodo comoSExpr
+    metodo estatico desdeSExpr: sexpr
 finclase
 
 metodo estatico Tupla#crear: op, ...args
@@ -2162,6 +2226,10 @@ finmetodo
 
 metodo Tupla#comoSExpr
     devolver Arreglo#crearCon: (Símbolo#desdeTexto: yo#opcode#nombre), ...(yo#argumentos)
+finmetodo
+
+metodo estatico Tupla#desdeSExpr: sexpr
+    devolver yo#crear: (Opcode#desdeNombre: (sexpr#en: 0)#valor), ...(PedazoDeArreglo: sexpr, 1, -1)
 finmetodo
 
 [DOCUMENTA
@@ -2280,7 +2348,7 @@ si VERDADERO
     finclase
 
     metodo I#metodoNoEncontrado: mensaje, argumentos
-        devolver Tupla#crear: (EnviarMensaje: Opcode, mensaje), ...argumentos
+        devolver Tupla#crear: (Opcode#desdeNombre: mensaje), ...argumentos
     finmetodo
 
     fijar OP a I#crear
@@ -2317,8 +2385,11 @@ clase Pragma
     metodo estatico desdeTupla: tupla
     metodo estatico crear: nombre, ...argumentos
 
+    metodo comoTupla
+
     metodo emitirComoIR: puertoDeEscritura
     metodo comoSExpr
+    metodo estatico desdeSExpr: sexpr
 finclase
 
 metodo estatico Pragma#desdeTupla: tupla
@@ -2328,6 +2399,10 @@ finmetodo
 metodo Pragma#inicializar: nombre, ...argumentos
     fijar yo#nombre a nombre
     fijar yo#argumentos a argumentos
+finmetodo
+
+metodo Pragma#comoTupla
+    devolver Tupla#crear: Opcode#PRAGMA, yo#nombre, ...(yo#argumentos)
 finmetodo
 
 metodo Pragma#emitirComoIR: puertoDeEscritura
@@ -2343,6 +2418,10 @@ metodo Pragma#comoSExpr
         (Símbolo#desdeTexto: {PRAGMA}),
         (Símbolo#desdeTexto: yo#nombre),
         ...(yo#argumentos)
+finmetodo
+
+metodo estatico Pragma#desdeSExpr: sexpr
+    devolver yo#crear: (sexpr#en: 1)#valor, ...(PedazoDeArreglo: sexpr, 2, -1)
 finmetodo
 
 [DOCUMENTA
@@ -2408,6 +2487,7 @@ clase DeclrFunción
     metodo emitirComoIR: puertoDeEscritura
 
     metodo comoSExpr
+    metodo estatico desdeSExpr: sexpr
 finclase
 
 metodo estatico DeclrFunción#crear: nombre, parámetros, parámVariadic, cuerpo
@@ -2447,17 +2527,36 @@ finmetodo
 metodo DeclrFunción#comoSExpr
     variable variadic
     si no EsNulo: yo#parámetroVariadic
-        fijar variadic a Arreglo#crearCon: (Arreglo#crearCon: (Símbolo#desdeTexto: {variadic}), ...(yo#parámetroVariadic))
+        fijar variadic a Arreglo#crearCon: (Arreglo#crearCon: (Símbolo#desdeTexto: {variadic}), yo#parámetroVariadic)
     sino
         fijar variadic a Arreglo#vacio
     finsi
     devolver Arreglo#crearCon:
         (Símbolo#desdeTexto: {proc}),
         yo#nombre,
+        (Arreglo#crearCon: (Símbolo#desdeTexto: {pragmas}),
+            ...(Mapear: yo#pragmas, (MétodoComoFunción: {comoSExpr}))),
         (Arreglo#crearCon: (Símbolo#desdeTexto: {params}), ...(yo#parámetros)),
         ...(variadic),
         (Arreglo#crearCon: (Símbolo#desdeTexto: {body}),
             ...(Mapear: yo#cuerpo, (MétodoComoFunción: {comoSExpr})))
+finmetodo
+
+metodo estatico DeclrFunción#desdeSExpr: sexpr
+    variables nombre, pragmas, params, variadic, variadicS, cuerpo, cuerpoS
+    fijar nombre a sexpr#en: 1
+    fijar pragmas a Mapear: (PedazoDeArreglo: (sexpr#en: 2), 1, -1), &(Pragma#desdeSExpr)
+    fijar params a PedazoDeArreglo: (sexpr#en: 3), 1, -1
+    fijar variadicS a sexpr#en: 4
+    si (variadicS#en: 0)#valor = {variadic}
+        fijar variadic a variadicS#en: 1
+        fijar cuerpoS a sexpr#en: 5
+    sino
+        fijar variadic a NULO
+        fijar cuerpoS a variadicS
+    finsi
+    fijar cuerpo a Mapear: (PedazoDeArreglo: cuerpoS, 1, -1), &(Tupla#desdeSExpr)
+    devolver yo#crear: nombre, params, variadic, (Concatenar: (Mapear: pragmas, (MétodoComoFunción: {comoTupla})), cuerpo)
 finmetodo
 
 [DOCUMENTA
@@ -2488,6 +2587,7 @@ clase PrototipoDeLlamada
 
     metodo emitirComoIR: puertoDeEscritura
     metodo comoSExpr
+    metodo estatico desdeSExpr: sexpr
 finclase
 
 metodo PrototipoDeLlamada#inicializar: proto
@@ -2513,10 +2613,15 @@ metodo PrototipoDeLlamada#comoSExpr
     devolver Arreglo#crearCon: (Símbolo#desdeTexto: {prototype}), ...(yo#prototipo)
 finmetodo
 
+metodo estatico PrototipoDeLlamada#desdeSExpr: sexpr
+    devolver yo#crear: (PedazoDeArreglo: sexpr, 1, -1)
+finmetodo
+
 clase TextoDelIR
     atributo valor
     metodo emitirComoIR: puertoDeEscritura
     metodo comoSExpr
+    metodo estatico desdeSExpr: sexpr
 finclase
 
 metodo TextoDelIR#inicializar: valor
@@ -2535,6 +2640,10 @@ finmetodo
 
 metodo TextoDelIR#comoSExpr
     devolver Arreglo#crearCon: (Símbolo#desdeTexto: {string}), yo#valor
+finmetodo
+
+metodo estatico TextoDelIR#desdeSExpr: sexpr
+    devolver yo#crear: (sexpr#en: 1)
 finmetodo
 
 
@@ -2572,6 +2681,7 @@ clase Constante
     metodo emitirComoIR: puertoDeEscritura
 
     metodo comoSExpr
+    metodo estatico desdeSExpr: sexpr
 finclase
 
 metodo estatico Constante#crear: id, valor
@@ -2594,6 +2704,18 @@ finmetodo
 
 metodo Constante#comoSExpr
     devolver Arreglo#crearCon: (Símbolo#desdeTexto: {constant}), yo#id, yo#valor#comoSExpr
+finmetodo
+
+metodo estatico Constante#desdeSExpr: sexpr
+    variables valor, el
+    fijar el a sexpr#en: 2
+    si (el#en: 0)#valor = {string}
+        fijar valor a TextoDelIR#desdeSExpr: el
+    sino
+        necesitas (el#en: 0)#valor = {prototype}
+        fijar valor a PrototipoDeLlamada#desdeSExpr: el
+    finsi
+    devolver yo#crear: (sexpr#en: 1), valor
 finmetodo
 
 
@@ -2670,6 +2792,7 @@ clase Compilado
 
     metodo emitirComoIR: puertoDeEscritura
     metodo comoSExpr
+    metodo estatico desdeSExpr: sexpr
 finclase
 
 metodo estatico Compilado#crear: i, d, c
@@ -2754,6 +2877,13 @@ metodo Compilado#comoSExpr
         (Arreglo#crearCon:
             (Símbolo#desdeTexto: {constants}),
             ...(Mapear: yo#constantes, (MétodoComoFunción: {comoSExpr})))
+finmetodo
+
+metodo estatico Compilado#desdeSExpr: sexpr
+    devolver yo#crear:
+        (Mapear: (PedazoDeArreglo: (sexpr#en: 1), 1, -1), &(Tupla#desdeSExpr)),
+        (Mapear: (PedazoDeArreglo: (sexpr#en: 2), 1, -1), &(DeclrFunción#desdeSExpr)),
+        (Mapear: (PedazoDeArreglo: (sexpr#en: 3), 1, -1), &(Constante#desdeSExpr))
 finmetodo
 
 [DOCUMENTA
@@ -2974,13 +3104,6 @@ funcion CompilarLocales: locales, parámetros, localYo
         devolver EsInstancia: param, AST#NodoVariadic
     finfuncion
     necesitas (variadics#longitud = 0) || (variadics#longitud = 1)
-    [ Escribir: {-=-} ]
-    [ ParaCadaElemento: locales, procedimiento: local ]
-    [     si local#estáEnElEntorno ]
-    [         Escribir: {Está en el entorno:}, local ]
-    [     finsi ]
-    [ finprocedimiento ]
-    [ Escribir: {---} ]
     funcion índiceDeCaptura: nodo
         variable nid
         si EsInstancia: nodo, AST#NodoVariadic
@@ -3315,6 +3438,10 @@ funcion LocalesInmediatas: locales, ámbito
     finfuncion
 finfuncion
 
+procedimiento MarcaSiHayQueImportarBuiltins: ast, hayQueImportarBuiltins
+    ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {hayQueImportarBuiltins}, hayQueImportarBuiltins
+finprocedimiento
+
 [DOCUMENTA
 @brief{Compila una instrucción o expresión a un compilado.}
 
@@ -3326,15 +3453,45 @@ DOCUMENTA]
 funcion CompilarAWasm: ast, builtins
     si EsInstancia: ast, AST#NodoPrograma
         variables locales, localesEnElEntorno, profundidad, localesInmediatas,
-                  exportaciones, identificadoresDefinídos,
-                  ámbito, constNombreDelMódulo, nombreDelMódulo
+                  exportaciones, importaciones, identificadoresDefinídos,
+                  ámbito, constNombreDelMódulo, constBootstrap, nombreDelMódulo,
+                  índicesDeBuiltins, alturaDeBuiltins, hayQueImportarBuiltins
         fijar locales a LocalesDelBloque: ast
         fijar localesEnElEntorno a VariablesEnElEntorno: locales
         fijar profundidad a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {profundidad}
         fijar exportaciones a Compilado#vacío
+        fijar importaciones a Compilado#vacío
         fijar ámbito a RN#ObtenerNombresDefinídos: ast
         fijar localesInmediatas a LocalesInmediatas: locales, ámbito
         fijar identificadoresDefinídos a NombresDeclaradosEn: ast#instrucciones
+        fijar constNombreDelMódulo a GenerarIdDeConstante
+        fijar nombreDelMódulo a (ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {llaveDelMódulo})#nombreCompletoDelArchivo
+        fijar índicesDeBuiltins a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCapturaDeBuiltins}
+        fijar alturaDeBuiltins a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {alturaDeBuiltins}
+        fijar constBootstrap a GenerarIdDeConstante
+        fijar hayQueImportarBuiltins a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {hayQueImportarBuiltins}
+
+        fijar importaciones a importaciones
+                           >> (Instrucciones: (OP#IMPORT: constBootstrap),
+                                              (OP#SAVEIMPORT: constBootstrap))
+                           >> (Compilado#deConstantes:
+                                  (Arreglo#crearCon:
+                                      (Constante#crear: constBootstrap, (TextoDelIR#crear: {./backends/tupla/bootstrap.pd}))))
+        builtins#paraCadaPar: procedimiento: llave, datos
+            si datos#esImportable
+                variable const
+                fijar const a GenerarIdDeConstante
+                fijar importaciones a importaciones
+                                   >> (Instrucciones: OP#DUP,
+                                                      (OP#NSLOOKUP: const),
+                                                      (OP#LSETC: LocalDelEntornoActual, alturaDeBuiltins, (índicesDeBuiltins#en: datos#binding)))
+                                   >> (Compilado#deConstantes:
+                                          (Arreglo#crearCon:
+                                              (Constante#crear: const, (TextoDelIR#crear: llave))))
+            finsi
+        finprocedimiento
+        fijar importaciones a importaciones >> (Instrucciones: OP#DROP)
+
         ParaCadaElemento: identificadoresDefinídos, procedimiento: nid
             variables constNombre, esAutoejecutable
             fijar constNombre a GenerarIdDeConstante
@@ -3346,8 +3503,7 @@ funcion CompilarAWasm: ast, builtins
                                       (Arreglo#crearCon:
                                           (Constante#crear: constNombre, (TextoDelIR#crear: nid#nombre))))
         finprocedimiento
-        fijar constNombreDelMódulo a GenerarIdDeConstante
-        fijar nombreDelMódulo a (ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {llaveDelMódulo})#nombreCompletoDelArchivo
+
         devolver (Compilado#deInstrucciónes:
                      (Aplanar:
                          (CompilarLocalesYClosure: locales,
@@ -3358,6 +3514,7 @@ funcion CompilarAWasm: ast, builtins
                                                    profundidad,
                                                    NULO)))
               >> (Instrucciones: (OP#MODULE: constNombreDelMódulo))
+              >> (hayQueImportarBuiltins#escojer: importaciones, Compilado#vacío)
               >> (Compilado#deConstantes:
                      (Arreglo#crearCon:
                          (Constante#crear: constNombreDelMódulo, (TextoDelIR#crear: nombreDelMódulo))))
@@ -3424,10 +3581,10 @@ funcion CompilarAWasm: ast, builtins
                                  (OP#MSG: cid, 2, 1))
     finsi
     si EsInstancia: ast, AST#NodoIdentificador
-        si (RN#NombreResueltoDe: ast) = (builtins#en: {__EACT})
+        si (RN#NombreResueltoDe: ast) = (builtins#en: {__EACT})#binding
             devolver Instrucciones: (OP#LGET: LocalDelEntornoActual)
         finsi
-        si (RN#NombreResueltoDe: ast) = (builtins#en: {__ESUP})
+        si (RN#NombreResueltoDe: ast) = (builtins#en: {__ESUP})#binding
             devolver Instrucciones: (OP#LGET: LocalDelEntornoSuperior)
         finsi
 
@@ -3469,7 +3626,7 @@ funcion CompilarAWasm: ast, builtins
                                 >> (Instrucciones: (OP#ROT: 0),
                                                    (OP#MSG: constMsj, 0, 1))
                 finsi
-                Escribir: {$}, mensaje
+
                 fijar cuerpo a cuerpo
                             >> (Compilado#deConstantes:
                                    (Arreglo#crearCon:
@@ -3496,7 +3653,7 @@ funcion CompilarAWasm: ast, builtins
     finsi
     si EsInstancia: ast, AST#NodoEnviarMensaje
         si EsInstancia: ast#objeto, AST#NodoIdentificador
-            si (RN#NombreResueltoDe: ast#objeto) = (builtins#en: {__Tupla})
+            si (RN#NombreResueltoDe: ast#objeto) = (builtins#en: {__Tupla})#binding
                 si ast#mensaje = {obtener}
                     necesitas ast#argumentos#longitud = 1
                     devolver (CompilarIdentificador: (ast#argumentos#en: 0))
@@ -3565,7 +3722,7 @@ funcion CompilarAWasm: ast, builtins
                      finfuncion)
         finfuncion
 
-        si procnr = (builtins#en: {__EM})
+        si procnr = (builtins#en: {__EM})#binding
             necesitas ast#argumentos#longitud = 3
             variables constPrototipo, prototipo
             fijar constPrototipo a GenerarIdDeConstante
@@ -4153,7 +4310,11 @@ finfuncion
 compilado.
 DOCUMENTA]
 procedimiento EmitirCompilado: compilado, puertoDeEscritura
-    compilado#emitirComoIR: puertoDeEscritura
+    DesparsearDato: puertoDeEscritura, compilado#comoSExpr
+finprocedimiento
+
+procedimiento EmitirTablaDeMódulos: tabla, puertoDeEscritura
+    DesparsearDato: puertoDeEscritura, tabla#comoSExpr
 finprocedimiento
 
 funcion ParsearYDefunc: programa
@@ -4216,24 +4377,78 @@ finprocedimiento
 clase CompiladorATuplas hereda Compilador#CompiladorBase
 finclase
 
-atributo CompiladorATuplas#nombresBuiltins
+atributos CompiladorATuplas#_nombresBootstrap,
+          CompiladorATuplas#_nombresBuiltins,
+          CompiladorATuplas#_experimentos
 
-metodo CompiladorATuplas#inicializar: db
+metodo CompiladorATuplas#inicializar: db, experimentos
     fijar yo#baseDeDatos a db
-    funcion datosDelBuiltin: binding, autoejecutable
-        devolver ObjetoAdHoc: {binding}, binding, {esAutoejecutable}, autoejecutable
+    fijar yo#_experimentos a experimentos
+    funcion datosDelBuiltin: binding, autoejecutable, importable
+        devolver ObjetoAdHoc: {binding}, binding,
+                              {esAutoejecutable}, autoejecutable,
+                              {esImportable}, importable
     finfuncion
-    fijar yo#nombresBuiltins a Diccionario#desdePares:
-        {__EACT}, (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO),
-        {__ESUP}, (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO),
-        {__RT}, (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO),
-        {__Tupla}, (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO),
-        {__EM}, (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO)
+
+    fijar yo#_nombresBootstrap a Diccionario#desdePares:
+        {__EACT},  (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     FALSO),
+        {__ESUP},  (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     FALSO),
+        {__RT},    (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     FALSO),
+        {__Tupla}, (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     FALSO),
+        {__EM},    (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, FALSO)
+
+    fijar yo#_nombresBuiltins a Diccionario#desdePares:
+        {Objeto},               (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {VERDADERO},            (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {FALSO},                (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {NULO},                 (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {Aplicar},              (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {ProcedimientoVarargs}, (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {TipoDe},               (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {__EnviarMensaje},      (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {__FallarConMensaje},   (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {__ClonarObjeto},       (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {__CompararObjeto},     (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {__AbrirArchivo},       (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {__ByteATexto},         (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {__TextoAByte},         (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {__ByteEof},            (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {__Capturar},           (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {__Argv},               (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {__LeerCaracter},       (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, VERDADERO),
+        {__Impl},               (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+
+        {Boole},                (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {Numero},               (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {Arreglo},              (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {Procedimiento},        (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {Texto},                (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {EspacioDeNombres},     (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {Referencia},           (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO),
+        {TipoNulo},             (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     VERDADERO)
+finmetodo
+
+metodo CompiladorATuplas#hayQueImportarBuiltins
+    devolver no Contiene: yo#_experimentos, {interno}
+finmetodo
+
+metodo CompiladorATuplas#builtins
+    variable res
+    fijar res a Diccionario#vacío
+    yo#_nombresBootstrap#paraCadaPar: procedimiento: llave, valor
+        res#fijarEn: llave, valor
+    finprocedimiento
+    si yo#hayQueImportarBuiltins
+        yo#_nombresBuiltins#paraCadaPar: procedimiento: llave, valor
+            res#fijarEn: llave, valor
+        finprocedimiento
+    finsi
+    devolver res
 finmetodo
 
 metodo CompiladorATuplas#compilarAST: llaveDeMódulo, ast, ámbito
     variable builtins, cc, ncc, ptesc
-    fijar builtins a yo#nombresBuiltins#mapear: funcion: nombre, datos
+    fijar builtins a yo#builtins#mapear: funcion: nombre, datos
         devolver Arreglo#crearCon: nombre, datos#binding
     finfuncion
 
@@ -4242,18 +4457,21 @@ metodo CompiladorATuplas#compilarAST: llaveDeMódulo, ast, ámbito
     Escribir: {---: AnotarIdentificadoresTextuales}
     AnotarIdentificadoresTextuales: ast
     Escribir: {---: AnotaLosNombresImportadosImplícitamente}
-    AnotaLosNombresImportadosImplícitamente: ast
+    variable bindingsBuiltins
+    fijar bindingsBuiltins a Arreglo#vacio
+    builtins#paraCadaLlave: &(bindingsBuiltins#agregarAlFinal)
+    AnotaLosNombresImportadosImplícitamente: ast, bindingsBuiltins
     Escribir: {---: AnotaciónDeCapturas}
     AnotaciónDeCapturas: ast
 
     Escribir: {---: EnumeraciónDeCapturas}
     variable callbacksDeLaEnumeración
     fijar callbacksDeLaEnumeración a Arreglo#vacio
-    EnumeraciónDeCapturas: ast, (EstadoDeEnumeraciónDeCapturas#desdeBuiltins: builtins), callbacksDeLaEnumeración
+    EnumeraciónDeCapturas: ast, (EstadoDeEnumeraciónDeCapturas#desdeBuiltins: builtins), callbacksDeLaEnumeración, yo#builtins
     necesitas callbacksDeLaEnumeración#longitud = 0
 
     Escribir: {---: EnumeraciónDeLocalesDeProcedimiento}
-    EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast)
+    EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast), yo#builtins
     Escribir: {---: AnotarBindingsLocales}
     AnotarBindingsLocales: ast
     Escribir: {---: AnotarLocalesInmediatas}
@@ -4265,7 +4483,8 @@ metodo CompiladorATuplas#compilarAST: llaveDeMódulo, ast, ámbito
     Escribir: {---: AnotarElProgramaConSuLlaveDeMódulo}
     AnotarElProgramaConSuLlaveDeMódulo: ast, llaveDeMódulo
     Escribir: {---: CompilarAWasm}
-    fijar cc a CompilarAWasm: ast, builtins
+    MarcaSiHayQueImportarBuiltins: ast, yo#hayQueImportarBuiltins
+    fijar cc a CompilarAWasm: ast, yo#builtins
     Escribir: {---: NormalizaLosIdsDeConstantes}
     fijar ncc a NormalizaLosIdsDeConstantes: cc
     Escribir: {---: NormalizaLosIdsDeLocales}
@@ -4273,10 +4492,11 @@ metodo CompiladorATuplas#compilarAST: llaveDeMódulo, ast, ámbito
 
     Escribir: {---: EmitirCompilado}
     fijar ptesc a PuertoParaTexto
-    EmitirCompilado: ncc, ptesc
+    DesparsearDato: ptesc, ncc#comoSExpr
+
     devolver clonar Compilador#ResultadoDeCompilación#crear con
         compilado: (TextoDePuertoDeEscritura: ptesc)
-        compiladoAbstracto: ncc
+        compiladoAbstracto: NULO
         informaciónDeDepuración: {}
     finclonar
 finmetodo
@@ -4306,7 +4526,7 @@ metodo CompiladorATuplas#importarMódulo: nombreDelMódulo
 finmetodo
 
 metodo CompiladorATuplas#inyectarNombresEnÁmbito: ámbito
-    yo#nombresBuiltins#paraCadaPar: funcion: nombre, datos
+    yo#builtins#paraCadaPar: funcion: nombre, datos
         ámbito#agregar: nombre, datos#binding
         si datos#esAutoejecutable
             ámbito#marcarComoAutoejecutable: nombre
@@ -4315,9 +4535,20 @@ metodo CompiladorATuplas#inyectarNombresEnÁmbito: ámbito
 finmetodo
 
 metodo CompiladorATuplas#removerNombresDeÁmbito: ámbito
-    yo#nombresBuiltins#paraCadaPar: funcion: nombre, datos
+    yo#builtins#paraCadaPar: funcion: nombre, datos
         ámbito#eliminarNombre: nombre
     finfuncion
+finmetodo
+
+metodo CompiladorATuplas#compilarTodo: llavePrincipal
+    variables móduloPrincipal, salida, programa
+    fijar móduloPrincipal a yo#baseDeDatos#buscarMóduloPorLlave: llavePrincipal
+    fijar salida a PuertoParaTexto
+    fijar programa a EnlazarMódulos: yo#baseDeDatos, llavePrincipal
+    programa#compilado#emitirComoIR: salida
+    salida#escribirTexto: {~%}#formatear
+    programa#tablaDeMódulos#emitirComoIR: salida
+    devolver TextoDePuertoDeEscritura: salida
 finmetodo
 
 
@@ -4401,14 +4632,19 @@ funcion MódulosDelPrograma: compilado
     devolver tabla
 finfuncion
 
+funcion CompiladoDesdeTexto: texto
+    devolver Compilado#desdeSExpr: (ParsearDato: (TextoComoPuerto: texto))
+finfuncion
+
 clase TablaDeMódulos
     atributo diccionarioDeMódulos
     metodo crear: diccionarioDeMódulos, compilado
     metodo emitirComoIR: puertoDeEscritura
     metodo comoSExpr
+    metodo estatico desdeSExpr: sexpr
 finclase
 
-metodo TablaDeMódulos#inicializar: diccionarioDeMódulos, compilado
+metodo TablaDeMódulos#inicializar: diccionarioDeMódulos
     fijar yo#diccionarioDeMódulos a diccionarioDeMódulos
 finmetodo
 
@@ -4429,6 +4665,14 @@ metodo TablaDeMódulos#comoSExpr
                     (par#en: 0),
                     (par#en: 1)
             finfuncion)
+finmetodo
+
+metodo estatico TablaDeMódulos#desdeSExpr: sexpr
+    devolver yo#crear: (Diccionario#desdeArreglo:
+        (Mapear: (PedazoDeArreglo: sexpr, 1, -1),
+                 funcion: mod
+                     devolver PedazoDeArreglo: mod, 1, -1
+                 finfuncion))
 finmetodo
 
 procedimiento EnlazarMódulos: baseDeDatos, llaveDelMóduloPrincipal
@@ -4569,7 +4813,7 @@ procedimiento EnlazarMódulos: baseDeDatos, llaveDelMóduloPrincipal
 
     baseDeDatos#paraCadaMódulo: procedimiento: módulo
         variable rotado
-        fijar rotado a rotarCompilado: módulo#compiladoAbstracto,
+        fijar rotado a rotarCompilado: (CompiladoDesdeTexto: módulo#compilado),
                                        incrementoDeConstante,
                                        incrementoDeProcedimiento
         fijar incrementoDeConstante a incrementoDeConstante + rotado#mayorÍndiceDeConstante + 1
@@ -4591,61 +4835,3 @@ procedimiento EnlazarMódulos: baseDeDatos, llaveDelMóduloPrincipal
     devolver ObjetoAdHoc: {compilado}, compiladoFinal,
                           {tablaDeMódulos}, (TablaDeMódulos#crear: (MódulosDelPrograma: compiladoFinal))
 finprocedimiento
-
-
-
-variables compilador, mod, programa, enlz, llave, ptesc
-fijar compilador a CompiladorATuplas#crear:
-    (Módulos#BaseDeDatos#conConfiguración:
-        (Módulos#ConfiguraciónGlobal#predeterminado: VERDADERO, (Arreglo#crearCon: {outputs/tuplas-y-mas/})))
-Escribir: ({Leyendo: ~t}#formatear: (__Argv#en: 0))
-Escribir: ({Escribiendo: ~t}#formatear: (__Argv#en: 1))
-fijar programa a SistemaDeArchivos#LeerArchivo: (__Argv#en: 0)
-fijar llave a Módulos#LlaveDeMódulo#crear: {.}, (__Argv#en: 0), {pd}
-Escribir: {======================================}
-fijar mod a compilador#compilarTexto: llave, programa
-Escribir: {======================================}
-compilador#baseDeDatos#agregarMódulo: mod
-Escribir: {Enlazando...}
-fijar enlz a EnlazarMódulos: compilador#baseDeDatos, llave
-Escribir: {¡Enlazado!}
-[ SistemaDeArchivos#EscribirArchivo: (__Argv#en: 1), mod#compilado ]
-fijar ptesc a PDA#PuertoDeArchivoDeEscritura#abrir: (__Argv#en: 1)
-Escribir: {Emitiendo...}
-EmitirCompilado: enlz#compilado, ptesc
-ptesc#escribirTexto: {~%}#formatear
-enlz#tablaDeMódulos#emitirComoIR: ptesc
-ptesc#cerrar
-Escribir: {¡Listo!}
-
-[ variables ast, resP, programa, cc, llaveMod ]
-[ fijar resP a ParsearYDefunc: programa ]
-[ fijar ast a resP#ast ]
-[ Escribir: {AnotarIdentificadoresTextuales} ]
-[ AnotarIdentificadoresTextuales: ast ]
-[ Escribir: {AnotaciónDeCapturas} ]
-[ AnotaciónDeCapturas: ast ]
-[ Escribir: {EnumeraciónDeCapturas} ]
-[ EnumeraciónDeCapturas: ast, (EstadoDeEnumeraciónDeCapturas#desdeBuiltins: resP#builtins) ]
-[ Escribir: {EnumeraciónDeLocalesDeProcedimiento} ]
-[ EnumeraciónDeLocalesDeProcedimiento: ast, (RN#ObtenerNombresDefinídos: ast) ]
-[ Escribir: {AnotarBindingsLocales} ]
-[ AnotarBindingsLocales: ast ]
-[ Escribir: {AnotarLocalesInmediatas} ]
-[ AnotarLocalesInmediatas: ast ]
-[ Escribir: {MarcaVariablesLocalesEnSubámbitos} ]
-[ MarcaVariablesLocalesEnSubámbitos: ast ]
-[ Escribir: {MarcaVariablesQueEstánEnElEntorno} ]
-[ MarcaVariablesQueEstánEnElEntorno: ast ]
-[ Escribir: {AnotarElProgramaConSuLlaveDeMódulo} ]
-[ AnotarElProgramaConSuLlaveDeMódulo: ast, (Módulos#LlaveDeMódulo#crear: {./hola}, {ejemplo}, {pd}) ]
-[ Escribir: {CompilarAWasm} ]
-[ fijar cc a CompilarAWasm: ast, resP#builtins ]
-[ variable ncc ]
-[ Escribir: {NormalizaLosIdsDeConstantes} ]
-[ fijar ncc a NormalizaLosIdsDeConstantes: cc ]
-[ Escribir: {====================} ]
-[ variable ptesc ]
-[ fijar ptesc a PDA#PuertoDeArchivoDeEscritura#abrir: (__Argv#en: 1) ]
-[ EmitirCompilado: (NormalizaLosIdsDeLocales: ncc), ptesc ]
-[ ptesc#cerrar ]

@@ -10,6 +10,7 @@ utilizar parser como Parser
 utilizar compilador como Compilador
 utilizar resoluciónDeNombres como RN
 utilizar backends/lua como LuaBack
+utilizar backends/tupla como TuplaBack
 utilizar módulos como Módulos
 utilizar _VERSIÓN (VERSIÓN, METADATOS_GIT)
 
@@ -63,6 +64,10 @@ Opciones:
  --ruta-de-bibliotecas <ruta>       : Agrega <ruta> a la lista de rutas en las
                                       que el compilador buscará bibliotecas y
                                       archivos.
+ --backend <backend>                : Selecciona el backend a usar. <backend>
+                                      debe ser `TUPLAS` o `LUA`.
+ --ignorar-salida                   : No guardes ni ejecutes la salida del
+                                      compilador.
 
 Si la opción `-b` no es especificada, la ruta a la BEPD se extráe de:
 
@@ -74,8 +79,9 @@ El sistema de experimentos te permite probar características experimentales o
 en etapa de prueba. Actualmente están implementados los siguientes
 experimentos:
 
- -X v3x  : No hace nada.
- -X v3   : Alias de `-X v3x`.
+ -X v3x      : No hace nada.
+ -X v3       : Alias de `-X v3x`.
+ -X interno  : Solo para el backend de tuplas: desactiva los builtins.
 
 Los siguientes parámetros pueden ser inspeccionados:
 
@@ -103,6 +109,22 @@ fijar MostrarVersión a Enum: {MostrarVersión},
     {SOLO_VERSIÓN},
     {METADATOS},
     {NO}
+
+[DOCUMENTA
+@brief{Todos los backends del compilador.}
+
+Es una enumeración que mapea el nombre de cada backend a su clase. Cada clase
+debe heredar a @pd{Compilador#CompiladorBase}.
+
+Se asume que cada una de estas clases se puede crear con un método estático
+@pd{Compilador#CompiladorBase#crear: baseDeDatos, experimentos} donde
+@code{baseDeDatos} es la @pd{Módulos#BaseDeDatos} a usar y @code{experimentos}
+es un @pd{Arreglo} de @pd{Texto}s con los experimentos activos.
+DOCUMENTA]
+variable Backends
+fijar Backends a EnumConValores: {Backends},
+    {LUA}, LuaBack#CompiladorALua,
+    {TUPLAS}, TuplaBack#CompiladorATuplas
 
 [DOCUMENTA
 @brief{Contexto de las opciones del CLI.}
@@ -222,6 +244,10 @@ clase ContextoDeCLI
     soporte de PseudoD v3. Esta implementación soporta PseudoD v3 sin opciones
     adicionales.}
     @item{@code{v3}: Alias de @code{v3x}.}
+
+    @item{@code{interno}: Utilizado por algunos backends, este experimento debe
+    activarse al compilar algunos módulos de la bepd. Básicamente desactiva la
+    definición automática de los builtins.}
     )
     DOCUMENTA]
     atributo experimentos
@@ -231,9 +257,27 @@ clase ContextoDeCLI
 
     Un @pd{Arreglo} de @pd{Texto}s con las rutas en las que se deberían buscar
     las bibliotecas. Estas rutas serán agregadas a la base de datos de módulos.
-
     DOCUMENTA]
     atributo rutasALasBibliotecas
+
+    [DOCUMENTA
+    @brief{Especifíca el backend a utilizar.}
+
+    Debe ser un valor de la enumeración @pd{Backends}.
+    DOCUMENTA]
+    atributo backendAUtilizar
+
+    [DOCUMENTA
+    @brief{Si se debería ignorar la salida del compilador.}
+
+    Un @pd{Boole}, si es @pd{VERDADERO} la salida no será ni ejecutada ni
+    guardada en un archivo. Si es @pd{FALSO} entonces la salida se procesará
+    normalmente.
+
+    Las opciones @pd{archivoDeSalida} y @pd{escribirCompilado} tienen prioridad
+    por sobre esta opción.
+    DOCUMENTA]
+    atributo ignorarSalida
 
     [DOCUMENTA
     @brief{Devuelve este contexto como un texto.}
@@ -270,10 +314,12 @@ metodo ContextoDeCLI#inicializar
     fijar yo#escribirCompilado a FALSO
     fijar yo#experimentos a Arreglo#vacio
     fijar yo#rutasALasBibliotecas a Arreglo#vacio
+    fijar yo#backendAUtilizar a Backends#LUA
+    fijar yo#ignorarSalida a FALSO
 finmetodo
 
 metodo ContextoDeCLI#comoTexto
-    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t, guardaBaseDeDatos ~t, cargaBasesDeDatos ~t, escribirCompilado ~t, experimentos ~t, rutasALasBibliotecas ~t)}#formatear:
+    devolver {(ContextoDeCLI con archivoAEjecutar a ~t, programaAEjecutar ~t, mostrarAyuda ~t, mostrarVersión ~t, rutaDeLaBEPD ~t, interactivo ~t, archivoDeSalida ~t, mostrarMensajes ~t, guardaBaseDeDatos ~t, cargaBasesDeDatos ~t, escribirCompilado ~t, experimentos ~t, rutasALasBibliotecas ~t, backendAUtilizar ~t, ignorarSalida ~t)}#formatear:
         yo#archivoAEjecutar,
         yo#programaAEjecutar,
         yo#mostrarAyuda,
@@ -286,7 +332,9 @@ metodo ContextoDeCLI#comoTexto
         yo#cargaBasesDeDatos,
         yo#escribirCompilado,
         yo#experimentos,
-        yo#rutasALasBibliotecas
+        yo#rutasALasBibliotecas,
+        yo#backendAUtilizar,
+        yo#ignorarSalida
 finmetodo
 
 metodo ContextoDeCLI#mostrarMensaje: texto
@@ -396,6 +444,15 @@ procedimiento ParsearOpción: ctx, arg, resto
         necesitas resto#longitud > 0
         ctx#rutasALasBibliotecas#agregarAlFinal: (resto#en: 0)
         devolver 1
+    finsi
+    si arg = {--backend}
+        necesitas resto#longitud > 0
+        fijar ctx#backendAUtilizar a Backends#desdeNombre: (resto#en: 0)
+        devolver 1
+    finsi
+    si arg = {--ignorar-salida}
+        fijar ctx#ignorarSalida a VERDADERO
+        devolver 0
     finsi
     devolver NULO
 finprocedimiento
@@ -521,8 +578,9 @@ procedimiento Compilar: ctx, programa
         arch#cerrar
     finprocedimiento
 
-    ctx#mostrarMensaje: {-- Inicializando el compilador a Lua}
-    fijar comp a LuaBack#CompiladorALua#crear: db
+    ctx#mostrarMensaje: ({-- Inicializando el compilador ~t}#formatear: ctx#backendAUtilizar#nombre)
+
+    fijar comp a ctx#backendAUtilizar#valor#crear: db, ctx#experimentos
 
     ctx#mostrarMensaje: {-- Compilando el programa...}
     si no EsNulo: ctx#archivoAEjecutar
@@ -533,9 +591,6 @@ procedimiento Compilar: ctx, programa
     fijar módulo a comp#compilarTexto: llave, programa
     db#agregarMódulo: módulo
 
-    ctx#mostrarMensaje: {-- Final...}
-    fijar compilado a comp#compilarTodo: llave
-
     si no EsNulo: ctx#guardaBaseDeDatos
         ctx#mostrarMensaje: ({-- Guardando base de datos en ~t}#formatear: ctx#guardaBaseDeDatos)
         variable arch
@@ -544,16 +599,31 @@ procedimiento Compilar: ctx, programa
         arch#cerrar
     finsi
 
+    ctx#mostrarMensaje: {-- Final...}
+    si ctx#ignorarSalida
+        si (no EsNulo: ctx#archivoDeSalida) || ctx#escribirCompilado
+            ctx#mostrarMensaje: {-- Las opciones --escribir-salida y -o / --salida tienen prioridad por sobre --ignorar-salida}
+            ctx#mostrarMensaje: {-- Ignorando --ignorar-salida}
+            fijar compilado a comp#compilarTodo: llave
+        sino
+            ctx#mostrarMensaje: {--- No se compila el programa final ya que no se va a guardar su salida}
+            fijar compilado a {}
+        finsi
+    sino
+        fijar compilado a comp#compilarTodo: llave
+    finsi
+
     si no EsNulo: ctx#archivoDeSalida
         ctx#mostrarMensaje: ({-- Guardando en ~t}#formatear: ctx#archivoDeSalida)
-        Archivos#EscribirArchivo: ctx#archivoDeSalida, (compilado#concatenar: {~%}#formatear)
+        Archivos#EscribirArchivo: ctx#archivoDeSalida, compilado
     finsi
 
     si ctx#escribirCompilado
         Escribir: compilado
     finsi
 
-    si (EsNulo: ctx#archivoDeSalida) && (no ctx#escribirCompilado)
+    si (EsNulo: ctx#archivoDeSalida) && (no ctx#escribirCompilado) && (no ctx#ignorarSalida)
+        necesitas ctx#backendAUtilizar = Backends#LUA
         [ Tiene que llamarse en "tail-position" ]
         devolver EvaluarPrograma: compilado
     finsi

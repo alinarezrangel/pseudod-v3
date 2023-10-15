@@ -80,6 +80,7 @@ funcion EnumConValores: nombre, ...camposYValores
         metodo valor
 
         metodo estatico comoTexto
+        metodo estatico desdeNombre: nombre
         metodo estatico desdeValor: valor
         metodo estatico metodoNoEncontrado: mensaje, argumentos
     finclase
@@ -100,6 +101,17 @@ funcion EnumConValores: nombre, ...camposYValores
 
     metodo estatico Enumeración#comoTexto
         devolver {Clase ~t}#formatear: nombre
+    finmetodo
+
+    metodo estatico Enumeración#desdeNombre: nombre'
+        devolver LlamarConEC: procedimiento: dev
+            dic#paraCadaPar: procedimiento: llave, valor
+                si llave = nombre'
+                    %dev: (yo#crear: llave, valor)
+                finsi
+            finprocedimiento
+            __FallarConMensaje: ({No hay enumeración de ~t (~t) con el nombre ~t}#formatear: (TipoDe: yo), nombre, nombre')
+        finprocedimiento
     finmetodo
 
     metodo estatico Enumeración#desdeValor: valor

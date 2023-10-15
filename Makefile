@@ -37,7 +37,7 @@ bepd/x/puerto/deArchivo.pd bepd/x/sistemaDeArchivos/archivo.pd
 COMPILER_FILES = $(BEPD_FILES) ámbito.pd ast.pd caminaNodos.pd combinadores.pd	\
 compilador.pd inicio.pd módulos.pd parser.pd resoluciónDeNombres.pd				\
 tokenizador.pd tokens.pd defuncionalización.pd metadatos.pd _VERSIÓN.pd			\
-backends/lua.pd backends/lua/emisor.pd backends/wasm.pd
+backends/lua.pd backends/lua/emisor.pd backends/wasm.pd backends/tupla.pd
 
 DIST_EXTRA_FILES = README.md $(DOCS_DIR)/man/pseudod.1	\
 $(DOCS_DIR)/man/pseudod.html $(DOCS_DIR)/man/pseudod.md
