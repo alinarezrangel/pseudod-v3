@@ -4459,7 +4459,7 @@ metodo CompiladorATuplas#compilarAST: llaveDeMódulo, ast, ámbito
     Escribir: {---: AnotaLosNombresImportadosImplícitamente}
     variable bindingsBuiltins
     fijar bindingsBuiltins a Arreglo#vacio
-    builtins#paraCadaLlave: &(bindingsBuiltins#agregarAlFinal)
+    builtins#paraCadaValor: &(bindingsBuiltins#agregarAlFinal)
     AnotaLosNombresImportadosImplícitamente: ast, bindingsBuiltins
     Escribir: {---: AnotaciónDeCapturas}
     AnotaciónDeCapturas: ast

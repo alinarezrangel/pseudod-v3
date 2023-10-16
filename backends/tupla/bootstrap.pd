@@ -269,7 +269,7 @@ funcion __TextoFormatear: yo, ...valores
         finsi
     finmientras
 
-    devolver res#unir
+    devolver __RT#construirTexto: res
 finfuncion
 
 funcion __ObtenerCLI
@@ -366,9 +366,6 @@ funcion __CompararObjeto: A, B
     devolver VERDADERO
 finfuncion
 
-variable __ByteEof
-fijar __ByteEof a -1
-
 variable __MsjObtenerAtributos
 fijar __MsjObtenerAtributos a procedimiento: msj, ...args
     variable yo
@@ -385,6 +382,27 @@ fijar __MsjObtenerAtributos a procedimiento: msj, ...args
     si msj = {comoTexto}
         necesitas args#longitud = 0
         devolver {__MsjObtenerAtributos}
+    finsi
+
+    ErrorDeMensajeNoEncontrado: msj, {En la instancia del mensaje especial __MsjObtenerAtributos}
+finprocedimiento#comoObjeto
+
+variable __MsjObtenerClase
+fijar __MsjObtenerClase a procedimiento: msj, ...args
+    variable yo
+    fijar yo a __ESUP
+
+    si (msj = {igualA}) || (msj = {operador_=})
+        necesitas args#longitud = 1
+        devolver __SonElMismoObjeto: yo, (args#en: 0)
+    finsi
+    si msj = {clonar}
+        necesitas args#longitud = 0
+        devolver yo
+    finsi
+    si msj = {comoTexto}
+        necesitas args#longitud = 0
+        devolver {__MsjObtenerClase}
     finsi
 
     ErrorDeMensajeNoEncontrado: msj, {En la instancia del mensaje especial __MsjObtenerAtributos}
@@ -424,16 +442,17 @@ funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
             devolver atrs
         finsi
 
+        si msj = __MsjObtenerClase
+            necesitas args#longitud = 0
+            devolver cls
+        finsi
+
         variable proc
         fijar proc a buscarMensaje: msj
         si no __SonElMismoObjeto: proc, NULO
             devolver %proc: instProxy, ...args
         finsi
 
-        si msj = {__tipo}
-            necesitas args#longitud = 0
-            devolver cls
-        finsi
         si (msj = {igualA}) || (msj = {operador_=})
             necesitas args#longitud = 1
             devolver __CompararObjeto: instReal, (args#en: 0)
@@ -766,4 +785,77 @@ metodo estatico Arreglo#conValores: ...valores
 finmetodo
 
 
-[ TODO: TipoDe, __AbrirArchivo, __TextoAByte, __ByteATexto, __LeerCaracter ]
+clase PunteroExterno hereda Objeto
+    metodo estatico crear
+finclase
+
+metodo estatico PunteroExterno#crear
+    __FallarConMensaje: {No se puede crear un puntero externo manualmente}
+finmetodo
+
+
+funcion TipoDe: objeto
+    si (__EsUn: objeto, __TOBJ_ENTERO) || (__EsUn: objeto, __TOBJ_FLOAT)
+        devolver Numero
+    finsi
+    si __EsUn: objeto, __TOBJ_BOOLEANO
+        devolver Boole
+    finsi
+    si __EsUn: objeto, __TOBJ_NULO
+        devolver TipoNulo
+    finsi
+    si __EsUn: objeto, __TOBJ_CLOSURE
+        devolver Procedimiento
+    finsi
+    si __EsUn: objeto, __TOBJ_ESPACIO_DE_NOMBRES
+        devolver EspacioDeNombres
+    finsi
+    si __EsUn: objeto, __TOBJ_ARREGLO
+        devolver Arreglo
+    finsi
+    si __EsUn: objeto, __TOBJ_TEXTO
+        devolver Texto
+    finsi
+    si __EsUn: objeto, __TOBJ_VOIDPTR
+        devolver PunteroExterno
+    finsi
+    si __EsUn: objeto, __TOBJ_MARCA_DE_PILA
+        __FallarConMensaje: {Error interno del runtime: marca de pila detectada en TipoDe.
+Este error no es en tu programa: por favor, repórtalo como un bug.}
+    finsi
+    si __EsUn: objeto, __TOBJ_OBJETO
+        devolver __EnviarMensaje: objeto, __MsjObtenerClase, __CrearArreglo
+    finsi
+
+    __FallarConMensaje: {Error interno del runtime: TipoDe recibió un objeto de dudosa procedencia.
+Este error no es en tu programa: por favor, repórtalo como un bug.}
+finfuncion
+
+variable __ByteEof
+fijar __ByteEof a -1
+
+procedimiento __LeerCaracter
+    devolver __RT#leerCaracter
+finprocedimiento
+
+funcion __ByteATexto: byte
+    si (byte < 0) || (byte > 255)
+        __FallarConMensaje: ({__ByteATexto: ~t debería ser un byte (un entero entre 0 y 255)}#formatear: byte)
+    finsi
+    devolver byte#comoByteEnTexto
+finfuncion
+
+funcion __TextoAByte: texto
+    si no (texto#longitud = 1)
+        __FallarConMensaje: ({__TextoAByte: ~t debería ser un texto de un solo byte}#formatear: texto)
+    finsi
+    devolver texto#byteEn: 0
+finfuncion
+
+procedimiento __AbrirArchivo: nombre, modo
+    devolver __RT#abrirArchivo: nombre, modo
+finprocedimiento
+
+funcion __Capturar: cuerpo
+    __FallarConMensaje: {__Capturar aún no está implementado}
+finfuncion
