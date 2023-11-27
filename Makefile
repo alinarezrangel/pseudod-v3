@@ -42,8 +42,8 @@ backends/lua.pd backends/lua/emisor.pd backends/wasm.pd backends/tupla.pd
 DIST_EXTRA_FILES = README.md $(DOCS_DIR)/man/pseudod.1	\
 $(DOCS_DIR)/man/pseudod.html $(DOCS_DIR)/man/pseudod.md
 
-LUA_RUNTIME_FILES = backends/lua/b64.lua backends/lua/errloc.lua	\
-backends/lua/runtime.lua backends/lua/exts.lua
+LUA_RUNTIME_FILES = backends/lua/b64.lua backends/lua/errloc.lua		\
+backends/lua/runtime.lua backends/lua/exts.lua backends/lua/sexpr.lua
 
 EDITOR_FILES = $(EDITOR_FILES_DIR)/emacs/pseudod.el	\
 $(EDITOR_FILES_DIR)/emacs/pseudod-profiler.el

@@ -115,7 +115,7 @@ funcion DesescaparTexto: texto
 finfuncion
 
 variable EXTRA_ID
-fijar EXTRA_ID a {-+<>}
+fijar EXTRA_ID a {+-*/<>=_}
 
 [DOCUMENTA
 @brief{Determina si @pd{ch} es un carácter válido para un símbolo.}
@@ -240,6 +240,16 @@ Las listas son transformadas a instancias de @pd{Arreglo}. "true" y "false" a
 @pd{VERDADERO} y @pd{FALSO}, y números a @pd{Numero}.
 DOCUMENTA]
 procedimiento ParsearDato: puerto
+    si __Impl = {Lua Bootstrap}
+        variable parsear
+        fijar parsear a __Lua: {function() return (require 'backends.lua.sexpr').convert end}
+        devolver %parsear: Símbolo, Arreglo, (Puerto#LeerTodo: puerto)
+    sino
+        devolver _ParsearDato: puerto
+    finsi
+finprocedimiento
+
+procedimiento _ParsearDato: puerto
     variable ch
     Puerto#SaltarEspacios: puerto
     fijar ch a puerto#leerCarácter
