@@ -197,7 +197,7 @@ finfuncion
 
 funcion ParsearYDefunc: programa
     variable ast
-    fijar ast a Parser#CrearAST: programa
+    fijar ast a Parser#CrearAST: programa, {}
 
     variable ámbitoPrincipal
     fijar ámbitoPrincipal a RN#ResolverNombres:

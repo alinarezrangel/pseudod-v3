@@ -300,7 +300,8 @@ procedimiento MostrarTokenizadoDeTexto: txt
     fijar tknz a
         Tokenizador#crear:
             (PuertoConPos#PuertoConPosiciónTextual#crear:
-                (Puerto#TextoComoPuerto: txt))
+                (Puerto#TextoComoPuerto: txt),
+                {})
     variable T
     fijar T a tknz#tokenizarSiguiente
     mientras no T = Puerto#EOF

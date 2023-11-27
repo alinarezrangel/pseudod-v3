@@ -60,7 +60,7 @@ finmetodo
 Provee la misma interfáz que un @pd{Puerto#PuertoDeLectura}.
 DOCUMENTA]
 clase PuertoConPosiciónTextual hereda Puerto#Puerto
-    metodo inicializar: puerto
+    metodo inicializar: puerto, nombreDelArchivo
 
     metodo leerCarácter
     metodo desleerCarácter
@@ -78,15 +78,17 @@ atributos
     PuertoConPosiciónTextual#línea,
     PuertoConPosiciónTextual#columna,
     PuertoConPosiciónTextual#offset,
+    PuertoConPosiciónTextual#nombreDelArchivo,
     PuertoConPosiciónTextual#viejaLínea,
     PuertoConPosiciónTextual#viejaColumna,
     PuertoConPosiciónTextual#viejoOffset
 
-metodo PuertoConPosiciónTextual#inicializar: puerto
+metodo PuertoConPosiciónTextual#inicializar: puerto, nombreDelArchivo
     fijar yo#puerto a puerto
     fijar yo#línea a 1
     fijar yo#columna a 0
     fijar yo#offset a 0
+    fijar yo#nombreDelArchivo a nombreDelArchivo
     fijar yo#viejaLínea a 1
     fijar yo#viejaColumna a 0
     fijar yo#viejoOffset a 0
@@ -119,5 +121,5 @@ metodo PuertoConPosiciónTextual#desleerCarácter
 finmetodo
 
 metodo PuertoConPosiciónTextual#posiciónActual
-    devolver PosiciónTextual#crear: {}, yo#línea, yo#columna, yo#offset
+    devolver PosiciónTextual#crear: yo#nombreDelArchivo, yo#línea, yo#columna, yo#offset
 finmetodo

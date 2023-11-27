@@ -149,7 +149,7 @@ procedimiento Inicio: archivosDeEntrada, nombreDelArchivoTags
     ParaCadaElemento: archivosDeEntrada, procedimiento: archivoDeEntrada
         variables ast, extractor, tags
         Escribir: ({Leyendo ~t}#formatear: archivoDeEntrada)
-        fijar ast a Parser#CrearAST: (Archivos#LeerArchivo: archivoDeEntrada)
+        fijar ast a Parser#CrearAST: (Archivos#LeerArchivo: archivoDeEntrada), archivoDeEntrada
         fijar extractor a ExtraeDeclrs#crear
         extractor#visitar: ast
         fijar tags a GenerarArchivoEtags: archivoDeEntrada, extractor#declaraciones

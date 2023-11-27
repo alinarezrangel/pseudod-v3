@@ -1058,7 +1058,8 @@ procedimiento MostrarTokenizadoDeTexto: txt
     fijar tknz a
         Tokenizador#Tokenizador#crear:
             (PuertoConPos#PuertoConPosiciónTextual#crear:
-                (Puerto#TextoComoPuerto: txt))
+                (Puerto#TextoComoPuerto: txt),
+                {})
     fijar tks a Comb#Tokens#desdeTokenizador: tknz
     MostrarTokenizado: tks
 finprocedimiento
@@ -1091,7 +1092,8 @@ procedimiento MostrarParseadoDeTexto: txt, gr
     fijar tknz a
         Tokenizador#Tokenizador#crear:
             (PuertoConPos#PuertoConPosiciónTextual#crear:
-                (Puerto#TextoComoPuerto: txt))
+                (Puerto#TextoComoPuerto: txt),
+                {})
     fijar tks a Comb#Tokens#desdeTokenizador: tknz
     MostrarParseado: tks, gr
 finprocedimiento
@@ -1133,10 +1135,14 @@ finfuncion
 Parsea @pd{textoOPuerto}. Si es un texto es convertido a un puerto y luego a un
 puerto con posición. Acepta tanto un puerto normal como un puerto con posición.
 
+@pd{nombreDelArchivo} es el nombre del archivo que se va a parsear. Solo es
+necesario si @pd{textoOPuerto} no es un
+@pd{PuertoConPos#PuertoConPosiciónTextual}.
+
 Devuelve el @pd{AST#NodoPrograma} del programa parseado. Si hay un error de
 parseo escribe a la salida estándar el traceback y lanza una excepción.
 DOCUMENTA]
-procedimiento CrearAST: textoOPuerto
+procedimiento CrearAST: textoOPuerto, nombreDelArchivo
     variables tks, tknz, pt
     si EsInstancia: textoOPuerto, Texto
         fijar pt a Puerto#TextoComoPuerto: textoOPuerto
@@ -1144,7 +1150,7 @@ procedimiento CrearAST: textoOPuerto
         fijar pt a textoOPuerto
     finsi
     si no EsInstancia: pt, PuertoConPos#PuertoConPosiciónTextual
-        fijar pt a PuertoConPos#PuertoConPosiciónTextual#crear: pt
+        fijar pt a PuertoConPos#PuertoConPosiciónTextual#crear: pt, nombreDelArchivo
     finsi
     fijar tknz a Tokenizador#Tokenizador#crear: pt
     fijar tks a Comb#Tokens#desdeTokenizador: tknz

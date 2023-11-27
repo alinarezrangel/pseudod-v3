@@ -84,5 +84,5 @@ otra línea.
 »
 variable ps
 fijar ps a Puerto#PuertoParaTexto
-SExpr#DesparsearDato: ps, (LeerScribble: (PuertoConPos#PuertoConPosiciónTextual#crear: (Puerto#TextoComoPuerto: ejemplo)))
+SExpr#DesparsearDato: ps, (LeerScribble: (PuertoConPos#PuertoConPosiciónTextual#crear: (Puerto#TextoComoPuerto: ejemplo), {}))
 Escribir: (Puerto#TextoDePuertoDeEscritura: ps)

@@ -135,7 +135,7 @@ finmetodo
 metodo CompiladorBase#compilarPuerto: llaveDeMódulo, puerto
     variables ast, ámbito, res
     Escribir: ({---- Parsear: ~t}#formatear: llaveDeMódulo)
-    fijar ast a Parser#CrearAST: puerto
+    fijar ast a Parser#CrearAST: puerto, llaveDeMódulo#nombreCompletoDelArchivo
     Escribir: ({---- RN: ~t}#formatear: llaveDeMódulo)
     fijar ámbito a RN#ResolverNombres: ast, procedimiento: nombreDelMódulo
         devolver yo#importarMódulo: nombreDelMódulo
