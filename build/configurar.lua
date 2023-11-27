@@ -1,3 +1,5 @@
+#!/usr/bin/env lua5.4
+
 function fprint(handle, ...)
    local args = {...}
    for i = 1, select("#", ...) do
@@ -9,6 +11,10 @@ function fprint(handle, ...)
    handle:write "\n"
 end
 
+function fprintf(handle, fmt, ...)
+   fprint(handle, string.format(fmt, ...))
+end
+
 function print(...)
    fprint(io.stdout, ...)
 end
@@ -18,11 +24,11 @@ function eprint(...)
 end
 
 function printf(fmt, ...)
-   print(string.format(fmt, ...))
+   fprint(io.stdout, fmt, ...)
 end
 
 function eprintf(fmt, ...)
-   eprint(string.format(fmt, ...))
+   fprint(io.stderr, fmt, ...)
 end
 
 local function title(tt)
@@ -58,62 +64,36 @@ end
 ----------------------------------------------------------------------
 
 local function check_lua_dep(tbl)
-   if not tbl.module and tbl.modules then
-      local sc = {}
-      for k, v in pairs(tbl) do
-         sc[k] = v
-      end
-      for i = 1, #tbl.modules do
-         sc.module = tbl.modules[i]
-         check_lua_dep(sc)
-      end
-   else
-      if not pcall(require, tbl.module) then
-         if tbl.rock then
-            local msg = ([[No se pudo importar %q.
-La dependencia %s no se ha podido satisfacer. Intenta con:
-
-  1. Instalar la "roca" %s con LuaRocks (https://luarocks.org/).
-  2. Instalar la dependencia manualmente:
-
-     Repositorio del proyecto: %s
-     Página principal: %s]])
-            eprintf(msg,
-                    tbl.module, tbl.dep,
-                    tbl.rock,
-                    tbl.repo_page, tbl.page)
-         else
-            local msg = ([[No se pudo importar %q.
-La dependencia %s no se ha podido satisfacer. Intenta con instalar la
-dependencia manualmente:
-
-Repositorio del proyecto: %s
-Página principal: %s]])
-            eprintf(msg,
-                    tbl.module, tbl.dep,
-                    tbl.repo_page, tbl.page)
-         end
+   for i = 1, #tbl.modules do
+      local module_name = tbl.modules[i]
+      if not pcall(require, module_name) then
+         eprintf(tbl.message, module_name)
          failure()
       end
    end
 end
 
-
 check_lua_dep {
    modules = {"posix.dirent", "posix.sys.stat"},
-   dep = "luaposix",
-   rock = "luaposix",
-   repo_page = "https://github.com/luaposix/luaposix/",
-   page = "https://luaposix.github.io/luaposix/",
+   message = ([[No se pudo importar %q.
+No he podido importar luaposix. Intenta con:
+
+  1. Instalar la "roca" luaposix con LuaRocks (https://luarocks.org/).
+  2. Instalar la dependencia manualmente:
+
+     Repositorio del proyecto: https://github.com/luaposix/luaposix/
+     Página principal: https://luaposix.github.io/luaposix/]]),
 }
 
 check_lua_dep {
    modules = {"build.utils", "build.getopt",
               "build.file-systems.posix"},
-   dep = "build.lua",
-   rock = false,
-   repo_page = "https://github.com/alinarezrangel/build",
-   page = "https://alinarezrangel.github.io/build/",
+   message = ([[No se pudo importar %q.
+No he podido importar build.lua. Intenta con instalar la dependencia
+manualmente:
+
+Repositorio del proyecto: https://github.com/alinarezrangel/build
+Página principal: https://alinarezrangel.github.io/build/]]),
 }
 
 
@@ -193,7 +173,10 @@ Las opciones de configuración son:
 
 --via VIA
   Usa VIA como el valor de la variable VIA. Esta opción hará que no se
-  autodetecte el valor de VIA.]]
+  autodetecte el valor de VIA.
+
+El archivo `docs/build.md` contiene información sobre estas variables y
+opciones.]]
 
 if options.show_help then
    print(HELP)
