@@ -1,0 +1,139 @@
+utilizar bepd/builtins
+utilizar bepd/utilidades/texto (Unir)
+utilizar bepd/x/puerto/deArchivo como PDA
+utilizar módulos como Módulos
+
+procedimiento Mensaje: ...args
+    si __Impl = {Lua Bootstrap}
+        variables msj, TAB
+        fijar TAB a {	} [ ¡No elimines este tabulador! ]
+        fijar msj a Unir: (Mapear: args, (MétodoComoFunción: {comoTexto})), TAB
+        __Lua: {function(m)
+   io.stderr:write(m)
+   io.stderr:write '\n'
+end}, msj
+    sino
+        [ Es mejor no escribir nada para no mezclar la salida real en stdout
+          con la informativa en stderr. ]
+    finsi
+finprocedimiento
+
+procedimiento MostrarAyuda
+    Escribir: {Herramienta para manipular bases de datos de módulos.
+
+Uso: [programa] (-c ARCHIVO | -e NOMBRE | -g ARCHIVO)...
+
+Las opciones son procesadas en el orden dado. Estas son:
+
+-c ARCHIVO
+--cargar ARCHIVO
+    Carga la base de datos guardada en el archivo dado.
+
+-g ARCHIVO
+--guardar ARCHIVO
+    Guarda la base de datos en el archivo dado.
+
+-e NOMBRE
+--eliminar NOMBRE
+    Borra el módulo con el nombre dado. Por ejemplo: -e bepd/builtins
+
+-E ARCHIVO
+--eliminar-archivo ARCHIVO
+    Borra el módulo correspondiente al archivo dado. Por ejemplo:
+    -E /usr/src/pseudod/bepd/builtins.pd}
+finprocedimiento
+
+variables db, i
+fijar i a 0
+fijar db a Módulos#BaseDeDatos#conConfiguración: Módulos#ConfiguraciónGlobal#vacía
+
+funcion QuedanArgumentosPorProcesar
+    devolver i < __Argv#longitud
+finfuncion
+
+funcion Argumento
+    necesitas i < __Argv#longitud
+    devolver __Argv#en: i
+finfuncion
+
+procedimiento SiguienteArgumento
+    fijar i a i + 1
+    necesitas i < __Argv#longitud
+    devolver __Argv#en: i
+finprocedimiento
+
+procedimiento ProcesarSiguienteArgumento
+    si (Argumento = {-h}) || (Argumento = {--help}) || (Argumento = {--ayuda})
+        MostrarAyuda
+        devolver VERDADERO
+    finsi
+
+    si (Argumento = {-c}) || (Argumento = {--cargar})
+        variables arch, nombreDelArchivo
+        fijar nombreDelArchivo a SiguienteArgumento
+        Mensaje: {Cargando}, nombreDelArchivo
+        fijar arch a PDA#PuertoDeArchivoDeLectura#abrir: nombreDelArchivo
+        db#cargarMódulos: arch
+        arch#cerrar
+        Mensaje: {Cargado}
+        devolver FALSO
+    finsi
+
+    si (Argumento = {-e}) || (Argumento = {--eliminar})
+        variables nombreDelMódulo, mod
+        fijar nombreDelMódulo a SiguienteArgumento
+        fijar mod a db#buscarMóduloPorNombre: nombreDelMódulo
+        si no EsNulo: mod
+            Mensaje: {Eliminando}, nombreDelMódulo, {que es}, mod#llave#nombreCompletoDelArchivo
+            db#eliminaMódulo: mod
+        sino
+            Mensaje: {No pude encontrar el módulo con el nombre}, nombreDelMódulo
+        finsi
+        devolver FALSO
+    finsi
+
+    si (Argumento = {-E}) || (Argumento = {--eliminar-archivo})
+        variables nombreDelArchivo, mod
+        fijar nombreDelArchivo a SiguienteArgumento
+        fijar mod a LlamarConEC: procedimiento: encontré
+            db#paraCadaMódulo: procedimiento: mod
+                si mod#llave#nombreCompletoDelArchivo = nombreDelArchivo
+                    %encontré: mod
+                finsi
+            finprocedimiento
+            devolver NULO
+        finprocedimiento
+        si no EsNulo: mod
+            Mensaje: {Eliminando}, mod#llave#nombre, {que es}, mod#llave#nombreCompletoDelArchivo
+            db#eliminaMódulo: mod
+        sino
+            Mensaje: {No pude encontrar el módulo con el archivo}, nombreDelArchivo
+        finsi
+        devolver FALSO
+    finsi
+
+    si (Argumento = {-g}) || (Argumento = {--guardar})
+        variables arch, nombreDelArchivo
+        fijar nombreDelArchivo a SiguienteArgumento
+        Mensaje: {Guardando en}, nombreDelArchivo
+        fijar arch a PDA#PuertoDeArchivoDeEscritura#abrir: nombreDelArchivo
+        db#guardarMódulos: arch
+        arch#cerrar
+        Mensaje: {Guardado}
+        devolver FALSO
+    finsi
+
+    __FallarConMensaje: ({No se pudo procesar el argumento de la línea de comandos ~t}#formatear: Argumento)
+finprocedimiento
+
+LlamarConEC: procedimiento: salir
+    mientras QuedanArgumentosPorProcesar
+        Mensaje: {Opción}, Argumento
+        si ProcesarSiguienteArgumento
+            %salir: NULO
+        finsi
+        fijar i a i + 1
+    finmientras
+finprocedimiento
+
+Mensaje: {Listo}
