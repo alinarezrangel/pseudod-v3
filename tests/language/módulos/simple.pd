@@ -1,0 +1,9 @@
+funcion Sumar: N
+    devolver N + 2
+finfuncion
+
+procedimiento Hola: nombre
+    escribir {¡Hola }
+    escribir nombre#comoTexto
+    escribir {!~%}#formatear
+finprocedimiento

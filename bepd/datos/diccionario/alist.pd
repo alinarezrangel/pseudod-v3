@@ -45,7 +45,7 @@ clase DiccionarioAlist hereda IDiccionario
     metodo estatico desdePares: ...valores
 finclase
 
-atributos DiccionarioAlist#_pares
+atributo DiccionarioAlist#_pares
 
 metodo estatico DiccionarioAlist#vacío
     variable inst
@@ -227,7 +227,7 @@ metodo DiccionarioAlist#igualA: otro
 
     [ Para ver una explicación de como funciona esto, véase el mismo método en
       DiccionarioHashMap. ]
-    [ NOTA: Este método es O(n^2)! ]
+    [ NOTA: ¡Este método es O(n^2)! ]
     devolver LlamarConEC: procedimiento: \devolver\
         yo#paraCadaPar: procedimiento: llave, valor
             si no otro#contiene: llave

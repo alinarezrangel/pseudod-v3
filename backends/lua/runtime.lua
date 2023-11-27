@@ -1786,7 +1786,7 @@ function M.abrirArchivo(path, mode)
    end
    file.methods["finDelArchivo"] = function(self)
       assert(self:getfile() ~= nil)
-      return not self:getfile():read()
+      return not self:getfile():read(0)
    end
    file.methods["error"] = function(self)
       return false

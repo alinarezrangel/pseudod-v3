@@ -115,8 +115,8 @@ clase Ámbito
 
     @ejemplo|{
     Arreglo#crearCon:
-        "Hola", (DatosDevariable#crear: 1, FALSO, NULO, NULO),
-        "Mundo", (DatosDevariable#crear: 2, FALSO, NULO, NULO)
+        "Hola", (DatosDeVariable#crear: 1, FALSO, NULO, NULO),
+        "Mundo", (DatosDeVariable#crear: 2, FALSO, NULO, NULO)
     }|
 
     Creará un ámbito con las variables @pd{"Hola"} y @pd{"Mundo"}.
@@ -163,6 +163,13 @@ clase Ámbito
     metodo agregar: nombre, valor
 
     [DOCUMENTA
+    @brief{Agrega un nombre al ámbito.}
+
+    Agrega @pd{nombre} al ámbitl. @pd{datos} serán sus @pd{DatosDeVariable}.
+    DOCUMENTA]
+    metodo agregarConDatos: nombre, datos
+
+    [DOCUMENTA
     @brief{Marca una variable como autoejecutable.}
 
     Si este ámbito no contiene al nombre, prueba con su ámbito padre
@@ -201,6 +208,14 @@ clase Ámbito
     recursivamente.
     DOCUMENTA]
     metodo obtenerBinding: nombre
+
+    [DOCUMENTA
+    @brief{Obtiene los @pd{DatosDeVariable} de un binding.}
+
+    @pd{binding} es el binding de la variable a obtener, la cual debe existir
+    en este ámbito o uno superior.
+    DOCUMENTA]
+    metodo obtenerDatosDeVariable: binding
 
     [DOCUMENTA
     @brief{Determina si una variable es autoejecutable.}
@@ -304,7 +319,10 @@ clase Ámbito
     metodo ámbitoDondeSeDefine: binding
 finclase
 
-atributos Ámbito#_mapeo, Ámbito#_todosLosBindings, Ámbito#_númeroDeBindings
+atributos Ámbito#_mapeo,
+          Ámbito#_mapeoDeBindings,
+          Ámbito#_todosLosBindings,
+          Ámbito#_númeroDeBindings
 
 [ #_númeroDeBindings es el número de bindings de este ámbito y sus
   subámbitos. Increméntalo con #_incrementarNumBindings. ]
@@ -316,21 +334,25 @@ finmetodo
 metodo estatico Ámbito#desdeArreglo: lst
     variable inst
     fijar inst a yo#crear
-    fijar inst#_mapeo a Diccionario#desdeArreglo: lst
-    fijar inst#_númeroDeBindings a lst#longitud
+    ParaCadaElemento: lst, procedimiento: par
+        inst#agregarConDatos: (par#en: 0), (par#en: 1)
+    finprocedimiento
     devolver inst
 finmetodo
 
 metodo estatico Ámbito#conValores: ...vals
     variable inst
     fijar inst a yo#crear
-    fijar inst#_mapeo a __EnviarMensaje: Diccionario, {desdePares}, vals
-    fijar inst#_númeroDeBindings a vals#longitud / 2
+    necesitas EsPar: vals#longitud
+    ParaCadaNúmeroConPaso: 0, vals#longitud, 2, procedimiento: i
+        inst#agregarConDatos: (vals#en: i), (vals#en: (i + 1))
+    finprocedimiento
     devolver inst
 finmetodo
 
 metodo Ámbito#inicializar
     fijar yo#_mapeo a Diccionario#vacío
+    fijar yo#_mapeoDeBindings a Diccionario#vacío
     fijar yo#_todosLosBindings a Arreglo#vacio
     fijar yo#_númeroDeBindings a 0
     fijar yo#ámbitoPadre a NULO
@@ -344,8 +366,13 @@ metodo Ámbito#_incrementarNumBindings
 finmetodo
 
 metodo Ámbito#agregar: nombre, binding
-    yo#_mapeo#fijarEn: nombre, (DatosDeVariable#crear: binding, FALSO, NULO, NULO)
-    yo#_todosLosBindings#agregarAlFinal: binding
+    yo#agregarConDatos: nombre, (DatosDeVariable#crear: binding, FALSO, NULO, NULO)
+finmetodo
+
+metodo Ámbito#agregarConDatos: nombre, datos
+    yo#_mapeo#fijarEn: nombre, datos
+    yo#_mapeoDeBindings#fijarEn: datos#binding, datos
+    yo#_todosLosBindings#agregarAlFinal: datos#binding
     yo#_incrementarNumBindings
 finmetodo
 
@@ -396,6 +423,18 @@ finmetodo
 
 metodo Ámbito#obtenerBinding: nombre
     devolver (yo#_obtener: nombre)#binding
+finmetodo
+
+metodo Ámbito#obtenerDatosDeVariable: binding
+    si yo#_mapeoDeBindings#contiene: binding
+        devolver yo#_mapeoDeBindings#en: binding
+    sino
+        si EsNulo: yo#ámbitoPadre
+            __FallarConMensaje: ({El ámbito no contiene el binding ~t}#formatear: binding)
+        sino
+            devolver yo#ámbitoPadre#obtenerDatosDeVariable: binding
+        finsi
+    finsi
 finmetodo
 
 metodo Ámbito#esAutoejecutable: nombre

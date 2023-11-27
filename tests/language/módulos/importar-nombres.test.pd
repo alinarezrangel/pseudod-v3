@@ -1,0 +1,11 @@
+{
+    "nombre": "Importar nombres directamente",
+    "espera": "éxito",
+    "salida contiene": "¡hola mundo!\n5\n"
+}
+====================
+utilizar simple (Sumar, Hola)
+
+Hola: {mundo}
+escribir Sumar: 3
+nl

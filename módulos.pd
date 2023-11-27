@@ -344,6 +344,14 @@ clase BaseDeDatos
     metodo agregarMódulo: módulo
 
     [DOCUMENTA
+    @brief{Elimina un módulo de la base de datos.}
+
+    Si el módulo no existe, devuelve @pd{FALSO} y no hace nada. Si el módulo
+    existe, lo borra y devuelve @pd{VERDADERO}.
+    DOCUMENTA]
+    metodo eliminaMódulo: módulo
+
+    [DOCUMENTA
     @brief{Itera sobre cada módulo.}
 
     Llama a @pd{proc} con cada módulo en la base de datos.
@@ -392,6 +400,10 @@ finmetodo
 
 metodo BaseDeDatos#agregarMódulo: mod
     yo#módulos#fijarEn: mod#nombre, mod
+finmetodo
+
+metodo BaseDeDatos#eliminaMódulo: módulo
+    yo#módulos#eliminar: módulo#nombre
 finmetodo
 
 metodo BaseDeDatos#paraCadaMódulo: proc

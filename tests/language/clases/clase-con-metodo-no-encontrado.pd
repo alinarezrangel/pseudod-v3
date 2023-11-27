@@ -1,0 +1,33 @@
+{
+    "nombre": "metodoNoEncontrado en una clase",
+    "espera": "éxito",
+    "salida contiene": "hola, mundo\nadios\nqueTal 1 2 3\n"
+}
+====================
+clase ClaseConMétodoNoEncontrado
+    metodo estatico hola
+    metodo estatico metodoNoEncontrado: msj, args
+finclase
+
+metodo estatico ClaseConMétodoNoEncontrado#hola
+    escribir {hola, mundo}
+    nl
+    devolver 0
+finmetodo
+
+metodo estatico ClaseConMétodoNoEncontrado#metodoNoEncontrado: msj, args
+    escribir msj
+    variable i
+    fijar i a 0
+    mientras i < args#longitud
+        escribir { }
+        escribir (args#en: i)#comoTexto
+        fijar i a i + 1
+    finmientras
+    nl
+    devolver args#longitud
+finmetodo
+
+necesitas ClaseConMétodoNoEncontrado#hola = 0
+necesitas ClaseConMétodoNoEncontrado#adios = 0
+necesitas (ClaseConMétodoNoEncontrado#queTal: 1, 2, 3) = 3

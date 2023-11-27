@@ -1,0 +1,32 @@
+{
+    "nombre": "parteDelTexto y subTexto",
+    "espera": "éxito",
+    "salida contiene": "0123456789\n56789\n01234\n567\n\n\n0123456789\n56789\n01234\n56\n\n56789\n234\n"
+}
+====================
+escribir {0123456789}#subTexto: 0, 10 [ 0123456789 ]
+nl
+escribir {0123456789}#subTexto: 5, 10 [ 56789 ]
+nl
+escribir {0123456789}#subTexto: 0, 5 [ 01234 ]
+nl
+escribir {0123456789}#subTexto: 5, 3 [ 567 ]
+nl
+escribir {0123456789}#subTexto: 15, 3 [ ]
+nl
+escribir {0123456789}#subTexto: 5, 0 [ ]
+nl
+escribir {0123456789}#parteDelTexto: 0, 10 [ 0123456789 ]
+nl
+escribir {0123456789}#parteDelTexto: 5, 10 [ 56789 ]
+nl
+escribir {0123456789}#parteDelTexto: 0, 5 [ 01234 ]
+nl
+escribir {0123456789}#parteDelTexto: 5, 7 [ 56 ]
+nl
+escribir {0123456789}#parteDelTexto: 6, 2 [ ]
+nl
+escribir {0123456789}#parteDelTexto: 5, 20 [ 56789 ]
+nl
+escribir {0123456789}#parteDelTexto: 2, 5 [ 234 ]
+nl

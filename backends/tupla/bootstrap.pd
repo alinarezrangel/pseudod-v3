@@ -51,16 +51,16 @@ variables __TOBJ_ENTERO, __TOBJ_FLOAT, __TOBJ_MARCA_DE_PILA, __TOBJ_CLOSURE,
           __TOBJ_ARREGLO, __TOBJ_VOIDPTR, __TOBJ_ESPACIO_DE_NOMBRES
 [ NOTA: Debe mantenerse sincronizado con la enumeración `pdcrt_tipo_de_objeto`
   en el runtime de C. ]
-fijar __TOBJ_ENTERO a 0
-fijar __TOBJ_FLOAT a 1
-fijar __TOBJ_MARCA_DE_PILA a 2
-fijar __TOBJ_CLOSURE a 3
-fijar __TOBJ_TEXTO a 4
-fijar __TOBJ_OBJETO a 5
-fijar __TOBJ_BOOLEANO a 6
-fijar __TOBJ_NULO a 7
-fijar __TOBJ_ARREGLO a 8
-fijar __TOBJ_VOIDPTR a 9
+fijar __TOBJ_ENTERO             a 0
+fijar __TOBJ_FLOAT              a 1
+fijar __TOBJ_MARCA_DE_PILA      a 2
+fijar __TOBJ_CLOSURE            a 3
+fijar __TOBJ_TEXTO              a 4
+fijar __TOBJ_OBJETO             a 5
+fijar __TOBJ_BOOLEANO           a 6
+fijar __TOBJ_NULO               a 7
+fijar __TOBJ_ARREGLO            a 8
+fijar __TOBJ_VOIDPTR            a 9
 fijar __TOBJ_ESPACIO_DE_NOMBRES a 10
 
 funcion __EsUn: obj, tipo
@@ -334,14 +334,165 @@ funcion ProcedimientoVarargs: n, proc
     finfuncion
 finfuncion
 
+funcion __TablaHashConCapacidad: capacidad
+    variable nodos
+    fijar nodos a __CrearArreglo
+    __ParaCadaNúmero: 0, capacidad, procedimiento: _i
+        nodos#agregarAlFinal: __CrearArreglo
+    finprocedimiento
+
+    funcion buscarEn: llave
+        variables valor, encontrado, hash, colisiones
+        fijar valor a NULO
+        fijar encontrado a FALSO
+
+        fijar hash a llave#hashPara: nodos#longitud
+        necesitas hash >= 0
+        necesitas hash < nodos#longitud
+        fijar colisiones a nodos#en: hash
+        fijar encontrado a __ParaCadaNúmeroBuscando: 0, colisiones#longitud, procedimiento: i
+            variable par
+            fijar par a colisiones#en: i
+            si llave = (par#en: 0)
+                fijar valor a par#en: 1
+                devolver VERDADERO
+            sino
+                devolver FALSO
+            finsi
+        finprocedimiento
+
+        devolver __CrearArreglo: encontrado, valor
+    finfuncion
+
+    procedimiento fijarEn: llave, valor
+        variables hash, colisiones, existía
+        fijar hash a llave#hashPara: nodos#longitud
+        necesitas hash >= 0
+        necesitas hash < nodos#longitud
+        fijar colisiones a nodos#en: hash
+        fijar existía a __ParaCadaNúmeroBuscando: 0, colisiones#longitud, procedimiento: i
+            variable par
+            fijar par a colisiones#en: i
+            si llave = (par#en: 0)
+                par#fijarEn: 1, valor
+                devolver VERDADERO
+            sino
+                devolver FALSO
+            finsi
+        finprocedimiento
+        si no existía
+            colisiones#agregarAlFinal: (__CrearArreglo: llave, valor)
+        finsi
+        devolver existía
+    finprocedimiento
+
+    funcion cargaDeLaTabla
+        variable res
+        fijar res a 0
+        __ParaCadaElemento: nodos, procedimiento: colisiones
+            fijar res a res + (colisiones#longitud > 0)#escojer: 1, 0
+        finprocedimiento
+        devolver res
+    finfuncion
+
+    procedimiento intentaRehashear
+        si cargaDeLaTabla > (nodos#longitud / 2)
+            rehashear: (nodos#longitud * 2)
+        finsi
+    finprocedimiento
+
+    procedimiento rehashear: nuevaCapacidad
+        variable viejosNodos
+        fijar viejosNodos a nodos
+        fijar nodos a __CrearArreglo
+        __ParaCadaNúmero: 0, nuevaCapacidad, procedimiento: _i
+            nodos#agregarAlFinal: __CrearArreglo
+        finprocedimiento
+        __ParaCadaElemento: viejosNodos, procedimiento: colisiones
+            __ParaCadaElemento: colisiones, procedimiento: par
+                fijarEn: (par#en: 0), (par#en: 1)
+            finprocedimiento
+        finprocedimiento
+    finprocedimiento
+
+    devolver procedimiento: msj, ...args
+        si msj = {buscarEn}
+            necesitas args#longitud = 1
+            devolver buscarEn: (args#en: 0)
+        finsi
+        si msj = {en}
+            necesitas args#longitud = 1
+            variable res
+            fijar res a buscarEn: (args#en: 0)
+            si no res#en: 0
+                __FallarConMensaje: ({Llave ~t no encontrada en la tabla hash}#formatear: (args#en: 0))
+            finsi
+            devolver res#en: 1
+        finsi
+        si msj = {contiene}
+            necesitas args#longitud = 1
+            devolver (buscarEn: (args#en: 0))#en: 0
+        finsi
+        si msj = {buscar}
+            necesitas args#longitud = 1
+            devolver buscarEn: (args#en: 0)
+        finsi
+        si msj = {buscarONulo}
+            necesitas args#longitud = 1
+            variable res
+            fijar res a buscarEn: (args#en: 0)
+            si no res#en: 0
+                devolver NULO
+            sino
+                devolver res#en: 1
+            finsi
+        finsi
+
+        si msj = {fijarEn}
+            necesitas args#longitud = 2
+            si no fijarEn: (args#en: 0), (args#en: 1)
+                [ Si la llave no existía, la acabamos de crear. ]
+                intentaRehashear
+            finsi
+            devolver NULO
+        finsi
+
+        si msj = {paraCadaPar}
+            necesitas args#longitud = 1
+            variable f
+            fijar f a args#en: 0
+            __ParaCadaElemento: nodos, procedimiento: colisiones
+                __ParaCadaElemento: colisiones, procedimiento: par
+                    devolver %f: (par#en: 0), (par#en: 1)
+                finprocedimiento
+            finprocedimiento
+            devolver NULO
+        finsi
+
+        si msj = {interno}
+            necesitas args#longitud = 0
+            devolver nodos
+        finsi
+
+        ErrorDeMensajeNoEncontrado: msj, {En la tabla hash}
+    finprocedimiento#comoObjeto
+finfuncion
+
+funcion __TablaHashDesdeArreglo: arregloDePares
+    variable res
+    fijar res a __TablaHashConCapacidad: arregloDePares#longitud
+    __ParaCadaElemento: arregloDePares, procedimiento: par
+        res#fijarEn: (par#en: 0), (par#en: 1)
+    finprocedimiento
+    devolver res
+finfuncion
+
 funcion __ClonarObjeto: obj
     variable clon
     fijar clon a (__CódigoDeObjeto: obj)#comoObjeto
-    __Escribir': {!!}, (__NúmeroDeAtributos: clon)
     variable i
     fijar i a 0
     mientras i < (__NúmeroDeAtributos: clon)
-        __Escribir'': { !}, i, (__ObtenerAtributo: obj, i)
         __FijarAtributo: clon, i, (__ObtenerAtributo: obj, i)#\clonar\
         fijar i a i + 1
     finmientras
@@ -349,6 +500,10 @@ funcion __ClonarObjeto: obj
 finfuncion
 
 funcion __CompararObjeto: A, B
+    si (no (__TipoDe: A) = __TOBJ_OBJETO)
+    || (no (__TipoDe: B) = __TOBJ_OBJETO)
+        devolver FALSO
+    finsi
     si no (__CódigoDeObjeto: A)#__códigoIgualA: (__CódigoDeObjeto: B)
         devolver FALSO
     finsi
@@ -419,24 +574,6 @@ funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
             fijar instProxy a instReal
         finsi
 
-        procedimiento buscarMensaje: msj
-            variable i
-            fijar i a métodos#longitud - 1
-            mientras i >= 0
-                variable métodoDeInstancia
-                fijar métodoDeInstancia a métodos#en: i
-                fijar i a i - 1
-
-                variables nombreDelMétodo, proc
-                fijar nombreDelMétodo a métodoDeInstancia#en: 0
-                fijar proc a métodoDeInstancia#en: 1
-                si msj = nombreDelMétodo
-                    devolver proc
-                finsi
-            finmientras
-            devolver NULO
-        finprocedimiento
-
         si msj = __MsjObtenerAtributos
             necesitas args#longitud = 0
             devolver atrs
@@ -448,14 +585,14 @@ funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
         finsi
 
         variable proc
-        fijar proc a buscarMensaje: msj
+        fijar proc a métodos#buscarONulo: msj
         si no __SonElMismoObjeto: proc, NULO
             devolver %proc: instProxy, ...args
         finsi
 
         si (msj = {igualA}) || (msj = {operador_=})
             necesitas args#longitud = 1
-            devolver __CompararObjeto: instReal, (args#en: 0)
+            devolver __CompararObjeto: instProxy, (args#en: 0)
         finsi
         si msj = {clonar}
             necesitas args#longitud = 0
@@ -467,7 +604,7 @@ funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
             devolver __CrearInstanciaDeClase: cls, instReal, métodos, atrsClonados
         finsi
 
-        fijar proc a buscarMensaje: {metodoNoEncontrado}
+        fijar proc a métodos#buscarONulo: {metodoNoEncontrado}
         si no __SonElMismoObjeto: proc, NULO
             devolver %proc: instProxy, msj, args
         finsi
@@ -478,19 +615,19 @@ finfuncion
 
 funcion __CrearMétodosDeInstancia: métodosDeInstancia, atributosDeInstancia, atrs
     variable métodos
-    fijar métodos a __CrearArreglo
+    fijar métodos a __TablaHashConCapacidad: (métodosDeInstancia#longitud + (2 * atributosDeInstancia#longitud))
 
     __ParaCadaElemento: métodosDeInstancia, procedimiento: el
-        métodos#agregarAlFinal: el
+        métodos#fijarEn: (el#en: 0), (el#en: 1)
     finprocedimiento
 
     __ParaCadaElementoConÍndice: atributosDeInstancia, procedimiento: atr, i
-        métodos#agregarAlFinal: (__CrearArreglo: atr, metodo
+        métodos#fijarEn: atr, metodo
             devolver (__EnviarMensaje: yo, __MsjObtenerAtributos, __CrearArreglo)#en: i
-        finmetodo)
-        métodos#agregarAlFinal: (__CrearArreglo: ({fijar_}#concatenar: atr), metodo: valor
+        finmetodo
+        métodos#fijarEn: ({fijar_}#concatenar: atr), metodo: valor
             (__EnviarMensaje: yo, __MsjObtenerAtributos, __CrearArreglo)#fijarEn: i, valor
-        finmetodo)
+        finmetodo
     finprocedimiento
 
     devolver métodos
@@ -504,10 +641,7 @@ procedimiento __CrearClase: nombre
     fijar claseBase a NULO
     fijar métodosEstaticos a __CrearArreglo
 
-    devolver procedimiento: msj, ...args
-        variable yo
-        fijar yo a __ESUP
-
+    funcion obtenerMétodoEstático: msj
         variable idc
         fijar idc a métodosEstaticos#longitud - 1
         mientras idc >= 0
@@ -516,9 +650,21 @@ procedimiento __CrearClase: nombre
             fijar idc a idc - 1
 
             si (métodoEstatico#en: 0) = msj
-                devolver %(métodoEstatico#en: 1): yo, ...args
+                devolver métodoEstatico#en: 1
             finsi
         finmientras
+        devolver NULO
+    finfuncion
+
+    devolver procedimiento: msj, ...args
+        variable yo
+        fijar yo a __ESUP
+
+        variable met
+        fijar met a obtenerMétodoEstático: msj
+        si no __SonElMismoObjeto: met, NULO
+            devolver %met: yo, ...args
+        finsi
 
         si (msj = {igualA}) || (msj = {operador_=})
             necesitas args#longitud = 1
@@ -646,6 +792,11 @@ procedimiento __CrearClase: nombre
             fijar subclase#__métodosDeInstancia a métodosDeInstancia#mapear: funcion: el devolver el finfuncion
             fijar subclase#__métodosEstaticos a métodosEstaticos#mapear: funcion: el devolver el finfuncion
             devolver subclase
+        finsi
+
+        fijar met a obtenerMétodoEstático: {metodoNoEncontrado}
+        si no __SonElMismoObjeto: met, NULO
+            devolver %met: yo, msj, args
         finsi
 
         ErrorDeMensajeNoEncontrado: msj, ({En la clase ~t}#formatear: nombre)

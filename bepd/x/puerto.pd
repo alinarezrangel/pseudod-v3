@@ -355,3 +355,21 @@ Un puerto de escritura que escribe textos a la salida estándar del programa
 DOCUMENTA]
 variable SalidaEstándar
 fijar SalidaEstándar a PuertoEstándar#_crear
+
+[DOCUMENTA
+@brief{Lee todo el contenido de un puerto.}
+
+Devuelve un @pd{Texto} con todo el contenido de @pd{puerto} (un
+@pd{PuertoDeLectura}).
+DOCUMENTA]
+procedimiento LeerTodo: puerto
+    [ FIXME: O(n^2) ]
+    variables texto, c
+    fijar texto a {}
+    fijar c a puerto#leerCarácter
+    mientras no (c = EOF)
+        fijar texto a texto#concatenar: c
+        fijar c a puerto#leerCarácter
+    finmientras
+    devolver texto
+finprocedimiento

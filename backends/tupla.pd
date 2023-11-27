@@ -307,7 +307,11 @@ procedimiento AnotaLosNombresImportadosImplícitamente: ast, bindingsAdicionales
 
     Caminar: ast, funcion: nodo
         devolver EsIdentificadorDeVariable: nodo
+              || DebeIgnorarElNodo: nodo
     finfuncion, procedimiento: nodo
+        si DebeIgnorarElNodo: nodo
+            devolver NULO
+        finsi
         nodo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {importado}, (implícitos#contiene: (RN#NombreResueltoDe: nodo))
     finprocedimiento
 finprocedimiento
@@ -512,6 +516,7 @@ finprocedimiento
 
 [ TODO: Documenta las siguientes clases ]
 clase LocalDelProcedimiento
+    metodo nombre
     metodo esCapturado
     metodo binding
     metodo índiceDeCaptura
@@ -521,22 +526,29 @@ clase LocalDelProcedimiento
     metodo esLocalInmediata
     metodo esLocalDirecta
     metodo estáEnElEntorno
+    metodo datosDeVariable
     metodo areaTextual
 finclase
 
 metodo LocalDelProcedimiento#comoTexto
-    devolver {(~t esCapturado = ~t, binding = ~t, índiceDeCaptura = ~t, esLocal = ~t, altura = ~t, profundidad = ~t, esLocalInmediata = ~t, esLocalDirecta = ~t, estáEnElEntorno = ~t)}#formatear: (TipoDe: yo), yo#esCapturado, yo#binding, yo#índiceDeCaptura, yo#esLocal, yo#altura, yo#profundidad, yo#esLocalInmediata, yo#esLocalDirecta, yo#estáEnElEntorno
+    devolver {(~t nombre = ~t, esCapturado = ~t, binding = ~t, índiceDeCaptura = ~t, esLocal = ~t, altura = ~t, profundidad = ~t, esLocalInmediata = ~t, esLocalDirecta = ~t, estáEnElEntorno = ~t, datos = ~t)}#formatear: (TipoDe: yo), yo#nombre, yo#esCapturado, yo#binding, yo#índiceDeCaptura, yo#esLocal, yo#altura, yo#profundidad, yo#esLocalInmediata, yo#esLocalDirecta, yo#estáEnElEntorno, yo#datosDeVariable
 finmetodo
 
 clase IdentificadorLocalDelProcedimiento hereda LocalDelProcedimiento
-    metodo estatico crear: nid
+    metodo estatico crear: nid, datosDeVariable
     metodo nodo
 finclase
 
-atributo IdentificadorLocalDelProcedimiento#nodo
+atributos IdentificadorLocalDelProcedimiento#nodo,
+          IdentificadorLocalDelProcedimiento#datosDeVariable
 
-metodo IdentificadorLocalDelProcedimiento#inicializar: nid
+metodo IdentificadorLocalDelProcedimiento#inicializar: nid, datosDeVariable
     fijar yo#nodo a nid
+    fijar yo#datosDeVariable a datosDeVariable
+finmetodo
+
+metodo IdentificadorLocalDelProcedimiento#nombre
+    devolver yo#nodo#nombre
 finmetodo
 
 metodo IdentificadorLocalDelProcedimiento#binding
@@ -612,15 +624,21 @@ metodo IdentificadorLocalDelProcedimiento#areaTextual
 finmetodo
 
 clase YoLocalDelProcedimiento hereda LocalDelProcedimiento
-    metodo estatico crear: nodoConYo
+    metodo estatico crear: nodoConYo, datosDeVariable
     metodo nodoConYo
 finclase
 
-atributo YoLocalDelProcedimiento#nodoConYo
+atributos YoLocalDelProcedimiento#nodoConYo,
+          YoLocalDelProcedimiento#datosDeVariable
 
-metodo YoLocalDelProcedimiento#inicializar: nodoConYo
+metodo YoLocalDelProcedimiento#inicializar: nodoConYo, datosDeVariable
     necesitas ContieneYoImplícito: nodoConYo
     fijar yo#nodoConYo a nodoConYo
+    fijar yo#datosDeVariable a datosDeVariable
+finmetodo
+
+metodo YoLocalDelProcedimiento#nombre
+    devolver {yo}
 finmetodo
 
 metodo YoLocalDelProcedimiento#binding
@@ -696,15 +714,20 @@ metodo YoLocalDelProcedimiento#areaTextual
 finmetodo
 
 clase ImportadoLocalEnElProcedimiento hereda LocalDelProcedimiento
-    metodo estatico crear: nodoUtilizar, binding
+    metodo estatico crear: nodoUtilizar, binding, nombre, datosDeVariable
     metodo nodo
 finclase
 
-atributos ImportadoLocalEnElProcedimiento#nodo, ImportadoLocalEnElProcedimiento#binding
+atributos ImportadoLocalEnElProcedimiento#nodo,
+          ImportadoLocalEnElProcedimiento#binding,
+          ImportadoLocalEnElProcedimiento#nombre,
+          ImportadoLocalEnElProcedimiento#datosDeVariable
 
-metodo ImportadoLocalEnElProcedimiento#inicializar: nodoUtilizar, binding
+metodo ImportadoLocalEnElProcedimiento#inicializar: nodoUtilizar, binding, nombre, datosDeVariable
     fijar yo#nodo a nodoUtilizar
     fijar yo#binding a binding
+    fijar yo#nombre a nombre
+    fijar yo#datosDeVariable a datosDeVariable
 finmetodo
 
 metodo ImportadoLocalEnElProcedimiento#igualA: otro
@@ -769,15 +792,20 @@ metodo ImportadoLocalEnElProcedimiento#areaTextual
 finmetodo
 
 clase LocalBuiltinDelPrograma hereda LocalDelProcedimiento
-    metodo estatico crear: nodoPrograma, binding
+    metodo estatico crear: nodoPrograma, binding, nombre, datosDeVariable
     metodo nodo
 finclase
 
-atributos LocalBuiltinDelPrograma#nodo, LocalBuiltinDelPrograma#binding
+atributos LocalBuiltinDelPrograma#nodo,
+          LocalBuiltinDelPrograma#binding,
+          LocalBuiltinDelPrograma#nombre,
+          LocalBuiltinDelPrograma#datosDeVariable
 
-metodo LocalBuiltinDelPrograma#inicializar: nodoPrograma, binding
+metodo LocalBuiltinDelPrograma#inicializar: nodoPrograma, binding, nombre, datosDeVariable
     fijar yo#nodo a nodoPrograma
     fijar yo#binding a binding
+    fijar yo#nombre a nombre
+    fijar yo#datosDeVariable a datosDeVariable
 finmetodo
 
 metodo LocalBuiltinDelPrograma#igualA: otro
@@ -853,6 +881,13 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, buil
     fijar ámbitosLocales a Pila#vacía
     fijar nodosLocales a Pila#vacía
 
+    funcion ObtenerDatosDeLocal: bindingONodo
+        si EsInstancia: bindingONodo, AST#NodoIdentificador
+            fijar bindingONodo a RN#NombreResueltoDe: bindingONodo
+        finsi
+        devolver ámbitosLocales#últimoValorApilado#obtenerDatosDeVariable: bindingONodo
+    finfuncion
+
     procedimiento AgregarLocal: local
         locales#agregarAlFinal: local
         necesitas ámbitosLocales#longitud = nodosLocales#longitud
@@ -863,7 +898,7 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, buil
 
     procedimiento FijarMetadatoConIdentificadorLocal: nid
         variable local
-        fijar local a IdentificadorLocalDelProcedimiento#crear: nid
+        fijar local a IdentificadorLocalDelProcedimiento#crear: nid, (ObtenerDatosDeLocal: nid)
         nid#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {local}, local
         devolver local
     finprocedimiento
@@ -875,7 +910,7 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, buil
     procedimiento AgregarYoLocal: nodoConYo
         necesitas ContieneYoImplícito: nodoConYo
         variable local
-        fijar local a YoLocalDelProcedimiento#crear: nodoConYo
+        fijar local a YoLocalDelProcedimiento#crear: nodoConYo, (ObtenerDatosDeLocal: (NombreResueltoDelYoImplícito: nodoConYo))
         nodoConYo#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localYo}, local
         devolver AgregarLocal: local
     finprocedimiento
@@ -886,7 +921,7 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, buil
         fijar localesImportados a Arreglo#vacio
         importados#paraCadaPar: procedimiento: nombre, binding
             variable local
-            fijar local a ImportadoLocalEnElProcedimiento#crear: nodoUtilizar, binding
+            fijar local a ImportadoLocalEnElProcedimiento#crear: nodoUtilizar, binding, nombre, (ObtenerDatosDeLocal: binding)
             localesImportados#agregarAlFinal: local
             AgregarLocal: local
         finprocedimiento
@@ -900,7 +935,7 @@ procedimiento EnumeraciónDeLocalesDeProcedimiento: ast, ámbitoContenedor, buil
         builtins#paraCadaPar: procedimiento: nombre, datos
             si datos#esImportable
                 variable local
-                fijar local a LocalBuiltinDelPrograma#crear: nodoPrograma, datos#binding
+                fijar local a LocalBuiltinDelPrograma#crear: nodoPrograma, datos#binding, nombre, datos
                 localesBuiltins#agregarAlFinal: local
                 AgregarLocal: local
             finsi
@@ -1892,6 +1927,22 @@ Instrucciones:
     (Puedes imaginar a este opcode como un "prepara para llamar a una
     función/método con `Ua` argumentos".)
 
+  ROTM Ua
+    Rota la pila como `ROT`, pero mueve 2 elementos en vez de 1. Su uso
+    principal es cuando se va a usar una de las instrucciones `DYN*`.
+
+    Por ejemplo, si la pila es:
+
+      <-----T
+      A B C D
+
+    Entonces `ROTM 2` la dejaría como:
+
+      <-----T
+      C D A B
+
+    Nota como movió `A` y `B` en vez de solo `B`.
+
   MSG Cx, Ua, Ub   {... obj -- ...}
     Saca un elemento, el objeto que recibirá el mensaje. Luego le envía a este
     el mensaje indicado por la constante `Cx`. Este mensaje es llamado con `Ua`
@@ -2301,6 +2352,7 @@ fijar Opcode a EnumConValoresIncrementales: {Opcode},
     {CMPREFEQ},   [ CMPREFEQ ]
     {NOT},        [ NOT ]
     {ROT},        [ ROT Ua ]
+    {ROTM},       [ ROTM Ua ]
     {GT},         [ GT ]
     {LT},         [ LT ]
     {GE},         [ GE ]
@@ -2376,7 +2428,7 @@ finfuncion
 @brief{Una pragma del IR.}
 
 Cada pragma controla un aspecto especial sobre el código
-compilado. Generalmente las pragmas se alma
+compilado.
 DOCUMENTA]
 clase Pragma
     atributo nombre
@@ -3040,16 +3092,27 @@ finfuncion
 [DOCUMENTA
 @brief{Compila un identificador.}
 
-@pd{ast} debe ser el @pd{AST#NodoIdentificador} que se obtendrá.
+@pd{ast} debe ser el @pd{AST#NodoIdentificador} o el @pd{LocalDelProcedimiento}
+que se obtendrá.
 
 Devuelve un compilado que obtiene la variable @pd{ast} y la empuja en la pila.
 DOCUMENTA]
 funcion CompilarIdentificador: ast
-    variables altura, índiceDeCaptura, op, binding
-    fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
-    fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
-    fijar binding a RN#NombreResueltoDe: ast
-    si EstáEnElEntorno: ast
+    variables altura, índiceDeCaptura, estáEnElEntorno, op, binding
+    si EsInstancia: ast, AST#NodoIdentificador
+        fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
+        fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
+        fijar estáEnElEntorno a EstáEnElEntorno: ast
+        fijar binding a RN#NombreResueltoDe: ast
+    sino
+        necesitas EsInstancia: ast, LocalDelProcedimiento
+        fijar altura a ast#altura
+        fijar índiceDeCaptura a ast#índiceDeCaptura
+        fijar estáEnElEntorno a ast#estáEnElEntorno
+        fijar binding a ast#binding
+    finsi
+
+    si estáEnElEntorno
         fijar op a OP#LGETC: LocalDelEntornoActual, altura, índiceDeCaptura
     sino
         fijar op a OP#LGET: binding
@@ -3060,17 +3123,28 @@ finfuncion
 [DOCUMENTA
 @brief{Compila el fijar un identificador.}
 
-@pd{ast} debe ser el @pd{AST#NodoIdentificador} que se fijará.
+@pd{ast} debe ser el @pd{AST#NodoIdentificador} o el @pd{LocalDelProcedimiento}
+que se fijará.
 
 Devuelve un compilado que saca un valor de la pila y fija la variable @pd{ast}
 a dicho valor.
 DOCUMENTA]
 funcion CompilarFijarIdentificador: ast
-    variables altura, índiceDeCaptura, op, binding
-    fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
-    fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
-    fijar binding a RN#NombreResueltoDe: ast
-    si EstáEnElEntorno: ast
+    variables altura, índiceDeCaptura, estáEnElEntorno, op, binding
+    si EsInstancia: ast, AST#NodoIdentificador
+        fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {altura}
+        fijar índiceDeCaptura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCaptura}
+        fijar estáEnElEntorno a EstáEnElEntorno: ast
+        fijar binding a RN#NombreResueltoDe: ast
+    sino
+        necesitas EsInstancia: ast, LocalDelProcedimiento
+        fijar altura a ast#altura
+        fijar índiceDeCaptura a ast#índiceDeCaptura
+        fijar estáEnElEntorno a ast#estáEnElEntorno
+        fijar binding a ast#binding
+    finsi
+
+    si estáEnElEntorno
         fijar op a OP#LSETC: LocalDelEntornoActual, altura, índiceDeCaptura
     sino
         fijar op a OP#LSET: binding
@@ -3208,9 +3282,11 @@ devueltas por @pd{LocalesDelBloque}.}
 
 @defparam(profundidad){Profundidad en el programa en la que el ámbito se
 encuentra.}
+
+@defparam(localYo){Local con el parámetro @code{yo} (si es un método).}
 )
 DOCUMENTA]
-funcion CompilarEntornoDelÁmbito: parámetros, localesEnElEntorno, localesInmediatas, exísteMarcoSuperior, profundidad
+funcion CompilarEntornoDelÁmbito: parámetros, localesEnElEntorno, localesInmediatas, exísteMarcoSuperior, profundidad, localYo
     variables ops, máximoÍndiceDeLocalEnElEntorno, localesSiSonParámetros, nrsParámetros
     fijar ops a Arreglo#vacio
     fijar máximoÍndiceDeLocalEnElEntorno a Reducir: -1, &Max,
@@ -3227,6 +3303,9 @@ funcion CompilarEntornoDelÁmbito: parámetros, localesEnElEntorno, localesInmed
             devolver RN#NombreResueltoDe: param
         finsi
     finfuncion
+    si no EsNulo: localYo
+        nrsParámetros#agregarAlFinal: localYo#binding
+    finsi
     fijar localesSiSonParámetros a SepararArreglo: localesInmediatas, funcion: local
         devolver Contiene: nrsParámetros, local#binding
     finfuncion
@@ -3277,7 +3356,7 @@ DOCUMENTA]
 funcion CompilarLocalesYClosure: locales, localesEnElEntorno, localesInmediatas, parámetros, exísteMarcoSuperior, profundidad, localYo
     devolver Concatenar:
         (CompilarLocales: locales, parámetros, localYo),
-        (CompilarEntornoDelÁmbito: parámetros, localesEnElEntorno, localesInmediatas, exísteMarcoSuperior, profundidad)
+        (CompilarEntornoDelÁmbito: parámetros, localesEnElEntorno, localesInmediatas, exísteMarcoSuperior, profundidad, localYo)
 finfuncion
 
 [DOCUMENTA
@@ -3403,29 +3482,51 @@ DOCUMENTA]
 funcion DeclaracionesEn: nodos
     variable DECLARACIONES
     fijar DECLARACIONES a Arreglo#crearCon:
-        AST#NodoVariable, AST#NodoFunción, AST#NodoClase
+        AST#NodoVariable, AST#NodoFunción, AST#NodoClase, AST#NodoUtilizar
     funcion esDeclaración: nodo
         devolver Algún: (Mapear: DECLARACIONES, (Parcial: &EsInstancia, nodo))
     finfuncion
     devolver Filtrar: nodos, funcion: nodo devolver esDeclaración: nodo finfuncion
 finfuncion
 
+funcion ObtenerLocal: nid
+    devolver nid#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {local}
+finfuncion
+
 [DOCUMENTA
 @brief{Obtiene los nombres declarados en todos los @pd{nodos}.}
 
-@devuelve{Un arreglo con todos los nodos identificadores
-(@pd{AST#NodoIdentificador}) que fueron declarados en @pd{nodos}.}
+@devuelve{Un arreglo con todos los datos de las locales
+(@pd{LocalDelProcedimiento}) que fueron declarados en @pd{nodos}.}
 DOCUMENTA]
 funcion NombresDeclaradosEn: nodos
     variable declrs
     fijar declrs a DeclaracionesEn: nodos
     devolver Aplanar: (Mapear: declrs, funcion: nodo
         si EsInstancia: nodo, AST#NodoVariable
-            devolver nodo#nombres
+            devolver Mapear: nodo#nombres, &ObtenerLocal
         finsi
         si (EsInstancia: nodo, AST#NodoFunción) || (EsInstancia: nodo, AST#NodoClase)
-            devolver Arreglo#crearCon: nodo#nombre
+            devolver Arreglo#crearCon: (ObtenerLocal: nodo#nombre)
         finsi
+        si EsInstancia: nodo, AST#NodoUtilizar
+            variable locales
+            fijar locales a Arreglo#vacio
+            si no EsNulo: nodo#espacioDeNombres
+                locales#agregarAlFinal: (ObtenerLocal: nodo#espacioDeNombres)
+            finsi
+            si no EsNulo: nodo#nombresEspecíficos
+                ParaCadaElemento: nodo#nombresEspecíficos, procedimiento: nombreORenombre
+                    si EsInstancia: nombreORenombre, AST#NodoIdentificador
+                        locales#agregarAlFinal: (ObtenerLocal: nombreORenombre)
+                    sino
+                        locales#agregarAlFinal: (ObtenerLocal: (nombreORenombre#en: 1))
+                    finsi
+                finprocedimiento
+            finsi
+            devolver Concatenar: locales, (nodo#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesImportadas})
+        finsi
+        Escribir: {###}, nodo
         Inalcanzable
     finfuncion)
 finfuncion
@@ -3441,6 +3542,13 @@ finfuncion
 procedimiento MarcaSiHayQueImportarBuiltins: ast, hayQueImportarBuiltins
     ast#fijarMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {hayQueImportarBuiltins}, hayQueImportarBuiltins
 finprocedimiento
+
+funcion NombreDelMarco: nombre, área
+    si no EsNulo: área
+        fijar nombre a {~t: ~t}#formatear: área, nombre
+    finsi
+    devolver Instrucciones: (OP#PRAGMA: {FRAME_NAME}, nombre)
+finfuncion
 
 [DOCUMENTA
 @brief{Compila una instrucción o expresión a un compilado.}
@@ -3477,7 +3585,7 @@ funcion CompilarAWasm: ast, builtins
                            >> (Compilado#deConstantes:
                                   (Arreglo#crearCon:
                                       (Constante#crear: constBootstrap, (TextoDelIR#crear: {./backends/tupla/bootstrap.pd}))))
-        builtins#paraCadaPar: procedimiento: llave, datos
+        builtins#paraCadaPar: procedimiento: nombre, datos
             si datos#esImportable
                 variable const
                 fijar const a GenerarIdDeConstante
@@ -3487,24 +3595,24 @@ funcion CompilarAWasm: ast, builtins
                                                       (OP#LSETC: LocalDelEntornoActual, alturaDeBuiltins, (índicesDeBuiltins#en: datos#binding)))
                                    >> (Compilado#deConstantes:
                                           (Arreglo#crearCon:
-                                              (Constante#crear: const, (TextoDelIR#crear: llave))))
+                                              (Constante#crear: const, (TextoDelIR#crear: nombre))))
             finsi
         finprocedimiento
         fijar importaciones a importaciones >> (Instrucciones: OP#DROP)
 
-        ParaCadaElemento: identificadoresDefinídos, procedimiento: nid
-            variables constNombre, esAutoejecutable
+        ParaCadaElemento: identificadoresDefinídos, procedimiento: local
+            variable constNombre
             fijar constNombre a GenerarIdDeConstante
-            fijar esAutoejecutable a ámbito#esAutoejecutable: nid#nombre
             fijar exportaciones a exportaciones
-                               >> (CompilarIdentificador: nid)
-                               >> (Instrucciones: (OP#EXP: constNombre, (esAutoejecutable#escojer: 1, 0)))
+                               >> (CompilarIdentificador: local)
+                               >> (Instrucciones: (OP#EXP: constNombre, (local#datosDeVariable#esAutoejecutable#escojer: 1, 0)))
                                >> (Compilado#deConstantes:
                                       (Arreglo#crearCon:
-                                          (Constante#crear: constNombre, (TextoDelIR#crear: nid#nombre))))
+                                          (Constante#crear: constNombre, (TextoDelIR#crear: local#nombre))))
         finprocedimiento
 
-        devolver (Compilado#deInstrucciónes:
+        devolver (NombreDelMarco: nombreDelMódulo, ast#areaTextual)
+              >> (Compilado#deInstrucciónes:
                      (Aplanar:
                          (CompilarLocalesYClosure: locales,
                                                    localesEnElEntorno,
@@ -3607,7 +3715,8 @@ funcion CompilarAWasm: ast, builtins
             variables cuerpo, constProto, procId
             fijar constProto a GenerarIdDeConstante
             fijar procId a GenerarIdDeProcedimiento
-            fijar cuerpo a (Instrucciones: (OP#LOCAL: 0),
+            fijar cuerpo a (NombreDelMarco: {<no llamar>}, ast#areaTextual)
+                        >> (Instrucciones: (OP#LOCAL: 0),
                                            (OP#OPNFRM: LocalDelEntornoActual, LocalDelEntornoSuperior, 0),
                                            (OP#CLSFRM: LocalDelEntornoActual),
                                            (OP#LGETC: LocalDelEntornoActual, 1, 0))
@@ -3661,7 +3770,7 @@ funcion CompilarAWasm: ast, builtins
                 finsi
                 si ast#mensaje = {fijar}
                     necesitas ast#argumentos#longitud = 1
-                    devolver CompilarFijarIdentificador: (ast#argumentos#en: 0)
+                    devolver (CompilarFijarIdentificador: (ast#argumentos#en: 0))
                           >> (Instrucciones: (OP#BCONST: 0))
                 finsi
                 [ Si el mensaje comienza con `i`, es un opcode que no empuja nada
@@ -3728,11 +3837,17 @@ funcion CompilarAWasm: ast, builtins
             fijar constPrototipo a GenerarIdDeConstante
             fijar prototipo a PrototipoDeLlamada#crear: (Arreglo#crearCon: VERDADERO)
             devolver ArgumentosCompilados
-                  >> (Instrucciones: (OP#ROT: 1),
+                  >> (Instrucciones: (OP#ROTM: 1),
                                      (OP#DYNMSGV: constPrototipo, 1))
                   >> (Compilado#deConstantes:
                          (Arreglo#crearCon:
                              (Constante#crear: constPrototipo, prototipo)))
+        finsi
+        si procnr = (builtins#en: {__Lua})#binding
+            necesitas ast#argumentos#longitud >= 1
+            [ __Lua siempre falla en el backend de tuplas. ]
+            devolver ArgumentosCompilados
+                  >> (Instrucciones: (OP#BCONST: 0), OP#MTRUE)
         finsi
 
         variable constLlamar
@@ -3815,13 +3930,13 @@ funcion CompilarAWasm: ast, builtins
               >> (Instrucciones: (OP#CHOOSE: etiqSi, etiqSino),
                                  (OP#NAME: etiqSi),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
-              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntornoSiVerdadero, localesInmediatasSiVerdadero, VERDADERO, profundidad)))
+              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntornoSiVerdadero, localesInmediatasSiVerdadero, VERDADERO, profundidad, NULO)))
               >> (CompilarBloqueAWasm: ast#siVerdadero, builtins)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#JMP: etiqFinsi),
                                  (OP#NAME: etiqSino),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
-              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntornoSiFalso, localesInmediatasSiFalso, VERDADERO, profundidad)))
+              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntornoSiFalso, localesInmediatasSiFalso, VERDADERO, profundidad, NULO)))
               >> (CompilarBloqueAWasm: ast#siFalso, builtins)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#NAME: etiqFinsi))
@@ -3844,7 +3959,7 @@ funcion CompilarAWasm: ast, builtins
               >> (Instrucciones: (OP#CHOOSE: etiqCont, etiqFinmientras),
                                  (OP#NAME: etiqCont),
                                  (OP#SPUSH: LocalDelEntornoActual, LocalDelEntornoSuperior))
-              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntorno, localesInmediatas, VERDADERO, profundidad)))
+              >> (Compilado#deInstrucciónes: (Aplanar: (CompilarEntornoDelÁmbito: Arreglo#vacio, localesEnElEntorno, localesInmediatas, VERDADERO, profundidad, NULO)))
               >> (CompilarBloqueAWasm: ast#cuerpo, builtins)
               >> (Instrucciones: (OP#SPOP: LocalDelEntornoActual, LocalDelEntornoSuperior),
                                  (OP#JMP: etiqInicio),
@@ -3862,7 +3977,7 @@ funcion CompilarAWasm: ast, builtins
         variables nrsParámetros, parámetroVrd, preludio, cuerpo, fn,
                   nombresLibres, inicDeClosure, locales, localesEnElEntorno,
                   profundidad, localesInmediatas, procid, localYo, pragmas,
-                  ámbito
+                  ámbito, nombre
 
         fijar preludio a Arreglo#vacio
         [ params ]
@@ -3914,7 +4029,15 @@ funcion CompilarAWasm: ast, builtins
                                           (Constante#crear: constMétodo, (TextoDelIR#crear: ast#nombre#nombre))))
         finsi
 
-        fijar cuerpo a (Compilado#deInstrucciónes: (Aplanar: preludio)) >> (CompilarBloqueAWasm: ast#cuerpo, builtins)
+        si (EsInstancia: ast, AST#NodoMétodo) || (EsInstancia: ast, AST#NodoFunción)
+            fijar nombre a ast#nombre#nombre
+        sino
+            fijar nombre a {<procedimiento>}
+        finsi
+
+        fijar cuerpo a (NombreDelMarco: nombre, ast#areaTextual)
+                    >> (Compilado#deInstrucciónes: (Aplanar: preludio))
+                    >> (CompilarBloqueAWasm: ast#cuerpo, builtins)
 
         fijar fn a DeclrFunción#crear: procid, nrsParámetros, parámetroVrd, cuerpo#instrucciones
         devolver inicDeClosure
@@ -4002,21 +4125,21 @@ funcion CompilarAWasm: ast, builtins
         finsi
 
         si (EsNulo: ast#espacioDeNombres) && (EsNulo: ast#nombresEspecíficos)
-            variables bindingsImportados, altura, índices
+            variables bindingsImportados, altura, índices, localesImportadas
             fijar bindingsImportados a NombresImportadosResueltos: ast
             fijar altura a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {alturaDeImportaciones}
             fijar índices a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {índiceDeCapturaDeImportaciones}
-            bindingsImportados#paraCadaPar: procedimiento: nombre, binding
-                variables constMsj, var, índiceDeCaptura
-                fijar índiceDeCaptura a índices#en: binding
+            fijar localesImportadas a ast#obtenerMetadato: LLAVE_ANOTACIÓN_DE_CAPTURAS, {localesImportadas}
+            ParaCadaElemento: localesImportadas, procedimiento: local
+                variables constMsj, var
                 fijar constMsj a GenerarIdDeConstante
                 fijar fijarNombresImportados a fijarNombresImportados
                     >> (Instrucciones: OP#DUP,
-                                       (OP#NSLOOKUP: constMsj),
-                                       (OP#LSETC: LocalDelEntornoActual, altura, índiceDeCaptura))
+                                       (OP#NSLOOKUP: constMsj))
+                    >> (CompilarFijarIdentificador: local)
                     >> (Compilado#deConstantes:
                         (Arreglo#crearCon:
-                            (Constante#crear: constMsj, (TextoDelIR#crear: nombre))))
+                            (Constante#crear: constMsj, (TextoDelIR#crear: local#nombre))))
             finprocedimiento
         finsi
 
@@ -4319,7 +4442,7 @@ finprocedimiento
 
 funcion ParsearYDefunc: programa
     variables ast, builtins, autoejecutables
-    fijar ast a Parser#CrearAST: programa
+    fijar ast a Parser#CrearAST: programa, {}
 
     fijar builtins a Diccionario#desdePares:
         {__EACT}, RN#GenerarIdDeNombre,
@@ -4395,6 +4518,7 @@ metodo CompiladorATuplas#inicializar: db, experimentos
         {__ESUP},  (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     FALSO),
         {__RT},    (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     FALSO),
         {__Tupla}, (datosDelBuiltin: RN#GenerarIdDeNombre, FALSO,     FALSO),
+        {__Lua},   (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, FALSO),
         {__EM},    (datosDelBuiltin: RN#GenerarIdDeNombre, VERDADERO, FALSO)
 
     fijar yo#_nombresBuiltins a Diccionario#desdePares:
@@ -4757,14 +4881,18 @@ procedimiento EnlazarMódulos: baseDeDatos, llaveDelMóduloPrincipal
 
     funcion parchearCompilado: compilado, incrementoDeConstante, incrementoDeProcedimiento
         variables instrs, declrs, consts, mayorÍndiceDeConstante, mayorÍndiceDeProcedimiento, comp
+        Escribir: {----- Parcheando instrucciones...}
         fijar instrs a parchearInstrucciones: compilado#instrucciones,
                                               incrementoDeConstante,
                                               incrementoDeProcedimiento
+        Escribir: {----- Parcheando declaraciones...}
         fijar declrs a parchearDeclaraciones: compilado#declaraciones,
                                               incrementoDeConstante,
                                               incrementoDeProcedimiento
+        Escribir: {----- Parcheando constantes...}
         fijar consts a parchearConstantes: compilado#constantes,
                                            incrementoDeConstante
+        Escribir: {----- Uniendo...}
         fijar mayorÍndiceDeConstante a Max: instrs#mayorÍndiceDeConstante,
                                             declrs#mayorÍndiceDeConstante,
                                             (MáximoDe: (Mapear: consts, (MétodoComoFunción: {id})))
@@ -4780,7 +4908,9 @@ procedimiento EnlazarMódulos: baseDeDatos, llaveDelMóduloPrincipal
 
     funcion rotarCompilado: compilado, incrementoDeConstante, incrementoDeProcedimiento
         variables parcheado, idPrincipal, constLlamar, comp
+        Escribir: {---- Parcheando}
         fijar parcheado a parchearCompilado: compilado, incrementoDeConstante, incrementoDeProcedimiento
+        Escribir: {---- Listo}
         fijar idPrincipal a incrementoDeProcedimiento + parcheado#mayorÍndiceDeProcedimiento + 1
         fijar constLlamar a incrementoDeConstante + parcheado#mayorÍndiceDeConstante + 1
         fijar comp a (Instrucciones: (OP#MK0CLZ: idPrincipal),
@@ -4812,8 +4942,12 @@ procedimiento EnlazarMódulos: baseDeDatos, llaveDelMóduloPrincipal
     fijar tablaDeMódulos a Diccionario#vacío
 
     baseDeDatos#paraCadaMódulo: procedimiento: módulo
-        variable rotado
-        fijar rotado a rotarCompilado: (CompiladoDesdeTexto: módulo#compilado),
+        variables rotado, compiladoDelMódulo
+        Escribir: ({--- En el módulo ~t}#formatear: módulo#llave)
+        Escribir: {---- Deserializando el compilado...}
+        fijar compiladoDelMódulo a CompiladoDesdeTexto: módulo#compilado
+        Escribir: {---- Rotando el compilado}
+        fijar rotado a rotarCompilado: compiladoDelMódulo,
                                        incrementoDeConstante,
                                        incrementoDeProcedimiento
         fijar incrementoDeConstante a incrementoDeConstante + rotado#mayorÍndiceDeConstante + 1
