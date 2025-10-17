@@ -18,9 +18,7 @@ funcion __TipoDe: obj
 finfuncion
 
 funcion __SonElMismoObjeto: A, B
-    __Tupla#obtener: A
-    __Tupla#obtener: B
-    devolver __Tupla#eCMPREFEQ
+    devolver son identicos A y B
 finfuncion
 
 funcion __ObtenerAtributo: obj, n
@@ -528,7 +526,7 @@ fijar __MsjObtenerAtributos a procedimiento: msj, ...args
 
     si (msj = {igualA}) || (msj = {operador_=})
         necesitas args#longitud = 1
-        devolver __SonElMismoObjeto: yo, (args#en: 0)
+        devolver son identicos yo y (args#en: 0)
     finsi
     si msj = {clonar}
         necesitas args#longitud = 0
@@ -549,7 +547,7 @@ fijar __MsjObtenerClase a procedimiento: msj, ...args
 
     si (msj = {igualA}) || (msj = {operador_=})
         necesitas args#longitud = 1
-        devolver __SonElMismoObjeto: yo, (args#en: 0)
+        devolver son identicos yo y (args#en: 0)
     finsi
     si msj = {clonar}
         necesitas args#longitud = 0
@@ -564,11 +562,26 @@ fijar __MsjObtenerClase a procedimiento: msj, ...args
 finprocedimiento#comoObjeto
 
 funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
+    funcion obtenerMétodo: msj
+        variable idc
+        fijar idc a métodos#longitud - 1
+        mientras idc >= 0
+            variable método
+            fijar método a métodos#en: idc
+            fijar idc a idc - 1
+
+            si (método#en: 0) = msj
+                devolver método#en: 1
+            finsi
+        finmientras
+        devolver NULO
+    finfuncion
+
     devolver procedimiento: msj, ...args
         variables instFalsa, instProxy
         fijar instFalsa a __ESUP
 
-        si __SonElMismoObjeto: instReal, NULO
+        si son identicas instReal y NULO
             fijar instProxy a instFalsa
         sino
             fijar instProxy a instReal
@@ -585,8 +598,8 @@ funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
         finsi
 
         variable proc
-        fijar proc a métodos#buscarONulo: msj
-        si no __SonElMismoObjeto: proc, NULO
+        fijar proc a obtenerMétodo: msj
+        si no son identicos proc y NULO
             devolver %proc: instProxy, ...args
         finsi
 
@@ -604,8 +617,8 @@ funcion __CrearInstanciaDeClase: cls, instReal, métodos, atrs
             devolver __CrearInstanciaDeClase: cls, instReal, métodos, atrsClonados
         finsi
 
-        fijar proc a métodos#buscarONulo: {metodoNoEncontrado}
-        si no __SonElMismoObjeto: proc, NULO
+        fijar proc a obtenerMétodo: {metodoNoEncontrado}
+        si no son identicos proc y NULO
             devolver %proc: instProxy, msj, args
         finsi
 
@@ -615,19 +628,19 @@ finfuncion
 
 funcion __CrearMétodosDeInstancia: métodosDeInstancia, atributosDeInstancia, atrs
     variable métodos
-    fijar métodos a __TablaHashConCapacidad: (métodosDeInstancia#longitud + (2 * atributosDeInstancia#longitud))
+    fijar métodos a __CrearArreglo
 
     __ParaCadaElemento: métodosDeInstancia, procedimiento: el
-        métodos#fijarEn: (el#en: 0), (el#en: 1)
+        métodos#agregarAlFinal: (__CrearArreglo: (el#en: 0), (el#en: 1))
     finprocedimiento
 
     __ParaCadaElementoConÍndice: atributosDeInstancia, procedimiento: atr, i
-        métodos#fijarEn: atr, metodo
+        métodos#agregarAlFinal: (__CrearArreglo: atr, metodo
             devolver (__EnviarMensaje: yo, __MsjObtenerAtributos, __CrearArreglo)#en: i
-        finmetodo
-        métodos#fijarEn: ({fijar_}#concatenar: atr), metodo: valor
+        finmetodo)
+        métodos#agregarAlFinal: (__CrearArreglo: ({fijar_}#concatenar: atr), metodo: valor
             (__EnviarMensaje: yo, __MsjObtenerAtributos, __CrearArreglo)#fijarEn: i, valor
-        finmetodo
+        finmetodo)
     finprocedimiento
 
     devolver métodos
@@ -662,13 +675,13 @@ procedimiento __CrearClase: nombre
 
         variable met
         fijar met a obtenerMétodoEstático: msj
-        si no __SonElMismoObjeto: met, NULO
+        si no son identicos met y NULO
             devolver %met: yo, ...args
         finsi
 
         si (msj = {igualA}) || (msj = {operador_=})
             necesitas args#longitud = 1
-            devolver __SonElMismoObjeto: yo, (args#en: 0)
+            devolver son identicos yo y (args#en: 0)
         finsi
 
         si msj = {clonar}
@@ -795,7 +808,7 @@ procedimiento __CrearClase: nombre
         finsi
 
         fijar met a obtenerMétodoEstático: {metodoNoEncontrado}
-        si no __SonElMismoObjeto: met, NULO
+        si no son identicos met y NULO
             devolver %met: yo, msj, args
         finsi
 

@@ -1,4 +1,5 @@
 utilizar bepd/builtins
+utilizar bepd/utilidades/texto (Unir)
 
 [DOCUMENTA
 @brief{Tipo de la constante @pd{EOF}.}
@@ -363,13 +364,18 @@ Devuelve un @pd{Texto} con todo el contenido de @pd{puerto} (un
 @pd{PuertoDeLectura}).
 DOCUMENTA]
 procedimiento LeerTodo: puerto
-    [ FIXME: O(n^2) ]
-    variables texto, c
+    variables texto, c, partes
     fijar texto a {}
     fijar c a puerto#leerCarácter
+    fijar partes a Arreglo#vacio
     mientras no (c = EOF)
         fijar texto a texto#concatenar: c
+        si texto#longitud > 128
+            partes#agregarAlFinal: texto
+            fijar texto a {}
+        finsi
         fijar c a puerto#leerCarácter
     finmientras
-    devolver texto
+    partes#agregarAlFinal: texto
+    devolver Unir: partes
 finprocedimiento

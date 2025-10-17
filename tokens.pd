@@ -165,7 +165,7 @@ fijar PALABRAS_CLAVE a
         {implementa}, {finclase}, {atributo}, {atributos}, {estatico},
         {clonar}, {finclonar}, {son}, {sean}, {iguales}, {diferentes}, {y},
         {tanto}, {como}, {algun}, {o}, {necesitas}, {utilizar}, {no},
-        {finimplementa}, {ref}
+        {finimplementa}, {ref}, {identicos}, {identicas}
     )
 
 [DOCUMENTA

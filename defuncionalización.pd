@@ -189,7 +189,7 @@ Escribir: ({C es ~t}#formatear: D)
 DOCUMENTA]
 funcion SonElMismoObjeto: X, Y
     [ FIXME: Esto debería ser un builtin ]
-    devolver __Lua: {function(X, Y) return X == Y end}, X, Y
+    devolver son identicos X y Y
 finfuncion
 
 [DOCUMENTA

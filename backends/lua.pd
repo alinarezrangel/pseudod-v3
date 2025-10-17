@@ -579,11 +579,7 @@ funcion SepararComparaciónDeBuiltin: nodo, rnBuiltin
         si EsInstancia: nodo, AST#NodoSonIguales
             fijar lhs a nodo#lhs
             fijar rhs a nodo#rhs
-            si nodo#tipoIgualdad = AST#TipoIgualdad#IGUALES
-                fijar op a AST#TipoIgualdad#IGUALES
-            sino
-                fijar op a AST#TipoIgualdad#DIFERENTES
-            finsi
+            fijar op a nodo#tipoIgualdad
         sino
             devolver FALSO
         finsi
@@ -990,6 +986,10 @@ metodo CompiladorSimpleALua#visitarFunciónAnónima: nodo
 finmetodo
 
 metodo CompiladorSimpleALua#visitarSonIguales: nodo
+    si nodo#tipoIgualdad = AST#TipoIgualdad#IDÉNTICOS
+        devolver Em#Formatear: nodo, {(~p == ~p)},
+                               (yo#visitar: nodo#lhs), (yo#visitar: nodo#rhs)
+    finsi
     variable igual
     fijar igual a yo#enviarMensaje: (yo#visitar: nodo#lhs), {igualA}, (Arreglo#crearCon: nodo#rhs)
     si nodo#tipoIgualdad = AST#TipoIgualdad#IGUALES

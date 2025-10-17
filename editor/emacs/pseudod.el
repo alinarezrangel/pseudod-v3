@@ -790,7 +790,7 @@ If REVERSE, then cycles in reverse."
 
 (defconst pseudod-font-lock-keywords
   ;; (insert (prin1-to-string (regexp-opt (flatten-list pseudod-keyword-list) 'words)))
-  '(("\\<\\(a\\(?:bstracta\\|dquirir\\|lgun\\|tr\\(?:apa\\|ibutos?\\)\\)\\|c\\(?:l\\(?:ase\\|onar\\)\\|o\\(?:mo\\|n\\)\\)\\|d\\(?:e\\(?:sref\\|volver\\)\\|iferentes\\)\\|e\\(?:s\\(?:cribir\\|tatico\\)\\|xtiende\\)\\|f\\(?:i\\(?:jar\\|n\\(?:cl\\(?:ase\\|onar\\)\\|funcion\\|i\\(?:\\(?:mplem\\|nt\\)enta\\)\\|llamar\\|m\\(?:etodo\\|ientras\\)\\|procedimiento\\|si\\)\\)\\|uncion\\)\\|hereda\\|i\\(?:guales\\|\\(?:mplement\\|n\\(?:stanci\\|tent\\)\\)a\\)\\|l\\(?:\\(?:ee\\|\\(?:iber\\|lam\\)a\\)r\\)\\|m\\(?:etodo\\|ientras\\)\\|n\\(?:ecesitas\\|o\\)\\|procedimiento\\|ref\\|s\\(?:ean\\|i\\(?:no\\)?\\|on\\)\\|tanto\\|utilizar\\|variables?\\|[aeouy]\\)\\>" . font-lock-keyword-face)
+  '(("\\<\\(identic[oa]s\\|a\\(?:bstracta\\|dquirir\\|lgun\\|tr\\(?:apa\\|ibutos?\\)\\)\\|c\\(?:l\\(?:ase\\|onar\\)\\|o\\(?:mo\\|n\\)\\)\\|d\\(?:e\\(?:sref\\|volver\\)\\|iferentes\\)\\|e\\(?:s\\(?:cribir\\|tatico\\)\\|xtiende\\)\\|f\\(?:i\\(?:jar\\|n\\(?:cl\\(?:ase\\|onar\\)\\|funcion\\|i\\(?:\\(?:mplem\\|nt\\)enta\\)\\|llamar\\|m\\(?:etodo\\|ientras\\)\\|procedimiento\\|si\\)\\)\\|uncion\\)\\|hereda\\|i\\(?:guales\\|\\(?:mplement\\|n\\(?:stanci\\|tent\\)\\)a\\)\\|l\\(?:\\(?:ee\\|\\(?:iber\\|lam\\)a\\)r\\)\\|m\\(?:etodo\\|ientras\\)\\|n\\(?:ecesitas\\|o\\)\\|procedimiento\\|ref\\|s\\(?:ean\\|i\\(?:no\\)?\\|on\\)\\|tanto\\|utilizar\\|variables?\\|[aeouy]\\)\\>" . font-lock-keyword-face)
     ("\\([,;:()%]\\)" . font-lock-keyword-face))
   "Font locking for PseudoD keywords.")
 

@@ -434,7 +434,7 @@ end
 -- de buscar `INLINED pdtypeof` en este archivo para ver esas partes.
 function M.pdtypeof(val)
    local t = type(val)
-   if t == "table" and val.__pd_object then
+   if t == "table" and (val.__pd_object or val.__pd_pure_object) then
       return "objeto"
    elseif t == "table" or t == "thread" or t == "userdata" then
       error(("%s directly passed across PD FFI"):format(type(val)))
@@ -552,6 +552,27 @@ local METODOS_NUMERO = {
    mayorOIgualA = makePrimBinop(">="),
    ["operador_>="] = makePrimBinop(">="),
 
+   ["operador_<<"] = function(self, n)
+      M.pdasserttype(n, "numero")
+      return self << n
+   end,
+   ["operador_>>"] = function(self, n)
+      M.pdasserttype(n, "numero")
+      return self >> n
+   end,
+   ["operador_<+>"] = function(self, n)
+      M.pdasserttype(n, "numero")
+      return self | n
+   end,
+   ["operador_<*>"] = function(self, n)
+      M.pdasserttype(n, "numero")
+      return self & n
+   end,
+   ["operador_<^>"] = function(self, n)
+      M.pdasserttype(n, "numero")
+      return self ~ n
+   end,
+
    negar = function(self)
       return -self
    end,
@@ -604,7 +625,7 @@ local METODOS_TEXTO = {
       return tonumber(self, 10)
    end,
    comoNumeroReal = function(self)
-      return tonumber(self, 10)
+      return tonumber(self)
    end,
 
    longitud = function(self)
@@ -715,6 +736,12 @@ local METODOS_PROC = {
    igualA = function(self, other) return rawequal(self, other) end,
    ["operador_="] = function(self, other) return rawequal(self, other) end,
 
+   comoObjeto = function(self)
+      return {
+         __pd_pure_object = self,
+      }
+   end,
+
    llamar = function(self, ...)
       return self(...)
    end,
@@ -746,6 +773,8 @@ function M.enviarMensaje(obj, mensaje, ...)
       end
    elseif type(obj) == "table" and obj.__pd_object then
       return obj:recvMensaje(mensaje, ...)
+   elseif type(obj) == "table" and obj.__pd_pure_object then
+      return obj:__pd_pure_object(mensaje, ...)
    else
       error(("%s directly passed across PD FFI"):format(type(obj)))
    end
@@ -1025,6 +1054,15 @@ function M.ns(tbl)
       local descriptor = tbl[varname]
       return descriptor.value
    end
+   function ns:tryAt(varname, def)
+      local tbl = self:getAttribute(tblIdx)
+      if tbl[varname] == nil then
+         return def
+      else
+         local descriptor = tbl[varname]
+         return descriptor.value
+      end
+   end
    return ns
 end
 
@@ -1114,6 +1152,10 @@ function M.mkclase()
    function Cls.methods:agregarMetodo(nombre, proc)
       local mets = self:getAttribute(Cls.metodosDeInstanciaIdx)
       M.enviarMensaje(mets, "agregarAlFinal", M.arreglo(nombre, proc))
+   end
+
+   function Cls.methods:agregarMetodoEstatico(nombre, proc)
+      self.methods[nombre] = proc
    end
 
    -- Nota sobre los métodos _crearConYo y _crear:
@@ -1572,7 +1614,12 @@ function M.importarmain(ruta, ...)
       end
    end
    parsearRts(rts)
-   return M.importar(ruta)
+   local mainmod = M.importar(ruta)
+   local inicio = mainmod:tryAt("Principal", nil)
+   if inicio then
+      inicio(0, M.builtins.__Argv)
+   end
+   return mainmod
 end
 
 -- Un ámbito.

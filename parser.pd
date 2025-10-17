@@ -442,11 +442,16 @@ variable grSonIguales
 fijar grSonIguales a
     Comb#Efecto:
         funcion: res
-            variables tipoIgualdad, lhs, rhs
-            si (res#en: 1)#texto = {iguales}
+            variables tipoIgualdad, lhs, rhs, pc
+            fijar pc a (res#en: 1)#texto
+            si pc = {iguales}
                 fijar tipoIgualdad a AST#TipoIgualdad#IGUALES
             sino
-                fijar tipoIgualdad a AST#TipoIgualdad#DIFERENTES
+                si (pc = {identicos}) || (pc = {identicas})
+                    fijar tipoIgualdad a AST#TipoIgualdad#IDÉNTICOS
+                sino
+                    fijar tipoIgualdad a AST#TipoIgualdad#DIFERENTES
+                finsi
             finsi
             fijar lhs a res#en: 2
             fijar rhs a res#en: 4
@@ -463,7 +468,9 @@ fijar grSonIguales a
                 (try': (kw: {sean}))),
             (alt:
                 (try': (kw: {iguales})),
-                (try': (kw: {diferentes}))),
+                (try': (kw: {diferentes})),
+                (try': (kw: {identicos})),
+                (try': (kw: {identicas}))),
             (delay: funcion devolver grExpr finfuncion),
             (kw: {y}),
             (delay: funcion devolver grExpr finfuncion))

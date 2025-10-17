@@ -4050,7 +4050,11 @@ funcion CompilarAWasm: ast, builtins
         si ast#tipoIgualdad = AST#TipoIgualdad#IGUALES
             fijar cmp a Instrucciones: OP#CMPEQ
         sino
-            fijar cmp a Instrucciones: OP#CMPNEQ
+            si ast#tipoIgualdad = AST#TipoIgualdad#IDÉNTICOS
+                fijar cmp a Instrucciones: OP#CMPREFEQ
+            sino
+                fijar cmp a Instrucciones: OP#CMPNEQ
+            finsi
         finsi
         devolver (CompilarAWasm: ast#lhs, builtins)
               >> (CompilarAWasm: ast#rhs, builtins)

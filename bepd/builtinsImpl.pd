@@ -887,7 +887,7 @@ funcion PedazoDeArreglo: arr, inicio, final
 
     fijar i a idxInicio
     mientras i < idxFinal
-        res#agregarAlFinal: arr#en: i
+        res#agregarAlFinal: (arr#en: i)
         fijar i a i + 1
     finmientras
 

@@ -654,10 +654,11 @@ finmetodo
 @enum(
 @defenum(IGUALES){Los valores se comparan por igualdad.}
 @defenum(DIFERENTES){Los valores se comparan por desigualdad.}
+@defenum(IDÉNTICOS){Los valores se comparan por identidad.}
 )
 DOCUMENTA]
 variable TipoIgualdad
-fijar TipoIgualdad a Enum: {TipoIgualdad}, {IGUALES}, {DIFERENTES}
+fijar TipoIgualdad a Enum: {TipoIgualdad}, {IGUALES}, {DIFERENTES}, {IDÉNTICOS}
 
 [DOCUMENTA
 @brief{Compara dos expresiones por igualdad.}

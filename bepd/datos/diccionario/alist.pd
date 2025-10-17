@@ -169,7 +169,7 @@ metodo DiccionarioAlist#comoTexto
         sino
             fijar primero a FALSO
         finsi
-        fijar txt a txt#concatenar: {~t, ~t}#formatear: (par#en: 0), (par#en: 1)
+        fijar txt a txt#concatenar: ({~t, ~t}#formatear: (par#en: 0), (par#en: 1))
     finprocedimiento
     devolver txt#concatenar: {)}
 finmetodo
